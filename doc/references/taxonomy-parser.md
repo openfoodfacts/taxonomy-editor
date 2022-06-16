@@ -144,6 +144,7 @@ For every node, also store:
   (such that if we want to insert a new block beneath this block,
   later on,
   we could insert it with same block_index but block_subindex of 1)
+* preceding *comments lines* in a `preceeding_lines` property
 
 ## Create extended synonyms
 
