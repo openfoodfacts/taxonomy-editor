@@ -1,5 +1,4 @@
 from datetime import datetime
-import uvicorn
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Depends, Header, HTTPException, Cookie
@@ -37,6 +36,3 @@ async def pong(response: Response):
     """
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
-
-if __name__ == '__main__':
-    uvicorn.run(app, port=5000)
