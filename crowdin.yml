@@ -1,0 +1,5 @@
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+files:
+  - source: 'path/to/the/source/translation/file/app_en.arb'
+    translation: 'path/to/the/source/translation/file/app_%two_letters_code%.arb'
