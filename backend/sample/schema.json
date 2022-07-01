@@ -1,0 +1,43 @@
+{
+    "taxonomy-name" : [
+        {
+            "id" : "__header__",
+            "value" : [
+                {
+                    "id" : "stopwords:IDX",
+                    "value" : {"type" : "string"},
+                    "block_index" : {"type" : "integer"},
+                    "block_subindex" : {"type" : "integer"}, 
+                    "preceding_lines" : {"type" : "integer"}
+                }
+            ]
+        },
+        {
+            "id" : "__comments__",
+            "value" : [
+                {
+                    "id" : "comment",
+                    "value" : {"type" : "string"},
+                    "block_index" : {"type" : "integer"},
+                    "block_subindex" : {"type" : "integer"}, 
+                    "preceding_lines" : {"type" : "integer"}
+                }
+            ]
+        },
+        {
+            "id" : "canonical_tagid",
+            "tags" : ["LC:tag1, tag2, tag3"],
+            "parents" : ["LC:parent_tag"],
+            "properties" : [
+                {
+                    "id" : {"type" : "integer"},
+                    "name" : {"type" : "string"},
+                    "value" : "LC:property_value"
+                },
+            ],
+            "block_index" : {"type" : "integer"},
+            "block_subindex" : {"type" : "integer"},
+            "preceding_lines" : {"type" : "integer"}
+        }
+    ]
+}
