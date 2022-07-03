@@ -2,9 +2,9 @@
 This guide will allow you to rapidly build a ready-to-use developement environment for the Taxonomy Editor API running in Docker.
 
 ## Prerequisites
-Docker is the easiest way to install the Open Food Facts server, play with it, and even modify the code.
+Docker is the easiest way to install the Taxonomy Editor API, play with it, and even modify the code.
 
-Docker provides an isolated environment, very close to a Virtual Machine. This environment contains everything required to launch the server. There is no need to install any modules separately.
+Docker provides an isolated environment, very close to a Virtual Machine. This environment contains everything required to launch the API. There is no need to install any modules separately.
 
 **Installation steps:**
 - [Install Docker CE](https://docs.docker.com/install/#supported-platforms)
