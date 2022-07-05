@@ -2,7 +2,7 @@
 
 References: https://wiki.openfoodfacts.org/Global_taxonomies#format
 
-This specification takes the imagine that we have a graph tool.
+This specification assumes that we have a graph tool.
 It can be in memory graph like networkx or custom dictionary structure.
 Or a database, be it a real graph database like Arango db, or another database (eg. PostgresSQL) used with graph queries.
 
@@ -13,7 +13,7 @@ You must be able to query the database on it's relations, but also on nodes prop
 ## Lines and blocks
 
 1. a language code is a two character code. We write `LC` to signify a language code in this document.
-1. every line has on of the following form:
+1. every line has one of the following forms:
    - *blank line*: it only contains space characters or no character at all
    - *comment line*: first character is a `#`
    - *parent line*: fist character is `<`
@@ -38,8 +38,8 @@ You must be able to query the database on it's relations, but also on nodes prop
 1. entry lines are composed of the `LC:` header,
    then a list of *tags* separated by a comma `,`.
    Comma without at least one space around are not separators.
-1. each *tag* as a *normalized version* referred to as *tagid*
-1. each *entry line* as a first tag which is referred to as *line tag*,
+1. each *tag* has a *normalized version* which is referred to as *tagid*
+1. each *entry line* has a first tag which is referred to as *line tag*,
    and as *line tagid* for it's *normalized version*.
    *line tagid* is considered the identifier for this *entry line*,
    and must be unique.
@@ -106,7 +106,7 @@ Replace html escaped chars by "-":
 string = re.sub(r"&\w+;", "-", string)
 ```
 
-Replace some weirds chars by "-" [^strech_weird_chars]:
+Replace some strange characters with "-" [^strech_weird_chars]:
 ```
 string = re.sub(r"[\s!"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]", "-", string)
 ```
