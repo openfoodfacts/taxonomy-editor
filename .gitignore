@@ -37,14 +37,15 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# local logs directory
-logs/
+# local neo4j directories
+neo4j/logs/
+neo4j/import/
 
 # Unit test / coverage reports
 htmlcov/
 .tox/
 .nox/
-.coverage
+
 .coverage.*
 .cache
 nosetests.xml

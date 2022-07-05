@@ -11,12 +11,15 @@ services:
       - "127.0.0.1:7687:7687"
     environment:
       # we should not expose it publicly
-      - NEO4J_AUTH=none
+      NEO4J_AUTH: none
     volumes:
       # put data in a volume
       - neo4j-data:/data
       # put logs in a subdir
-      - ./logs/neo4j/:/logs
+      - ./neo4j/logs:/logs
+      # directory for imports
+      - ./neo4j/import:/var/lib/neo4j/import
+      # directory for neo4j imports
     command: neo4j
 
 volumes:
