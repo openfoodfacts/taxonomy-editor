@@ -93,7 +93,7 @@ to know if following operations applies, based on language code:
 * lowercase
 * removing accents
 
-If lowercase applies and string is not a UUID, that is it does not match regexp `r"^[a-z\-]+\.[a-zA-Z0-9-_]{8}[a-zA-Z0-9-_]+$"`,
+If lowercase applies and string is not a UUID [^uuid], that is it does not match regexp `r"^[a-z\-]+\.[a-zA-Z0-9-_]{8}[a-zA-Z0-9-_]+$"`,
 then lowercase it. And also transform "." to "-".
 
 Replace every special character (ascii 0 to 27) and zero width space with "-":
@@ -106,7 +106,7 @@ Replace html escaped chars by "-":
 string = re.sub(r"&\w+;", "-", string)
 ```
 
-Replace some strange characters with "-" [^strech_weird_chars]:
+Replace some strange characters with "-" [^stretch_weird_chars]:
 ```
 string = re.sub(r"[\s!"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]", "-", string)
 ```
@@ -119,9 +119,16 @@ string = re.sub(r"-+", "-", string)
 string = string.strip("-")
 ```
 
-[^string_config]: of course you would have copied it to a local config file, or a dict in your code.
 
-[^strech_weird_chars]: (stretch goal: use [unicode category](https://www.compart.com/en/unicode/category) (through unicodedata module) to remove all unwanted category)
+[^uuid]: an UUID stands for Universal Unique Identifier.
+**TODO** explain when we may encounter them in taxonomies.
+
+[^string_config]: of course you would have copied it to a local config file, or a dict in your code.
+The current config can be seen in github [openfoodfacts/openfoodfacts-server main/lib/ProductOpener/Config_off.pm](https://github.com/openfoodfacts/openfoodfacts-server/blob/main/lib/ProductOpener/Config_off.pm).
+Looking at `%string_normalization_for_lang`.
+
+[^stretch_weird_chars]: (stretch goal: use [unicode category](https://www.compart.com/en/unicode/category) (through unicodedata module) to remove all unwanted category)
+
 
 # Processing
 
