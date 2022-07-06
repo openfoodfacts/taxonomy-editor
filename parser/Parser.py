@@ -89,12 +89,10 @@ class Parser:
                     property_name, property_value = normalizing(line[:line.index(":")]),normalizing(line[line.index(":")+1:])
                     property={"id":len(properties)+1,"name":property_name,"value":property_value}
                     properties.append(str(property))
-            print(comment,parent_tag,tags,properties,value,id)
 
 
             #adding the node to database
             query="CREATE (n{id:'" + id + ("',value:'"+value+"'" if value else "") + ("',parents:"+str(parent_tag) + ",tags:"+str(tags) + ",properties:"+str(properties) if not value else "")  + ",block_index:"+str(i)+",block_subindex:0,preceding_lines:"+str(comment)+"})"
-            print(query)
             self.session.run(query)
 
 
