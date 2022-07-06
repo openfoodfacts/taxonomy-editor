@@ -68,7 +68,7 @@ class Parser:
             value=''
             id=''
 
-            for line in file[i]:
+            for line in self.file[i]:
                 print(line)
                 if line[0]=="#":
                     index_comm+=1
