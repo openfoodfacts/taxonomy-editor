@@ -14,8 +14,9 @@ class Parser:
         txtfile=open(name,"r",encoding='utf8')
         file = [ [ ] ]
         for line in txtfile:
-            if line=='\n' and len(file[-1])>0:
-                file.append([])
+            if line=='\n' :
+                if len(file[-1])>0:
+                    file.append([])
             else:
                 #sanitizing the line before adding it
                 line = line.rstrip()
@@ -86,7 +87,7 @@ class Parser:
                     else : tags.append(normalizing(line))
                 else:
                     property_name, property_value = normalizing(line[:line.index(":")]),normalizing(line[line.index(":")+1:])
-                    property={"id":len(properties)+1,}
+                    property={"id":len(properties)+1,"name":property_name,"value":property_value}
                     properties.append(str(property))
             print(comment,parent_tag,tags,properties,value,id)
 
