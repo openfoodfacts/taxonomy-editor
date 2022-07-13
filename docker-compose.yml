@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  neo4j:
+    restart: ${RESTART_POLICY:-no}
+    image: neo4j:4.4.8-community
+    ports:
+      # admin console
+      - "127.0.0.1:7474:7474"
+      # db bolt api
+      - "127.0.0.1:7687:7687"
+    environment:
+      # we should not expose it publicly
+      NEO4J_AUTH: none
+    volumes:
+      # put data in a volume
+      - neo4j-data:/data
+      # put logs in a subdir
+      - ./neo4j/logs:/logs
+      # directory for imports
+      - ./neo4j/import:/var/lib/neo4j/import
+      # directory for neo4j imports
+    command: neo4j
+
+volumes:
+  neo4j-data:
