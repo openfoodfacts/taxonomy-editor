@@ -4,7 +4,7 @@ stopwords:fr: aux,au,de,le,du,la,a,et
 
 synonyms:en:passion fruit, passionfruit
 
-synonyms:fr:fruit de la passion, fruits de la pas   sion, maracuja, passion
+synonyms:fr:fruit de la passion, maracuja, passion
 
 en:yogurts, yoghurts
 fr:yaourts, yoghourts, yogourts
