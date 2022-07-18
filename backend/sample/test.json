@@ -22,7 +22,7 @@
         },
         {
             "id" : "synonyms:1",
-            "value" : "fr:fruit de la passion, fruits de la passion, maracuja, passion",
+            "value" : "fr:fruit de la passion, maracuja, passion",
             "block_index" : 2,
             "block_subindex" : 0,
             "preceding_lines" : []
