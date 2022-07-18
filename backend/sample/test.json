@@ -8,7 +8,7 @@
         },
         {
             "id" : "stopwords:0",
-            "value" : "fr: aux,au,de,le,du,la,a,et",
+            "value" : "fr:aux,au,de,le,du,la,a,et",
             "block_index" : 0,
             "block_subindex" : 0, 
             "preceding_lines" : []
@@ -29,7 +29,11 @@
         },
         {
             "id" : "en:yogurts, yoghurts",
-            "tags" : ["en:yogurts, yoghurts", "fr:yaourts, yoghourts, yogourts"],
+            "tags" : {
+                "en" : ["yogurts", "yoghurts"],
+                "fr" : ["yaourts", "yoghourts", "yogourts"]
+            },
+            "tagsid" : ["en:yogurts, yoghurts", "fr:yaourts, yoghourts, yogourts"],
             "parents" : [],
             "properties" : [],
             "block_index" : 3,
@@ -38,7 +42,11 @@
         },
         {
             "id" : "en:banana yogurts",
-            "tags" : ["en:banana yogurts", "fr:yaourts à la banane"],
+            "tags" : {
+                "en" : ["banana yogurts"],
+                "fr" : ["yaourts à la banane"]
+            },
+            "tagsid" : ["en:banana yogurts", "fr:yaourts à la banane"],
             "parents" : ["en:yogurts"],
             "properties" : [],
             "block_index" : 4,
@@ -47,7 +55,11 @@
         },
         {
             "id" : "en:Passion fruit yogurts",
-            "tags" : ["en:Passion fruit yogurts", "fr:yaourts au fruit de la passion"],
+            "tags" : {
+                "en" : ["Passion fruit yogurts"],
+                "fr" : ["yaourts au fruit de la passion"]
+            },
+            "tagsid" : ["en:Passion fruit yogurts", "fr:yaourts au fruit de la passion"],
             "parents" : ["en:yogurts"],
             "properties" : [],
             "block_index" : 5,
@@ -56,7 +68,10 @@
         },
         {
             "id" : "fr:yaourts au fruit de la passion allégés",
-            "tags" : ["fr:yaourts au fruit de la passion allégés"],
+            "tags" : {
+                "fr" : ["yaourts au fruit de la passion allégés"]
+            },
+            "tagsid" : ["fr:yaourts au fruit de la passion allégés"],
             "parents" : ["fr:yaourts fruit de la passion"],
             "properties" : [],
             "block_index" : 6,
@@ -65,7 +80,10 @@
         },
         {
             "id" : "en:meat",
-            "tags" : ["en:meat"],
+            "tags" : {
+                "en" : ["meat"]
+            },
+            "tagsid" : ["en:meat"],
             "parents" : [],
             "properties" : [
                 {
@@ -85,7 +103,10 @@
         },
         {
             "id" : "en:fake-meat",
-            "tags" : ["en:fake-meat"],
+            "tags" : {
+                "en" : ["fake-meat"]
+            },
+            "tagsid" : ["en:fake-meat"],
             "parents" : ["en:meat"],
             "properties" : [
                 {   
@@ -100,7 +121,10 @@
         },
         {
             "id" : "en:fake-stuff",
-            "tags" : ["en:fake-stuff"],
+            "tags" : {
+                "en" : "fake-stuff"
+            },
+            "tagsid" : ["en:fake-stuff"],
             "parents" : [],
             "properties" : [],
             "block_index" : 9,
@@ -109,7 +133,10 @@
         },
         {
             "id" : "en:fake-duck-meat",
-            "tags" : ["en:fake-duck-meat"],
+            "tags" : {
+                "en" : "fake-duck-meat"
+            },
+            "tagsid" : ["en:fake-duck-meat"],
             "parents" : ["en:fake-stuff", "en:fake-meat"],
             "properties" : [],
             "block_index" : 10,

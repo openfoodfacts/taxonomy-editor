@@ -22,7 +22,10 @@
         },
         {
             "id" : "canonical_tagid",
-            "tags" : ["LC:tag1, tag2, tag3"],
+            "tags" : {
+                "LC" : ["tag1", "tag2", "tag3"]
+            },
+            "tagsid" : ["LC:tag1, tag2, tag3"],
             "parents" : ["LC:parent_tag"],
             "properties" : [
                 {
