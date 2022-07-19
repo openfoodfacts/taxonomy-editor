@@ -11,14 +11,18 @@
             "value" : {"type" : "string"},
             "block_index" : {"type" : "integer"},
             "block_subindex" : {"type" : "integer"}, 
-            "preceding_lines" : {"type" : "string"}
+            "preceding_lines" : [
+                {"type" : "string"}
+            ]
         },
         {
             "id" : "synonyms:IDX",
             "value" : {"type" : "string"},
             "block_index" : {"type" : "integer"},
             "block_subindex" : {"type" : "integer"}, 
-            "preceding_lines" : {"type" : "string"}
+            "preceding_lines" : [
+                {"type" : "string"}
+            ]
         },
         {
             "id" : "canonical_tagid",
@@ -36,7 +40,9 @@
             ],
             "block_index" : {"type" : "integer"},
             "block_subindex" : {"type" : "integer"},
-            "preceding_lines" : {"type" : "string"}
+            "preceding_lines" : [ 
+                {"type" : "string"}
+            ]
         }
     ]
 }
