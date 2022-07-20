@@ -1,65 +1,84 @@
 import pytest
-from Parser import Parser
+import taxonomy_parser as parser
 import re
 
-def test_filename():
-    x = Parser("test")
-    x.file_name()
-    assert x.filename == "test.txt"
-    x = Parser("test.txt")
-    x.file_name()
-    assert x.filename == "test.txt"
-    x = Parser("t")
-    x.file_name()
-    assert x.filename == "t.txt"
+
+def test_normalized_filename():
+    x = parser.Parser()
+    normalizer = x.normalized_filename
+    name = normalizer("test")
+    assert name == "test.txt"
+    name = normalizer("test.txt")
+    assert name == "test.txt"
+    name = normalizer("t")
+    assert name == "t.txt"
 
 def test_fileiter():
-    x=Parser("test")
-    x.file_name()
-    file=x.file_iter()
+    x=parser.Parser()
+    file=x.file_iter("test.txt")
     counter=0
     language_code_prefix = re.compile('[a-zA-Z][a-zA-Z]:')
-    for line in file:
+    for _,line in file:
         counter+=1
-        assert line == '' or line[0]=="#" or 'stopword' in line or 'synonym' in line or line[0]=="<" or language_code_prefix.match(line) or ":" in line
+        assert line == '' or line[0]=="#" or ":" in line
         if counter==27:
             assert line == "carbon_footprint_fr_foodges_value:fr:10"
     assert counter == 37+1
 
 def test_normalizing():
-    x=Parser("")
+    x=parser.Parser()
     text="Numéro #1, n°1 des ¾ des Français*"
     text=x.normalizing(text,"fr")
     assert text == "numero-1-n-1-des-des-francais"
     text="Randôm Languäge wìth àccénts"
     text=x.normalizing(text,"fr")
-    assert text == "random-language-with-accent"
+    assert text == "random-language-with-accents"
 
-def test_harvest():
-    x=Parser("test")
-    x.file_name()
-    data=x.harvest()
-    test_data=["# test taxonomy",
-    {"id":"stopwords:1","value":"fr:aux,au,de,le,du,la,a,et"},
-    {"id":"synonyms:1","value":"en:passion-fruit,passionfruit","comment":[]},
-    {"id":"synonyms:2","value":"fr:fruit-de-la-passion,fruits-de-la-passion,maracuja,passion"},
-    {"id":"en:yogurts","parent_tag":[],"tags":{"en":["yogurts","yoghurts"],"fr":["yaourts", "yoghourts", "yogourts"]},"tagsid":["en:yogurts","en:yoghurts","fr:yaourts","fr:yoghourts","fr:yogourts"],"properties":[],"comment":[]},
-    {"id":"en:banana-yogurts","parent_tag":["en:yogurts"],"tags":{"en":["banana-yogurts"],"fr":["yaourts-a-la-banane"]},"tagsid":["en:banana-yogurts","fr:yaourts-a-la-banane"]},
-    {"id":"en:passion-fruit-yogurts","parent_tag":["en:yogurts"],"tags":{"en":["passion-fruit-yogurts"],"fr":["yaourts-au-fruit-de-la-passion"]},"tagsid":["en:passion-fruit-yogurts","fr:yaourts-au-fruit-de-la-passion"]},
-    {"id":"fr:yaourts-au-fruit-de-la-passion-alleges","parent_tag":["fr:yaourts-au-fruit-de-la-passion"],"tags":{"fr":["yaourts-au-fruit-de-la-passion-alleges"]},"tagsid":["fr:yaourts-au-fruit-de-la-passion-alleges"],"properties":[],"comment":[]},
-    {"id":"en:meat","parent_tag":[],"tags":{"en":["meat"]},"tagsid":["en:meat"],"properties":[str({'id':1,'name':'vegan','value':'en:no'}),str({'id':2,'name':'carbon-footprint-fr-foodges-value','value':'fr:10'})],"comment":["meat"]},
-    {"id":"en:fake-meat","parent_tag":["en:meat"],"tags":{"en":["fake-meat"]},"tagsid":["en:fake-meat"],"properties":[str({'id':1,'name':'vegan','value':'en:yes'})],"comment":[]},
-    {"id":"en:fake-stuff","parent_tag":[],"tags":{"en":["fake-stuff"]},"tagsid":["en:fake-stuff"],"properties":[],"comment":[]},
-    {"id":"en:fake-duck-meat","parent_tag":["en:fake-stuff","en:fake-meat"],"tags":{"en":["fake-duck-meat"]},"tagsid":["en:fake-duck-meat"]}
-    ]
-    counter=0
-    first=next(data)
-    assert first == test_data[0]
-    for entry in data:
-        counter+=1
-        for key in test_data[counter]:
-            assert test_data[counter][key] == entry[key]
-    assert counter == 11
+def test_create_nodes():
+    x=parser.Parser()
+
+    #first delete all the nodes and relations in the database
+    query="MATCH (n) DETACH DELETE n"
+    x.session.run(query)
+
+    x.create_nodes("test")
+
+    # total number of nodes
+    query="MATCH (n) RETURN COUNT(*)"
+    result = x.session.run(query)
+    number_of_nodes = result.value()[0]
+    assert number_of_nodes == 12
+
+    # header correctly added
+    query="MATCH (n) WHERE n.id = '__header__' RETURN n.value"
+    result = x.session.run(query)
+    header = result.value()[0]
+    assert header == ['test-taxonomy']
+
+    # comment / preceding lines correctly added
+    query="MATCH (n) WHERE size(n.preceding_lines)>0 RETURN n.id"
+    result = x.session.run(query)
+    nodes = result.values()
+    number_of_nodes = len(nodes)
+    assert number_of_nodes == 1
+    assert nodes[0][0] == 'en:meat'
+
+def test_create_child_link():
+    x=parser.Parser()
+    x.create_child_link() # nodes added in the precedent test
+
+    # correct number of links
+    query="MATCH ()-[r]->() RETURN COUNT(r)"
+    result = x.session.run(query)
+    number_of_links = result.value()[0]
+    assert number_of_links == 6
+
+    # correct number of links for each child node
+    query="MATCH (n)-[r]->() RETURN n.id,n.parents,count(r)"
+    results = x.session.run(query)
+    for result in results:
+        assert len(result['n.parents']) == result['count(r)']
+    assert number_of_links == 6
 
 
 
