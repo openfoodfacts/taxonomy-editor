@@ -33,7 +33,7 @@
             "value" : {
                 "lang" : "fr",
                 "tag" : ["fruit de la passion", "maracuja", "passion"],
-                "tagsid" : ["fruit-de-la-passion", "maracuja", "passion"]
+                "tagsid" : ["fruit-passion", "maracuja", "passion"]
             },
             "block_index" : 2,
             "block_subindex" : 0,
@@ -63,7 +63,7 @@
             },
             "tagsid" : {
                 "en" : ["banana yogurts"],
-                "fr" : ["yaourts-a-la-banane"]
+                "fr" : ["yaourts-banane"]
             },
             "parents" : ["en:yogurts"],
             "properties" : [],
