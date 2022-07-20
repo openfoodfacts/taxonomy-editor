@@ -22,7 +22,7 @@
             "value" : {
                 "lang" : "en",
                 "tag" : ["passion fruit", "passionfruit"],
-                "tagsid" : ["passion fruit", "passionfruit"]
+                "tagsid" : ["passion-fruit", "passionfruit"]
             },
             "block_index" : 1,
             "block_subindex" : 0,
@@ -33,7 +33,7 @@
             "value" : {
                 "lang" : "fr",
                 "tag" : ["fruit de la passion", "maracuja", "passion"],
-                "tagsid" : ["fruit de la passion", "maracuja", "passion"]
+                "tagsid" : ["fruit-de-la-passion", "maracuja", "passion"]
             },
             "block_index" : 2,
             "block_subindex" : 0,
@@ -79,7 +79,7 @@
             },
             "tagsid" : {
                 "en" : ["Passion fruit yogurts"],
-                "fr" : ["yaourts au fruit de la passion"]
+                "fr" : ["yaourts-fruit-passion"]
             },
             "parents" : ["en:yogurts"],
             "properties" : [],
@@ -93,7 +93,7 @@
                 "fr" : ["yaourts au fruit de la passion allégés"]
             },
             "tagsid" : {
-                "fr" : ["yaourts-au-fruit-de-la-passion-alleges"]
+                "fr" : ["yaourts-fruit-passion-alleges"]
             },
             "parents" : ["fr:yaourts fruit de la passion"],
             "properties" : [],
