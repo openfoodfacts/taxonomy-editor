@@ -136,7 +136,7 @@ class Parser:
                     data = self.new_node_data()
                     self.block_index+=1
             else :
-                if not data['src_position'] : data['src_position'] = line_number
+                if not data['src_position'] : data['src_position'] = line_number + 1
                 if line[0]=="#":
                     index_comm+=1
                     data['comment'].append(self.normalizing(line,"en"))
