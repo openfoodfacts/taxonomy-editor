@@ -146,7 +146,7 @@ class Parser:
                     index_stopwords+=1
                     data['value'] = self.add_line(line[10:])
                 elif 'synonym' in line:
-                    id = "stopwords:"+str(index_stopwords)
+                    id = "synonyms:"+str(index_synonyms)
                     data=self.set_data_id(data,id,line_number)
                     index_synonyms+=1
                     data['value'] = self.add_line(line[9:])
