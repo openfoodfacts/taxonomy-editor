@@ -116,9 +116,8 @@ class Parser:
 
     def harvest(self,filename):
         """Transform data from file to dictionary"""
-        index_comm=0
-        index_stopwords=1
-        index_synonyms=1
+        index_stopwords=0
+        index_synonyms=0
         language_code_prefix = re.compile('[a-zA-Z][a-zA-Z]:')
 
         #header
@@ -138,7 +137,6 @@ class Parser:
             else :
                 if not data['src_position'] : data['src_position'] = line_number + 1
                 if line[0]=="#":
-                    index_comm+=1
                     data['comment'].append(self.normalizing(line,"en"))
                 elif 'stopword' in line:
                     id = "stopwords:"+str(index_stopwords)
