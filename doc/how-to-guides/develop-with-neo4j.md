@@ -19,15 +19,15 @@ If you want to **destroy** neo4j data, simply use `docker-compose rm -sf neo4j` 
 [^vol_name]: (it may have another name, look at what `docker volume list|grep neo4j-data`) gives you.
 
 
-## importing data
+## Importing data into Neo4J database
 
-### import sample data
+### Import sample data
 
 We have a `backend/sample/test-neo4j.json` file to load sample data in the database for developers.
 
 To load it:
 
-* ensure your nep4j database is launched:
+* ensure your neo4j database is launched:
   ```bash
   docker-compose up -d neo4j
   ```
@@ -54,9 +54,10 @@ To load it:
   (hint: after connecting the database, on the right click on the "*" node types to have a beautiful graph)
 
 
-### from a generic file
+### From a generic file
 
-If you want to import data, the file needs to be placed inside the `neo4j/import` folder.
+Note that if you want to import some other data, (eg for a specific test of Neo4J capabilities), 
+the file needs to be placed inside the `neo4j/import` folder.
 
 Then see [neo4j documentation on importing data](https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4jlabs-pluginsneo4j.com) but you can run the simpler command:
 ```
