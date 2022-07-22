@@ -33,6 +33,8 @@ You must be able to query the database on it's relations, but also on nodes prop
        (with preceding comment lines)
     1. the first lines, up to the first *meaningful line*
        (but preceding comment lines) is the *header*
+    1. the last lines, after the last *meaningful line* in the file
+       is the *footer*
     1. other blocks must contains at least one *entry line*.
        We call them *entry blocks*
 1. entry lines are composed of the `LC:` header,
@@ -134,24 +136,37 @@ Looking at `%string_normalization_for_lang`.
 
 ## Harvest data
 
-1. store the header in a node with id `__header__`
-2. store each block of *stopwords line* in a node with id `stopwords:IDX` where `IDX` is the number of preceding *stopwords lines* in the file, and store inside:
-   * every tag and tagid with language code included
-3. store each block of *global synonyms line* in a node with id `synonyms:IDX` where `IDX` is the number of preceding *global synonyms lines* in the file, , and store inside:
-   * every tag and tagid with language code included
+1. store the header in a node with id `__header__` and label TEXT
+1. store the footer in a node with id `__footer__` and label TEXT
+2. store each block of *stopwords line* in a node with id `stopwords:IDX`
+   and label STOPWORDS,
+   where `IDX` is the number of preceding *stopwords lines* in the file
+3. store each block of *global synonyms line*
+   in a node with id `synonyms:IDX`
+   and label SYNONYMS,
+   where `IDX` is the number of preceding *global synonyms lines* 
+   in the file
 2. For each entry block, create a node with id `LC:canonical_tagid`
+   and lable ENTRY
    store inside:
-   * every *property value* (a simple json)
-   * every *parent tag* with their *tagid*, language code included (this is temporary)
-   * every *tags*, with their *tagid*, language code included
+   * every *property value* in an attribute named prop_PROP_NAME_LC
+   * temporarily store every *parent tag* with their *tagid*,
+     language code included (you can remove it after link creations)
+
+For every node but header and footer, store:
+* tags_LC stores a list of tag for language LC
+* tags_ids_LC stores a list of tag for language LC
+
+Note that synonyms and stopwords only have one language, while entry block may have several.
 
 For every node, also store:
-* a specific `block_index` property which stores the number of blocks before this one in the file
-* a specific `block_subindex` property which is always 0
-  (such that if we want to insert a new block beneath this block,
-  later on,
-  we could insert it with same block_index but block_subindex of 1)
 * preceding *comments lines* in a `preceeding_lines` property
+
+We also add a `is_before` link between nodes, to keep order in which nodes where found in the file.
+* `__header__` should only have one outgoing `is_before` relation
+* `__footer__` should only have one incoming `is_before` relation
+* every other node should have exactly one incoming and one outgoing `is_before` relation
+
 
 ## Create extended synonyms
 
