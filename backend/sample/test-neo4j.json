@@ -3,7 +3,7 @@
         {
             "labels": ["TEXT"],
             "id": "__header__",
-            "preceeding_lines": ["# test taxonomy"]
+            "preceding_lines": ["# test taxonomy"]
         },
         {
             "labels": ["STOPWORDS"],
@@ -21,8 +21,8 @@
         {
             "labels": ["SYNONYMS"],
             "id": "synonyms:1",
-            "tags_fr": ["fr:fruit de la passion", "maracuja", "passion"],
-            "tags_ids_fr": ["fr:fruit-passion", "maracuja", "passion"],
+            "tags_fr": ["fruit de la passion", "maracuja", "passion"],
+            "tags_ids_fr": ["fruit-passion", "maracuja", "passion"],
             "preceding_lines" : []
         },
         {
