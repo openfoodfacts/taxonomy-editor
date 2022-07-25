@@ -45,6 +45,8 @@ async def shutdown():
     session.close()
     driver.close()
 
+# Get methods
+
 @app.get("/", status_code=status.HTTP_200_OK)
 async def hello():
     return {"message": "Hello user! Tip: open /docs or /redoc for documentation"}
@@ -56,6 +58,18 @@ async def pong(response: Response):
     """
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
+
+@app.get("/nodesfull")
+async def findAllNodes(response: Response):
+    """
+    Get all nodes within taxonomy
+    """
+    query = """
+        MATCH (n) RETURN n
+    """
+    result = session.run(query)
+    allNodes = [record for record in result]
+    return allNodes
 
 @app.get("/entry/{entry}")
 async def findOneEntry(response: Response, entry: str):
@@ -159,6 +173,8 @@ async def findFooter(response: Response):
     footer = [record for record in result]
     return footer
 
+# Put methods 
+
 @app.put("/edit/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
@@ -175,6 +191,44 @@ async def editEntry(request: Request, entry: str):
             RETURN n
         """
         result = session.run(query, {"id": entry, "value": incomingData[key]})
+    updatedEntry = [record for record in result]
+    return updatedEntry
+
+@app.put("/edit/synonym/{synonym}")
+async def editSynonyms(request: Request, synonym: str):
+    """
+    Editing a synonym in a taxonomy.
+    New key-value pairs can be added, old key-value pairs can be updated.
+    URL will be of format '/edit/synonym/<id>'
+    """
+    incomingData = await request.json()
+    result = None
+    for key in incomingData.keys():
+        query = f"""
+            MATCH (n:SYNONYMS) WHERE n.id = $id
+            SET n.{key} = $value
+            RETURN n
+        """
+        result = session.run(query, {"id": synonym, "value": incomingData[key]})
+    updatedEntry = [record for record in result]
+    return updatedEntry
+
+@app.put("/edit/stopword/{stopword}")
+async def editStopwords(request: Request, stopword: str):
+    """
+    Editing a stopword in a taxonomy.
+    New key-value pairs can be added, old key-value pairs can be updated.
+    URL will be of format '/edit/stopword/<id>'
+    """
+    incomingData = await request.json()
+    result = None
+    for key in incomingData.keys():
+        query = f"""
+            MATCH (n:STOPWORDS) WHERE n.id = $id
+            SET n.{key} = $value
+            RETURN n
+        """
+        result = session.run(query, {"id": stopword, "value": incomingData[key]})
     updatedEntry = [record for record in result]
     return updatedEntry
 
@@ -213,3 +267,4 @@ async def editFooter(incomingData: Footer):
     result = session.run(query)
     updatedFooter = [record for record in result]
     return updatedFooter
+
