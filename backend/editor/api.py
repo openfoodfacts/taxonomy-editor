@@ -1,10 +1,12 @@
 from datetime import datetime
+from typing import List, Optional
 from neo4j import GraphDatabase
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
 
@@ -81,7 +83,7 @@ async def findAllEntries(response: Response):
     return allEntries
 
 @app.get("/synonym/{synonym}")
-async def findOneEntry(response: Response, synonym: str):
+async def findOneSynonym(response: Response, synonym: str):
     """
     Get synonym corresponding to id within taxonomy
     """
@@ -106,7 +108,7 @@ async def findAllSynonyms(response: Response):
     return allSyononyms
 
 @app.get("/stopword/{stopword}")
-async def findOneEntry(response: Response, stopword: str):
+async def findOneStopword(response: Response, stopword: str):
     """
     Get stopword corresponding to id within taxonomy
     """
@@ -130,6 +132,33 @@ async def findAllStopwords(response: Response):
     allStopwords = [record for record in result]
     return allStopwords
 
+
+@app.get("/header")
+async def findHeader(response: Response):
+    """
+    Get __header__ within taxonomy
+    """
+    query = """
+        MATCH (n:TEXT) WHERE n.id = "__header__"
+        RETURN n
+    """
+    result = session.run(query)
+    header = [record for record in result]
+    return header
+
+@app.get("/footer")
+async def findFooter(response: Response):
+    """
+    Get __footer__ within taxonomy
+    """
+    query = """
+        MATCH (n:TEXT) WHERE n.id = "__footer__"
+        RETURN n
+    """
+    result = session.run(query)
+    footer = [record for record in result]
+    return footer
+
 @app.put("/edit/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
@@ -148,3 +177,39 @@ async def editEntry(request: Request, entry: str):
         result = session.run(query, {"id": entry, "value": incomingData[key]})
     updatedEntry = [record for record in result]
     return updatedEntry
+
+class Header(BaseModel):
+    preceding_lines: List
+
+@app.put("/edit/header")
+async def editHeader(incomingData: Header):
+    """
+    Editing the __header__ in a taxonomy.
+    """
+    convertedData = incomingData.dict()
+    query = f"""
+        MATCH (n:TEXT) WHERE n.id = "__header__"
+        SET n.preceding_lines = {str(convertedData['preceding_lines'])}
+        RETURN n
+    """
+    result = session.run(query)
+    updatedHeader = [record for record in result]
+    return updatedHeader
+
+class Footer(BaseModel):
+    preceding_lines: List
+
+@app.put("/edit/footer")
+async def editFooter(incomingData: Footer):
+    """
+    Editing the __footer__ in a taxonomy.
+    """
+    convertedData = incomingData.dict()
+    query = f"""
+        MATCH (n:TEXT) WHERE n.id = "__footer__"
+        SET n.preceding_lines = {str(convertedData['preceding_lines'])}
+        RETURN n
+    """
+    result = session.run(query)
+    updatedFooter = [record for record in result]
+    return updatedFooter
