@@ -210,8 +210,8 @@ async def editSynonyms(request: Request, synonym: str):
             RETURN n
         """
         result = session.run(query, {"id": synonym, "value": incomingData[key]})
-    updatedEntry = [record for record in result]
-    return updatedEntry
+    updatedSynonym = [record for record in result]
+    return updatedSynonym
 
 @app.put("/edit/stopword/{stopword}")
 async def editStopwords(request: Request, stopword: str):
@@ -229,8 +229,8 @@ async def editStopwords(request: Request, stopword: str):
             RETURN n
         """
         result = session.run(query, {"id": stopword, "value": incomingData[key]})
-    updatedEntry = [record for record in result]
-    return updatedEntry
+    updatedStopword = [record for record in result]
+    return updatedStopword
 
 class Header(BaseModel):
     preceding_lines: List
