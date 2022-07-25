@@ -147,7 +147,7 @@ Looking at `%string_normalization_for_lang`.
    where `IDX` is the number of preceding *global synonyms lines* 
    in the file
 2. For each entry block, create a node with id `LC:canonical_tagid`
-   and lable ENTRY
+   and label ENTRY
    store inside:
    * every *property value* in an attribute named prop_PROP_NAME_LC
    * temporarily store every *parent tag* with their *tagid*,
@@ -155,12 +155,14 @@ Looking at `%string_normalization_for_lang`.
 
 For every node but header and footer, store:
 * tags_LC stores a list of tag for language LC
-* tags_ids_LC stores a list of tag for language LC
+* tags_ids_LC stores a list of tagids for language LC
 
 Note that synonyms and stopwords only have one language, while entry block may have several.
 
 For every node, also store:
-* preceding *comments lines* in a `preceeding_lines` property
+* preceding *comments lines* in a `preceding_lines` property
+* the start of the entry block in a property `src_position`. First line is 1.
+  Comments (aka `preceding_lines`) are not accounted as block start, but for footer and header.
 
 We also add a `is_before` link between nodes, to keep order in which nodes where found in the file.
 * `__header__` should only have one outgoing `is_before` relation

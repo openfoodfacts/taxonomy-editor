@@ -3,27 +3,31 @@
         {
             "labels": ["TEXT"],
             "id": "__header__",
-            "preceeding_lines": ["# test taxonomy"]
+            "preceding_lines": ["# test taxonomy"],
+            "src_position": 1
         },
         {
             "labels": ["STOPWORDS"],
             "id": "stopwords:0",
             "tags_fr": ["aux","au","de","le","du","la","a","et"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 3
         },
         {
             "labels": ["SYNONYMS"],
             "id": "synonyms:0",
             "tags_en": ["passion fruit", "passionfruit"],
             "tags_ids_en": ["passion-fruit", "passionfruit"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 5
         },
         {
             "labels": ["SYNONYMS"],
             "id": "synonyms:1",
-            "tags_fr": ["fr:fruit de la passion", "maracuja", "passion"],
-            "tags_ids_fr": ["fr:fruit-passion", "maracuja", "passion"],
-            "preceding_lines" : []
+            "tags_fr": ["fruit de la passion", "maracuja", "passion"],
+            "tags_ids_fr": ["fruit-passion", "maracuja", "passion"],
+            "preceding_lines" : [],
+            "src_position": 7
         },
         {
             "labels": ["ENTRY"],
@@ -32,7 +36,8 @@
             "tags_ids_en":["yogurts", "yoghurts"],
             "tags_fr": ["yaourts", "yoghourts", "yogourts"],
             "tags_ids_fr": ["yaourts", "yoghourts", "yogourts"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 9
         },
         {
             "labels": ["ENTRY"],
@@ -41,7 +46,8 @@
             "tags_ids_en":["banana-yogurts"],
             "tags_fr": ["yaourts à la banane"],
             "tags_ids_fr": ["yaourts-banane"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 12
         },
         {
             "labels": ["ENTRY"],
@@ -50,14 +56,16 @@
             "tags_ids_en":["passion-fruit-yogurts"],
             "tags_fr": ["yaourts au fruit de la passion"],
             "tags_ids_fr": ["yaourts-fruit-passion"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 16
         },
         {
             "labels": ["ENTRY"],
             "id": "fr:yaourts-fruit-passion-alleges",
             "tags_fr": ["yaourts au fruit de la passion allégés"],
             "tags_ids_fr": ["yaourts-fruit-passion-alleges"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 20
         },
         {
             "labels": ["ENTRY"],
@@ -66,7 +74,8 @@
             "tags_ids_en": ["meat"],
             "prop_vegan_en": "no",
             "prop_carbon_footprint_fr_foodges_value_fr": "10",
-            "preceding_lines": ["# meat", ""]
+            "preceding_lines": ["# meat", ""],
+            "src_position": 25
         },
         {
             "labels": ["ENTRY"],
@@ -74,26 +83,30 @@
             "tags_en": ["fake-meat"],
             "tags_ids_en": ["fake-meat"],
             "prop_vegan_en": "yes",
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 29
         },
         {
             "labels": ["ENTRY"],
             "id": "en:fake-stuff",
             "tags_en": ["fake-stuff"],
             "tags_ids_en": ["fake-stuff"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 33
         },
         {
             "labels": ["ENTRY"],
             "id": "en:fake-duck-meat",
             "tags_en": ["fake-duck-meat"],
             "tags_ids_en": ["fake-duck-meat"],
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 35
         },
         {
             "labels": ["TEXT"],
             "id": "__footer__",
-            "preceding_lines" : []
+            "preceding_lines" : [],
+            "src_position": 37
         }
     ],
     "relations": [
