@@ -1,12 +1,5 @@
-from datetime import datetime
-from typing import List, Optional
-from neo4j import GraphDatabase
-
-# FastAPI
-from fastapi import FastAPI, status, Response, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from dependencies import *
+from entries import *
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
 
@@ -32,18 +25,14 @@ async def startup():
     """
     Initialize Neo4J database
     """
-    global driver, session
-    uri = "bolt://localhost:7687"
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
+    initialize_db()
 
 @app.on_event("shutdown")
 async def shutdown():
     """
     Close session and driver of Neo4J database
     """
-    session.close()
-    driver.close()
+    shutdown_db()
 
 # Get methods
 
@@ -64,11 +53,8 @@ async def findAllNodes(response: Response):
     """
     Get all nodes within taxonomy
     """
-    query = """
-        MATCH (n) RETURN n
-    """
-    result = session.run(query)
-    allNodes = [record for record in result]
+    result = get_all_nodes("")
+    allNodes = list(result)
     return allNodes
 
 @app.get("/entry/{entry}")
@@ -76,12 +62,12 @@ async def findOneEntry(response: Response, entry: str):
     """
     Get entry corresponding to id within taxonomy
     """
-    query = """
-        MATCH (n:ENTRY) WHERE n.id = $id 
-        RETURN n
-    """
-    result = session.run(query, {"id": entry})
-    oneEntry = [record for record in result]
+    result = get_nodes("ENTRY", entry)
+    oneEntry = list(result)
+
+    if len(oneEntry) == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    
     return oneEntry
 
 @app.get("/entriesfull")
@@ -89,11 +75,8 @@ async def findAllEntries(response: Response):
     """
     Get all entries within taxonomy
     """
-    query = """
-        MATCH (n:ENTRY) RETURN n
-    """
-    result = session.run(query)
-    allEntries = [record for record in result]
+    result = get_all_nodes("ENTRY")
+    allEntries = list(result)
     return allEntries
 
 @app.get("/synonym/{synonym}")
@@ -101,12 +84,12 @@ async def findOneSynonym(response: Response, synonym: str):
     """
     Get synonym corresponding to id within taxonomy
     """
-    query = """
-        MATCH (n:SYNONYMS) WHERE n.id = $id 
-        RETURN n
-    """
-    result = session.run(query, {"id": synonym})
-    oneSynonym = [record for record in result]
+    result = get_nodes("SYNONYMS", synonym)
+    oneSynonym = list(result)
+
+    if len(oneSynonym) == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
     return oneSynonym
 
 @app.get("/synonymsfull")
@@ -114,11 +97,8 @@ async def findAllSynonyms(response: Response):
     """
     Get all synonyms within taxonomy
     """
-    query = """
-        MATCH (n:SYNONYMS) RETURN n
-    """
-    result = session.run(query)
-    allSyononyms = [record for record in result]
+    result = get_all_nodes("SYNONYMS")
+    allSyononyms = list(result)
     return allSyononyms
 
 @app.get("/stopword/{stopword}")
@@ -126,12 +106,12 @@ async def findOneStopword(response: Response, stopword: str):
     """
     Get stopword corresponding to id within taxonomy
     """
-    query = """
-        MATCH (n:STOPWORDS) WHERE n.id = $id 
-        RETURN n
-    """
-    result = session.run(query, {"id": stopword})
-    oneStopword = [record for record in result]
+    result = get_nodes("STOPWORDS", stopword)
+    oneStopword = list(result)
+    
+    if len(oneStopword) == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
     return oneStopword
 
 @app.get("/stopwordsfull")
@@ -139,25 +119,17 @@ async def findAllStopwords(response: Response):
     """
     Get all stopwords within taxonomy
     """
-    query = """
-        MATCH (n:STOPWORDS) RETURN n
-    """
-    result = session.run(query)
-    allStopwords = [record for record in result]
+    result = get_all_nodes("STOPWORDS")
+    allStopwords = list(result)
     return allStopwords
-
 
 @app.get("/header")
 async def findHeader(response: Response):
     """
     Get __header__ within taxonomy
     """
-    query = """
-        MATCH (n:TEXT) WHERE n.id = "__header__"
-        RETURN n
-    """
-    result = session.run(query)
-    header = [record for record in result]
+    result = get_marginals("__header__")
+    header = list(result)
     return header
 
 @app.get("/footer")
@@ -165,12 +137,8 @@ async def findFooter(response: Response):
     """
     Get __footer__ within taxonomy
     """
-    query = """
-        MATCH (n:TEXT) WHERE n.id = "__footer__"
-        RETURN n
-    """
-    result = session.run(query)
-    footer = [record for record in result]
+    result = get_marginals("__footer__")
+    footer = list(result)
     return footer
 
 # Put methods 
@@ -183,15 +151,8 @@ async def editEntry(request: Request, entry: str):
     URL will be of format '/edit/<id>'
     """
     incomingData = await request.json()
-    result = None
-    for key in incomingData.keys():
-        query = f"""
-            MATCH (n:ENTRY) WHERE n.id = $id
-            SET n.{key} = $value
-            RETURN n
-        """
-        result = session.run(query, {"id": entry, "value": incomingData[key]})
-    updatedEntry = [record for record in result]
+    result = update_nodes("ENTRY", entry, incomingData)
+    updatedEntry = list(result)
     return updatedEntry
 
 @app.put("/edit/synonym/{synonym}")
@@ -202,15 +163,8 @@ async def editSynonyms(request: Request, synonym: str):
     URL will be of format '/edit/synonym/<id>'
     """
     incomingData = await request.json()
-    result = None
-    for key in incomingData.keys():
-        query = f"""
-            MATCH (n:SYNONYMS) WHERE n.id = $id
-            SET n.{key} = $value
-            RETURN n
-        """
-        result = session.run(query, {"id": synonym, "value": incomingData[key]})
-    updatedSynonym = [record for record in result]
+    result = update_nodes("SYNONYMS", synonym, incomingData)
+    updatedSynonym = list(result)
     return updatedSynonym
 
 @app.put("/edit/stopword/{stopword}")
@@ -221,50 +175,24 @@ async def editStopwords(request: Request, stopword: str):
     URL will be of format '/edit/stopword/<id>'
     """
     incomingData = await request.json()
-    result = None
-    for key in incomingData.keys():
-        query = f"""
-            MATCH (n:STOPWORDS) WHERE n.id = $id
-            SET n.{key} = $value
-            RETURN n
-        """
-        result = session.run(query, {"id": stopword, "value": incomingData[key]})
-    updatedStopword = [record for record in result]
+    result = update_nodes("STOPWORDS", stopword, incomingData)
+    updatedStopword = list(result)
     return updatedStopword
-
-class Header(BaseModel):
-    preceding_lines: List
 
 @app.put("/edit/header")
 async def editHeader(incomingData: Header):
     """
     Editing the __header__ in a taxonomy.
     """
-    convertedData = incomingData.dict()
-    query = f"""
-        MATCH (n:TEXT) WHERE n.id = "__header__"
-        SET n.preceding_lines = {str(convertedData['preceding_lines'])}
-        RETURN n
-    """
-    result = session.run(query)
-    updatedHeader = [record for record in result]
+    result = update_marginals("__header__", incomingData)
+    updatedHeader = list(result)
     return updatedHeader
-
-class Footer(BaseModel):
-    preceding_lines: List
 
 @app.put("/edit/footer")
 async def editFooter(incomingData: Footer):
     """
     Editing the __footer__ in a taxonomy.
     """
-    convertedData = incomingData.dict()
-    query = f"""
-        MATCH (n:TEXT) WHERE n.id = "__footer__"
-        SET n.preceding_lines = {str(convertedData['preceding_lines'])}
-        RETURN n
-    """
-    result = session.run(query)
-    updatedFooter = [record for record in result]
+    result = update_marginals("__footer__", incomingData)
+    updatedFooter = list(result)
     return updatedFooter
-

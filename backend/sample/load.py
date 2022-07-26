@@ -66,7 +66,7 @@ def confirm_clean_db(session):
     response = input(f"You are about to remove {num_nodes} nodes, are you sure ? [y/N]: ")
     return response.lower() in ("y", "yes")
 
-
+    
 if __name__ == "__main__":
     options = get_options()
     session = get_session(options.url)
