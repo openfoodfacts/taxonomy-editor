@@ -12,30 +12,28 @@ class Parser:
     def create_headernode(self,header):
         """ create the node for the header """
         query = """
-                CREATE (n{id: '__header__' })
+                CREATE (n:TEXT {id: '__header__' })
                 SET n.preceding_lines= $header
                 SET n.src_position= 0
-                SET n.labels = ["TEXT"]
             """
         self.session.run(query,header=header)
 
     def create_node(self,data):
         """ run the query to create the node with data dictionary """
-        id_query = """
-            CREATE (n{id: $id })
+        position_query = """
             SET n.previous_block = $previous_block
             SET n.preceding_lines= $comment
             SET n.src_position= $src_position
         """
         entry_query=""
         if data['id'] == '__footer__':
-            label_query = ' SET n.labels = ["TEXT"] \n'
+            id_query = " CREATE (n:TEXT {id: $id }) \n "
         elif data['id'].startswith('synonyms'):
-            label_query = ' SET n.labels = ["SYNONYMS"] \n'
+            id_query = " CREATE (n:SYNONYMS {id: $id }) \n "
         elif data['id'].startswith('stopwords') :
-            label_query = ' SET n.labels = ["STOPWORDS"] \n'
+            id_query = " CREATE (n:STOPWORDS {id: $id }) \n "
         else :
-            label_query = ' SET n.labels = ["ENTRY"] \n'
+            id_query = " CREATE (n:ENTRY {id: $id }) \n "
             if data['parent_tag'] : entry_query += " SET n.parents = $parent_tag \n"
             for key in data :
                 if key.startswith('prop_') :
@@ -45,7 +43,7 @@ class Parser:
             if key.startswith('tags_') :
                 entry_query += " SET n." + key + " = $" + key + '\n'
 
-        query = id_query + entry_query + label_query
+        query = id_query + entry_query + position_query
         self.session.run(query,data,previous_block=self.previous_block,)
 
     def normalized_filename(self,filename):
@@ -86,6 +84,17 @@ class Parser:
         line = line.strip("-")
         return line
 
+    def remove_stopwords(self,lc,words):
+        """to remove the stopwords that were read at the beginning of the file"""
+        if lc in self.stopwords :
+            words_to_remove = self.stopwords[lc]
+            new_words = []
+            for word in words.split("-"):
+                if word not in words_to_remove :
+                    new_words.append(word)
+            return ("-").join(new_words)
+        else : return words
+
     def add_line(self,line):
         """to get a normalized string but keeping the language code "lc:" and the "," (commas) separators , used to add an id to entries and to add a parent tag"""
         if len(line)<=3:return self.normalizing(line)
@@ -119,7 +128,7 @@ class Parser:
         if not data['id'] :
             data['id']=id
         else :
-            raise FileError(line_number)
+            raise DuplicateIDError(line_number)
         return data
 
     def header_harvest(self,filename):
@@ -127,11 +136,19 @@ class Parser:
         h=0
         header=[]
         for _,line in self.file_iter(filename):
-            if line :
-                if line[0]=='#':
-                    header.append(line)
-                else : break
+            if not(line) or line[0]=='#':
+                header.append(line)
+            else : break
             h+=1
+
+        # we don't want to eat the comments of the next block and it remove the last separating line
+        l = len(header)
+        for i in range(l):
+            if header[l-1-i]:
+                h-=1
+            else : break
+            header.pop()
+
         return header,h
 
     def harvest(self,filename):
@@ -139,6 +156,7 @@ class Parser:
         index_stopwords=0
         index_synonyms=0
         language_code_prefix = re.compile('[a-zA-Z][a-zA-Z]:')
+        self.stopwords=dict()
 
         #header
         header,next_line = self.header_harvest(filename)
@@ -166,12 +184,15 @@ class Parser:
                         index_stopwords+=1
                         lc,value=self.get_lc_value(line[10:])
                         data['tags_' + lc] = value
+                        self.stopwords[lc]=value
                     elif 'synonym' in line:
                         id = "synonyms:"+str(index_synonyms)
                         data=self.set_data_id(data,id,line_number)
                         index_synonyms+=1
                         line=line[9:]
+                        tags = [words.strip() for words in line[3:].split(",")]
                         lc,value=self.get_lc_value(line)
+                        data['tags_' + lc] = tags
                         data['tags_ids_' + lc] = value
                     elif line[0]=="<":
                         data['parent_tag'].append(self.add_line(line[1:]))
@@ -185,7 +206,7 @@ class Parser:
                         line = line.replace(' ,',', ').replace(', ',' , ')
                         for word in line.split(' , '):
                             tags_list.append(word.strip())
-                            word_normalized=self.normalizing(word,lang)
+                            word_normalized=self.remove_stopwords(lang,self.normalizing(word,lang))
                             tagsids_list.append(word_normalized)
                         data['tags_' + lang] = tags_list
                         data['tags_ids_'+lang]=tagsids_list
@@ -249,7 +270,7 @@ class Parser:
         self.create_nodes(filename)
         self.create_child_link()
         self.create_previous_link()
-        self.delete_used_properties()
+        # self.delete_used_properties()
 
 if __name__ == "__main__":
     use=Parser()
