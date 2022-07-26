@@ -1,5 +1,22 @@
-from dependencies import *
-from entries import *
+"""
+Taxonomy Editor Backend API
+"""
+# Required imports
+#------------------------------------------------------------------------#
+from datetime import datetime
+
+# FastAPI
+from fastapi import FastAPI, status, Response, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+# Data model imports
+from models import Header, Footer
+
+# DB helper imports
+from entries import initialize_db, shutdown_db
+from entries import get_all_nodes, get_nodes
+from entries import update_nodes
+#------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
 
@@ -23,16 +40,27 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     """
-    Initialize Neo4J database
+    Initialize database
     """
     initialize_db()
 
 @app.on_event("shutdown")
 async def shutdown():
     """
-    Close session and driver of Neo4J database
+    Shutdown database
     """
     shutdown_db()
+
+# Helper methods
+
+def check_single(id):
+    """
+    Helper function for checking whether there is only a single entry with given id
+    """
+    if len(id) == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    elif len(id) > 1:
+        raise HTTPException(status_code=500, detail="Multiple entries found")
 
 # Get methods
 
@@ -65,10 +93,9 @@ async def findOneEntry(response: Response, entry: str):
     result = get_nodes("ENTRY", entry)
     oneEntry = list(result)
 
-    if len(oneEntry) == 0:
-        raise HTTPException(status_code=404, detail="Entry not found")
+    check_single(oneEntry)
     
-    return oneEntry
+    return oneEntry[0]
 
 @app.get("/entriesfull")
 async def findAllEntries(response: Response):
@@ -87,10 +114,9 @@ async def findOneSynonym(response: Response, synonym: str):
     result = get_nodes("SYNONYMS", synonym)
     oneSynonym = list(result)
 
-    if len(oneSynonym) == 0:
-        raise HTTPException(status_code=404, detail="Entry not found")
+    check_single(oneSynonym)
 
-    return oneSynonym
+    return oneSynonym[0]
 
 @app.get("/synonymsfull")
 async def findAllSynonyms(response: Response):
@@ -109,10 +135,9 @@ async def findOneStopword(response: Response, stopword: str):
     result = get_nodes("STOPWORDS", stopword)
     oneStopword = list(result)
     
-    if len(oneStopword) == 0:
-        raise HTTPException(status_code=404, detail="Entry not found")
+    check_single(oneStopword)
 
-    return oneStopword
+    return oneStopword[0]
 
 @app.get("/stopwordsfull")
 async def findAllStopwords(response: Response):
@@ -128,18 +153,18 @@ async def findHeader(response: Response):
     """
     Get __header__ within taxonomy
     """
-    result = get_marginals("__header__")
+    result = get_nodes("TEXT", "__header__")
     header = list(result)
-    return header
+    return header[0]
 
 @app.get("/footer")
 async def findFooter(response: Response):
     """
     Get __footer__ within taxonomy
     """
-    result = get_marginals("__footer__")
+    result = get_nodes("TEXT", "__footer__")
     footer = list(result)
-    return footer
+    return footer[0]
 
 # Post methods
 
@@ -184,7 +209,8 @@ async def editHeader(incomingData: Header):
     """
     Editing the __header__ in a taxonomy.
     """
-    result = update_marginals("__header__", incomingData)
+    convertedData = incomingData.dict()
+    result = update_nodes("TEXT", "__header__", convertedData)
     updatedHeader = list(result)
     return updatedHeader
 
@@ -193,6 +219,7 @@ async def editFooter(incomingData: Footer):
     """
     Editing the __footer__ in a taxonomy.
     """
-    result = update_marginals("__footer__", incomingData)
+    convertedData = incomingData.dict()
+    result = update_nodes("TEXT", "__footer__", convertedData)
     updatedFooter = list(result)
     return updatedFooter

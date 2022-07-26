@@ -1,3 +1,6 @@
+"""
+Required pydantic models for API
+"""
 from typing import List
 from pydantic import BaseModel
 

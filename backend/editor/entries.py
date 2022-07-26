@@ -1,28 +1,41 @@
-from dependencies import *
+"""
+Database helper functions for API
+"""
+import re
+from neo4j import GraphDatabase         # Interface with Neo4J
+import settings                         # Neo4J settings
 
 def initialize_db():
+    """
+    Initialize Neo4J database
+    """
     global driver, session
     uri = settings.uri
     driver = GraphDatabase.driver(uri)
     session = driver.session()
 
 def shutdown_db():
+    """
+    Close session and driver of Neo4J database
+    """
     session.close()
     driver.close()
 
 def get_all_nodes(label):
-    if label == "":
-        query = f"""
-            MATCH (n) RETURN n
-        """
-    else:
-        query = f"""
-            MATCH (n:{label}) RETURN n
-        """
+    """
+    Helper function used for getting all nodes with/without given label
+    """
+    qualifier = f":{label}" if label else ""
+    query = f"""
+        MATCH (n{qualifier}) RETURN n
+    """
     result = session.run(query)
     return result
 
 def get_nodes(label, entry):
+    """
+    Helper function used for getting the node with given id and label
+    """
     query = f"""
         MATCH (n:{label}) WHERE n.id = $id 
         RETURN n
@@ -30,31 +43,23 @@ def get_nodes(label, entry):
     result = session.run(query, {"id": entry})
     return result
 
-def get_marginals(id):
-    query = f"""
-        MATCH (n:TEXT) WHERE n.id = $id
-        RETURN n
-    """
-    result = session.run(query, {"id": id})
-    return result
-
 def update_nodes(label, entry, incomingData):
-    query = f"""MATCH (n:{label}) WHERE n.id = $id"""
-
-    for (key,value) in incomingData.items():
-        query += f"""\nSET n.{key} = {value}\n"""
-
-    query += f"""RETURN n"""
-
-    result = session.run(query, {"id": entry})
-    return result
-
-def update_marginals(id, incomingData):
-    convertedData = incomingData.dict()
-    query = f"""
-        MATCH (n:TEXT) WHERE n.id = $id
-        SET n.preceding_lines = {str(convertedData['preceding_lines'])}
-        RETURN n
     """
-    result = session.run(query, {"id": id})
+    Helper function used for updation of node with given id and label
+    """
+    # Sanity check keys
+    for key in incomingData.keys():
+        if not re.match(r"^\w+$", key) or key == "id":
+            raise ValueError("Invalid key: %s", key)
+    
+    # Build query
+    query = [f"""MATCH (n:{label}) WHERE n.id = $id"""]
+
+    for key in incomingData.keys():
+        query.append(f"""\nSET n.{key} = ${key}\n""")
+
+    query.append(f"""RETURN n""")
+
+    params = dict(incomingData, id=entry)
+    result = session.run(" ".join(query), params)
     return result
