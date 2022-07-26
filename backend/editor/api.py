@@ -141,9 +141,9 @@ async def findFooter(response: Response):
     footer = list(result)
     return footer
 
-# Put methods 
+# Post methods
 
-@app.put("/edit/entry/{entry}")
+@app.post("/edit/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
     Editing an entry in a taxonomy.
@@ -155,7 +155,7 @@ async def editEntry(request: Request, entry: str):
     updatedEntry = list(result)
     return updatedEntry
 
-@app.put("/edit/synonym/{synonym}")
+@app.post("/edit/synonym/{synonym}")
 async def editSynonyms(request: Request, synonym: str):
     """
     Editing a synonym in a taxonomy.
@@ -167,7 +167,7 @@ async def editSynonyms(request: Request, synonym: str):
     updatedSynonym = list(result)
     return updatedSynonym
 
-@app.put("/edit/stopword/{stopword}")
+@app.post("/edit/stopword/{stopword}")
 async def editStopwords(request: Request, stopword: str):
     """
     Editing a stopword in a taxonomy.
@@ -179,7 +179,7 @@ async def editStopwords(request: Request, stopword: str):
     updatedStopword = list(result)
     return updatedStopword
 
-@app.put("/edit/header")
+@app.post("/edit/header")
 async def editHeader(incomingData: Header):
     """
     Editing the __header__ in a taxonomy.
@@ -188,7 +188,7 @@ async def editHeader(incomingData: Header):
     updatedHeader = list(result)
     return updatedHeader
 
-@app.put("/edit/footer")
+@app.post("/edit/footer")
 async def editFooter(incomingData: Footer):
     """
     Editing the __footer__ in a taxonomy.
