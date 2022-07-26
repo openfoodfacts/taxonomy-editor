@@ -24,18 +24,18 @@ def get_all_nodes(label):
 
 def get_nodes(label, entry):
     query = f"""
-        MATCH (n:{label}) WHERE n.id = {entry} 
+        MATCH (n:{label}) WHERE n.id = $id 
         RETURN n
     """
-    result = session.run(query)
+    result = session.run(query, {"id": entry})
     return result
 
 def get_marginals(id):
     query = f"""
-        MATCH (n:TEXT) WHERE n.id = {id}
+        MATCH (n:TEXT) WHERE n.id = $id
         RETURN n
     """
-    result = session.run(query)
+    result = session.run(query, {"id": id})
     return result
 
 def update_nodes(label, entry, incomingData):
