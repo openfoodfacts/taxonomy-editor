@@ -10,12 +10,12 @@ from fastapi import FastAPI, status, Response, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 # Data model imports
-from models import Header, Footer
+from .models import Header, Footer
 
 # DB helper imports
-from entries import initialize_db, shutdown_db
-from entries import get_all_nodes, get_nodes
-from entries import update_nodes
+from .entries import initialize_db, shutdown_db
+from .entries import get_all_nodes, get_nodes
+from .entries import update_nodes
 #------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
