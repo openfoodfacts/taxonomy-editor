@@ -51,8 +51,7 @@ To load it:
 
   note that if you want to see more options, you can use `--help`
 * enjoy it in the neo4j browser at http://localhost:7474
-  (hint: after connecting the database, on the right click on the "*" node types to have a beautiful graph)
-
+  (Hint: After connecting the database, on the left click on the "*" node types to visualize a beautiful graph of the loaded taxonomy)
 
 ### From a generic file
 

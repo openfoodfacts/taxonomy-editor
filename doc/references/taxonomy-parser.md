@@ -161,8 +161,10 @@ Note that synonyms and stopwords only have one language, while entry block may h
 
 For every node, also store:
 * preceding *comments lines* in a `preceding_lines` property
+* the start of the entry block in a property `src_position`. First line is 1.
+  Comments (aka `preceding_lines`) are not accounted as block start, but for footer and header.
 
-We also add a `is_before` link between nodes, to keep order in which nodes where found in the file.
+We also add a `is_before` link between nodes, to keep order in which nodes were found in the file.
 * `__header__` should only have one outgoing `is_before` relation
 * `__footer__` should only have one incoming `is_before` relation
 * every other node should have exactly one incoming and one outgoing `is_before` relation
