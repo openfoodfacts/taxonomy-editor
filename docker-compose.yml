@@ -21,6 +21,16 @@ services:
       - ./neo4j/import:/var/lib/neo4j/import
       # directory for neo4j imports
     command: neo4j
+  api:
+    restart: ${RESTART_POLICY:-no}
+    build: backend
+    environment:
+      NEO4J_URI: "bolt://neo4j:7687"
+    ports:
+      - 127.0.0.1:80:80
+    volumes:
+      # for now we are in development mode, mount backend directory as code/
+      - ./backend/editor:/code/editor
 
 volumes:
   neo4j-data:
