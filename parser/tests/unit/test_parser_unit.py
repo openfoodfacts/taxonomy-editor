@@ -2,11 +2,13 @@ import pytest
 import re
 
 #importing parser
+import pathlib
 import os,sys
-script_dir = os.path.dirname( '__file__' )
-mymodule_dir = os.path.join( script_dir, '..' , '..', 'parser')
-sys.path.append( mymodule_dir )
-import parser
+from openfoodfacts_taxonomy_parser import parser
+
+# taxonomy in text format : test.txt
+TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
+
 
 def test_normalized_filename():
     x = parser.Parser()
@@ -20,7 +22,7 @@ def test_normalized_filename():
 
 def test_fileiter():
     x=parser.Parser()
-    file=x.file_iter("test.txt")
+    file=x.file_iter(TEST_TAXONOMY_TXT)
     language_code_prefix = re.compile('[a-zA-Z][a-zA-Z]:')
     for counter,(_,line) in enumerate(file):
         assert line == '' or line[0]=="#" or ":" in line

@@ -1,6 +1,6 @@
 from neo4j import GraphDatabase
 import re,unicodedata,unidecode
-from exception import *
+from .exception import DuplicateIDError
 
 
 class Parser:
@@ -61,7 +61,9 @@ class Parser:
                 line = line.rstrip()
                 #replace ’ (typographique quote) to simple quote '
                 line = line.replace("’", "'")
-                ''' replace commas that have no space around by a lower comma character and do the same for escaped comma (preceded by a \) (to distinguish them from commas acting as tags separators) '''
+                # replace commas that have no space around by a lower comma character 
+                # and do the same for escaped comma (preceded by a \) 
+                # (to distinguish them from commas acting as tags separators)
                 line = re.sub(r"(\d),(\d)", r"\1‚\2", line)
                 line = re.sub(r"\\,", "\\‚", line)
                 #removes parenthesis for roman numeral

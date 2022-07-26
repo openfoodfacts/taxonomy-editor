@@ -1,11 +1,13 @@
 import pytest
 
 #importing parser
+import pathlib
 import os,sys
-script_dir = os.path.dirname( '__file__' )
-mymodule_dir = os.path.join( script_dir, '..' , '..', 'openfoodfacts_taxonomy_parser')
-sys.path.append( mymodule_dir )
-import parser
+from openfoodfacts_taxonomy_parser import parser
+
+# taxonomy in text format : test.txt
+TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test")
+
 
 @pytest.fixture
 def new_session():
@@ -20,7 +22,7 @@ def test_calling(new_session):
     x=new_session
 
     #Create node test
-    x.create_nodes("test")
+    x.create_nodes(TEST_TAXONOMY_TXT)
 
     # total number of nodes
     query="MATCH (n) RETURN COUNT(*)"
