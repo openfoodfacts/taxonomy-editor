@@ -2,7 +2,6 @@ import pytest
 
 #importing parser
 import pathlib
-import os,sys
 from openfoodfacts_taxonomy_parser import parser
 
 # taxonomy in text format : test.txt
