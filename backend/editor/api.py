@@ -76,7 +76,7 @@ async def pong(response: Response):
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
 
-@app.get("/nodesfull")
+@app.get("/nodes")
 async def findAllNodes(response: Response):
     """
     Get all nodes within taxonomy
@@ -97,7 +97,7 @@ async def findOneEntry(response: Response, entry: str):
     
     return oneEntry[0]
 
-@app.get("/entriesfull")
+@app.get("/entry")
 async def findAllEntries(response: Response):
     """
     Get all entries within taxonomy
@@ -118,7 +118,7 @@ async def findOneSynonym(response: Response, synonym: str):
 
     return oneSynonym[0]
 
-@app.get("/synonymsfull")
+@app.get("/synonym")
 async def findAllSynonyms(response: Response):
     """
     Get all synonyms within taxonomy
@@ -139,7 +139,7 @@ async def findOneStopword(response: Response, stopword: str):
 
     return oneStopword[0]
 
-@app.get("/stopwordsfull")
+@app.get("/stopword")
 async def findAllStopwords(response: Response):
     """
     Get all stopwords within taxonomy
