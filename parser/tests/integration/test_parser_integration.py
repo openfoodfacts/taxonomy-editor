@@ -34,10 +34,10 @@ def test_calling(new_session):
     query="MATCH (n) WHERE n.id = '__header__' RETURN n.preceding_lines"
     result = x.session.run(query)
     header = result.value()[0]
-    assert header == ['# test-taxonomy']
+    assert header == ['# test taxonomy']
 
     # comment / preceding lines correctly added
-    query="MATCH (n) WHERE size(n.preceding_lines)>0 RETURN n.id,n.preceding_lines"
+    query="MATCH (n:ENTRY) WHERE size(n.preceding_lines)>0 RETURN n.id,n.preceding_lines"
     result = x.session.run(query)
     nodes = result.values()
     number_of_nodes = len(nodes)
@@ -61,7 +61,7 @@ def test_calling(new_session):
     expected_pairs = [
             ['en:banana-yogurts', 'en:yogurts'],
             ['en:passion-fruit-yogurts', 'en:yogurts'],
-            ['fr:yaourts-au-fruit-de-la-passion-alleges', 'en:passion-fruit-yogurts'],
+            ['fr:yaourts-fruit-passion-alleges', 'en:passion-fruit-yogurts'],
             ['en:fake-meat', 'en:meat'],
             ['en:fake-duck-meat', 'en:fake-meat'],
             ['en:fake-duck-meat', 'en:fake-stuff']

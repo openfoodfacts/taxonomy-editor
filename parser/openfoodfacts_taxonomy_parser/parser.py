@@ -104,7 +104,7 @@ class Parser:
             lang=line[:2]
             new_line=lang+":"
             for word in line[3:].split(","):
-                new_line+=self.normalizing(word,lang)+','
+                new_line+=self.remove_stopwords( lang,self.normalizing(word,lang) ) +','
             new_line=new_line[:-1]
             return new_line
 
@@ -146,10 +146,9 @@ class Parser:
         # we don't want to eat the comments of the next block and it remove the last separating line
         l = len(header)
         for i in range(l):
-            if header[l-1-i]:
+            if header.pop():
                 h-=1
             else : break
-            header.pop()
 
         return header,h
 
