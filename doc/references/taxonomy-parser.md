@@ -150,6 +150,7 @@ Looking at `%string_normalization_for_lang`.
    and label ENTRY
    store inside:
    * every *property value* in an attribute named prop_PROP_NAME_LC
+   * a *main_language* property which contains the LC of the canonical_tagid (aka entry id)
    * temporarily store every *parent tag* with their *tagid*,
      language code included (you can remove it after link creations)
 
