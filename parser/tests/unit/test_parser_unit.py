@@ -1,7 +1,5 @@
 import pytest
 import re
-
-#importing parser
 import pathlib
 from openfoodfacts_taxonomy_parser import parser
 
@@ -39,8 +37,4 @@ def test_normalizing():
     assert normal_text == "random-language-with-accents"
     normal_text=x.normalizing(text,"de")
     assert normal_text == "randôm-languäge-wìth-àccénts"
-
-
-if __name__ == "__main__":
-    pytest.main()
 

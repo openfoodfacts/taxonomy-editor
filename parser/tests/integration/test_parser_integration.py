@@ -1,6 +1,4 @@
 import pytest
-
-#importing parser
 import pathlib
 from openfoodfacts_taxonomy_parser import parser
 
@@ -67,7 +65,31 @@ def test_calling(new_session):
     ]
     for pair in created_pairs:
         assert pair in expected_pairs
+    
+    # Order link test
+    x.create_previous_link()
+    query="MATCH (n)-[:is_followed_by]->(p) RETURN n.id, p.id "
+    results = x.session.run(query)
+    created_pairs = results.values()
 
+    # correct number of links
+    number_of_links = len(created_pairs)
+    assert number_of_links == 12
 
-if __name__ == "__main__":
-    pytest.main()
+    # correctly linked
+    expected_pairs = [
+        ['__header__', 'stopwords:0'],
+        ['stopwords:0', 'synonyms:0'],
+        ['synonyms:0', 'synonyms:1'],
+        ['synonyms:1', 'en:yogurts'],
+        ['en:yogurts', 'en:banana-yogurts'],
+        ['en:banana-yogurts', 'en:passion-fruit-yogurts'],
+        ['en:passion-fruit-yogurts', 'fr:yaourts-fruit-passion-alleges'],
+        ['fr:yaourts-fruit-passion-alleges', 'en:meat'],
+        ['en:meat', 'en:fake-meat'],
+        ['en:fake-meat', 'en:fake-stuff'],
+        ['en:fake-stuff', 'en:fake-duck-meat'],
+        ['en:fake-duck-meat', '__footer__']
+    ]
+    for pair in created_pairs:
+        assert pair in expected_pairs

@@ -14,7 +14,7 @@ class Parser:
         query = """
                 CREATE (n:TEXT {id: '__header__' })
                 SET n.preceding_lines= $header
-                SET n.src_position= 0
+                SET n.src_position= 1
             """
         self.session.run(query,header=header)
 
@@ -33,7 +33,7 @@ class Parser:
         elif data['id'].startswith('stopwords') :
             id_query = " CREATE (n:STOPWORDS {id: $id }) \n "
         else :
-            id_query = " CREATE (n:ENTRY {id: $id }) \n "
+            id_query = " CREATE (n:ENTRY {id: $id , main_language : $main_language}) \n "
             if data['parent_tag'] : entry_query += " SET n.parents = $parent_tag \n"
             for key in data :
                 if key.startswith('prop_') :
@@ -69,7 +69,7 @@ class Parser:
                 #removes parenthesis for roman numeral
                 line = re.sub(r"\(([ivx]+)\)", r"\1", line, flags=re.I)
                 yield line_number,line
-        yield 0,"" #to end the last entry if not ended, line number useless
+        yield line_number,"" #to end the last entry if not ended
 
     def normalizing(self,line,lang="default"):
         """normalize a string depending of the language code lang"""
@@ -113,13 +113,14 @@ class Parser:
         lc=line[:2]
         new_line=[]
         for word in line[3:].split(","):
-            new_line.append(self.normalizing(word,lc))
+            new_line.append( self.remove_stopwords( lc,self.normalizing(word,lc) ) )
         return lc,new_line
 
     def new_node_data(self):
         """ To create an empty dictionary that will be used to create node """
         data = {
                 "id" : '',
+                "main_language" : '',
                 "comment" : [],
                 "parent_tag" : [],
                 'src_position' : 0,
@@ -144,8 +145,7 @@ class Parser:
             h+=1
 
         # we don't want to eat the comments of the next block and it remove the last separating line
-        l = len(header)
-        for i in range(l):
+        for i in range(len(header)):
             if header.pop():
                 h-=1
             else : break
@@ -177,8 +177,11 @@ class Parser:
             else :
                 if line[0]=="#":
                     data['comment'].append(line)
+                    if not data['src_position'] : # to get the position of the footer if it's not empty
+                        data['src_position'] = line_number + 1
                 else :
-                    if not data['src_position'] : data['src_position'] = line_number + 1
+                    if len(data)==5 and not data['parent_tag'] : # the begining of the entry
+                        data['src_position'] = line_number + 1
                     if 'stopword' in line:
                         id = "stopwords:"+str(index_stopwords)
                         data=self.set_data_id(data,id,line_number)
@@ -198,7 +201,9 @@ class Parser:
                     elif line[0]=="<":
                         data['parent_tag'].append(self.add_line(line[1:]))
                     elif language_code_prefix.match(line):
-                        if not data['id'] : data['id']=self.add_line(line.split(',',1)[0])
+                        if not data['id'] :
+                            data['id']=self.add_line(line.split(',',1)[0])
+                            data['main_language']=data['id'][:2] # first 2 characters are language code
                         #add tags and tagsid
                         lang,line=line.split(':',1)
                         tags_list=[]
@@ -215,6 +220,7 @@ class Parser:
                         property_name,lc, property_value = line.split(":",2)
                         data['prop_'+ property_name + '_' + lc]= property_value
         data['id'] = '__footer__'
+        if not data['src_position'] : data['src_position'] = line_number + 1 # to get position if it's empty
         yield data
 
     def create_nodes(self,filename):
@@ -259,7 +265,6 @@ class Parser:
                 MATCH(c) WHERE c.id= $child_id
                 CREATE (c)-[:is_child_of]->(p)
             """
-            print(query)
             self.session.run(query , parent_id=parent_id , tagsid=tags_ids , child_id=child_id)
 
     def delete_used_properties(self):
