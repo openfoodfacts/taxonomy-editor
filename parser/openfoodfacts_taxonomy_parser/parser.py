@@ -21,7 +21,7 @@ class Parser:
     def create_node(self,data):
         """ run the query to create the node with data dictionary """
         position_query = """
-            SET n.previous_block = $previous_block
+            SET n.is_before = $is_before
             SET n.preceding_lines= $comment
             SET n.src_position= $src_position
         """
@@ -44,7 +44,7 @@ class Parser:
                 entry_query += " SET n." + key + " = $" + key + '\n'
 
         query = id_query + entry_query + position_query
-        self.session.run(query,data,previous_block=self.previous_block,)
+        self.session.run(query,data,is_before=self.is_before,)
 
     def normalized_filename(self,filename):
         """ add the .txt extension if it is missing in the filename """
@@ -162,7 +162,7 @@ class Parser:
         #header
         header,next_line = self.header_harvest(filename)
         yield header
-        self.previous_block = '__header__'
+        self.is_before = '__header__'
 
         #the other entries
         data = self.new_node_data()
@@ -170,7 +170,7 @@ class Parser:
             if line == '': # can be the end of an block or just 2 line separators, file_iter() always end with ''
                 if data['id']: # to be sure that the entry block ends
                     yield data #another function will use this dictionary to create a node
-                    self.previous_block = data['id']
+                    self.is_before = data['id']
                     data = self.new_node_data()
                 else : # there was more than 1 separator line or maybe a comment block before an entry
                     data['comment'].append(line)
@@ -232,16 +232,16 @@ class Parser:
             self.create_node(entry)
 
     def create_previous_link(self):
-        query="MATCH(n) WHERE exists(n.previous_block) return n.id,n.previous_block"
+        query="MATCH(n) WHERE exists(n.is_before) return n.id,n.is_before"
         results = self.session.run(query)
         for result in results:
             id=result["n.id"]
-            id_previous=result['n.previous_block']
+            id_previous=result['n.is_before']
 
             query="""
                 MATCH(n) WHERE n.id = $id
                 MATCH(p) WHERE p.id= $id_previous
-                CREATE (p)-[:is_followed_by]->(n)
+                CREATE (p)-[:is_before]->(n)
             """
             self.session.run(query , id=id , id_previous=id_previous)
 
@@ -268,7 +268,7 @@ class Parser:
             self.session.run(query , parent_id=parent_id , tagsid=tags_ids , child_id=child_id)
 
     def delete_used_properties(self):
-        query = "MATCH (n) SET n.previous_block = null, n.parents = null"
+        query = "MATCH (n) SET n.is_before = null, n.parents = null"
         self.session.run(query)
 
     def __call__(self,filename):

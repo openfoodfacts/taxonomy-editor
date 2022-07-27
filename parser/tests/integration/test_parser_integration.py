@@ -68,7 +68,7 @@ def test_calling(new_session):
     
     # Order link test
     x.create_previous_link()
-    query="MATCH (n)-[:is_followed_by]->(p) RETURN n.id, p.id "
+    query="MATCH (n)-[:is_before]->(p) RETURN n.id, p.id "
     results = x.session.run(query)
     created_pairs = results.values()
 
