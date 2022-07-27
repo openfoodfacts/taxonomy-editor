@@ -1,0 +1,140 @@
+{
+    "nodes": [
+        {
+            "labels": ["TEXT"],
+            "id": "__header__",
+            "preceding_lines": ["# test taxonomy"],
+            "src_position": 1
+        },
+        {
+            "labels": ["STOPWORDS"],
+            "id": "stopwords:0",
+            "tags_fr": ["aux","au","de","le","du","la","a","et"],
+            "preceding_lines" : [],
+            "src_position": 3
+        },
+        {
+            "labels": ["SYNONYMS"],
+            "id": "synonyms:0",
+            "tags_en": ["passion fruit", "passionfruit"],
+            "tags_ids_en": ["passion-fruit", "passionfruit"],
+            "preceding_lines" : [],
+            "src_position": 5
+        },
+        {
+            "labels": ["SYNONYMS"],
+            "id": "synonyms:1",
+            "tags_fr": ["fruit de la passion", "maracuja", "passion"],
+            "tags_ids_fr": ["fruit-passion", "maracuja", "passion"],
+            "preceding_lines" : [],
+            "src_position": 7
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:yogurts",
+            "main_language": "en",
+            "tags_en":["yogurts", "yoghurts"],
+            "tags_ids_en":["yogurts", "yoghurts"],
+            "tags_fr": ["yaourts", "yoghourts", "yogourts"],
+            "tags_ids_fr": ["yaourts", "yoghourts", "yogourts"],
+            "preceding_lines" : [],
+            "src_position": 9
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:banana-yogurts",
+            "main_language": "en",
+            "tags_en":["banana yogurts"],
+            "tags_ids_en":["banana-yogurts"],
+            "tags_fr": ["yaourts à la banane"],
+            "tags_ids_fr": ["yaourts-banane"],
+            "preceding_lines" : [],
+            "src_position": 12
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:passion-fruit-yogurts",
+            "main_language": "en",
+            "tags_en":["Passion fruit yogurts"],
+            "tags_ids_en":["passion-fruit-yogurts"],
+            "tags_fr": ["yaourts au fruit de la passion"],
+            "tags_ids_fr": ["yaourts-fruit-passion"],
+            "preceding_lines" : [],
+            "src_position": 16
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "fr:yaourts-fruit-passion-alleges",
+            "main_language": "fr",
+            "tags_fr": ["yaourts au fruit de la passion allégés"],
+            "tags_ids_fr": ["yaourts-fruit-passion-alleges"],
+            "preceding_lines" : [],
+            "src_position": 20
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:meat",
+            "main_language": "en",
+            "tags_en": ["meat"],
+            "tags_ids_en": ["meat"],
+            "prop_vegan_en": "no",
+            "prop_carbon_footprint_fr_foodges_value_fr": "10",
+            "preceding_lines": ["# meat", ""],
+            "src_position": 25
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:fake-meat",
+            "main_language": "en",
+            "tags_en": ["fake-meat"],
+            "tags_ids_en": ["fake-meat"],
+            "prop_vegan_en": "yes",
+            "preceding_lines" : [],
+            "src_position": 29
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:fake-stuff",
+            "main_language": "en",
+            "tags_en": ["fake-stuff"],
+            "tags_ids_en": ["fake-stuff"],
+            "preceding_lines" : [],
+            "src_position": 33
+        },
+        {
+            "labels": ["ENTRY"],
+            "id": "en:fake-duck-meat",
+            "main_language": "en",
+            "tags_en": ["fake-duck-meat"],
+            "tags_ids_en": ["fake-duck-meat"],
+            "preceding_lines" : [],
+            "src_position": 35
+        },
+        {
+            "labels": ["TEXT"],
+            "id": "__footer__",
+            "preceding_lines" : [],
+            "src_position": 37
+        }
+    ],
+    "relations": [
+        {"is_child_of": ["en:banana-yogurts", "en:yogurts"]},
+        {"is_child_of": ["en:passion-fruit-yogurts", "en:yogurts"]},
+        {"is_child_of": ["fr:yaourts-fruit-passion-alleges", "en:passion-fruit-yogurts"]},
+        {"is_child_of": ["en:fake-meat", "en:meat"]},
+        {"is_child_of": ["en:fake-duck-meat", "en:fake-stuff"]},
+        {"is_child_of": ["en:fake-duck-meat", "en:fake-meat"]},
+        {"is_before": ["__header__", "stopwords:0"]},
+        {"is_before": ["stopwords:0", "synonyms:0"]},
+        {"is_before": ["synonyms:0", "synonyms:1"]},
+        {"is_before": ["synonyms:1", "en:yogurts"]},
+        {"is_before": ["en:yogurts", "en:banana-yogurts"]},
+        {"is_before": ["en:banana-yogurts", "en:passion-fruit-yogurts"]},
+        {"is_before": ["en:passion-fruit-yogurts", "fr:yaourts-fruit-passion-alleges"]},
+        {"is_before": ["fr:yaourts-fruit-passion-alleges", "en:meat"]},
+        {"is_before": ["en:meat", "en:fake-meat"]},
+        {"is_before": ["en:fake-meat", "en:fake-stuff"]},
+        {"is_before": ["en:fake-stuff", "en:fake-duck-meat"]},
+        {"is_before": ["en:fake-duck-meat", "__footer__"]}
+    ]
+}
