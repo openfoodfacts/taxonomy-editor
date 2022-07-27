@@ -168,43 +168,43 @@ async def findFooter(response: Response):
 
 # Post methods
 
-@app.post("/edit/entry/{entry}")
+@app.post("/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
     Editing an entry in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
-    URL will be of format '/edit/<id>'
+    URL will be of format '/entry/<id>'
     """
     incomingData = await request.json()
     result = update_nodes("ENTRY", entry, incomingData)
     updatedEntry = list(result)
     return updatedEntry
 
-@app.post("/edit/synonym/{synonym}")
+@app.post("/synonym/{synonym}")
 async def editSynonyms(request: Request, synonym: str):
     """
     Editing a synonym in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
-    URL will be of format '/edit/synonym/<id>'
+    URL will be of format '/synonym/<id>'
     """
     incomingData = await request.json()
     result = update_nodes("SYNONYMS", synonym, incomingData)
     updatedSynonym = list(result)
     return updatedSynonym
 
-@app.post("/edit/stopword/{stopword}")
+@app.post("/stopword/{stopword}")
 async def editStopwords(request: Request, stopword: str):
     """
     Editing a stopword in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
-    URL will be of format '/edit/stopword/<id>'
+    URL will be of format '/stopword/<id>'
     """
     incomingData = await request.json()
     result = update_nodes("STOPWORDS", stopword, incomingData)
     updatedStopword = list(result)
     return updatedStopword
 
-@app.post("/edit/header")
+@app.post("/header")
 async def editHeader(incomingData: Header):
     """
     Editing the __header__ in a taxonomy.
@@ -214,7 +214,7 @@ async def editHeader(incomingData: Header):
     updatedHeader = list(result)
     return updatedHeader
 
-@app.post("/edit/footer")
+@app.post("/footer")
 async def editFooter(incomingData: Footer):
     """
     Editing the __footer__ in a taxonomy.
