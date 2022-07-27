@@ -6,7 +6,7 @@ We provide a simple docker-compose for neo4j to have it available on your localh
 
 ## Launching the database
 
-To start the database, simply type `docker-compose up` at root of project.
+To start the database, simply type `docker-compose up neo4j` at root of project.
 
 The neo4j database will be available at `localhost:7687` using bolt protocol.
 
@@ -52,7 +52,6 @@ To load it:
   note that if you want to see more options, you can use `--help`
 * enjoy it in the neo4j browser at http://localhost:7474
   (Hint: After connecting the database, on the left click on the "*" node types to visualize a beautiful graph of the loaded taxonomy)
-
 
 ### From a generic file
 

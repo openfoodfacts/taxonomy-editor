@@ -12,25 +12,15 @@ Docker provides an isolated environment, very close to a Virtual Machine. This e
 - [Install Docker Compose](https://docs.docker.com/compose/install/)
 - [Enable command-line completion](https://docs.docker.com/compose/completion/)
 
-## Setup
-### Go to the backend directory:
 
-```console
-cd taxonomy-editor/backend
-```
+## Setup with docker-compose
 
-### Build a Docker image:
+Go to root directory.
 
-```console
-docker build -t taxonomy-editor-api .
-```
+Launch `docker-compose up`
 
-### Start the Docker container:
-```console
-docker run -d --name taxonomy-editor-api-container -p 80:80 taxonomy-editor-api
-```
+## Check it!
 
-### Check it!
 You should be able to check it in your Docker container's URL, for example: http://127.0.0.1/ or http://192.168.99.100/ (or equivalent, using your Docker host)
 
 You will see the following:
