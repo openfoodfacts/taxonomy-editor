@@ -122,14 +122,14 @@ class Parser:
 
     def add_line(self, line):
         """to get a normalized string but keeping the language code "lc:" , used for id and parent tag"""
-        lc, line = line.split(":",1)
+        lc, line = line.split(":", 1)
         new_line = lc + ":"
         new_line += self.remove_stopwords(lc, self.normalizing(line, lc))
         return new_line
 
     def get_lc_value(self, line):
         """to get the language code "lc" and a list of normalized values"""
-        lc, line = line.split(":",1)
+        lc, line = line.split(":", 1)
         new_line = []
         for word in line.split(","):
             new_line.append(self.remove_stopwords(lc, self.normalizing(word, lc)))
@@ -172,17 +172,17 @@ class Parser:
                 break
 
         return header, h
-    
+
     def entry_end(self, line, data):
         """Return True if the block ended"""
-        if 'stopwords' in line or 'synonyms' in line or not line:
+        if "stopwords" in line or "synonyms" in line or not line:
             # can be the end of an block or just 2 line separators,
             # file_iter() always end with ''
             if data["id"]:  # to be sure that it's an end
                 return True
         return False
-    
-    def remove_separating_line(self,data):
+
+    def remove_separating_line(self, data):
         if data["preceding_lines"]:
             if "synonyms" in data["id"]:
                 if "stopwords" in self.is_before:
@@ -210,14 +210,14 @@ class Parser:
         data = self.new_node_data()
         for line_number, line in self.file_iter(filename, next_line):
             # yield data if block ended
-            if self.entry_end(line,data):
+            if self.entry_end(line, data):
                 data = self.remove_separating_line(data)
                 yield data  # another function will use this dictionary to create a node
                 self.is_before = data["id"]
                 data = self.new_node_data()
-            
+
             # harvest the line
-            if not(line) or line[0] == "#":
+            if not (line) or line[0] == "#":
                 data["preceding_lines"].append(line)
                 if not data[
                     "src_position"
@@ -256,9 +256,7 @@ class Parser:
                     lang, line = line.split(":", 1)
                     tags_list = []
                     tagsids_list = []
-                    # differentiate separating commas from non-separating commas by changing separators to " , "
-                    line = line.replace(" ,", ", ").replace(", ", " , ")
-                    for word in line.split(" , "):
+                    for word in line.split(","):
                         tags_list.append(word.strip())
                         word_normalized = self.remove_stopwords(
                             lang, self.normalizing(word, lang)
