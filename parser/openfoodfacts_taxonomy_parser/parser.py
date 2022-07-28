@@ -124,7 +124,7 @@ class Parser:
         """to get a normalized string but keeping the language code "lc:" , used for id and parent tag"""
         lang = line[:2]
         new_line = lang + ":"
-        new_line += self.remove_stopwords(lang, self.normalizing(line, lang))
+        new_line += self.remove_stopwords(lang, self.normalizing(line[3:], lang))
         return new_line
 
     def get_lc_value(self, line):
