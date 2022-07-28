@@ -122,16 +122,16 @@ class Parser:
 
     def add_line(self, line):
         """to get a normalized string but keeping the language code "lc:" , used for id and parent tag"""
-        lang = line[:2]
-        new_line = lang + ":"
-        new_line += self.remove_stopwords(lang, self.normalizing(line[3:], lang))
+        lc, line = line.split(":",1)
+        new_line = lc + ":"
+        new_line += self.remove_stopwords(lc, self.normalizing(line, lc))
         return new_line
 
     def get_lc_value(self, line):
         """to get the language code "lc" and a list of normalized values"""
-        lc = line[:2]
+        lc, line = line.split(":",1)
         new_line = []
-        for word in line[3:].split(","):
+        for word in line.split(","):
             new_line.append(self.remove_stopwords(lc, self.normalizing(word, lc)))
         return lc, new_line
 
@@ -172,12 +172,33 @@ class Parser:
                 break
 
         return header, h
+    
+    def entry_end(self, line, data):
+        """Return True if the block ended"""
+        if 'stopwords' in line or 'synonyms' in line or not line:
+            # can be the end of an block or just 2 line separators,
+            # file_iter() always end with ''
+            if data["id"]:  # to be sure that it's an end
+                return True
+        return False
+    
+    def remove_separating_line(self,data):
+        if data["preceding_lines"]:
+            if "synonyms" in data["id"]:
+                if "stopwords" in self.is_before:
+                    data["preceding_lines"].pop(0)
+            elif "stopwords" in data["id"]:
+                if "synonyms" in self.is_before:
+                    data["preceding_lines"].pop(0)
+            else:
+                data["preceding_lines"].pop(0)
+        return data
 
     def harvest(self, filename):
         """Transform data from file to dictionary"""
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z]:")
+        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?:")
         self.stopwords = dict()
 
         # header
@@ -188,69 +209,68 @@ class Parser:
         # the other entries
         data = self.new_node_data()
         for line_number, line in self.file_iter(filename, next_line):
-            if line == "":
-                # can be the end of an block or just 2 line separators,
-                # file_iter() always end with ''
-                if data["id"]:  # to be sure that the entry block ends
-                    yield data  # another function will use this dictionary to create a node
-                    self.is_before = data["id"]
-                    data = self.new_node_data()
-                else:  # there was more than 1 separator line or maybe a comment block before an entry
-                    data["preceding_lines"].append(line)
+            # yield data if block ended
+            if self.entry_end(line,data):
+                data = self.remove_separating_line(data)
+                yield data  # another function will use this dictionary to create a node
+                self.is_before = data["id"]
+                data = self.new_node_data()
+            
+            # harvest the line
+            if not(line) or line[0] == "#":
+                data["preceding_lines"].append(line)
+                if not data[
+                    "src_position"
+                ]:  # to get the position of the footer if it's not empty
+                    data["src_position"] = line_number + 1
             else:
-                if line[0] == "#":
-                    data["preceding_lines"].append(line)
-                    if not data[
-                        "src_position"
-                    ]:  # to get the position of the footer if it's not empty
-                        data["src_position"] = line_number + 1
+                if (
+                    len(data) == 5 and not data["parent_tag"]
+                ):  # the beginning of the entry
+                    data["src_position"] = line_number + 1
+                if "stopword" in line:
+                    id = "stopwords:" + str(index_stopwords)
+                    data = self.set_data_id(data, id, line_number)
+                    index_stopwords += 1
+                    lc, value = self.get_lc_value(line[10:])
+                    data["tags_" + lc] = value
+                    self.stopwords[lc] = value
+                elif "synonym" in line:
+                    id = "synonyms:" + str(index_synonyms)
+                    data = self.set_data_id(data, id, line_number)
+                    index_synonyms += 1
+                    line = line[9:]
+                    tags = [words.strip() for words in line[3:].split(",")]
+                    lc, value = self.get_lc_value(line)
+                    data["tags_" + lc] = tags
+                    data["tags_ids_" + lc] = value
+                elif line[0] == "<":
+                    data["parent_tag"].append(self.add_line(line[1:]))
+                elif language_code_prefix.match(line):
+                    if not data["id"]:
+                        data["id"] = self.add_line(line.split(",", 1)[0])
+                        data["main_language"] = data["id"][
+                            :2
+                        ]  # first 2 characters are language code
+                    # add tags and tagsid
+                    lang, line = line.split(":", 1)
+                    tags_list = []
+                    tagsids_list = []
+                    # differentiate separating commas from non-separating commas by changing separators to " , "
+                    line = line.replace(" ,", ", ").replace(", ", " , ")
+                    for word in line.split(" , "):
+                        tags_list.append(word.strip())
+                        word_normalized = self.remove_stopwords(
+                            lang, self.normalizing(word, lang)
+                        )
+                        tagsids_list.append(word_normalized)
+                    data["tags_" + lang] = tags_list
+                    data["tags_ids_" + lang] = tagsids_list
                 else:
-                    if (
-                        len(data) == 5 and not data["parent_tag"]
-                    ):  # the beginning of the entry
-                        data["src_position"] = line_number + 1
-                    if "stopword" in line:
-                        id = "stopwords:" + str(index_stopwords)
-                        data = self.set_data_id(data, id, line_number)
-                        index_stopwords += 1
-                        lc, value = self.get_lc_value(line[10:])
-                        data["tags_" + lc] = value
-                        self.stopwords[lc] = value
-                    elif "synonym" in line:
-                        id = "synonyms:" + str(index_synonyms)
-                        data = self.set_data_id(data, id, line_number)
-                        index_synonyms += 1
-                        line = line[9:]
-                        tags = [words.strip() for words in line[3:].split(",")]
-                        lc, value = self.get_lc_value(line)
-                        data["tags_" + lc] = tags
-                        data["tags_ids_" + lc] = value
-                    elif line[0] == "<":
-                        data["parent_tag"].append(self.add_line(line[1:]))
-                    elif language_code_prefix.match(line):
-                        if not data["id"]:
-                            data["id"] = self.add_line(line.split(",", 1)[0])
-                            data["main_language"] = data["id"][
-                                :2
-                            ]  # first 2 characters are language code
-                        # add tags and tagsid
-                        lang, line = line.split(":", 1)
-                        tags_list = []
-                        tagsids_list = []
-                        # differentiate separating commas from non-separating commas by changing separators to " , "
-                        line = line.replace(" ,", ", ").replace(", ", " , ")
-                        for word in line.split(" , "):
-                            tags_list.append(word.strip())
-                            word_normalized = self.remove_stopwords(
-                                lang, self.normalizing(word, lang)
-                            )
-                            tagsids_list.append(word_normalized)
-                        data["tags_" + lang] = tags_list
-                        data["tags_ids_" + lang] = tagsids_list
-                    else:
-                        property_name, lc, property_value = line.split(":", 2)
-                        data["prop_" + property_name + "_" + lc] = property_value
+                    property_name, lc, property_value = line.split(":", 2)
+                    data["prop_" + property_name + "_" + lc] = property_value
         data["id"] = "__footer__"
+        data["preceding_lines"].pop(0)
         if not data["src_position"]:
             data["src_position"] = line_number + 1  # to get position if it's empty
         yield data
