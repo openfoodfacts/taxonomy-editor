@@ -1,4 +1,3 @@
-import pytest
 import re
 import pathlib
 from openfoodfacts_taxonomy_parser import parser

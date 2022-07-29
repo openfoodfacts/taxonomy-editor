@@ -5,49 +5,98 @@ from openfoodfacts_taxonomy_parser import parser
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test")
 
-
-@pytest.fixture
-def new_session():
-    x = parser.Parser()
+@pytest.fixture(autouse=True)
+def test_setup():
     # delete all the nodes and relations in the database
     query="MATCH (n) DETACH DELETE n"
-    x.session.run(query)
-    return x
+    parser.Parser().session.run(query)
 
-
-def test_calling(new_session):
-    x=new_session
+def test_calling():
+    test_parser = parser.Parser()
+    session = test_parser.session
 
     #Create node test
-    x.create_nodes(TEST_TAXONOMY_TXT)
+    test_parser.create_nodes(TEST_TAXONOMY_TXT)
 
     # total number of nodes
     query="MATCH (n) RETURN COUNT(*)"
-    result = x.session.run(query)
+    result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
 
     # header correctly added
     query="MATCH (n) WHERE n.id = '__header__' RETURN n.preceding_lines"
-    result = x.session.run(query)
+    result = session.run(query)
     header = result.value()[0]
     assert header == ['# test taxonomy']
 
-    # comment / preceding lines correctly added
-    query="MATCH (n:ENTRY) WHERE size(n.preceding_lines)>0 RETURN n.id,n.preceding_lines"
-    result = x.session.run(query)
-    nodes = result.values()
-    number_of_nodes = len(nodes)
-    assert number_of_nodes == 1
-    assert nodes[0][0] == 'en:meat'
-    assert nodes[0][1] == ['# meat','']
 
+    # synonyms correctly added
+    query="MATCH (n:SYNONYMS) RETURN n ORDER BY n.src_position"
+    results = session.run(query)
+    expected_synonyms = [
+        { "id" : "synonyms:0",
+        "tags_en" : ["passion fruit", "passionfruit"],
+        "tags_ids_en" : ["passion-fruit", "passionfruit"],
+        "preceding_lines" : [],
+        "src_position" : 5 },
+        { "id" : "synonyms:1",
+        "tags_fr" : ["fruit de la passion", "maracuja", "passion"],
+        "tags_ids_fr" : ["fruit-passion", "maracuja", "passion"],
+        "preceding_lines" : [""],
+        "src_position" : 7 }
+    ]
+    for i, result in enumerate(results):
+        node = result.value()
+        for key in expected_synonyms[i]:
+            assert node[key] == expected_synonyms[i][key]
+
+
+    # stopwords correctly added
+    query="MATCH (n:STOPWORDS) RETURN n"
+    results = session.run(query)
+    expected_stopwords = {
+        "id" : "stopwords:0",
+        "tags_fr" : ["aux", "au", "de", "le", "du", "la", "a", "et"],
+        "preceding_lines" : []
+    }
+    for result in results:
+        node = result.value()
+        for key in expected_stopwords:
+            assert node[key] == expected_stopwords[key]
+
+
+    # entries correctly added
+    query = """
+        MATCH (n:ENTRY) 
+        WHERE n.id='en:banana-yogurts' 
+        OR n.id='en:meat'
+        RETURN n
+        ORDER BY n.src_position
+    """
+    results = session.run(query)
+    expected_entries = [
+        { "tags_en" : ["banana yogurts"],
+        "tags_ids_en" : ["banana-yogurts"],
+        "tags_fr" : ["yaourts à la banane"],
+        "tags_ids_fr" : ["yaourts-banane"],
+        "preceding_lines" : [], },
+        {"tags_en" : ["meat"],
+        "tags_ids_en" : ["meat"],
+        "preceding_lines" : ['# meat',''],
+        "prop_vegan_en" : "no",
+        "prop_carbon_footprint_fr_foodges_value_fr" : "10" }
+    ]
+    for i, result in enumerate(results):
+        node = result.value()
+        for key in expected_entries[i]:
+            assert node[key] == expected_entries[i][key]
 
 
     #Child link test
-    x.create_child_link() # nodes already added
+    test_parser.create_child_link() # nodes already added
     query="MATCH (c)-[:is_child_of]->(p) RETURN c.id, p.id"
-    results = x.session.run(query)
+    results = session.run(query)
     created_pairs = results.values()
 
     # correct number of links
@@ -66,10 +115,11 @@ def test_calling(new_session):
     for pair in created_pairs:
         assert pair in expected_pairs
     
+
     # Order link test
-    x.create_previous_link()
+    test_parser.create_previous_link()
     query="MATCH (n)-[:is_before]->(p) RETURN n.id, p.id "
-    results = x.session.run(query)
+    results = session.run(query)
     created_pairs = results.values()
 
     # correct number of links

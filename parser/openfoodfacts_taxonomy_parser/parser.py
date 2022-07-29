@@ -110,6 +110,7 @@ class Parser:
 
     def remove_stopwords(self, lc, words):
         """to remove the stopwords that were read at the beginning of the file"""
+        # First check if this language has stopwords
         if lc in self.stopwords:
             words_to_remove = self.stopwords[lc]
             new_words = []
@@ -142,7 +143,7 @@ class Parser:
             "main_language": "",
             "preceding_lines": [],
             "parent_tag": [],
-            "src_position": 0,
+            "src_position": None,
         }
         return data
 
@@ -164,7 +165,7 @@ class Parser:
                 break
             h += 1
 
-        # we don't want to eat the comments of the next block and it remove the last separating line
+        # we don't want to eat the comments of the next block and it removes the last separating line
         for i in range(len(header)):
             if header.pop():
                 h -= 1
@@ -175,22 +176,37 @@ class Parser:
 
     def entry_end(self, line, data):
         """Return True if the block ended"""
-        if "stopwords" in line or "synonyms" in line or not line:
-            # can be the end of an block or just 2 line separators,
+        # stopwords and synonyms are one-liner, entries are separated by a blank line
+        if line.startswith("stopwords") or line.startswith("synonyms") or not line:
+            # can be the end of an block or just additional line separator,
             # file_iter() always end with ''
             if data["id"]:  # to be sure that it's an end
                 return True
         return False
 
     def remove_separating_line(self, data):
+        """
+        To remove the one separating line that is always there,
+        between synonyms part and stopwords part and before each entry
+        """
+        # first, check if there is at least one preceding line
         if data["preceding_lines"]:
-            if "synonyms" in data["id"]:
+            if data["id"].startswith("synonyms"):
+                # it's a synonyms block,
+                # if the previous block is a stopwords block,
+                # there is at least one separating line
                 if "stopwords" in self.is_before:
                     data["preceding_lines"].pop(0)
-            elif "stopwords" in data["id"]:
+
+            elif data["id"].startswith("stopwords"):
+                # it's a stopwords block,
+                # if the previous block is a synonyms block,
+                # there is at least one separating line
                 if "synonyms" in self.is_before:
                     data["preceding_lines"].pop(0)
+
             else:
+                # it's an entry block, there is always a separating line
                 data["preceding_lines"].pop(0)
         return data
 
@@ -199,7 +215,9 @@ class Parser:
         index_stopwords = 0
         index_synonyms = 0
         language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?:")
-        self.stopwords = dict()
+        self.stopwords = (
+            dict()
+        )  # it will contain a list of stopwords with their language code as key
 
         # header
         header, next_line = self.header_harvest(filename)
@@ -219,23 +237,18 @@ class Parser:
             # harvest the line
             if not (line) or line[0] == "#":
                 data["preceding_lines"].append(line)
-                if not data[
-                    "src_position"
-                ]:  # to get the position of the footer if it's not empty
-                    data["src_position"] = line_number + 1
             else:
-                if (
-                    len(data) == 5 and not data["parent_tag"]
-                ):  # the beginning of the entry
+                if not data["src_position"]:
                     data["src_position"] = line_number + 1
-                if "stopword" in line:
+                if line.startswith("stopwords"):
                     id = "stopwords:" + str(index_stopwords)
                     data = self.set_data_id(data, id, line_number)
                     index_stopwords += 1
                     lc, value = self.get_lc_value(line[10:])
                     data["tags_" + lc] = value
+                    # add the list with its lc
                     self.stopwords[lc] = value
-                elif "synonym" in line:
+                elif line.startswith("synonyms"):
                     id = "synonyms:" + str(index_synonyms)
                     data = self.set_data_id(data, id, line_number)
                     index_synonyms += 1
@@ -249,9 +262,9 @@ class Parser:
                 elif language_code_prefix.match(line):
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
-                        data["main_language"] = data["id"][
-                            :2
-                        ]  # first 2 characters are language code
+                        data["main_language"] = data["id"].split(":", 1)[
+                            0
+                        ]  # first 2 or 3 characters are language code
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
                     tags_list = []
@@ -269,8 +282,7 @@ class Parser:
                     data["prop_" + property_name + "_" + lc] = property_value
         data["id"] = "__footer__"
         data["preceding_lines"].pop(0)
-        if not data["src_position"]:
-            data["src_position"] = line_number + 1  # to get position if it's empty
+        data["src_position"] = line_number + 1 - len(data["preceding_lines"])
         yield data
 
     def create_nodes(self, filename):
