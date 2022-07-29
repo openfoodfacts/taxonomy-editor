@@ -3,7 +3,7 @@ Database helper functions for API
 """
 import re
 from neo4j import GraphDatabase         # Interface with Neo4J
-from . import settings                         # Neo4J settings
+from . import settings                  # Neo4J settings
 
 def initialize_db():
     """
