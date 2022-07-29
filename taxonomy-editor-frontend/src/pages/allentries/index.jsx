@@ -1,5 +1,5 @@
 import useFetch from "../../components/useFetch";
-import EntriesList from "./entriesList";
+import EntriesList from "./EntriesList";
 
 const Entry = () => {
     const {data: nodes, isPending, error} = useFetch('http://localhost:80/nodes');
