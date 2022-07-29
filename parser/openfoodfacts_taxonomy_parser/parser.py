@@ -190,7 +190,7 @@ class Parser:
         between synonyms part and stopwords part and before each entry
         """
         # first, check if there is at least one preceding line
-        if data["preceding_lines"]:
+        if data["preceding_lines"] and not data["preceding_lines"][0]:
             if data["id"].startswith("synonyms"):
                 # it's a synonyms block,
                 # if the previous block is a stopwords block,
@@ -215,9 +215,8 @@ class Parser:
         index_stopwords = 0
         index_synonyms = 0
         language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?:")
-        self.stopwords = (
-            dict()
-        )  # it will contain a list of stopwords with their language code as key
+        # stopwords will contain a list of stopwords with their language code as key
+        self.stopwords = {}
 
         # header
         header, next_line = self.header_harvest(filename)
@@ -262,9 +261,8 @@ class Parser:
                 elif language_code_prefix.match(line):
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
-                        data["main_language"] = data["id"].split(":", 1)[
-                            0
-                        ]  # first 2 or 3 characters are language code
+                        # first 2-3 characters before ":" are the language code
+                        data["main_language"] = data["id"].split(":", 1)[0]  
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
                     tags_list = []

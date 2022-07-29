@@ -67,6 +67,7 @@ def test_calling():
 
 
     # entries correctly added
+    # check for two of them
     query = """
         MATCH (n:ENTRY) 
         WHERE n.id='en:banana-yogurts' 
