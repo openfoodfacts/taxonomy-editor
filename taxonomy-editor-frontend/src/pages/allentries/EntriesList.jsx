@@ -6,6 +6,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
 import { useNavigate } from "react-router-dom";
 
 const EntriesList = ({ nodes, title }) => {
@@ -29,7 +31,7 @@ const EntriesList = ({ nodes, title }) => {
                         <TableRow>
                             <TableCell align="center">
                             <Typography variant="h6">
-                                Index
+                                #
                             </Typography>
                             </TableCell>
                             <TableCell align="center">
@@ -51,15 +53,19 @@ const EntriesList = ({ nodes, title }) => {
                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                 >
                                     <TableCell align="center" component="th" scope="row">
-                                        {index+1}
+                                        <Typography variant="subtitle1">
+                                            {index+1}
+                                        </Typography>
                                     </TableCell>    
                                     <TableCell align="center" component="th" scope="row">
-                                        {node[0].id}
+                                        <Typography variant="subtitle1">
+                                            {node[0].id}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell align="center" component="th" scope="row">
-                                        <Button onClick={event => handleClick(event, node[0].id) } variant="contained">
-                                            Edit
-                                        </Button>
+                                        <IconButton onClick={event => handleClick(event, node[0].id) } aria-label="edit">
+                                            <EditIcon color="primary"/>
+                                        </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))}

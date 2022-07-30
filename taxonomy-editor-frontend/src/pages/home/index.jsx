@@ -31,7 +31,7 @@ const Home = () => {
 
     return (
         <ThemeProvider theme={theme}>
-        <Container component="main" maxWidth="sm">
+        <Container component="main" maxWidth="md">
             <CssBaseline />
             <Box
             sx={{
@@ -41,14 +41,16 @@ const Home = () => {
                 alignItems: 'center',
             }}
             >
-            <img 
-                width={700} 
+            <Box
+                component="img"
                 height={140}
+                width={700}
                 src={require('../../assets/logo.png')} 
                 alt="Open Food Facts Logo" 
             />
             <Box sx={{mt: 3}} />
-            <img 
+            <Box
+                component="img" 
                 width={128} 
                 height={128}
                 src={require('../../assets/classification.png')} 
@@ -57,7 +59,7 @@ const Home = () => {
             <Typography sx={{mt: 4, mb: 4}} variant="h2">
                 Taxonomy Editor
             </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <Box component="form" onSubmit={ handleSubmit } noValidate sx={{ mt: 1 }}>
                 <Button
                 type="submit"
                 fullWidth
