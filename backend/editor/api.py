@@ -14,7 +14,7 @@ from .models import Header, Footer
 
 # DB helper imports
 from .entries import initialize_db, shutdown_db
-from .entries import get_all_nodes, get_nodes
+from .entries import get_all_nodes, get_nodes, get_children, get_parents
 from .entries import update_nodes
 #------------------------------------------------------------------------#
 
@@ -96,6 +96,26 @@ async def findOneEntry(response: Response, entry: str):
     check_single(oneEntry)
     
     return oneEntry[0]
+
+@app.get("/entry/{entry}/parents")
+async def findOneEntryParents(response: Response, entry: str):
+    """
+    Get parents for a entry corresponding to id within taxonomy
+    """
+    result = get_parents(entry)
+    oneEntryParents = list(result)
+    
+    return oneEntryParents
+
+@app.get("/entry/{entry}/children")
+async def findOneEntryChildren(response: Response, entry: str):
+    """
+    Get children for a entry corresponding to id within taxonomy
+    """
+    result = get_children(entry)
+    oneEntryChildren = list(result)
+    
+    return oneEntryChildren
 
 @app.get("/entry")
 async def findAllEntries(response: Response):

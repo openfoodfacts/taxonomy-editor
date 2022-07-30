@@ -21,7 +21,11 @@ function Copyright(props) {
 }
 
 const Home = () => {
-    const theme = createTheme();
+    const theme = createTheme({
+        typography: {
+            fontFamily : 'Plus Jakarta Sans',
+        },
+    });
     const navigate = useNavigate();
 
     const handleSubmit = (event) => {

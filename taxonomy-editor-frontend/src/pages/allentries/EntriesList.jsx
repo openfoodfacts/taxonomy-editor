@@ -1,4 +1,4 @@
-import { Button, Typography } from "@mui/material";
+import { createTheme, ThemeProvider, Typography } from "@mui/material";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,68 +12,72 @@ import { useNavigate } from "react-router-dom";
 
 const EntriesList = ({ nodes, title }) => {
     const navigate = useNavigate();
-
     const handleClick = (event, id) => {
         event.preventDefault();
         navigate('/entry/'+id);
     }
-
+    const theme = createTheme({
+        typography: {
+            fontFamily : 'Plus Jakarta Sans',
+        },
+    });
     return ( 
-        <div className="entry">
-            <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
-                List of nodes in {title} Taxonomy:
-            </Typography>
-
-            <div className="entry-preview">
-                <TableContainer sx={{ml: 2}} component={Paper}>
-                    <Table sx={{ width: 500 }}>
-                        <TableHead>
-                        <TableRow>
-                            <TableCell align="center">
-                            <Typography variant="h6">
-                                #
-                            </Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                            <Typography variant="h6">
-                                Nodes
-                            </Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                            <Typography variant="h6">
-                                Action
-                            </Typography>
-                            </TableCell>
-                        </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {nodes.map((node, index) => (
-                                <TableRow
-                                key={node[0].id}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell align="center" component="th" scope="row">
-                                        <Typography variant="subtitle1">
-                                            {index+1}
-                                        </Typography>
-                                    </TableCell>    
-                                    <TableCell align="center" component="th" scope="row">
-                                        <Typography variant="subtitle1">
-                                            {node[0].id}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center" component="th" scope="row">
-                                        <IconButton onClick={event => handleClick(event, node[0].id) } aria-label="edit">
-                                            <EditIcon color="primary"/>
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+        <ThemeProvider theme={theme}>
+            <div className="entry">
+                <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
+                    List of nodes in {title} Taxonomy:
+                </Typography>
+                <div className="entry-preview">
+                    <TableContainer sx={{ml: 2}} component={Paper}>
+                        <Table sx={{ width: 500 }}>
+                            <TableHead>
+                            <TableRow>
+                                <TableCell align="center">
+                                <Typography variant="h6">
+                                    #
+                                </Typography>
+                                </TableCell>
+                                <TableCell align="center">
+                                <Typography variant="h6">
+                                    Nodes
+                                </Typography>
+                                </TableCell>
+                                <TableCell align="center">
+                                <Typography variant="h6">
+                                    Action
+                                </Typography>
+                                </TableCell>
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {nodes.map((node, index) => (
+                                    <TableRow
+                                    key={node[0].id}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell align="center" component="th" scope="row">
+                                            <Typography variant="subtitle1">
+                                                {index+1}
+                                            </Typography>
+                                        </TableCell>    
+                                        <TableCell align="center" component="th" scope="row">
+                                            <Typography variant="subtitle1">
+                                                {node[0].id}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center" component="th" scope="row">
+                                            <IconButton onClick={event => handleClick(event, node[0].id) } aria-label="edit">
+                                                <EditIcon color="primary"/>
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </div>
             </div>
-        </div>
+        </ThemeProvider>
      );
 }
  

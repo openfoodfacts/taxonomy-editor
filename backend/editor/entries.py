@@ -43,6 +43,28 @@ def get_nodes(label, entry):
     result = session.run(query, {"id": entry})
     return result
 
+def get_parents(entry):
+    """
+    Helper function used for getting node parents with given id
+    """
+    query = f"""
+        MATCH (a:ENTRY)-[r:is_child_of]->(b) WHERE a.id = $id 
+        RETURN b.id
+    """
+    result = session.run(query, {"id": entry})
+    return result
+
+def get_children(entry):
+    """
+    Helper function used for getting node children with given id
+    """
+    query = f"""
+        MATCH (b)-[r:is_child_of]->(a:ENTRY) WHERE a.id = $id 
+        RETURN b.id
+    """
+    result = session.run(query, {"id": entry})
+    return result
+
 def update_nodes(label, entry, incomingData):
     """
     Helper function used for updation of node with given id and label
