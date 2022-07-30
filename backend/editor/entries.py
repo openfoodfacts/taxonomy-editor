@@ -3,7 +3,7 @@ Database helper functions for API
 """
 import re
 from neo4j import GraphDatabase         # Interface with Neo4J
-from . import settings                         # Neo4J settings
+from . import settings                  # Neo4J settings
 
 def initialize_db():
     """
@@ -39,6 +39,28 @@ def get_nodes(label, entry):
     query = f"""
         MATCH (n:{label}) WHERE n.id = $id 
         RETURN n
+    """
+    result = session.run(query, {"id": entry})
+    return result
+
+def get_parents(entry):
+    """
+    Helper function used for getting node parents with given id
+    """
+    query = f"""
+        MATCH (a:ENTRY)-[r:is_child_of]->(b) WHERE a.id = $id 
+        RETURN b.id
+    """
+    result = session.run(query, {"id": entry})
+    return result
+
+def get_children(entry):
+    """
+    Helper function used for getting node children with given id
+    """
+    query = f"""
+        MATCH (b)-[r:is_child_of]->(a:ENTRY) WHERE a.id = $id 
+        RETURN b.id
     """
     result = session.run(query, {"id": entry})
     return result
