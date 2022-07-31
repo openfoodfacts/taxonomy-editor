@@ -1,4 +1,4 @@
-import useFetch from "./useFetch";
+import useFetch from "../../components/useFetch";
 import { Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -20,7 +20,7 @@ const FetchRelations = ({url, title}) => {
                 </div>
             )) }
         </div>
-     );
+    );
 }
  
 export default FetchRelations;

@@ -1,6 +1,8 @@
 import { createTheme, ThemeProvider, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
-import FetchRelations from "../../components/FetchRelations";
+import FetchRelations from "./FetchRelations";
+import useFetch from "../../components/useFetch";
+import ListProperties from "./ListProperties";
 
 const EditEntry = () => {
     let url = 'http://localhost:80/'
@@ -13,18 +15,26 @@ const EditEntry = () => {
     else if (id.startsWith('stopword')) { url += `stopword/${id}/` }
     else { url += `entry/${id}/`; isEntry = true; }
 
+    const { data: node, error, isPending } = useFetch(url);
+    let nodeObject = null;
+    if (!isPending) {
+        nodeObject = node[0];
+    }
+
     const theme = createTheme({
         typography: {
             fontFamily : 'Plus Jakarta Sans',
         },
     });
+
     return (
         <ThemeProvider theme={theme}>
             <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
-                You are now editing "{id}"
+                You are now editing "{id}" 
             </Typography>
             { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
             { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
+            { <ListProperties props={nodeObject} /> }
         </ThemeProvider>
     );
 }
