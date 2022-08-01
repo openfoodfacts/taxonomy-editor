@@ -2,7 +2,7 @@ import { createTheme, ThemeProvider, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import FetchRelations from "./FetchRelations";
 import useFetch from "../../components/useFetch";
-import ListProperties from "./ListProperties";
+import ListAllEntryProperties from "./ListAllEntryProperties";
 
 const EditEntry = () => {
     let url = 'http://localhost:80/'
@@ -34,7 +34,7 @@ const EditEntry = () => {
             </Typography>
             { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
             { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
-            { <ListProperties props={nodeObject} /> }
+            { <ListAllEntryProperties props={nodeObject} /> }
         </ThemeProvider>
     );
 }
