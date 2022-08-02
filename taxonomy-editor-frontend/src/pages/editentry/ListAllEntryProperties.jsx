@@ -13,11 +13,10 @@ const ListAllEntryProperties = ({ props }) => {
     let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});
     return (
         <div className="allEntryProperties">
-            <Typography sx={{ml: 4, mb: 1, textDecoration: 'underline'}} variant='h5' component={'div'}>Translations</Typography>
             <Typography sx={{ml: 4}} variant='h6'>
-                { nodeObject && <ListTranslations nodeObject={nodeObject} languageNames={languageNames} /> }
+                { nodeObject && <ListTranslations nodeObject={nodeObject} languageNames={languageNames} setNodeObject={setNodeObject} /> }
             </Typography>
-            { nodeObject && <ListAllProperties nodeObject={nodeObject} /> }
+            { nodeObject && <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> }
         </div>
     );
 }

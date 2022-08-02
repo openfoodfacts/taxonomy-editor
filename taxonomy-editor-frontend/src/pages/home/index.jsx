@@ -39,7 +39,7 @@ const Home = () => {
             <CssBaseline />
             <Box
             sx={{
-                marginTop: 8,
+                marginTop: 4,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -52,7 +52,7 @@ const Home = () => {
                 src={require('../../assets/logo.png')} 
                 alt="Open Food Facts Logo" 
             />
-            <Box sx={{mt: 3}} />
+            <Box sx={{mt: 1}} />
             <Box
                 component="img" 
                 width={128} 
@@ -68,7 +68,7 @@ const Home = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{mb: 2}}
+                sx={{mb: 2, backgroundColor: '#0064c8'}}
                 >
                 Start Editing!
                 </Button>

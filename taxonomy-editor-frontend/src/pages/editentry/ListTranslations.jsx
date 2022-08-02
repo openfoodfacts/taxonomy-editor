@@ -1,7 +1,7 @@
 import { Typography, Paper, TextField, Stack } from "@mui/material";
 import { useState } from "react";
 
-const ListTranslations = ({ nodeObject, languageNames }) => {
+const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
     let toBeRendered = {}
     Object.keys(nodeObject).forEach((key) => {
         if (key.startsWith('tags') && 
@@ -26,6 +26,7 @@ const ListTranslations = ({ nodeObject, languageNames }) => {
 
     return ( 
         <div className="translations">
+            <Typography sx={{mb: 1, textDecoration: 'underline'}} variant='h5' component={'div'}>Translations</Typography>
             <Typography variant='h6'>
                 { nodeObject && languageNames.of(nodeObject.main_language) }
             </Typography>

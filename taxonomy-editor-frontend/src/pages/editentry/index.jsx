@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import FetchRelations from "./FetchRelations";
 import useFetch from "../../components/useFetch";
 import ListAllEntryProperties from "./ListAllEntryProperties";
+import ListAllOtherProperties from "./ListAllOtherProperties";
 
 const EditEntry = () => {
     let url = 'http://localhost:80/'
@@ -34,7 +35,8 @@ const EditEntry = () => {
             </Typography>
             { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
             { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
-            { <ListAllEntryProperties props={nodeObject} /> }
+            { isEntry && <ListAllEntryProperties props={nodeObject} /> }
+            { !isEntry && <ListAllOtherProperties props={nodeObject} /> }
         </ThemeProvider>
     );
 }
