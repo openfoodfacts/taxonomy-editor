@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 import re, unicodedata, unidecode
 from .exception import DuplicateIDError
-
+import logging
 
 class Parser:
     def __init__(self, uri="bolt://localhost:7687"):
@@ -212,6 +212,7 @@ class Parser:
 
     def harvest(self, filename):
         """Transform data from file to dictionary"""
+        saved_nodes=[]
         index_stopwords = 0
         index_synonyms = 0
         language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?:")
@@ -228,9 +229,16 @@ class Parser:
         for line_number, line in self.file_iter(filename, next_line):
             # yield data if block ended
             if self.entry_end(line, data):
-                data = self.remove_separating_line(data)
-                yield data  # another function will use this dictionary to create a node
-                self.is_before = data["id"]
+                if data["id"] in saved_nodes:
+                    msg = f"Entry with same id {data['id']} already created, "
+                    msg += f"duplicate id in file at line {data['src_position']}. "
+                    msg += f"Node creation cancelled"
+                    logging.error(msg)
+                else : 
+                    data = self.remove_separating_line(data)
+                    yield data  # another function will use this dictionary to create a node
+                    self.is_before = data["id"]
+                    saved_nodes.append(data["id"])
                 data = self.new_node_data()
 
             # harvest the line
@@ -276,8 +284,12 @@ class Parser:
                     data["tags_" + lang] = tags_list
                     data["tags_ids_" + lang] = tagsids_list
                 else:
-                    property_name, lc, property_value = line.split(":", 2)
-                    data["prop_" + property_name + "_" + lc] = property_value
+                    try:
+                        property_name, lc, property_value = line.split(":", 2)
+                        data["prop_" + property_name + "_" + lc] = property_value
+                    except:
+                        logging.error(f'Reading error at line {line_number+1}')
+
         data["id"] = "__footer__"
         data["preceding_lines"].pop(0)
         data["src_position"] = line_number + 1 - len(data["preceding_lines"])
@@ -285,6 +297,7 @@ class Parser:
 
     def create_nodes(self, filename):
         """Adding nodes to database"""
+        logging.info("Creating nodes")
         filename = self.normalized_filename(filename)
         harvested_data = self.harvest(filename)
         self.create_headernode(next(harvested_data))
@@ -292,6 +305,7 @@ class Parser:
             self.create_node(entry)
 
     def create_previous_link(self):
+        logging.info("Creating 'is_before' links")
         query = "MATCH(n) WHERE exists(n.is_before) return n.id,n.is_before"
         results = self.session.run(query)
         for result in results:
@@ -301,9 +315,18 @@ class Parser:
             query = """
                 MATCH(n) WHERE n.id = $id
                 MATCH(p) WHERE p.id= $id_previous
-                CREATE (p)-[:is_before]->(n)
+                CREATE (p)-[r:is_before]->(n)
+                RETURN r
             """
-            self.session.run(query, id=id, id_previous=id_previous)
+            results = self.session.run(query, id=id, id_previous=id_previous)
+            relation = results.values()
+            if len(relation)>1 :
+                msg = f"2 or more 'is_before' links created for ids {id} and {id_previous}, "
+                msg += f"one of the ids isn't unique"
+                logging.error(msg)
+            elif not relation[0]:
+                logging.error(f"link not created between {id} and {id_previous}")
+
 
     def parent_search(self):
         """Get the parent and the child to link"""
@@ -317,17 +340,21 @@ class Parser:
 
     def create_child_link(self):
         """Create the relations between nodes"""
+        logging.info("Creating 'is_child_of' links")
         for parent, child_id in self.parent_search():
             lc, parent_id = parent.split(":")
             tags_ids = "tags_ids_" + lc
             query = """ MATCH(p) WHERE $parent_id IN p.tags_ids_""" + lc
             query += """
                 MATCH(c) WHERE c.id= $child_id
-                CREATE (c)-[:is_child_of]->(p)
+                CREATE (c)-[r:is_child_of]->(p)
+                RETURN r
             """
-            self.session.run(
+            result = self.session.run(
                 query, parent_id=parent_id, tagsid=tags_ids, child_id=child_id
             )
+            if not result.value() : 
+                logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -340,7 +367,7 @@ class Parser:
         self.create_previous_link()
         # self.delete_used_properties()
 
-
 if __name__ == "__main__":
+    logging.basicConfig(filename='parser.log', encoding='utf-8', level=logging.INFO)
     use = Parser()
     use("test")
