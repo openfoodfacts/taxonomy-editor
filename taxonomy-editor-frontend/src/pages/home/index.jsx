@@ -1,19 +1,17 @@
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import Link from '@mui/material/Link';
+import {Link as MuiLink} from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-function Copyright(props) {
+function Copyright() {
   return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
+    <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 8, mb: 4 }}>
       {'Copyright © '}
-      <Link color="inherit" href="https://world.openfoodfacts.org/">
+      <MuiLink color="inherit" href="https://world.openfoodfacts.org/">
         Open Food Facts
-      </Link>{' '}
+      </MuiLink>{' '}
       {new Date().getFullYear()}
       {'.'}
     </Typography>
@@ -21,22 +19,8 @@ function Copyright(props) {
 }
 
 const Home = () => {
-    const theme = createTheme({
-        typography: {
-            fontFamily : 'Plus Jakarta Sans',
-        },
-    });
-    const navigate = useNavigate();
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        navigate('/entry');
-    };
-
     return (
-        <ThemeProvider theme={theme}>
         <Container component="main" maxWidth="md">
-            <CssBaseline />
             <Box
             sx={{
                 marginTop: 4,
@@ -63,20 +47,16 @@ const Home = () => {
             <Typography sx={{mt: 4, mb: 4}} variant="h2">
                 Taxonomy Editor
             </Typography>
-            <Box component="form" onSubmit={ handleSubmit } noValidate sx={{ mt: 1 }}>
-                <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{mb: 2, backgroundColor: '#0064c8'}}
-                >
+            <Button 
+                variant="contained" 
+                component={Link}
+                to="/entry"
+                sx={{textDecoration: 'none', mb: 2, backgroundColor: '#0064c8'}}>
                 Start Editing!
-                </Button>
+            </Button>
             </Box>
-            </Box>
-            <Copyright sx={{ mt: 8, mb: 4 }} />
+            <Copyright />
         </Container>
-        </ThemeProvider>
     );
 }
 

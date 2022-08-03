@@ -7,16 +7,19 @@ const ListAllOtherProperties = ({ props }) => {
         setNodeObject(props);
     }, [props])
 
-    let lc = '';
-    let toBeRendered = {}
-    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});
+    // Stores 2 letter language code (LC) of the tags
+    let languageCode = ''; 
+    // Storing keys and values that needs to be rendered for editing
+    let toBeRendered = {} 
+    // Used for conversion of LC to long-form
+    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'}); 
 
     if (nodeObject) {
         Object.keys(nodeObject).forEach((key) => {
             if (key.startsWith('tags') && 
                 !key.includes('ids')) {
-                    lc = key.slice(-2);
-                    toBeRendered[lc] = nodeObject[key]
+                    languageCode = key.slice(-2);
+                    toBeRendered[languageCode] = nodeObject[key]
                 }
         })
     }
@@ -29,21 +32,19 @@ const ListAllOtherProperties = ({ props }) => {
     }
 
     function changeData(key, index, obj) {
-        console.log(key, index, obj);
         const duplicateData = {...nodeObject};
         duplicateData[key][index] = obj;
         setNodeObject(duplicateData);
     }
 
     return ( 
-        <div className="allProperties">
+        <div className="all-other-properties">
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
                 sx={{ml: 8, mt: 1}}
                 size="small"
                 multiline
                 onChange = {event => {
-                    // console.log(event.target.value);
                     changeDataComment('preceding_lines', event.target.value)
                 }}
                 defaultValue={nodeObject.preceding_lines} 
@@ -55,30 +56,28 @@ const ListAllOtherProperties = ({ props }) => {
                         Language
                     </Typography>
                     <Typography sx={{ml: 8, mt: 2}} variant='h6'>
-                        {languageNames.of(lc)}
+                        {languageNames.of(languageCode)}
                     </Typography>
-                    
                 </div>
                 }
             
             { Object.keys(toBeRendered).length > 0 && 
                     <div className="tags">
-                        {nodeObject.id.startsWith('stopword') && 
+                        {nodeObject.id.startsWith('stopword') ?
                             <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
                                 Stopwords
-                            </Typography>}
-                        {nodeObject.id.startsWith('synonym') && 
+                            </Typography> :
                             <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
                                 Synonyms
                             </Typography>}
-                        { toBeRendered[lc].map((tag, index) => {
+                        { toBeRendered[languageCode].map((tag, index) => {
                             return (
                                 <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>
                                     <TextField 
                                         size="small" 
                                         sx={{mt: 1}} 
                                         onChange = {event => {
-                                            changeData('tags_'+lc, index, event.target.value)
+                                            changeData('tags_'+languageCode, index, event.target.value)
                                         }}
                                         defaultValue={tag} 
                                         variant="outlined" />

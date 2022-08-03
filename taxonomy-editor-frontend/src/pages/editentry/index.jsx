@@ -1,4 +1,4 @@
-import { createTheme, ThemeProvider, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import FetchRelations from "./FetchRelations";
 import useFetch from "../../components/useFetch";
@@ -18,26 +18,30 @@ const EditEntry = () => {
 
     const { data: node, error, isPending } = useFetch(url);
     let nodeObject = null;
+    if (error) {
+        return (
+            <div>{error}</div>
+        )
+    }
+
     if (!isPending) {
         nodeObject = node[0];
     }
 
-    const theme = createTheme({
-        typography: {
-            fontFamily : 'Plus Jakarta Sans',
-        },
-    });
-
     return (
-        <ThemeProvider theme={theme}>
-            <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
-                You are now editing "{id}" 
-            </Typography>
-            { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
-            { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
-            { isEntry && <ListAllEntryProperties props={nodeObject} /> }
-            { !isEntry && <ListAllOtherProperties props={nodeObject} /> }
-        </ThemeProvider>
+        <div className="main-content">
+            <div className="node-title">
+                <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
+                    You are now editing "{id}" 
+                </Typography>
+            </div>
+            <div className="node-attributes">
+                { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
+                { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
+                { isEntry && <ListAllEntryProperties props={nodeObject} /> }
+                { !isEntry && <ListAllOtherProperties props={nodeObject} /> }
+            </div>
+        </div>
     );
 }
  

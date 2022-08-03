@@ -3,10 +3,15 @@ import EntriesList from "./EntriesList";
 
 const Entry = () => {
     const {data: nodes, isPending, error} = useFetch('http://localhost:80/nodes');
-    // console.log(nodes, isPending, error);
+    if (error) {
+        return (
+            <div className="all-entries">
+                {error && <div>{error}</div>}
+            </div>
+        )
+    }
     return (
-        <div className="allentries">
-            {error && <div>{error}</div>}
+        <div className="all-entries">
             {isPending && <div>Loading...</div>}
             {nodes && <EntriesList nodes={nodes} title={"Test"}/>}
         </div>

@@ -1,4 +1,4 @@
-import { Paper, Stack, TextField, Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
@@ -6,7 +6,6 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     Object.keys(nodeObject).forEach((key) => {
         if (key.startsWith('prop')) {
                 let property_name = key.split('_').slice(1).join('_');
-                // console.log(property_name);
                 toBeRendered[property_name] = nodeObject[key]
             }
     });
@@ -26,18 +25,16 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
         const duplicateData = {...changedComment};
         duplicateData[key] = value;
         setChangedComment(duplicateData);
-        // console.log(changedComment);
     }
     
     return (
-        <div className="allProperties">
+        <div className="all-properties">
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             <TextField
                 sx={{ml: 8, mt: 1}}
                 size="small"
                 multiline
                 onChange = {event => {
-                    // console.log(event.target.value);
                     changeDataComment('preceding_lines', event.target.value)
                 }}
                 defaultValue={changedComment.preceding_lines} 
