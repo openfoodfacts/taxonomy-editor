@@ -1,11 +1,11 @@
 import { Paper, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
-const ListAllOtherProperties = ({ props }) => {
+const ListAllOtherProperties = ({ incomingNodeObject }) => {
     const [nodeObject, setNodeObject] = useState(null);
     useEffect(() => {
-        setNodeObject(props);
-    }, [props])
+        setNodeObject(incomingNodeObject);
+    }, [incomingNodeObject])
 
     // Stores 2 letter language code (LC) of the tags
     let languageCode = ''; 
@@ -16,6 +16,10 @@ const ListAllOtherProperties = ({ props }) => {
 
     if (nodeObject) {
         Object.keys(nodeObject).forEach((key) => {
+
+            // Get all tags and its corresponding language code
+            // Tagids need to be recomputed, so shouldn't be rendered
+
             if (key.startsWith('tags') && 
                 !key.includes('ids')) {
                     languageCode = key.slice(-2);
@@ -24,13 +28,14 @@ const ListAllOtherProperties = ({ props }) => {
         })
     }
 
-    // Helper function used for changing state of properties
-    function changeDataComment(key, value) {
+    // Helper function used for changing state of "preceding_lines"
+    function changeDataComment(value) {
         const duplicateData = {...nodeObject};
-        duplicateData[key] = value;
+        duplicateData['preceding_lines'] = value;
         setNodeObject(duplicateData);
     }
 
+    // Helper function used for changing state of properties
     function changeData(key, index, obj) {
         const duplicateData = {...nodeObject};
         duplicateData[key][index] = obj;
@@ -45,7 +50,7 @@ const ListAllOtherProperties = ({ props }) => {
                 size="small"
                 multiline
                 onChange = {event => {
-                    changeDataComment('preceding_lines', event.target.value)
+                    changeDataComment(event.target.value)
                 }}
                 defaultValue={nodeObject.preceding_lines} 
                 variant="outlined" /> }

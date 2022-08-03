@@ -38,8 +38,8 @@ const EditEntry = () => {
             <div className="node-attributes">
                 { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
                 { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
-                { isEntry && <ListAllEntryProperties props={nodeObject} /> }
-                { !isEntry && <ListAllOtherProperties props={nodeObject} /> }
+                { isEntry && <ListAllEntryProperties incomingNodeObject={nodeObject} /> }
+                { !isEntry && <ListAllOtherProperties incomingNodeObject={nodeObject} /> }
             </div>
         </div>
     );

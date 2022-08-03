@@ -4,11 +4,11 @@ import { useState } from "react";
 import ListAllProperties from "./ListAllProperties";
 import ListTranslations from "./ListTranslations";
 
-const ListAllEntryProperties = ({ props }) => {
+const ListAllEntryProperties = ({ incomingNodeObject }) => {
     const [nodeObject, setNodeObject] = useState(null);
     useEffect(() => {
-        setNodeObject(props);
-    }, [props])
+        setNodeObject(incomingNodeObject);
+    }, [incomingNodeObject])
     
     let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});
     return (

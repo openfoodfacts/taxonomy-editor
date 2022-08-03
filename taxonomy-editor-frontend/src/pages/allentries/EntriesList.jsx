@@ -21,22 +21,20 @@ const EntriesList = ({ nodes, title }) => {
             <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
                 List of nodes in {title} Taxonomy:
             </Typography>
+            <Typography variant="h6" sx={{mt: 2, ml: 2, mb: 1}}>
+                Number of nodes in taxonomy: {nodes.length}
+            </Typography>
             <div className="entry-preview">
                 <TableContainer sx={{ml: 2}} component={Paper}>
-                    <Table sx={{ width: 500 }}>
+                    <Table sx={{ width: 400 }}>
                         <TableHead>
                         <TableRow>
-                            <TableCell align="center">
-                            <Typography variant="h6">
-                                #
-                            </Typography>
-                            </TableCell>
-                            <TableCell align="center">
+                            <TableCell align="left">
                             <Typography variant="h6">
                                 Nodes
                             </Typography>
                             </TableCell>
-                            <TableCell align="center">
+                            <TableCell align="left">
                             <Typography variant="h6">
                                 Action
                             </Typography>
@@ -44,22 +42,16 @@ const EntriesList = ({ nodes, title }) => {
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                            {nodes.map((node, index) => (
+                            {nodes.map((node) => (
                                 <TableRow
                                 key={node[0].id}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell align="center" component="td" scope="row">
-                                        <Typography variant="subtitle1">
-                                            {index+1}
-                                        </Typography>
-                                    </TableCell>    
-                                    <TableCell align="center" component="td" scope="row">
+                                >   
+                                    <TableCell align="left" component="td" scope="row">
                                         <Typography variant="subtitle1">
                                             {node[0].id}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell align="center" component="td" scope="row">
+                                    <TableCell align="left" component="td" scope="row">
                                         <IconButton onClick={event => handleClick(event, node[0].id) } aria-label="edit">
                                             <EditIcon color="primary"/>
                                         </IconButton>
