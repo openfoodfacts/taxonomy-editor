@@ -16,6 +16,8 @@
     "react-i18next": "^11.18.3",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "sweetalert2": "^11.4.24",
+    "sweetalert2-react-content": "^5.0.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

@@ -1,5 +1,4 @@
 import { Typography, Paper, TextField, Stack } from "@mui/material";
-import { useState } from "react";
 
 const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
     let toBeRendered = {}
@@ -12,16 +11,13 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
             }
     })
 
-    // Add main language before setting it as state variable
-    let duplicateToBeRendered = {...toBeRendered};
-    duplicateToBeRendered[nodeObject.main_language] = nodeObject["tags_"+nodeObject['main_language']];
-    const [changedObj, setChangedObj] = useState(duplicateToBeRendered);
-
     // Helper function used for changing state
     function changeData(key, index, obj) {
-        const duplicateData = {...changedObj};
+        key = 'tags_' + key;
+        const duplicateData = {...nodeObject};
         duplicateData[key][index] = obj;
-        setChangedObj(duplicateData);
+        setNodeObject(duplicateData);
+        console.log(nodeObject);
     }
 
     return ( 

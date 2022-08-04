@@ -1,5 +1,4 @@
 import { TextField, Typography } from "@mui/material";
-import { useState } from "react";
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     let toBeRendered = {}
@@ -10,21 +9,12 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
             }
     });
 
-    const [changedObj, setChangedObj] = useState(toBeRendered);
-    const [changedComment, setChangedComment] = useState({'preceding_lines': nodeObject.preceding_lines.join('')});
-
     // Helper function used for changing state of properties
     function changeData(key, value) {
-        const duplicateData = {...changedObj};
+        const duplicateData = {...nodeObject};
         duplicateData[key] = value;
-        setChangedObj(duplicateData);
-    }
-    
-    // Helper function used for changing state of comment
-    function changeDataComment(key, value) {
-        const duplicateData = {...changedComment};
-        duplicateData[key] = value;
-        setChangedComment(duplicateData);
+        setNodeObject(duplicateData);
+        console.log(nodeObject);
     }
     
     return (
@@ -32,12 +22,14 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             <TextField
                 sx={{ml: 8, mt: 1}}
-                size="small"
+                InputProps={{
+                    rows: 3
+                }}
                 multiline
                 onChange = {event => {
-                    changeDataComment('preceding_lines', event.target.value)
+                    changeData('preceding_lines', event.target.value)
                 }}
-                defaultValue={changedComment.preceding_lines} 
+                defaultValue={nodeObject.preceding_lines} 
                 variant="outlined" />
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Properties</Typography>
             { Object.entries(toBeRendered).map(([property, value]) => {
@@ -50,7 +42,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                             size="small" 
                             sx={{mt: 1}}
                             onChange = {event => {
-                                changeData(property, event.target.value)
+                                changeData("prop_"+property, event.target.value)
                             }}
                             defaultValue={value} 
                             variant="outlined" />

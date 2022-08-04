@@ -1,12 +1,7 @@
 import { Paper, Stack, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
 
-const ListAllOtherProperties = ({ incomingNodeObject }) => {
-    const [nodeObject, setNodeObject] = useState(null);
-    useEffect(() => {
-        setNodeObject(incomingNodeObject);
-    }, [incomingNodeObject])
-
+const ListAllOtherProperties = ({ nodeObject, setNodeObject }) => {
+    
     // Stores 2 letter language code (LC) of the tags
     let languageCode = ''; 
     // Storing keys and values that needs to be rendered for editing
@@ -47,7 +42,9 @@ const ListAllOtherProperties = ({ incomingNodeObject }) => {
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
                 sx={{ml: 8, mt: 1}}
-                size="small"
+                InputProps={{
+                    rows: 3
+                }}
                 multiline
                 onChange = {event => {
                     changeDataComment(event.target.value)

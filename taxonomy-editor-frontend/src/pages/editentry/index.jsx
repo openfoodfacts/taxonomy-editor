@@ -4,6 +4,7 @@ import FetchRelations from "./FetchRelations";
 import useFetch from "../../components/useFetch";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllOtherProperties from "./ListAllOtherProperties";
+import AccumulateAllComponents from "./AccumulateAllComponents";
 
 const EditEntry = () => {
     let url = 'http://localhost:80/'
@@ -19,9 +20,7 @@ const EditEntry = () => {
     const { data: node, error, isPending } = useFetch(url);
     let nodeObject = null;
     if (error) {
-        return (
-            <div>{error}</div>
-        )
+        return (<div>{error}</div>)
     }
 
     if (!isPending) {
@@ -35,12 +34,7 @@ const EditEntry = () => {
                     You are now editing "{id}" 
                 </Typography>
             </div>
-            <div className="node-attributes">
-                { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
-                { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
-                { isEntry && <ListAllEntryProperties incomingNodeObject={nodeObject} /> }
-                { !isEntry && <ListAllOtherProperties incomingNodeObject={nodeObject} /> }
-            </div>
+            <AccumulateAllComponents incomingNodeObject={nodeObject} isEntry={isEntry} url={url} />
         </div>
     );
 }

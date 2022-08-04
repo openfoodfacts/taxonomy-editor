@@ -5,6 +5,9 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 const FetchRelations = ({url, title}) => {
     const { data: relations, error, isPending } = useFetch(url);
+    if (error) {
+        return (<div>{error}</div>)
+    }
     return (
         <div className="relations">
             {isPending && <Typography sx={{ml: 4}} variant='h5' component={'div'}>Loading..</Typography>}
