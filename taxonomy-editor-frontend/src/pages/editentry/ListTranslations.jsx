@@ -12,10 +12,10 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
     })
 
     // Helper function used for changing state
-    function changeData(key, index, obj) {
+    function changeData(key, index, value) {
         key = 'tags_' + key;
         const duplicateData = {...nodeObject};
-        duplicateData[key][index] = obj;
+        duplicateData[key][index] = value;
         setNodeObject(duplicateData);
         console.log(nodeObject);
     }
