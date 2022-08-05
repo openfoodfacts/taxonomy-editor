@@ -17,7 +17,6 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
         const duplicateData = {...nodeObject};
         duplicateData[key][index] = value;
         setNodeObject(duplicateData);
-        console.log(nodeObject);
     }
 
     return ( 
