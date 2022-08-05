@@ -18,11 +18,11 @@ const AccumulateAllComponents = ({ incomingNodeObject, id, isEntry, url }) => {
     const handleBack = () => {navigate('/entry')};
 
     const handleSubmit = () => {
-        delete nodeObject['id']; // ID not allowed in POST
+        const {id, ...data} = nodeObject // ID not allowed in POST
         fetch(url, {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
-            body: JSON.stringify(nodeObject)
+            body: JSON.stringify(data)
         }).then(() => {
             setOpen(true);
         }).catch((error) => {

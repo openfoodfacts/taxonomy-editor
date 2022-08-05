@@ -15,13 +15,8 @@ const EditEntry = () => {
     else { url += `entry/${id}/`; isEntry = true; }
 
     const { data: node, error, isPending } = useFetch(url);
-    let nodeObject = null;
     if (error) {
         return (<div>{error}</div>)
-    }
-
-    if (!isPending) {
-        nodeObject = node[0];
     }
 
     return (
@@ -31,7 +26,7 @@ const EditEntry = () => {
                     You are now editing "{id}" 
                 </Typography>
             </div>
-            <AccumulateAllComponents incomingNodeObject={nodeObject} id={id} isEntry={isEntry} url={url} />
+            <AccumulateAllComponents incomingNodeObject={node?.[0]} id={id} isEntry={isEntry} url={url} />
         </div>
     );
 }
