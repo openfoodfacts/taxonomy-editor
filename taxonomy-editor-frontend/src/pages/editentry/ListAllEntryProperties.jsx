@@ -1,6 +1,4 @@
 import { Typography } from "@mui/material";
-import { useEffect } from "react";
-import { useState } from "react";
 import ListAllProperties from "./ListAllProperties";
 import ListTranslations from "./ListTranslations";
 

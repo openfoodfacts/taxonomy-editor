@@ -1,8 +1,9 @@
 import useFetch from "../../components/useFetch";
+import { API_URL } from "../../constants";
 import EntriesList from "./EntriesList";
 
 const Entry = () => {
-    const {data: nodes, isPending, error} = useFetch('http://localhost:80/nodes');
+    const {data: nodes, isPending, error} = useFetch(API_URL+'nodes');
     if (error) {
         return (
             <div className="all-entries">

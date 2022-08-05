@@ -1,16 +1,13 @@
 import { Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
-import FetchRelations from "./FetchRelations";
 import useFetch from "../../components/useFetch";
-import ListAllEntryProperties from "./ListAllEntryProperties";
-import ListAllOtherProperties from "./ListAllOtherProperties";
+import { API_URL } from "../../constants";
 import AccumulateAllComponents from "./AccumulateAllComponents";
 
 const EditEntry = () => {
-    let url = 'http://localhost:80/'
+    let url = API_URL;
     let isEntry = false;
     const { id } = useParams();
-
     if (id.startsWith('__header__')) { url += 'header/' }
     else if (id.startsWith('__footer__')) { url += 'footer/' }
     else if (id.startsWith('synonym')) { url += `synonym/${id}/` }
@@ -34,7 +31,7 @@ const EditEntry = () => {
                     You are now editing "{id}" 
                 </Typography>
             </div>
-            <AccumulateAllComponents incomingNodeObject={nodeObject} isEntry={isEntry} url={url} />
+            <AccumulateAllComponents incomingNodeObject={nodeObject} id={id} isEntry={isEntry} url={url} />
         </div>
     );
 }

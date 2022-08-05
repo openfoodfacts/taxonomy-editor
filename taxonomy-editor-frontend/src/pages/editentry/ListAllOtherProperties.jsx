@@ -1,6 +1,6 @@
 import { Paper, Stack, TextField, Typography } from "@mui/material";
 
-const ListAllOtherProperties = ({ nodeObject, setNodeObject }) => {
+const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     
     // Stores 2 letter language code (LC) of the tags
     let languageCode = ''; 
@@ -31,9 +31,9 @@ const ListAllOtherProperties = ({ nodeObject, setNodeObject }) => {
     }
 
     // Helper function used for changing state of properties
-    function changeData(key, index, obj) {
+    function changeData(key, index, value) {
         const duplicateData = {...nodeObject};
-        duplicateData[key][index] = obj;
+        duplicateData[key][index] = value;
         setNodeObject(duplicateData);
     }
 
@@ -42,9 +42,7 @@ const ListAllOtherProperties = ({ nodeObject, setNodeObject }) => {
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
                 sx={{ml: 8, mt: 1}}
-                InputProps={{
-                    rows: 3
-                }}
+                minRows={3}
                 multiline
                 onChange = {event => {
                     changeDataComment(event.target.value)
@@ -65,7 +63,7 @@ const ListAllOtherProperties = ({ nodeObject, setNodeObject }) => {
             
             { Object.keys(toBeRendered).length > 0 && 
                     <div className="tags">
-                        {nodeObject.id.startsWith('stopword') ?
+                        {id.startsWith('stopword') ?
                             <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
                                 Stopwords
                             </Typography> :

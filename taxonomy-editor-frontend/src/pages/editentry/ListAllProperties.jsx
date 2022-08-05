@@ -14,7 +14,6 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
         const duplicateData = {...nodeObject};
         duplicateData[key] = value;
         setNodeObject(duplicateData);
-        console.log(nodeObject);
     }
     
     return (
@@ -22,9 +21,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             <TextField
                 sx={{ml: 8, mt: 1}}
-                InputProps={{
-                    rows: 3
-                }}
+                minRows={3}
                 multiline
                 onChange = {event => {
                     changeData('preceding_lines', event.target.value)

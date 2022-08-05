@@ -1,21 +1,21 @@
-import { Button } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FetchRelations from "./FetchRelations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllOtherProperties from "./ListAllOtherProperties";
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
 
-const AccumulateAllComponents = ({ incomingNodeObject, isEntry, url }) => {
+const AccumulateAllComponents = ({ incomingNodeObject, id, isEntry, url }) => {
     const [nodeObject, setNodeObject] = useState(null);
-    const SuccessSwal = withReactContent(Swal)
+    const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         setNodeObject(incomingNodeObject);
     }, [incomingNodeObject])
 
-    const navigate = useNavigate();
+    const handleClose = () => {setOpen(false)};
+    const handleBack = () => {navigate('/entry')};
 
     const handleSubmit = () => {
         delete nodeObject['id']; // ID not allowed in POST
@@ -24,27 +24,48 @@ const AccumulateAllComponents = ({ incomingNodeObject, isEntry, url }) => {
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(nodeObject)
         }).then(() => {
-            SuccessSwal.fire({
-                title: <strong>Your edit was successful!</strong>,
-                icon: 'success'
-              }).then(() => {
-                return navigate('/entry')
-              })
+            setOpen(true);
+        }).catch((error) => {
+            console.log(error);
         })
     }
     
     return ( 
         <div className="node-attributes">
-            { isEntry && <FetchRelations url={url+'parents'} title={'Parents'} /> }
-            { isEntry && <FetchRelations url={url+'children'} title={'Children'} /> }
-            { isEntry && <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> }
-            { !isEntry && <ListAllOtherProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> }
+            { isEntry ? 
+                <>  <FetchRelations url={url+'parents'} title={'Parents'} />
+                    <FetchRelations url={url+'children'} title={'Children'} />
+                    <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> :
+                <>  <ListAllOtherProperties nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
+            }
             <Button
                 variant="contained"
                 onClick={handleSubmit}
-                sx={{ml: 4, mt:2, width: 150}}>
+                sx={{ml: 4, mt:2, width: 130}}>
                     Submit
             </Button>
+            <Dialog
+                open={open}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                {"Your edits have been saved!"}
+                </DialogTitle>
+                <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                    The node {id} has been successfully updated.
+                </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleBack}>
+                    Back to all nodes
+                </Button>
+                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleClose} autoFocus>
+                    Continue Editing
+                </Button>
+                </DialogActions>
+            </Dialog>
         </div>
      );
 }
