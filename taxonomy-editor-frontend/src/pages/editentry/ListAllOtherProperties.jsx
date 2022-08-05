@@ -1,4 +1,4 @@
-import { Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Paper, Stack, TextField, Typography } from "@mui/material";
 
 const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     
@@ -38,7 +38,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     }
 
     return ( 
-        <div className="all-other-properties">
+        <Box className="all-node-properties">
             <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
                 sx={{ml: 8, mt: 1}}
@@ -62,30 +62,30 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                 }
             
             { Object.keys(toBeRendered).length > 0 && 
-                    <div className="tags">
-                        {id.startsWith('stopword') ?
-                            <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
-                                Stopwords
-                            </Typography> :
-                            <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
-                                Synonyms
-                            </Typography>}
-                        { toBeRendered[languageCode].map((tag, index) => {
-                            return (
-                                <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>
-                                    <TextField 
-                                        size="small" 
-                                        sx={{mt: 1}} 
-                                        onChange = {event => {
-                                            changeData('tags_'+languageCode, index, event.target.value)
-                                        }}
-                                        defaultValue={tag} 
-                                        variant="outlined" />
-                                </Paper>
-                            )})}
-                    </div>
-                }
-        </div>
+                <div className="tags">
+                    {id.startsWith('stopword') ?
+                        <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
+                            Stopwords
+                        </Typography> :
+                        <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
+                            Synonyms
+                        </Typography>}
+                    { toBeRendered[languageCode].map((tag, index) => {
+                        return (
+                            <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>
+                                <TextField 
+                                    size="small" 
+                                    sx={{mt: 1}} 
+                                    onChange = {event => {
+                                        changeData('tags_'+languageCode, index, event.target.value)
+                                    }}
+                                    defaultValue={tag} 
+                                    variant="outlined" />
+                            </Paper>
+                        )})}
+                </div>
+            }
+        </Box>
      );
 }
 
