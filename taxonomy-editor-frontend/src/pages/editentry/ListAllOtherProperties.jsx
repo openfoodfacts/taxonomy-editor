@@ -26,7 +26,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     // Helper function used for changing state of "preceding_lines"
     function changeDataComment(value) {
         const duplicateData = {...nodeObject};
-        duplicateData['preceding_lines'] = value;
+        duplicateData['preceding_lines'] = value.split('\n');
         setNodeObject(duplicateData);
     }
 
@@ -39,10 +39,10 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
 
     return ( 
         <Box className="all-node-properties">
-            <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
+            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
-                sx={{ml: 8, mt: 1}}
-                minRows={3}
+                sx={{ml: 8, mt: 1, width: 250}}
+                minRows={4}
                 multiline
                 onChange = {event => {
                     changeDataComment(event.target.value)
@@ -52,10 +52,10 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
 
             { Object.keys(toBeRendered).length > 0 && 
                 <div className="language">
-                    <Typography sx={{ml: 4, mt: 2, textDecoration: 'underline'}} variant='h5'>
+                    <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
                     </Typography>
-                    <Typography sx={{ml: 8, mt: 2}} variant='h6'>
+                    <Typography sx={{ml: 8, mt: 1.5}} variant='h6'>
                         {languageNames.of(languageCode)}
                     </Typography>
                 </div>
@@ -64,10 +64,10 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
             { Object.keys(toBeRendered).length > 0 && 
                 <div className="tags">
                     {id.startsWith('stopword') ?
-                        <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
+                        <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
                             Stopwords
                         </Typography> :
-                        <Typography sx={{ml: 4, mt: 1, mb: 1, textDecoration: 'underline'}} variant='h5'>
+                        <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
                             Synonyms
                         </Typography>}
                     { toBeRendered[languageCode].map((tag, index) => {

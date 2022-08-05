@@ -18,17 +18,17 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     
     return (
         <div className="all-properties">
-            <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Comments</Typography>
+            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             <TextField
-                sx={{ml: 8, mt: 1}}
-                minRows={3}
+                sx={{ml: 8, mt: 1, width: 250}}
+                minRows={4}
                 multiline
                 onChange = {event => {
-                    changeData('preceding_lines', event.target.value)
+                    changeData('preceding_lines', event.target.value.split('\n'))
                 }}
-                defaultValue={nodeObject.preceding_lines} 
+                defaultValue={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
-            <Typography sx={{ml: 4, mt: 2, mb: 1, textDecoration: 'underline'}} variant='h5'>Properties</Typography>
+            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Properties</Typography>
             { Object.entries(toBeRendered).map(([property, value]) => {
                 return (
                     <div key={property} className="property-component">

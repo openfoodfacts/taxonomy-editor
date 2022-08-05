@@ -21,7 +21,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
 
     return ( 
         <div className="translations">
-            <Typography sx={{mb: 1, textDecoration: 'underline'}} variant='h5' component={'div'}>Translations</Typography>
+            <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
             <Typography variant='h6'>
                 { nodeObject && languageNames.of(nodeObject.main_language) }
             </Typography>
