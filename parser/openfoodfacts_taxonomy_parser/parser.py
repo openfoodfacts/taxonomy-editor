@@ -340,6 +340,223 @@ class Parser:
         self.create_previous_link()
         # self.delete_used_properties()
 
+    def check(self):
+        #check taxonomy
+        self.check_roots()
+        self.check_big_parents()
+
+        #check entries
+        self.check_shortest_and_longest_path()
+        self.check_number_of_descendants()
+        self.check_parents_prop()
+        self.check_children()
+
+        #check language
+        self.check_language()
+        self.check_synonyms()
+
+    def check_roots(self):
+        query = 'MERGE (n{id:"taxonomy"}) '
+        self.session.run(query)
+        query = """ 
+            MATCH(n:ENTRY) 
+            WHERE not ()-[:is_child_of]->(n) 
+            WITH count(n) AS number, collect(n.id) as list 
+            MATCH(p{id:"taxonomy"}) 
+            SET p.root_number = number 
+            SET p.root_list = list 
+        """
+        self.session.run(query)
+    
+    def check_big_parents(self,limit=50):
+        query = 'MERGE (n{id:"taxonomy"}) '
+        self.session.run(query)
+        query = """
+            MATCH ()-[r:is_child_of]->(n) 
+            WITH n, count(r) AS number 
+            ORDER BY number DESC 
+            LIMIT 5
+            WITH [n.id,number] AS parent 
+            UNWIND parent AS parents
+            WITH collect(parents) AS result
+            MATCH(p{id:"taxonomy"}) 
+            SET p.big_parents = result
+        """
+        self.session.run(query,limit=limit)
+    
+    def check_shortest_and_longest_path(self):
+        """Add to entry node, if it has parent,
+            its shortest path and longest path to a root"""
+        query = """
+        MATCH path = (n:ENTRY)-[:is_child_of*]->(root:ENTRY)
+        WHERE not (root)-[:is_child_of]->(:ENTRY)
+        WITH path,length(path) as len, n
+        ORDER BY len
+        WITH collect(path) as p, n
+        WITH nodes(p[0]) AS short, size(nodes(p[0])) AS shortlen,
+            nodes(p[-1]) AS long, size(nodes(p[-1])) AS longlen, n
+        SET n.stat_shortest_path = [x in short | x.id]
+        SET n.stat_shortest_path_length = shortlen
+        SET n.stat_longest_path = [x in long | x.id]
+        SET n.stat_longest_path_length = longlen
+        """
+        self.session.run(query)
+
+    def check_number_of_descendants(self):
+        query = """
+            MATCH (c)-[:is_child_of*]->(n:ENTRY)
+            WITH n,count(DISTINCT c) AS number
+            SET n.stat_number_of_descendants = number
+        """
+        self.session.run(query)
+    
+    def dictionary_to_list(self,dictionary):
+        """Convert a dictionary of lists to a list where each key is followed by its value"""
+        list_dictionary = []
+        for key in dictionary:
+            if not dictionary[key]:
+                continue
+            list_dictionary.append(key)
+            list_dictionary.extend(dictionary[key])
+        return list_dictionary
+
+    def add_parent_prop_query(self,child,prop_parent,prop_redefined):
+        query = """
+            MATCH (c)
+            WHERE c.id = $child_id
+            SET c.stat_parents_prop = $parent_prop
+            SET c.stat_parents_redefined_prop = $redefined_prop
+        """
+        data = {"child_id":child["id"]}
+        data["parent_prop"] = self.dictionary_to_list(prop_parent)
+        data["redefined_prop"] = self.dictionary_to_list(prop_redefined)
+        self.session.run(query,data)
+
+    def check_parents_prop(self):
+        """Add 'properties from parents' property and 'redefined properties' property,
+            adds [] if there is none
+        """
+        query = """
+            MATCH (c:ENTRY)-[:is_child_of]->(p:ENTRY) 
+            RETURN  c,collect(p)
+        """
+        results = self.session.run(query)
+        for result in results:
+            child,parents = result.values()
+            prop_parents={}
+            prop_redefined={}
+            for parent in parents:
+                id = parent["id"]
+                prop_parents[id] = []
+                prop_redefined[id] = []
+                for property in parent:
+                    if property.startswith('prop_'):
+                        if property in child:
+                            prop_redefined[id].append(property)
+                        else:
+                            prop_parents[id].append(property)
+            self.add_parent_prop_query(child,prop_parents,prop_redefined)
+
+    def add_child_stat_query(self,parent,prop_redefined,number,missing_lc):
+        query = """
+            MATCH (p)
+            WHERE p.id = $parent_id
+            SET p.stat_children_redefined_prop = $redefined_prop
+            SET p.stat_children_using_synonyms = $number
+            SET p.stat_missing_translation = $missing_lc
+        """
+        data = {"parent_id":parent["id"]}
+        data["redefined_prop"] = self.dictionary_to_list(prop_redefined)
+        data["number"] = number
+        data["missing_lc"] = self.dictionary_to_list(missing_lc)
+        self.session.run(query,data)
+
+    def list_tags_lc(self,node):
+        """return a list of language codes (lc) used"""
+        lc_list=[]
+        for property in node:
+            if property.startswith('tags_ids_'):
+                lc_list.append(property.split("_",2)[2])
+        return lc_list
+
+    def check_children(self):
+        """Adds 'stat_children_redefined_prop', a list of children and their redefined properties
+            Adds 'stat_children_using_synonyms', the number of children not using the parent id
+            Adds 'stat_missing_translation', a list of languages used by children but not the entry
+        """
+        query = """
+            MATCH (c:ENTRY)-[:is_child_of]->(p:ENTRY) 
+            RETURN  collect(c),p
+        """
+        results = self.session.run(query)
+        for result in results:
+            children,parent = result.values()
+            using_synonyms = 0
+            prop_redefined={}
+            parent_lc = self.list_tags_lc(parent)
+            missing_lc = {}
+            for child in children:
+                if parent["id"] not in child["parents"]:
+                    using_synonyms += 1
+                id = child["id"]
+                prop_redefined[id] = []
+                for property in child:
+                    if property.startswith('prop_'):
+                        if property in parent:
+                            prop_redefined[id].append(property)
+                    elif property.startswith('tags_ids_'):
+                        child_lc = property.split("_",2)[2]
+                        if child_lc not in parent_lc:
+                            if child_lc not in missing_lc:
+                                missing_lc[child_lc] = [child["id"]]
+                            else:
+                                missing_lc[child_lc].append(child["id"])
+            self.add_child_stat_query(parent,prop_redefined,using_synonyms,missing_lc)
+
+    def check_language(self,threshold=3):
+        """Add nodes translation percentage"""
+        query = "MATCH (n:ENTRY) RETURN n"
+        results = self.session.run(query)
+        language={}
+        number_of_nodes = 0
+        nodes_with_3translations = 0
+        nodes_missing_translation =[]
+        for result in results:
+            number_of_nodes += 1
+            node = result.value()
+            number_of_translation = 0
+            for property in node:
+                if property.startswith('tags_ids_'):
+                    number_of_translation += 1
+                    lc = property.split('_',2)[2]
+                    if lc in language:
+                        language[lc] += 1
+                    else:
+                        language[lc] = 1
+            if number_of_translation < threshold:
+                nodes_missing_translation.append(node["id"])
+            else:
+                nodes_with_3translations += 1
+        percentage_translated = nodes_with_3translations / number_of_nodes * 100
+        language = {k : v / number_of_nodes * 100 for k,v in language.items()}
+        query = """
+            CREATE (main:CHECK {id : '__language__'})
+            SET main.nodes_missing_translation = $list_nodes
+            SET main.percentage_with_3_translations_or_more = $percentage_translated
+        """
+        self.session.run(query,list_nodes=nodes_missing_translation,percentage_translated=percentage_translated)
+        for lc in language:
+            query = "CREATE (n:LANGUAGE{id:'" + lc + "',percentage: $" + lc + "}) \n"
+            self.session.run(query,language)
+        query = """
+            MATCH(main:CHECK {id : '__language__'})
+            MATCH(n:LANGUAGE)
+            CREATE (n)-[:from]->(main)
+        """
+        self.session.run(query)
+
+    def check_synonyms(self):
+        pass
 
 if __name__ == "__main__":
     use = Parser()
