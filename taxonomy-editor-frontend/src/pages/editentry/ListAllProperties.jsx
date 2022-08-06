@@ -1,11 +1,17 @@
-import { TextField, Typography } from "@mui/material";
+import { IconButton, TextField, Typography } from "@mui/material";
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import { DataGrid } from '@mui/x-data-grid';
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
-    let toBeRendered = {}
-    Object.keys(nodeObject).forEach((key) => {
+    let toBeRendered = []
+    Object.keys(nodeObject).forEach((key, index) => {
         if (key.startsWith('prop')) {
                 let property_name = key.split('_').slice(1).join('_');
-                toBeRendered[property_name] = nodeObject[key]
+                toBeRendered.push({
+                    'id': index+1,
+                    'property-name': property_name,
+                    'property-value': nodeObject[key]
+                })
             }
     });
 
@@ -14,6 +20,10 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
         const duplicateData = {...nodeObject};
         duplicateData[key] = value;
         setNodeObject(duplicateData);
+    }
+
+    const handleAdd = () => {
+        console.log('I added!');
     }
     
     return (
@@ -28,8 +38,24 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                 }}
                 defaultValue={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
-            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Properties</Typography>
-            { Object.entries(toBeRendered).map(([property, value]) => {
+            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>
+                Properties
+                <IconButton color="inherit" onClick={handleAdd}>
+                    <AddBoxIcon style={{marginLeft: 6, position: 'relative'}} />
+                </IconButton>
+            </Typography>
+            <div style={{ height: 400, width: '50%' }}>
+                <DataGrid
+                    sx={{ml: 4}}
+                    rows={toBeRendered}
+                    columns={[
+                        { field: 'property-name', headerName: 'Name', width: 350, editable: true },
+                        { field: 'property-value', headerName: 'Value', editable: true }
+                    ]}
+                    experimentalFeatures={{ newEditingApi: true }}
+                />
+            </div>
+            {/* { Object.entries(toBeRendered).map(([property, value]) => {
                 return (
                     <div key={property} className="property-component">
                         <Typography sx={{mt: 1, mr: 2, ml: 4, float: 'left'}} variant="h6">
@@ -46,7 +72,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
 
                     </div>
                 )
-            }) }
+            }) } */}
             { Object.keys(toBeRendered).length === 0 && <Typography sx={{ml: 8, mb: 1}}  variant="h6">None</Typography> }
         </div>
     );
