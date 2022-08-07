@@ -1,19 +1,30 @@
 import { IconButton, TextField, Typography } from "@mui/material";
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import { DataGrid } from '@mui/x-data-grid';
+import MaterialTable from '@material-table/core';
+import { useState } from "react";
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     let toBeRendered = []
+
+    function guidGenerator() {
+        var S4 = function() {
+           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        };
+        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    }
+
     Object.keys(nodeObject).forEach((key, index) => {
         if (key.startsWith('prop')) {
                 let property_name = key.split('_').slice(1).join('_');
                 toBeRendered.push({
-                    'id': index+1,
+                    'id': guidGenerator(),
                     'property-name': property_name,
                     'property-value': nodeObject[key]
                 })
             }
     });
+    
+    const [data, setData] = useState(toBeRendered);
 
     // Helper function used for changing state of properties
     function changeData(key, value) {
@@ -38,23 +49,56 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                 }}
                 defaultValue={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
-            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>
-                Properties
-                <IconButton color="inherit" onClick={handleAdd}>
-                    <AddBoxIcon style={{marginLeft: 6, position: 'relative'}} />
-                </IconButton>
-            </Typography>
-            <div style={{ height: 400, width: '50%' }}>
+            <MaterialTable
+                title={<Typography sx={{ml: 2, mt: 2, mb: 1}} variant='h5'>Properties</Typography>}
+                data={data}
+                columns={[
+                    { title: 'Name', field: 'property-name' },
+                    { title: 'Value', field: 'property-value' }
+                ]}
+                editable={{
+                onRowAdd: (newRow) => new Promise((resolve, reject) => {
+                    const updatedRows = [...data, { id: Math.floor(Math.random() * 100), ...newRow }]
+                    setTimeout(() => {
+                    setData(updatedRows)
+                    resolve()
+                    }, 2000)
+                }),
+                onRowDelete: selectedRow => new Promise((resolve, reject) => {
+                    const index = selectedRow.tableData.id;
+                    const updatedRows = [...data]
+                    updatedRows.splice(index, 1)
+                    setTimeout(() => {
+                    setData(updatedRows)
+                    resolve()
+                    }, 2000)
+                }),
+                onRowUpdate:(updatedRow,oldRow)=>new Promise((resolve,reject)=>{
+                    const index=oldRow.tableData.id;
+                    const updatedRows=[...data]
+                    updatedRows[index]=updatedRow
+                    setTimeout(() => {
+                    setData(updatedRows)
+                    resolve()
+                    }, 2000)
+                })
+
+                }}
+                options={{
+                actionsColumnIndex: -1, addRowPosition: "first"
+                }}
+            />
+            {/* <div style={{ height: 400, width: '50%' }}>
                 <DataGrid
                     sx={{ml: 4}}
-                    rows={toBeRendered}
+                    rows={rows}
                     columns={[
                         { field: 'property-name', headerName: 'Name', width: 350, editable: true },
                         { field: 'property-value', headerName: 'Value', editable: true }
                     ]}
                     experimentalFeatures={{ newEditingApi: true }}
                 />
-            </div>
+            </div> */}
             {/* { Object.entries(toBeRendered).map(([property, value]) => {
                 return (
                     <div key={property} className="property-component">
