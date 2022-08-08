@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 
 const EntriesList = ({ nodes, title }) => {
     const navigate = useNavigate();
+
+    // Handler function for button clicks
     const handleClick = (event, id) => {
         event.preventDefault();
         navigate('/entry/'+id);
@@ -24,6 +26,7 @@ const EntriesList = ({ nodes, title }) => {
             <Typography variant="h6" sx={{mt: 2, ml: 2, mb: 1}}>
                 Number of nodes in taxonomy: {nodes.length}
             </Typography>
+            {/* Table for listing all nodes in taxonomy */}
             <div className="entry-preview">
                 <TableContainer sx={{ml: 2}} component={Paper}>
                     <Table sx={{ width: 400 }}>

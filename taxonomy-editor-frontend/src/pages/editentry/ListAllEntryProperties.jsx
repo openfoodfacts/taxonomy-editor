@@ -2,6 +2,9 @@ import { Typography } from "@mui/material";
 import ListAllProperties from "./ListAllProperties";
 import ListTranslations from "./ListTranslations";
 
+// Parent component used for rendering sub-components
+// Sub-components are used to render info for an "entry"
+
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     
     let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});

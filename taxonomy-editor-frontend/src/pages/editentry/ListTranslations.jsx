@@ -1,11 +1,21 @@
 import { Typography, Paper, TextField, Stack } from "@mui/material";
 
+// Sub-component for rendering translation of an "entry"
+
 const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
     let toBeRendered = {}
+
     Object.keys(nodeObject).forEach((key) => {
+        
+        // Get all tags and its corresponding language code
+        // Tagids need to be recomputed, so shouldn't be rendered
+        // Main language isn't considered, since it's rendered separately
+ 
         if (key.startsWith('tags') && 
             !key.endsWith(nodeObject.main_language) && 
             !key.includes('ids')) {
+
+                // Slice the language code
                 let lc = key.slice(-2);
                 toBeRendered[lc] = nodeObject[key]
             }
@@ -21,10 +31,13 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
 
     return ( 
         <div className="translations">
+            {/* Title */}
             <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
+            {/* Main Language */}
             <Typography variant='h6'>
                 { nodeObject && languageNames.of(nodeObject.main_language) }
             </Typography>
+            {/* Render main language tags */}
             <Typography variant='h6'> 
                 { nodeObject && 
                     nodeObject["tags_"+nodeObject['main_language']].map((tag, index) => {
@@ -43,6 +56,8 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
                     })
                 }
             </Typography>
+
+            {/* All other languages */}
             {
                 Object.entries(toBeRendered).map( ([lang, value]) => {
                     return (
@@ -50,6 +65,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
                             <Typography sx={{mt:1}} variant="h6">
                                 {languageNames.of(lang)}
                             </Typography>
+                            {/* Render all related tags */}
                             {
                                 value.map((tag, index) => {
                                     return (

@@ -7,6 +7,11 @@ import FetchRelations from "./FetchAndDisplayRelations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllOtherProperties from "./ListAllOtherProperties";
 
+// Used for rendering node information
+// If node is an "entry": Relations, translations, comments and properties are rendered
+// If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
+// If node is "header/footer": Comments are rendered
+
 const AccumulateAllComponents = ({ id }) => {
     
     // Finding URL to send requests

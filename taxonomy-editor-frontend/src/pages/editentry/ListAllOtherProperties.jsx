@@ -1,5 +1,8 @@
 import { Box, Paper, Stack, TextField, Typography } from "@mui/material";
 
+// Parent component used for rendering info
+// on a stopword, synonym, header or footer
+
 const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     
     // Stores 2 letter language code (LC) of the tags
@@ -39,6 +42,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
 
     return ( 
         <Box className="all-node-properties">
+            {/* Comments */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
                 sx={{ml: 8, mt: 1, width: 250}}
@@ -50,6 +54,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                 defaultValue={nodeObject.preceding_lines} 
                 variant="outlined" /> }
 
+            {/* Main Language */}
             { Object.keys(toBeRendered).length > 0 && 
                 <div className="language">
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
@@ -61,6 +66,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                 </div>
                 }
             
+            {/* Stopwords or Synonyms */}
             { Object.keys(toBeRendered).length > 0 && 
                 <div className="tags">
                     {id.startsWith('stopword') ?
@@ -70,6 +76,8 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                         <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
                             Synonyms
                         </Typography>}
+
+                    {/* Render all tags */}
                     { toBeRendered[languageCode].map((tag, index) => {
                         return (
                             <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>

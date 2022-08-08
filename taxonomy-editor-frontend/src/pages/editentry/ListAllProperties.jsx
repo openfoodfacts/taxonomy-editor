@@ -1,11 +1,19 @@
 import { TextField, Typography } from "@mui/material";
 
+// Sub-component used for rendering comments and properties of an "entry"
+
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     let toBeRendered = {}
     Object.keys(nodeObject).forEach((key) => {
+
+        // Collecting keys of properties
+        // Properties have a prefix "prop_" followed by their name
+        // Ex: prop_vegan_en
+
         if (key.startsWith('prop')) {
-                // Example key: prop_vegan_en, Property name: vegan_en
-                let property_name = key.split('_').slice(1).join('_'); // Slicing property name from key
+
+                // Removing "prop_" prefix from key to render only the name
+                const property_name = key.split('_').slice(1).join('_');
                 toBeRendered[property_name] = nodeObject[key]
             }
     });
@@ -19,6 +27,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     
     return (
         <div className="all-properties">
+            {/* Comments */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             <TextField
                 sx={{ml: 8, mt: 1, width: 250}}
@@ -29,6 +38,8 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                 }}
                 defaultValue={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
+
+            {/* Properties */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Properties</Typography>
             { Object.entries(toBeRendered).map(([property, value]) => {
                 return (
@@ -44,10 +55,11 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                             }}
                             defaultValue={value} 
                             variant="outlined" />
-
                     </div>
                 )
             }) }
+
+            {/* When no properties are present for the node */}
             { Object.keys(toBeRendered).length === 0 && <Typography sx={{ml: 8, mb: 1}}  variant="h6">None</Typography> }
         </div>
     );
