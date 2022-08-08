@@ -343,7 +343,6 @@ class Parser:
         logging.info("Creating 'is_child_of' links")
         for parent, child_id in self.parent_search():
             lc, parent_id = parent.split(":")
-            tags_ids = "tags_ids_" + lc
             query = """ MATCH(p) WHERE $parent_id IN p.tags_ids_""" + lc
             query += """
                 MATCH(c) WHERE c.id= $child_id
@@ -351,7 +350,7 @@ class Parser:
                 RETURN r
             """
             result = self.session.run(
-                query, parent_id=parent_id, tagsid=tags_ids, child_id=child_id
+                query, parent_id=parent_id, child_id=child_id
             )
             if not result.value() : 
                 logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
