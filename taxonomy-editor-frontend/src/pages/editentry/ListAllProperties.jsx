@@ -1,11 +1,12 @@
-import { IconButton, TextField, Typography } from "@mui/material";
-import AddBoxIcon from '@mui/icons-material/AddBox';
-import MaterialTable from '@material-table/core';
+import { Grid, Paper, TextField, Typography } from "@mui/material";
+import MaterialTable, { MTableToolbar } from '@material-table/core';
 import { useState } from "react";
+import { Box } from "@mui/system";
+import { useEffect } from "react";
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     let toBeRendered = []
-
+  
     function guidGenerator() {
         var S4 = function() {
            return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -13,28 +14,31 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
         return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
     }
 
-    Object.keys(nodeObject).forEach((key, index) => {
+    Object.keys(nodeObject).forEach((key) => {
         if (key.startsWith('prop')) {
                 let property_name = key.split('_').slice(1).join('_');
                 toBeRendered.push({
                     'id': guidGenerator(),
-                    'property-name': property_name,
-                    'property-value': nodeObject[key]
+                    'propertyName': property_name,
+                    'propertyValue': nodeObject[key]
                 })
             }
     });
     
     const [data, setData] = useState(toBeRendered);
 
-    // Helper function used for changing state of properties
+    // Helper function used for updating state
     function changeData(key, value) {
         const duplicateData = {...nodeObject};
         duplicateData[key] = value;
         setNodeObject(duplicateData);
     }
 
-    const handleAdd = () => {
-        console.log('I added!');
+    // Helper function used for deleting from state
+    function deleteData(key) {
+        const duplicateData = {...nodeObject};
+        delete duplicateData[key];
+        setNodeObject(duplicateData);
     }
     
     return (
@@ -49,74 +53,69 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                 }}
                 defaultValue={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
+            <Box sx={{width: '50%', ml: 4}}>
             <MaterialTable
-                title={<Typography sx={{ml: 2, mt: 2, mb: 1}} variant='h5'>Properties</Typography>}
                 data={data}
                 columns={[
-                    { title: 'Name', field: 'property-name' },
-                    { title: 'Value', field: 'property-value' }
+                    { title: 'Name', field: 'propertyName' },
+                    { title: 'Value', field: 'propertyValue' }
                 ]}
                 editable={{
-                onRowAdd: (newRow) => new Promise((resolve, reject) => {
-                    const updatedRows = [...data, { id: Math.floor(Math.random() * 100), ...newRow }]
-                    setTimeout(() => {
-                    setData(updatedRows)
-                    resolve()
-                    }, 2000)
-                }),
-                onRowDelete: selectedRow => new Promise((resolve, reject) => {
-                    const index = selectedRow.tableData.id;
-                    const updatedRows = [...data]
-                    updatedRows.splice(index, 1)
-                    setTimeout(() => {
-                    setData(updatedRows)
-                    resolve()
-                    }, 2000)
-                }),
-                onRowUpdate:(updatedRow,oldRow)=>new Promise((resolve,reject)=>{
-                    const index=oldRow.tableData.id;
-                    const updatedRows=[...data]
-                    updatedRows[index]=updatedRow
-                    setTimeout(() => {
-                    setData(updatedRows)
-                    resolve()
-                    }, 2000)
-                })
-
+                    onRowAdd: (newRow) => new Promise((resolve, reject) => {
+                        const updatedRows = [...data, { id: guidGenerator(), ...newRow }]
+                        setTimeout(() => {
+                            setData(updatedRows)
+                            resolve()
+                        }, 2000)
+                    }),
+                    onRowDelete: selectedRow => new Promise((resolve, reject) => {
+                        const index = selectedRow.tableData.id;
+                        const updatedRows = data.filter(obj => !(index === obj.id))
+                        setTimeout(() => {
+                            setData(updatedRows)
+                            resolve()
+                        }, 2000)
+                    }),
+                    onRowUpdate: (updatedRow, oldRow) => new Promise((resolve, reject) => {
+                        const updatedRows=[...data];
+                        if (updatedRow.propertyName === oldRow.propertyName) {
+                            for (let i=0; i<updatedRows.length; i++) {
+                                if (updatedRows[i].id === oldRow.id) {
+                                    updatedRows[i].propertyValue = updatedRow.propertyValue;
+                                    break;
+                                }
+                            }
+                        }
+                        setTimeout(() => {
+                            setData(updatedRows);
+                            resolve()
+                        }, 2000)
+                    })
                 }}
                 options={{
-                actionsColumnIndex: -1, addRowPosition: "first"
+                    actionsColumnIndex: -1, addRowPosition: "last"
+                }}
+                components={{
+                    Toolbar: props => {
+                      // Make a copy of props so we can hide the default title
+                      const propsCopy = { ...props };
+                      // Hide default title
+                      propsCopy.showTitle = false;
+                      return (
+                        <Grid container direction="row">
+                          <Grid item xs={6}>
+                            <Typography sx={{mt: 2, mb: 1}} variant='h5'>Properties</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <MTableToolbar {...propsCopy} />
+                          </Grid>
+                        </Grid>
+                      );
+                    },
+                    Container: props => <Paper {...props} elevation={0}/>
                 }}
             />
-            {/* <div style={{ height: 400, width: '50%' }}>
-                <DataGrid
-                    sx={{ml: 4}}
-                    rows={rows}
-                    columns={[
-                        { field: 'property-name', headerName: 'Name', width: 350, editable: true },
-                        { field: 'property-value', headerName: 'Value', editable: true }
-                    ]}
-                    experimentalFeatures={{ newEditingApi: true }}
-                />
-            </div> */}
-            {/* { Object.entries(toBeRendered).map(([property, value]) => {
-                return (
-                    <div key={property} className="property-component">
-                        <Typography sx={{mt: 1, mr: 2, ml: 4, float: 'left'}} variant="h6">
-                            {property}:
-                        </Typography>
-                        <TextField
-                            size="small" 
-                            sx={{mt: 1}}
-                            onChange = {event => {
-                                changeData("prop_"+property, event.target.value)
-                            }}
-                            defaultValue={value} 
-                            variant="outlined" />
-
-                    </div>
-                )
-            }) } */}
+            </Box>
             { Object.keys(toBeRendered).length === 0 && <Typography sx={{ml: 8, mb: 1}}  variant="h6">None</Typography> }
         </div>
     );
