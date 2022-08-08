@@ -4,7 +4,8 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     let toBeRendered = {}
     Object.keys(nodeObject).forEach((key) => {
         if (key.startsWith('prop')) {
-                let property_name = key.split('_').slice(1).join('_');
+                // Example key: prop_vegan_en, Property name: vegan_en
+                let property_name = key.split('_').slice(1).join('_'); // Slicing property name from key
                 toBeRendered[property_name] = nodeObject[key]
             }
     });
