@@ -356,20 +356,22 @@ class Parser:
         self.check_synonyms()
 
     def check_roots(self):
-        query = 'MERGE (n{id:"taxonomy"}) '
+        """Add the number and the list of root nodes in a 'taxonomy' node"""
+        query = 'MERGE (n:CHECK{id:"taxonomy"}) '
         self.session.run(query)
         query = """ 
             MATCH(n:ENTRY) 
             WHERE not ()-[:is_child_of]->(n) 
             WITH count(n) AS number, collect(n.id) as list 
-            MATCH(p{id:"taxonomy"}) 
+            MATCH(p:CHECK{id:"taxonomy"}) 
             SET p.root_number = number 
             SET p.root_list = list 
         """
         self.session.run(query)
     
     def check_big_parents(self,limit=50):
-        query = 'MERGE (n{id:"taxonomy"}) '
+        """Add the list of the 'limit' (default 50) nodes with the most children"""
+        query = 'MERGE (n:CHECK{id:"taxonomy"}) '
         self.session.run(query)
         query = """
             MATCH ()-[r:is_child_of]->(n) 
@@ -379,7 +381,7 @@ class Parser:
             WITH [n.id,number] AS parent 
             UNWIND parent AS parents
             WITH collect(parents) AS result
-            MATCH(p{id:"taxonomy"}) 
+            MATCH(p:CHECK{id:"taxonomy"}) 
             SET p.big_parents = result
         """
         self.session.run(query,limit=limit)
@@ -403,6 +405,7 @@ class Parser:
         self.session.run(query)
 
     def check_number_of_descendants(self):
+        """Add the number of descendants to all nodes with children"""
         query = """
             MATCH (c)-[:is_child_of*]->(n:ENTRY)
             WITH n,count(DISTINCT c) AS number
@@ -421,6 +424,7 @@ class Parser:
         return list_dictionary
 
     def add_parent_prop_query(self,child,prop_parent,prop_redefined):
+        """query the database to add parent related properties"""
         query = """
             MATCH (c)
             WHERE c.id = $child_id
@@ -458,6 +462,7 @@ class Parser:
             self.add_parent_prop_query(child,prop_parents,prop_redefined)
 
     def add_child_stat_query(self,parent,prop_redefined,number,missing_lc):
+        """query the database to add child related properties"""
         query = """
             MATCH (p)
             WHERE p.id = $parent_id
@@ -472,7 +477,7 @@ class Parser:
         self.session.run(query,data)
 
     def list_tags_lc(self,node):
-        """return a list of language codes (lc) used"""
+        """return a list of language codes (lc) used in the node tags"""
         lc_list=[]
         for property in node:
             if property.startswith('tags_ids_'):
@@ -514,13 +519,20 @@ class Parser:
             self.add_child_stat_query(parent,prop_redefined,using_synonyms,missing_lc)
 
     def check_language(self,threshold=3):
-        """Add nodes translation percentage"""
+        """Add nodes with the percentage of translation in each language"""
         query = "MATCH (n:ENTRY) RETURN n"
         results = self.session.run(query)
+
+        #dictionary used to track the number of translated nodes for each language
         language={}
-        number_of_nodes = 0
-        nodes_with_3translations = 0
+        #total number of nodes
+        number_of_nodes = 0 
+        #number of nodes with at least 3 translations
+        nodes_with_3translations = 0 
+        #list of nodes (their id) with less than 3 translations
         nodes_missing_translation =[]
+
+        # Counting
         for result in results:
             number_of_nodes += 1
             node = result.value()
@@ -537,26 +549,89 @@ class Parser:
                 nodes_missing_translation.append(node["id"])
             else:
                 nodes_with_3translations += 1
+
         percentage_translated = nodes_with_3translations / number_of_nodes * 100
         language = {k : v / number_of_nodes * 100 for k,v in language.items()}
+
+        # Adding the result in the database
+        # First the main language node with general information
         query = """
             CREATE (main:CHECK {id : '__language__'})
-            SET main.nodes_missing_translation = $list_nodes
-            SET main.percentage_with_3_translations_or_more = $percentage_translated
+            SET main.nodes_missing_translation = $list
+            SET main.percentage_with_3_translations_or_more = $percentage
         """
-        self.session.run(query,list_nodes=nodes_missing_translation,percentage_translated=percentage_translated)
+        self.session.run(query,list=nodes_missing_translation,percentage=percentage_translated)
+        # Then all the sub-nodes for every language with their percentage
         for lc in language:
-            query = "CREATE (n:LANGUAGE{id:'" + lc + "',percentage: $" + lc + "}) \n"
+            query = "CREATE (n:CHECK{id:'" + lc + "',percentage: $" + lc + "}) \n"
             self.session.run(query,language)
         query = """
             MATCH(main:CHECK {id : '__language__'})
-            MATCH(n:LANGUAGE)
+            MATCH(n:CHECK)
             CREATE (n)-[:from]->(main)
         """
         self.session.run(query)
 
+    def tags_use_synonyms(self,tags,synonyms):
+        """check if a list of tags contains one or more synonyms and count them"""
+        synonyms_use_count = [0 for i in range(len(synonyms))]
+        for tag in tags:
+            for i,group in enumerate(synonyms):
+                for synonym in group:
+                    if synonym in tag:
+                        synonyms_use_count[i]+=1
+        return synonyms_use_count
+
     def check_synonyms(self):
-        pass
+        """Check the usage of each synonyms defined in the synonyms nodes"""
+        # get the synonyms from the database
+        query = "MATCH (n:SYNONYMS) return n"
+        results = self.session.run(query)
+        # dictionary that will contain the synonyms for each language
+        synonyms = {}
+        # associate dictionary to count usage of each synonyms
+        # register the total number of use and the number of entries that use them
+        counter_synonyms_use = {}
+        for result in results:
+            node = result.value()
+            for property in node:
+                if property.startswith("tags_ids_"):
+                    lc = property.split('_',2)[2]
+                    if synonyms.get(lc):
+                        synonyms[lc].append(node[property])
+                        counter_synonyms_use[lc].append([0,0])
+                    else:
+                        synonyms[lc] = [node[property]]
+                        counter_synonyms_use[lc] = [[0,0]]
+
+        # check if synonyms are used
+        query = "MATCH (n:ENTRY) return n"
+        results = self.session.run(query)
+        for result in results:
+            node = result.value()
+            for property in node:
+                if property.startswith("tags_ids_"):
+                    lc = property.split('_',2)[2]
+                    if lc in synonyms:
+                        tags = node[property]
+                        add = self.tags_use_synonyms(tags,synonyms[lc])
+                        for i in range(len(counter_synonyms_use[lc])):
+                            if add[i]:
+                                counter_synonyms_use[lc][i][0] += add[i]
+                                counter_synonyms_use[lc][i][1] += 1
+
+        # add the data on synonyms usage to their respective node
+        for lc in synonyms:
+            for i,synonym in enumerate(synonyms[lc]):
+                query = f""" MATCH(n:SYNONYMS) 
+                    WHERE n.tags_ids_{lc} = $synonym
+                    SET n.used_total = $total
+                    SET n.used_in_different_entries = $entries
+                """
+                data = {"synonym":synonym}
+                data["total"] = counter_synonyms_use[lc][i][0]
+                data["entries"] = counter_synonyms_use[lc][i][1]
+                self.session.run(query,data)
 
 if __name__ == "__main__":
     use = Parser()
