@@ -1,43 +1,18 @@
-import { Grid, Paper, TextField, Typography } from "@mui/material";
-import MaterialTable, { MTableToolbar } from '@material-table/core';
-import { useState } from "react";
-import { Box } from "@mui/system";
-import { useEffect } from "react";
+import { TextField, Typography } from "@mui/material";
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
-    let toBeRendered = []
-  
-    function guidGenerator() {
-        var S4 = function() {
-           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-        };
-        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-    }
-
+    let toBeRendered = {}
     Object.keys(nodeObject).forEach((key) => {
         if (key.startsWith('prop')) {
                 let property_name = key.split('_').slice(1).join('_');
-                toBeRendered.push({
-                    'id': guidGenerator(),
-                    'propertyName': property_name,
-                    'propertyValue': nodeObject[key]
-                })
+                toBeRendered[property_name] = nodeObject[key]
             }
     });
-    
-    const [data, setData] = useState(toBeRendered);
 
-    // Helper function used for updating state
+    // Helper function used for changing state of properties
     function changeData(key, value) {
         const duplicateData = {...nodeObject};
         duplicateData[key] = value;
-        setNodeObject(duplicateData);
-    }
-
-    // Helper function used for deleting from state
-    function deleteData(key) {
-        const duplicateData = {...nodeObject};
-        delete duplicateData[key];
         setNodeObject(duplicateData);
     }
     
@@ -53,69 +28,25 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
                 }}
                 defaultValue={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
-            <Box sx={{width: '50%', ml: 4}}>
-            <MaterialTable
-                data={data}
-                columns={[
-                    { title: 'Name', field: 'propertyName' },
-                    { title: 'Value', field: 'propertyValue' }
-                ]}
-                editable={{
-                    onRowAdd: (newRow) => new Promise((resolve, reject) => {
-                        const updatedRows = [...data, { id: guidGenerator(), ...newRow }]
-                        setTimeout(() => {
-                            setData(updatedRows)
-                            resolve()
-                        }, 2000)
-                    }),
-                    onRowDelete: selectedRow => new Promise((resolve, reject) => {
-                        const index = selectedRow.tableData.id;
-                        const updatedRows = data.filter(obj => !(index === obj.id))
-                        setTimeout(() => {
-                            setData(updatedRows)
-                            resolve()
-                        }, 2000)
-                    }),
-                    onRowUpdate: (updatedRow, oldRow) => new Promise((resolve, reject) => {
-                        const updatedRows=[...data];
-                        if (updatedRow.propertyName === oldRow.propertyName) {
-                            for (let i=0; i<updatedRows.length; i++) {
-                                if (updatedRows[i].id === oldRow.id) {
-                                    updatedRows[i].propertyValue = updatedRow.propertyValue;
-                                    break;
-                                }
-                            }
-                        }
-                        setTimeout(() => {
-                            setData(updatedRows);
-                            resolve()
-                        }, 2000)
-                    })
-                }}
-                options={{
-                    actionsColumnIndex: -1, addRowPosition: "last"
-                }}
-                components={{
-                    Toolbar: props => {
-                      // Make a copy of props so we can hide the default title
-                      const propsCopy = { ...props };
-                      // Hide default title
-                      propsCopy.showTitle = false;
-                      return (
-                        <Grid container direction="row">
-                          <Grid item xs={6}>
-                            <Typography sx={{mt: 2, mb: 1}} variant='h5'>Properties</Typography>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <MTableToolbar {...propsCopy} />
-                          </Grid>
-                        </Grid>
-                      );
-                    },
-                    Container: props => <Paper {...props} elevation={0}/>
-                }}
-            />
-            </Box>
+            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Properties</Typography>
+            { Object.entries(toBeRendered).map(([property, value]) => {
+                return (
+                    <div key={property} className="property-component">
+                        <Typography sx={{mt: 1, mr: 2, ml: 4, float: 'left'}} variant="h6">
+                            {property}:
+                        </Typography>
+                        <TextField
+                            size="small" 
+                            sx={{mt: 1}}
+                            onChange = {event => {
+                                changeData("prop_"+property, event.target.value)
+                            }}
+                            defaultValue={value} 
+                            variant="outlined" />
+
+                    </div>
+                )
+            }) }
             { Object.keys(toBeRendered).length === 0 && <Typography sx={{ml: 8, mb: 1}}  variant="h6">None</Typography> }
         </div>
     );
