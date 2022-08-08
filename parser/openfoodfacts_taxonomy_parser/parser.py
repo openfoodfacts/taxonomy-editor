@@ -215,7 +215,7 @@ class Parser:
         saved_nodes=[]
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?:")
+        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z])?:")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
 
