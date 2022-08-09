@@ -215,7 +215,7 @@ class Parser:
         saved_nodes=[]
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([_][a-zA-Z][a-zA-Z])?:")
+        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:")
         # Check if it is correctly written
         correctly_written = re.compile("\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
@@ -253,25 +253,33 @@ class Parser:
                     id = "stopwords:" + str(index_stopwords)
                     data = self.set_data_id(data, id, line_number)
                     index_stopwords += 1
-                    lc, value = self.get_lc_value(line[10:])
-                    data["tags_" + lc] = value
-                    # add the list with its lc
-                    self.stopwords[lc] = value
+                    try:
+                        lc, value = self.get_lc_value(line[10:])
+                    except:
+                        logging.error(f"Missing lc at line {line_number+1} ?")
+                    else:
+                        data["tags_" + lc] = value
+                        # add the list with its lc
+                        self.stopwords[lc] = value
                 elif line.startswith("synonyms"):
                     id = "synonyms:" + str(index_synonyms)
                     data = self.set_data_id(data, id, line_number)
                     index_synonyms += 1
                     line = line[9:]
                     tags = [words.strip() for words in line[3:].split(",")]
-                    lc, value = self.get_lc_value(line)
-                    data["tags_" + lc] = tags
-                    data["tags_ids_" + lc] = value
+                    try:
+                        lc, value = self.get_lc_value(line)
+                    except:
+                        logging.error(f"Missing lc at line {line_number+1} ?")
+                    else:
+                        data["tags_" + lc] = tags
+                        data["tags_ids_" + lc] = value
                 elif line[0] == "<":
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
-                        # first 2-3 characters before ":" are the language code
+                        # first characters before ":" are the language code
                         data["main_language"] = data["id"].split(":", 1)[0]  
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
