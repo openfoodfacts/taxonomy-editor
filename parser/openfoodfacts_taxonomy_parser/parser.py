@@ -215,7 +215,9 @@ class Parser:
         saved_nodes=[]
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z])?:")
+        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([_][a-zA-Z][a-zA-Z])?:")
+        # Check if it is correctly written
+        correctly_written = re.compile("\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
 
@@ -286,9 +288,13 @@ class Parser:
                 else:
                     try:
                         property_name, lc, property_value = line.split(":", 2)
-                        data["prop_" + property_name + "_" + lc] = property_value
+                        if not (correctly_written.match(property_name)
+                            and correctly_written.match(lc)) :
+                            raise Exception
                     except:
                         logging.error(f'Reading error at line {line_number+1}')
+                    else:
+                        data["prop_" + property_name + "_" + lc] = property_value
 
         data["id"] = "__footer__"
         data["preceding_lines"].pop(0)
