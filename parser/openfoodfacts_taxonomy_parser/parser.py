@@ -361,7 +361,7 @@ class Parser:
         self.session.run(query)
         query = """ 
             MATCH(n:ENTRY) 
-            WHERE not ()-[:is_child_of]->(n) 
+            WHERE not (n)-[:is_child_of]->() 
             WITH count(n) AS number, collect(n.id) as list 
             MATCH(p:CHECK{id:"taxonomy"}) 
             SET p.root_number = number 
@@ -377,8 +377,8 @@ class Parser:
             MATCH ()-[r:is_child_of]->(n) 
             WITH n, count(r) AS number 
             ORDER BY number DESC 
-            LIMIT 5
-            WITH [n.id,number] AS parent 
+            LIMIT $limit
+            WITH [n.id,toString(number)] AS parent 
             UNWIND parent AS parents
             WITH collect(parents) AS result
             MATCH(p:CHECK{id:"taxonomy"}) 
