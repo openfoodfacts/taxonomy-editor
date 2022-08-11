@@ -292,7 +292,9 @@ class Parser:
                         word_normalized = self.remove_stopwords(
                             lang, self.normalizing(word, lang)
                         )
-                        tagsids_list.append(word_normalized)
+                        if word_normalized not in tagsids_list:
+                            # in case 2 normalized synonyms are the same
+                            tagsids_list.append(word_normalized)
                     data["tags_" + lang] = tags_list
                     data["tags_ids_" + lang] = tagsids_list
                 else:
