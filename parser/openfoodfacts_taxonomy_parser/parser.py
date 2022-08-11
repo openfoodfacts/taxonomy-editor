@@ -215,7 +215,7 @@ class Parser:
         saved_nodes=[]
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:")
+        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:")
         # Check if it is correctly written
         correctly_written = re.compile("\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
@@ -277,6 +277,8 @@ class Parser:
                 elif line[0] == "<":
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
+                    # to transform '-' from language code to '_'
+                    line = line.replace("-","_")
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
                         # first characters before ":" are the language code
@@ -296,6 +298,9 @@ class Parser:
                 else:
                     try:
                         property_name, lc, property_value = line.split(":", 2)
+                        # in case there is space before or after the colons
+                        property_name = property_name.strip()
+                        lc = lc.strip().replace("-","_")
                         if not (correctly_written.match(property_name)
                             and correctly_written.match(lc)) :
                             raise Exception
