@@ -247,6 +247,7 @@ class Parser:
             if not (line) or line[0] == "#":
                 data["preceding_lines"].append(line)
             else:
+                line = line.rstrip(",")
                 if not data["src_position"]:
                     data["src_position"] = line_number + 1
                 if line.startswith("stopwords"):
