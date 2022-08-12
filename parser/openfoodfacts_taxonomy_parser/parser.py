@@ -519,10 +519,15 @@ class Parser:
             self.add_child_stat_query(parent,prop_redefined,using_synonyms,missing_lc)
 
     def check_language(self,threshold=3):
-        """Add nodes with the percentage of translation in each language"""
+        """Add nodes with the percentage of translation in each language
+            and a list a tags used in multiple entries"""
         query = "MATCH (n:ENTRY) RETURN n"
         results = self.session.run(query)
-
+        
+        # dictionary that will contain all the tags for each language
+        all_tags = {}
+        # dictionary that will contain repeated tags for each language
+        reused_tags = {}
         #dictionary used to track the number of translated nodes for each language
         language={}
         #total number of nodes
@@ -539,12 +544,23 @@ class Parser:
             number_of_translation = 0
             for property in node:
                 if property.startswith('tags_ids_'):
-                    number_of_translation += 1
                     lc = property.split('_',2)[2]
-                    if lc in language:
-                        language[lc] += 1
-                    else:
-                        language[lc] = 1
+
+                    # check if a tag is already used in another entry
+                    all_tags.setdefault(lc,[])
+                    tags = node[property]
+                    for tag in tags:
+                        if tag in all_tags[lc]:
+                            reused_tags.setdefault(lc,[])
+                            if tag not in reused_tags[lc]:
+                                reused_tags[lc].append(tag)
+                    all_tags[lc].extend(tags)
+
+                    # count number of translation
+                    number_of_translation += 1
+                    language.setdefault(lc,0)
+                    language[lc] += 1
+
             if number_of_translation < threshold:
                 nodes_missing_translation.append(node["id"])
             else:
@@ -561,13 +577,18 @@ class Parser:
             SET main.percentage_with_3_translations_or_more = $percentage
         """
         self.session.run(query,list=nodes_missing_translation,percentage=percentage_translated)
-        # Then all the sub-nodes for every language with their percentage
+
+        # Then all the sub-nodes for every language with their percentage and repeated tags
+        tags_list = None # create variable
         for lc in language:
-            query = "CREATE (n:CHECK{id:'" + lc + "',percentage: $" + lc + "}) \n"
-            self.session.run(query,language)
+            query = f"CREATE (n:CHECK{{id:'{lc}',percentage: ${lc} }}) \n"
+            if lc in reused_tags:
+                query += "SET n.multiple_use = $tags_list "
+                tags_list = reused_tags[lc]
+            self.session.run(query,language,tags_list=tags_list)
         query = """
             MATCH(main:CHECK {id : '__language__'})
-            MATCH(n:CHECK)
+            MATCH(n:CHECK) WHERE not n=main
             CREATE (n)-[:from]->(main)
         """
         self.session.run(query)
@@ -597,14 +618,12 @@ class Parser:
             for property in node:
                 if property.startswith("tags_ids_"):
                     lc = property.split('_',2)[2]
-                    if synonyms.get(lc):
-                        synonyms[lc].append(node[property])
-                        counter_synonyms_use[lc].append([0,0])
-                    else:
-                        synonyms[lc] = [node[property]]
-                        counter_synonyms_use[lc] = [[0,0]]
+                    synonyms.setdefault(lc,[])
+                    counter_synonyms_use.setdefault(lc,[])
+                    synonyms[lc].append(node[property])
+                    counter_synonyms_use[lc].append([0,0])
 
-        # check if synonyms are used
+        # check if synonyms are used and count
         query = "MATCH (n:ENTRY) return n"
         results = self.session.run(query)
         for result in results:
