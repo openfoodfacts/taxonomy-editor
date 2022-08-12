@@ -307,7 +307,7 @@ class Parser:
                     line = line.replace("-", "_")
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
-                        # first characters before ":" are the language code
+                        # first 2-3 characters before ":" are the language code
                         data["main_language"] = data["id"].split(":", 1)[0]
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
