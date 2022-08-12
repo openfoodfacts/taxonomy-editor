@@ -340,10 +340,10 @@ class Parser:
         self.create_previous_link()
         # self.delete_used_properties()
 
-    def check(self):
+    def check(self,limit_big_parent=50,threshold_language=3):
         #check taxonomy
         self.check_roots()
-        self.check_big_parents()
+        self.check_big_parents(limit_big_parent)
 
         #check entries
         self.check_shortest_and_longest_path()
@@ -352,7 +352,7 @@ class Parser:
         self.check_children()
 
         #check language
-        self.check_language()
+        self.check_language(threshold_language)
         self.check_synonyms()
 
     def check_roots(self):
