@@ -3,6 +3,7 @@ import re, unicodedata, unidecode
 from .exception import DuplicateIDError
 import logging
 
+
 class Parser:
     def __init__(self, uri="bolt://localhost:7687"):
         self.driver = GraphDatabase.driver(uri)
@@ -212,10 +213,12 @@ class Parser:
 
     def harvest(self, filename):
         """Transform data from file to dictionary"""
-        saved_nodes=[]
+        saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:")
+        language_code_prefix = re.compile(
+            "[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
+        )
         # Check if it is correctly written
         correctly_written = re.compile("\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
@@ -236,7 +239,7 @@ class Parser:
                     msg += f"duplicate id in file at line {data['src_position']}. "
                     msg += f"Node creation cancelled"
                     logging.error(msg)
-                else : 
+                else:
                     data = self.remove_separating_line(data)
                     yield data  # another function will use this dictionary to create a node
                     self.is_before = data["id"]
@@ -279,11 +282,11 @@ class Parser:
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
                     # to transform '-' from language code to '_'
-                    line = line.replace("-","_")
+                    line = line.replace("-", "_")
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
                         # first characters before ":" are the language code
-                        data["main_language"] = data["id"].split(":", 1)[0]  
+                        data["main_language"] = data["id"].split(":", 1)[0]
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
                     tags_list = []
@@ -303,12 +306,14 @@ class Parser:
                         property_name, lc, property_value = line.split(":", 2)
                         # in case there is space before or after the colons
                         property_name = property_name.strip()
-                        lc = lc.strip().replace("-","_")
-                        if not (correctly_written.match(property_name)
-                            and correctly_written.match(lc)) :
+                        lc = lc.strip().replace("-", "_")
+                        if not (
+                            correctly_written.match(property_name)
+                            and correctly_written.match(lc)
+                        ):
                             raise Exception
                     except:
-                        logging.error(f'Reading error at line {line_number+1}')
+                        logging.error(f"Reading error at line {line_number+1}")
                     else:
                         data["prop_" + property_name + "_" + lc] = property_value
 
@@ -342,13 +347,12 @@ class Parser:
             """
             results = self.session.run(query, id=id, id_previous=id_previous)
             relation = results.values()
-            if len(relation)>1 :
+            if len(relation) > 1:
                 msg = f"2 or more 'is_before' links created for ids {id} and {id_previous}, "
                 msg += f"one of the ids isn't unique"
                 logging.error(msg)
             elif not relation[0]:
                 logging.error(f"link not created between {id} and {id_previous}")
-
 
     def parent_search(self):
         """Get the parent and the child to link"""
@@ -371,11 +375,11 @@ class Parser:
                 CREATE (c)-[r:is_child_of]->(p)
                 RETURN r
             """
-            result = self.session.run(
-                query, parent_id=parent_id, child_id=child_id
-            )
-            if not result.value() : 
-                logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
+            result = self.session.run(query, parent_id=parent_id, child_id=child_id)
+            if not result.value():
+                logging.warning(
+                    f"parent not found for child {child_id} with parent {parent_id}"
+                )
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -388,7 +392,8 @@ class Parser:
         self.create_previous_link()
         # self.delete_used_properties()
 
+
 if __name__ == "__main__":
-    logging.basicConfig(filename='parser.log', encoding='utf-8', level=logging.INFO)
+    logging.basicConfig(filename="parser.log", encoding="utf-8", level=logging.INFO)
     use = Parser()
     use("test")
