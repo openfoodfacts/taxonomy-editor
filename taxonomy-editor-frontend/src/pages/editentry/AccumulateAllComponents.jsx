@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../../components/useFetch";
@@ -23,7 +23,8 @@ const AccumulateAllComponents = ({ id }) => {
     else if (id.startsWith('stopword')) { url += `stopword/${id}/` }
     else { url += `entry/${id}/`; isEntry = true; }
 
-    const [nodeObject, setNodeObject] = useState(null); // Storing node information
+    const [nodeObject, setNodeObject] = useState(null); // Storing original node information
+    const [updatedNodeObject, setUpdatedNodeObject] = useState(null); // Storing updates to node
     const [open, setOpen] = useState(false); // Used for Dialog component
     const navigate = useNavigate(); // Navigation between pages
 
@@ -32,6 +33,7 @@ const AccumulateAllComponents = ({ id }) => {
     // Setting state of node after fetch
     useEffect(() => {
         setNodeObject(node?.[0]);
+        setUpdatedNodeObject(node?.[0]);
     }, [node])
 
     // Displaying errors if any
@@ -45,7 +47,7 @@ const AccumulateAllComponents = ({ id }) => {
 
     // Function handling updation of node
     const handleSubmit = () => {
-        const {id, ...data} = nodeObject // ID not allowed in POST
+        const {id, ...data} = updatedNodeObject // ID not allowed in POST
         fetch(url, {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
@@ -59,12 +61,13 @@ const AccumulateAllComponents = ({ id }) => {
     
     return ( 
         <div className="node-attributes">
+            {isPending && <Typography sx={{ml: 4}} variant='h5' component={'div'}>Loading..</Typography>}
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
                 <>  <FetchRelations url={url+'parents'} title={'Parents'} />
                     <FetchRelations url={url+'children'} title={'Children'} />
-                    <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> :
-                <>  <ListAllOtherProperties nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
+                    <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </> :
+                <>  <ListAllOtherProperties nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </>
             }
             {/* Button for submitting edits */}
             <Button

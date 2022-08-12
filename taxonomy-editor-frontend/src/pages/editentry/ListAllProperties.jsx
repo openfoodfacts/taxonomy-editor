@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import * as uuid from "uuid";
 
-const ListAllProperties = ({ nodeObject, setNodeObject, isNewNodeObject }) => {
-    let toBeRendered = []
+const ListAllProperties = ({ nodeObject, setNodeObject, originalNodeObject }) => {
     const [data, setData] = useState([]);
 
     // Changes the properties to be rendered
-    // Dependent on changes occuring in "isNewNodeObject"
+    // Dependent on changes occuring in "originalNodeObject"
     useEffect(() => {
-        Object.keys(nodeObject).forEach((key) => {
+        let toBeRendered = []
+        Object.keys(originalNodeObject).forEach((key) => {
 
             // Collecting keys of properties
             // Properties have a prefix "prop_" followed by their name
@@ -23,12 +23,12 @@ const ListAllProperties = ({ nodeObject, setNodeObject, isNewNodeObject }) => {
                     toBeRendered.push({
                         'id': uuid.v4(),
                         'propertyName': property_name,
-                        'propertyValue': nodeObject[key]
+                        'propertyValue': originalNodeObject[key]
                     })
                 }
         });
         setData(toBeRendered);
-    }, [isNewNodeObject])
+    }, [originalNodeObject])
 
     // Helper function used for changing comments from node
     function changeCommentData(value) {
