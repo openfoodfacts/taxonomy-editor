@@ -13,7 +13,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             <Typography sx={{ml: 4}} variant='h6'>
                 { nodeObject && <ListTranslations nodeObject={nodeObject} languageNames={languageNames} setNodeObject={setNodeObject} /> }
             </Typography>
-            { nodeObject && <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> }
+            { nodeObject && <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} isNewNodeObject={nodeObject} /> }
         </div>
     );
 }

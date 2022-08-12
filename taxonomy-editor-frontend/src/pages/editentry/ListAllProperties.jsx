@@ -1,30 +1,35 @@
 import { Grid, Paper, TextField, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from '@material-table/core';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import * as uuid from "uuid";
 
-const ListAllProperties = ({ nodeObject, setNodeObject }) => {
+const ListAllProperties = ({ nodeObject, setNodeObject, isNewNodeObject }) => {
     let toBeRendered = []
-    Object.keys(nodeObject).forEach((key) => {
-        if (key.startsWith('prop')) {
+    const [data, setData] = useState([]);
 
-                // Collecting keys of properties
-                // Properties have a prefix "prop_" followed by their name
-                // Ex: prop_vegan_en
+    // Changes the properties to be rendered
+    // Dependent on changes occuring in "isNewNodeObject"
+    useEffect(() => {
+        Object.keys(nodeObject).forEach((key) => {
 
+            // Collecting keys of properties
+            // Properties have a prefix "prop_" followed by their name
+            // Ex: prop_vegan_en
+            if (key.startsWith('prop')) {
+            
                 // Removing "prop_" prefix from key to render only the name
-                let property_name = key.split('_').slice(1).join('_');
-                toBeRendered.push({
-                    'id': uuid.v4(),
-                    'propertyName': property_name,
-                    'propertyValue': nodeObject[key]
-                })
-            }
-    });
-    
-    const [data, setData] = useState(toBeRendered);
-    
+                    let property_name = key.split('_').slice(1).join('_');
+                    toBeRendered.push({
+                        'id': uuid.v4(),
+                        'propertyName': property_name,
+                        'propertyValue': nodeObject[key]
+                    })
+                }
+        });
+        setData(toBeRendered);
+    }, [isNewNodeObject])
+
     // Helper function used for changing comments from node
     function changeCommentData(value) {
         const duplicateData = {...nodeObject};
