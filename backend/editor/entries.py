@@ -75,7 +75,7 @@ def update_nodes(label, entry, incomingData):
             raise ValueError("Invalid key: %s", key)
     
     # Build query
-    query = [f"""MATCH (n:{label}) WHERE n.id = $id"""]
+    query = [f"""MATCH (n:{label}) WHERE n.id = $id """, """SET n={} """, """SET n.id = $id"""]
 
     for key in incomingData.keys():
         query.append(f"""\nSET n.{key} = ${key}\n""")
