@@ -1,31 +1,46 @@
-import { Box, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Paper, Stack, TextField, Typography, Button } from "@mui/material";
+import { useState, useEffect } from "react";
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import * as uuid from "uuid";
 
 // Parent component used for rendering info
 // on a stopword, synonym, header or footer
 
-const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
+const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObject }) => {
     
     // Stores 2 letter language code (LC) of the tags
-    let languageCode = ''; 
-    // Storing keys and values that needs to be rendered for editing
-    let toBeRendered = {} 
+    let [languageCode, setLanguageCode] = useState('');
+    // Storing tags that need to be rendered for editing
+    let [toBeRendered, setToBeRendered] = useState([])
     // Used for conversion of LC to long-form
-    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'}); 
+    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});
 
-    if (nodeObject) {
-        Object.keys(nodeObject).forEach((key) => {
-
-            // Get all tags and its corresponding language code
-            // Tagids need to be recomputed, so shouldn't be rendered
-
-            if (key.startsWith('tags') && 
-                !key.includes('ids')) {
-                    languageCode = key.slice(-2);
-                    toBeRendered[languageCode] = nodeObject[key]
-                }
-        })
-    }
-
+    useEffect(() => {
+        let tagsExtracted = []
+        let extractedLC = ''
+        if (originalNodeObject) {
+            Object.keys(originalNodeObject).forEach((key) => {
+    
+                // Get all tags and its corresponding language code
+                // Tagids need to be recomputed, so shouldn't be rendered
+    
+                if (key.startsWith('tags') && 
+                    !key.includes('ids')) {
+                        extractedLC = key.slice(-2);
+                        originalNodeObject[key].map((tag) => (
+                            tagsExtracted.push({
+                                'index' : uuid.v4(),
+                                'tag' : tag
+                            })
+                        ))
+                    }
+            })
+        }
+        setLanguageCode(extractedLC)
+        setToBeRendered(tagsExtracted)
+    }, [originalNodeObject])
+    
     // Helper function used for changing state of "preceding_lines"
     function changeDataComment(value) {
         const duplicateData = {...nodeObject};
@@ -34,10 +49,46 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     }
 
     // Helper function used for changing state of properties
-    function changeData(key, index, value) {
-        const duplicateData = {...nodeObject};
-        duplicateData[key][index] = value;
-        setNodeObject(duplicateData);
+    function changeData(index, value) {
+        const updatedObj = {'index' : index, 'tag' : value}
+        const duplicateToBeRendered = toBeRendered.map(obj => (obj.index === index) ? updatedObj : obj)
+        setToBeRendered(duplicateToBeRendered); // Set state
+
+        // Updated tags assigned for later use
+        const tagsToBeInserted = duplicateToBeRendered.map(el => (el.tag))
+
+        setNodeObject(prevState => {
+            const duplicateData = {...prevState};
+            duplicateData['tags_'+languageCode] = tagsToBeInserted;
+            return duplicateData
+        })
+    }
+
+    function handleAdd() {
+        const duplicateToBeRendered = [...toBeRendered, {'index': uuid.v4(), 'tag' : ''}];
+        setToBeRendered(duplicateToBeRendered); // Set state
+
+        // Updated tags assigned for later use
+        const tagsToBeInserted = duplicateToBeRendered.map(el => (el.tag))
+        setNodeObject(prevState => {
+            const duplicateData = {...prevState};
+            duplicateData['tags_'+languageCode] = tagsToBeInserted;
+            return duplicateData
+        })
+    }
+
+    function handleDelete(index) {
+        const duplicateToBeRendered = toBeRendered.filter(obj => !(obj.index === index))
+        setToBeRendered(duplicateToBeRendered); // Set state
+
+        // Updated tags assigned for later use
+        const tagsToBeInserted = duplicateToBeRendered.map(el => (el.tag))
+        setNodeObject(prevState => {
+            const duplicateData = {...prevState};
+            duplicateData['tags_'+languageCode] = tagsToBeInserted;
+            console.log(duplicateData);
+            return duplicateData
+        })
     }
 
     return ( 
@@ -55,7 +106,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                 variant="outlined" /> }
 
             {/* Main Language */}
-            { Object.keys(toBeRendered).length > 0 && 
+            { toBeRendered.length > 0 && 
                 <div className="language">
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
@@ -67,29 +118,46 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                 }
             
             {/* Stopwords or Synonyms */}
-            { Object.keys(toBeRendered).length > 0 && 
+            { toBeRendered.length > 0 && 
                 <div className="tags">
                     {id.startsWith('stopword') ?
-                        <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
-                            Stopwords
-                        </Typography> :
-                        <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
-                            Synonyms
-                        </Typography>}
+                        <Stack direction="row" alignItems="center">
+                            <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
+                                Stopwords
+                            </Typography>
+                            <Button sx={{ml: -1, color: "#808080"}} onClick={handleAdd}>
+                                <AddBoxIcon />
+                            </Button>
+                        </Stack> :
+                        <Stack direction="row" alignItems="center">
+                            <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
+                                Synonyms
+                            </Typography>
+                            <Button sx={{ml: -1, color: "#808080"}} onClick={handleAdd}>
+                                <AddBoxIcon />
+                            </Button>
+                        </Stack>}
 
                     {/* Render all tags */}
-                    { toBeRendered[languageCode].map((tag, index) => {
+                    { toBeRendered.map((tagObj) => {
+                        const index = tagObj.index;
+                        const tag = tagObj.tag;
                         return (
-                            <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>
-                                <TextField 
-                                    size="small" 
-                                    sx={{mt: 1}} 
-                                    onChange = {event => {
-                                        changeData('tags_'+languageCode, index, event.target.value)
-                                    }}
-                                    defaultValue={tag} 
-                                    variant="outlined" />
-                            </Paper>
+                            <Stack key={index} direction="row" alignItems="center">
+                                <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>
+                                    <TextField 
+                                        size="small" 
+                                        sx={{mt: 1}} 
+                                        onChange = {event => {
+                                            changeData(index, event.target.value)
+                                        }}
+                                        defaultValue={tag} 
+                                        variant="outlined" />
+                                </Paper>
+                                <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(index, e)}>
+                                    <DeleteOutlineIcon />
+                                </Button>
+                            </Stack>
                         )})}
                 </div>
             }

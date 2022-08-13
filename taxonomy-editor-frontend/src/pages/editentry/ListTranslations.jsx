@@ -1,7 +1,7 @@
 import { Typography, Paper, TextField, Stack, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
 
 // Sub-component for rendering translation of an "entry"
@@ -210,7 +210,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
                                         variant="outlined" />  
                                 </Paper>
                                 <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(nodeObject.main_language, index, e)}>
-                                    <DeleteIcon />
+                                    <DeleteOutlineIcon />
                                 </Button>
                             </Stack>
 
@@ -252,7 +252,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
                                                     variant="outlined" />
                                             </Paper>
                                             <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(lang, index, e)}>
-                                                 <DeleteIcon />
+                                                 <DeleteOutlineIcon />
                                             </Button>
                                         </Stack>
                                     )
