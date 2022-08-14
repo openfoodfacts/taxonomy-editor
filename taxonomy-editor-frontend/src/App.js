@@ -10,16 +10,16 @@ const theme = createTheme({
 
 function App() {
   return (
+    <ThemeProvider theme={theme}>
+    <CssBaseline />
     <Router>
-      <ThemeProvider theme={theme}>
         <div className="App">
-          <CssBaseline />
           <Routes>
             <Route path="/" element={<Home />} />
           </Routes>
         </div>
-      </ThemeProvider>
     </Router>
+    </ThemeProvider>
   );
 }
 
