@@ -30,7 +30,6 @@ const Entry = () => {
     }
     return (
         <div className="all-entries">
-            { isSuccess && 
             <Box className="entry">
                 <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
                     List of nodes in {title} Taxonomy:
@@ -77,7 +76,7 @@ const Entry = () => {
                         </Table>
                     </TableContainer>
                 </Box>
-            </Box>}
+            </Box>
         </div>
     );
 }
