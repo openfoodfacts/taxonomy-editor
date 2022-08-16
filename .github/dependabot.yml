@@ -12,7 +12,7 @@ updates:
       prefix: "chore"
       include: "scope"
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/taxonomy-editor-frontend"
     schedule:
       interval: "weekly"
     labels:
