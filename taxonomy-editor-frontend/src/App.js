@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import Entry from "./pages/allentries";
 import EditEntry from "./pages/editentry";
+import Home from './pages/home';
 
 const theme = createTheme({
   typography: {
@@ -15,6 +16,7 @@ function App() {
     <ThemeProvider theme={theme}>
     <CssBaseline />
     <Router>
+        <ResponsiveAppBar />
         <div className="App">
           <ResponsiveAppBar />
           <Routes>
