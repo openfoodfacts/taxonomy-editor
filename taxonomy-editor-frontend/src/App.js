@@ -18,7 +18,6 @@ function App() {
     <Router>
         <ResponsiveAppBar />
         <div className="App">
-          <ResponsiveAppBar />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/entry" element={<Entry />} />
