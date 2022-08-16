@@ -3,18 +3,18 @@ import { API_URL } from "../../constants";
 import EntriesList from "./EntriesList";
 
 const Entry = () => {
-    const {data: nodes, isPending, error} = useFetch(API_URL+'nodes');
-    if (error) {
+    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(API_URL+'nodes');
+    if (isError) {
         return (
             <div className="all-entries">
-                {error && <div>{error}</div>}
+                {isError && <div>{errorMessage}</div>}
             </div>
         )
     }
     return (
         <div className="all-entries">
             {isPending && <div>Loading...</div>}
-            {nodes && <EntriesList nodes={nodes} title={"Test"}/>}
+            {isSuccess && <EntriesList nodes={nodes} title={"Test"}/>}
         </div>
     );
 }
