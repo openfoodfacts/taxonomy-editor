@@ -1,4 +1,9 @@
 import { Typography, Paper, TextField, Stack, Button } from "@mui/material";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -9,7 +14,33 @@ import * as uuid from "uuid";
 const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNodeObject }) => {
     let [toBeRendered, setToBeRendered] = useState([]) // Stores state of all tags
     let [mainLang_toBeRendered, setMainLang_toBeRendered] = useState([]) // Stores state of main language's tags
-    
+    const [open, setOpen] = useState(false); // Used for Dialog component
+    const [newLC, setNewLC] = useState(''); // Used for storing new LC from Dialog
+
+    // Helper functions for Dialog component
+    function handleClose() {
+        setOpen(false);
+    }
+
+    function handleAddTranslation(key) {
+        const duplicateToBeRendered = [...toBeRendered, {'lc' : key, 'tags' : []}]
+        setToBeRendered(duplicateToBeRendered);
+        console.log(duplicateToBeRendered);
+        key = 'tags_' + key; // LC must have a prefix "tags_"
+        
+        // Make changes to the parent NodeObject
+        setNodeObject(prevState => {
+            const duplicateData = {...prevState};
+            duplicateData[key] = [];
+            return duplicateData 
+        })
+        setOpen(false);
+    }
+
+    function handleOpen() {
+        setOpen(true);
+    }
+
     // Changes the translations to be rendered
     // Dependent on changes occuring in "originalNodeObject"
     useEffect(() => {
@@ -179,7 +210,12 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
     return ( 
         <div className="translations">
             {/* Title */}
-            <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
+            <Stack direction="row" alignItems="center">
+                <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
+                <Button sx={{mt: 3.5, ml: -1, color: "#808080"}} onClick={handleOpen}>
+                    <AddBoxIcon />
+                </Button>
+            </Stack>
 
             {/* Main Language */}
             <Stack direction="row" alignItems="center">
@@ -262,6 +298,26 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
                     )
                 } )
             }
+            {/* Dialog box for adding translations */}
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Add a language</DialogTitle>
+                <DialogContent>
+                <DialogContentText>
+                    Enter the two letter language code for the language to be added.
+                </DialogContentText>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    onChange={(e) => {setNewLC(e.target.value)}}
+                    fullWidth
+                    variant="standard"
+                />
+                </DialogContent>
+                <DialogActions>
+                <Button onClick={handleClose}>Cancel</Button>
+                <Button onClick={(e) => {handleAddTranslation(newLC, e)}}>Add</Button>
+                </DialogActions>
+            </Dialog>
         </div>
      );
 }
