@@ -21,16 +21,26 @@ services:
       - ./neo4j/import:/var/lib/neo4j/import
       # directory for neo4j imports
     command: neo4j
-  api:
+  taxonomy_api:
     restart: ${RESTART_POLICY:-no}
     build: backend
     environment:
       NEO4J_URI: "bolt://neo4j:7687"
-    ports:
-      - 127.0.0.1:80:80
     volumes:
       # for now we are in development mode, mount backend directory as code/
       - ./backend/editor:/code/editor
+  taxonomy_frontend:
+    # this is the nginx frontend serving react static version or redirecting queries
+    image: ghcr.io/openfoodfacts/taxonomy-editor/frontend:${TAG}
+    depends_on:
+      - taxonomy_api
+    environment:
+      - TAXONOMY_EDITOR_DOMAIN
+    volumes:
+      # Nginx, we use templates dir to be able to use environment vars
+      - ./conf/nginx.conf:/etc/nginx/templates/default.conf.template
+    ports:
+      - ${TAXONOMY_EDITOR_EXPOSE}${TAXONOMY_EDITOR_PORT}:80
 
 volumes:
   neo4j-data:
