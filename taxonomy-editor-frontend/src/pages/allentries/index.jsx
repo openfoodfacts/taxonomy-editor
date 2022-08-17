@@ -3,11 +3,11 @@ import { API_URL } from "../../constants";
 import EntriesList from "./EntriesList";
 
 const Entry = () => {
-    const {data: nodes, isPending, error} = useFetch(API_URL+'nodes');
-    if (error) {
+    const {data: nodes, isPending, errorMessage} = useFetch(API_URL+'nodes');
+    if (errorMessage) {
         return (
             <div className="all-entries">
-                {error && <div>{error}</div>}
+                {errorMessage && <div>{errorMessage}</div>}
             </div>
         )
     }

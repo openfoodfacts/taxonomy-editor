@@ -3,10 +3,10 @@ import { Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
 const FetchRelations = ({url, title}) => {
-    const { data: relations, error, isPending } = useFetch(url);
+    const { data: relations, errorMessage, isPending } = useFetch(url);
     // Check error in fetch
-    if (error) {
-        return (<div>{error}</div>)
+    if (errorMessage) {
+        return (<div>{errorMessage}</div>)
     }
     return (
         <div className="relations">

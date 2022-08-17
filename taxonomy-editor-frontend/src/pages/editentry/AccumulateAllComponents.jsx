@@ -28,7 +28,7 @@ const AccumulateAllComponents = ({ id }) => {
     const [open, setOpen] = useState(false); // Used for Dialog component
     const navigate = useNavigate(); // Navigation between pages
 
-    const { data: node, error, isPending } = useFetch(url);
+    const { data: node, errorMessage, isPending } = useFetch(url);
 
     // Setting state of node after fetch
     useEffect(() => {
@@ -36,9 +36,9 @@ const AccumulateAllComponents = ({ id }) => {
         setUpdatedNodeObject(node?.[0]);
     }, [node])
 
-    // Displaying errors if any
-    if (error) {
-        return (<div>{error}</div>)
+    // Displaying errorMessages if any
+    if (errorMessage) {
+        return (<div>{errorMessage}</div>)
     }
 
     // Helper functions for Dialog component 
@@ -54,8 +54,8 @@ const AccumulateAllComponents = ({ id }) => {
             body: JSON.stringify(data)
         }).then(() => {
             setOpen(true);
-        }).catch((error) => {
-            console.log(error);
+        }).catch((errorMessage) => {
+            console.log(errorMessage);
         })
     }
     

@@ -13,10 +13,10 @@ const theme = createTheme({
 
 function App() {
   return (
+    <ThemeProvider theme={theme}>
+    <CssBaseline />
     <Router>
-      <ThemeProvider theme={theme}>
         <div className="App">
-          <CssBaseline />
           <ResponsiveAppBar />
           <Routes>
             <Route path="/" element={<Home />} />
@@ -24,8 +24,8 @@ function App() {
             <Route path="/entry/:id" element={<EditEntry />} />
           </Routes>
         </div>
-      </ThemeProvider>
     </Router>
+    </ThemeProvider>
   );
 }
 

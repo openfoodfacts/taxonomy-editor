@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 const useFetch = (url) => {    
     const [data, setData] = useState(null)
     const [isPending, setIsPending] = useState(true)
-    const [error, setError] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     useEffect(() => {
         const abortCont = new AbortController();
@@ -17,20 +17,20 @@ const useFetch = (url) => {
             .then(data => {
                 setData(data);
                 setIsPending(false);
-                setError(null);
+                setErrorMessage(null);
             })
             .catch(err => {
                 if (err.name === 'AbortError') {
-                    console.log("Fetch aborted!");
+                    // Occurs when hook aborts
+                    // Don't need to handle separately                
                 } else {
                     setIsPending(false);
-                    console.log(err);
-                    setError(err.message);
+                    setErrorMessage(err.message);
                 }
             })
         return () => abortCont.abort();
       }, [url]);
-    return { data, isPending, error }
+    return { data, isPending, errorMessage }
 }
 
 export default useFetch;
