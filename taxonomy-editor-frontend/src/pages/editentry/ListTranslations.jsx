@@ -8,24 +8,24 @@ import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
+import ISO6391 from 'iso-639-1';
 
 // Sub-component for rendering translation of an "entry"
 
-const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNodeObject }) => {
+const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => {
     let [toBeRendered, setToBeRendered] = useState([]) // Stores state of all tags
     let [mainLang_toBeRendered, setMainLang_toBeRendered] = useState([]) // Stores state of main language's tags
     const [open, setOpen] = useState(false); // Used for Dialog component
     const [newLC, setNewLC] = useState(''); // Used for storing new LC from Dialog
+    const [isValidLC, setisValidLC] = useState(false); // Used for validating a new LC
+    const [btnDisabled, setBtnDisabled] = useState(true) // Used for dialog button
 
     // Helper functions for Dialog component
-    function handleClose() {
-        setOpen(false);
-    }
+    function handleClose() { setOpen(false); }
 
     function handleAddTranslation(key) {
         const duplicateToBeRendered = [...toBeRendered, {'lc' : key, 'tags' : []}]
         setToBeRendered(duplicateToBeRendered);
-        console.log(duplicateToBeRendered);
         key = 'tags_' + key; // LC must have a prefix "tags_"
         
         // Make changes to the parent NodeObject
@@ -164,7 +164,6 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
         setNodeObject(prevState => {
             const duplicateData = {...prevState};
             duplicateData['tags_'+key] = tagsToBeInserted;
-            console.log(duplicateData);
             return duplicateData
         })
     }
@@ -202,7 +201,6 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
         setNodeObject(prevState => {
             const duplicateData = {...prevState};
             duplicateData['tags_'+key] = tagsToBeInserted;
-            console.log(duplicateData);
             return duplicateData
         })
     }
@@ -220,7 +218,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
             {/* Main Language */}
             <Stack direction="row" alignItems="center">
                 <Typography variant='h6'>
-                    { nodeObject && languageNames.of(nodeObject.main_language) }
+                    { nodeObject && ISO6391.getName(nodeObject.main_language) }
                 </Typography>
                 <Button sx={{ml: -1, color: "#808080"}} onClick={(e) => handleAdd(nodeObject.main_language, e)}>
                     <AddBoxIcon />
@@ -264,7 +262,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
                         <div key={lang} className="translation-component">
                             <Stack sx={{mt: 2}} direction="row" alignItems="center">
                                 <Typography variant="h6">
-                                    {languageNames.of(lang)}
+                                    {ISO6391.getName(lang)}
                                 </Typography>
                                 <Button sx={{ml: -1, color: "#808080"}} onClick={(e) => handleAdd(lang, e)}>
                                     <AddBoxIcon />
@@ -308,14 +306,21 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject, originalNo
                 <TextField
                     autoFocus
                     margin="dense"
-                    onChange={(e) => {setNewLC(e.target.value)}}
+                    onChange={(e) => { 
+                        setNewLC(e.target.value);
+                        const validateBool = ISO6391.validate(e.target.value);
+                        validateBool ? setisValidLC(true) : setisValidLC(false)
+                        validateBool ? setBtnDisabled(false) : setBtnDisabled(true)
+                    }}
+                    helperText={!isValidLC ? "Enter a correct language code!" : ""}
+                    error={!isValidLC}
                     fullWidth
                     variant="standard"
                 />
                 </DialogContent>
                 <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>
-                <Button onClick={(e) => {handleAddTranslation(newLC, e)}}>Add</Button>
+                <Button disabled={btnDisabled} onClick={(e) => {handleAddTranslation(newLC, e)}}>Add</Button>
                 </DialogActions>
             </Dialog>
         </div>

@@ -7,11 +7,10 @@ import ListTranslations from "./ListTranslations";
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject }) => {
     
-    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});
     return (
         <div className="allEntryProperties">
             <Typography sx={{ml: 4}} variant='h6'>
-                { nodeObject && <ListTranslations nodeObject={nodeObject} languageNames={languageNames} setNodeObject={setNodeObject} originalNodeObject={originalNodeObject} /> }
+                { nodeObject && <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} originalNodeObject={originalNodeObject} /> }
             </Typography>
             { nodeObject && <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} originalNodeObject={originalNodeObject} /> }
         </div>

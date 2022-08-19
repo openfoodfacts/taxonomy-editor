@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
+import ISO6391 from 'iso-639-1';
 
 // Parent component used for rendering info
 // on a stopword, synonym, header or footer
@@ -13,8 +14,6 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObj
     let [languageCode, setLanguageCode] = useState('');
     // Storing tags that need to be rendered for editing
     let [toBeRendered, setToBeRendered] = useState([])
-    // Used for conversion of LC to long-form
-    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'});
 
     useEffect(() => {
         let tagsExtracted = []
@@ -112,7 +111,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObj
                         Language
                     </Typography>
                     <Typography sx={{ml: 8, mt: 1.5}} variant='h6'>
-                        {languageNames.of(languageCode)}
+                        {ISO6391.getName(languageCode)}
                     </Typography>
                 </div>
                 }
