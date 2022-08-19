@@ -1,9 +1,8 @@
 import pathlib
-import re
 
 from openfoodfacts_taxonomy_parser import parser
 
-# taxonomy in text format : test.txt
+# taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
 
 
@@ -21,7 +20,6 @@ def test_normalized_filename():
 def test_fileiter():
     x = parser.Parser()
     file = x.file_iter(TEST_TAXONOMY_TXT)
-    language_code_prefix = re.compile("[a-zA-Z][a-zA-Z]:")
     for counter, (_, line) in enumerate(file):
         assert line == "" or line[0] == "#" or ":" in line
         if counter == 26:

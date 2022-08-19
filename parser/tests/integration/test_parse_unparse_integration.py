@@ -33,7 +33,7 @@ def test_round_trip():
     test_dumper = unparser.WriteTaxonomy()
     lines = list(test_dumper.iter_lines())
 
-    original_lines = [l.rstrip("\n") for l in open(TEST_TAXONOMY_TXT)]  # remove new lines
+    original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
     expected_lines = []
     for line in original_lines:

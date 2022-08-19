@@ -17,7 +17,9 @@ class WriteTaxonomy:
         """query the database and yield each node with its parents,
         this function use the relationships between nodes"""
         query = """
-            MATCH path = ShortestPath( (h:TEXT{id:"__header__"})-[:is_before*]->(f:TEXT{id:"__footer__"}) )
+            MATCH path = ShortestPath(
+                (h:TEXT{id:"__header__"})-[:is_before*]->(f:TEXT{id:"__footer__"})
+            )
             UNWIND nodes(path) AS n
             RETURN n , [(n)-[:is_child_of]->(m) | m ]
         """
