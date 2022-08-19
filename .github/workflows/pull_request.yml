@@ -23,7 +23,6 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Install Packages
         run: |
           cd parser

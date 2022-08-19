@@ -12,6 +12,8 @@ quality:
 	black --check .
 
 tests:
+	cd .. && docker-compose up -d neo4j
 	pytest .
+# we do not shutdown neo4j
 
 checks: quality tests
