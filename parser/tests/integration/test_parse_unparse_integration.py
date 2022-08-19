@@ -9,10 +9,10 @@ TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.tx
 
 
 @pytest.fixture(autouse=True)
-def test_setup():
+def test_setup(neo4j):
     # delete all the nodes and relations in the database
     query = "MATCH (n) DETACH DELETE n"
-    parser.Parser().session.run(query)
+    neo4j.session().run(query)
 
 
 def test_round_trip():
