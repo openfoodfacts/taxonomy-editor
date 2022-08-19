@@ -2,8 +2,7 @@ from neo4j import GraphDatabase
 
 
 class WriteTaxonomy:
-    """Write the taxonomy of the neo4j database into a file
-    """
+    """Write the taxonomy of the neo4j database into a file"""
 
     def __init__(self, uri="bolt://localhost:7687"):
         self.driver = GraphDatabase.driver(uri)
@@ -12,9 +11,7 @@ class WriteTaxonomy:
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
-        return filename + (
-            ".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else ""
-        )
+        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
     def get_all_nodes(self):
         """query the database and yield each node with its parents,
@@ -56,9 +53,7 @@ class WriteTaxonomy:
         """return a ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        return [
-            property[5:] for property in node if property.startswith("prop_")
-        ]
+        return [property[5:] for property in node if property.startswith("prop_")]
 
     def get_property_line(self, node, property):
         """return a string that should look like the original property line"""
@@ -80,14 +75,12 @@ class WriteTaxonomy:
             node = dict(node)
             has_content = node["id"] not in ["__header__", "__footer__"]
             # eventually add a blank line but in specific case
-            following_synonyms = (
-                node["id"].startswith("synonyms") and
-                previous_block_id.startswith("synonyms")
+            following_synonyms = node["id"].startswith("synonyms") and previous_block_id.startswith(
+                "synonyms"
             )
-            following_stopwords = (
-                node["id"].startswith("stopwords") and
-                previous_block_id.startswith("stopwords")
-            )
+            following_stopwords = node["id"].startswith(
+                "stopwords"
+            ) and previous_block_id.startswith("stopwords")
             add_blank = has_content and not (following_synonyms or following_stopwords)
             if add_blank:
                 yield ""
@@ -130,6 +123,7 @@ class WriteTaxonomy:
 
 if __name__ == "__main__":
     import sys
+
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     write = WriteTaxonomy()
     write(filename)

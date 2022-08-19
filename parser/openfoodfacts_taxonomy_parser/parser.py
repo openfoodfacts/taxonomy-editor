@@ -1,18 +1,20 @@
-from neo4j import GraphDatabase
-import re, unicodedata, unidecode
-from .exception import DuplicateIDError
 import logging
+import re
+import unicodedata
+
+import unidecode
+from neo4j import GraphDatabase
+
+from .exception import DuplicateIDError
 
 
 def ellipsis(text, max=20):
-    """Cut a text adding eventual ellipsis if we do not display it fully
-    """
-    return text[:max] + ('...' if len(text) > max else '')
+    """Cut a text adding eventual ellipsis if we do not display it fully"""
+    return text[:max] + ("..." if len(text) > max else "")
 
 
 class Parser:
-    """Parse a taxonomy file and build a neo4j graph
-    """
+    """Parse a taxonomy file and build a neo4j graph"""
 
     def __init__(self, uri="bolt://localhost:7687"):
         self.driver = GraphDatabase.driver(uri)
@@ -44,9 +46,7 @@ class Parser:
         elif data["id"].startswith("stopwords"):
             id_query = " CREATE (n:STOPWORDS {id: $id }) \n "
         else:
-            id_query = (
-                " CREATE (n:ENTRY {id: $id , main_language : $main_language}) \n "
-            )
+            id_query = " CREATE (n:ENTRY {id: $id , main_language : $main_language}) \n "
             if data["parent_tag"]:
                 entry_query += " SET n.parents = $parent_tag \n"
             for key in data:
@@ -66,9 +66,7 @@ class Parser:
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
-        return filename + (
-            ".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else ""
-        )
+        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
     def file_iter(self, filename, start=0):
         """generator to get the file line by line"""
@@ -315,9 +313,7 @@ class Parser:
                     tagsids_list = []
                     for word in line.split(","):
                         tags_list.append(word.strip())
-                        word_normalized = self.remove_stopwords(
-                            lang, self.normalizing(word, lang)
-                        )
+                        word_normalized = self.remove_stopwords(lang, self.normalizing(word, lang))
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
@@ -339,8 +335,7 @@ class Parser:
                         property_name = property_name.strip()
                         lc = lc.strip().replace("-", "_")
                         if not (
-                            correctly_written.match(property_name)
-                            and correctly_written.match(lc)
+                            correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
                             logging.error(
                                 "Reading error at line %d, unexpected format: '%s'",
@@ -417,9 +412,7 @@ class Parser:
             """
             result = self.session.run(query, parent_id=parent_id, child_id=child_id)
             if not result.value():
-                logging.warning(
-                    f"parent not found for child {child_id} with parent {parent_id}"
-                )
+                logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -435,6 +428,7 @@ class Parser:
 
 if __name__ == "__main__":
     import sys
+
     logging.basicConfig(filename="parser.log", encoding="utf-8", level=logging.INFO)
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
