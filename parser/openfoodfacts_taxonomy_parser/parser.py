@@ -303,14 +303,14 @@ class Parser:
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
                     # synonyms definition
-                    # to transform '-' from language code to '_'
-                    line = line.replace("-", "_")
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
                         # first 2-3 characters before ":" are the language code
                         data["main_language"] = data["id"].split(":", 1)[0]
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
+                    # to transform '-' from language code to '_'
+                    lang = lang.strip().replace("-", "_")
                     tags_list = []
                     tagsids_list = []
                     for word in line.split(","):
