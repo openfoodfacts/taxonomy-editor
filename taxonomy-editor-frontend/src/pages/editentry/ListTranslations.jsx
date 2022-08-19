@@ -1,4 +1,4 @@
-import { Typography, Paper, TextField, Stack, Button } from "@mui/material";
+import { Typography, Paper, TextField, Stack, Button, IconButton, Box } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,16 +13,18 @@ import ISO6391 from 'iso-639-1';
 // Sub-component for rendering translation of an "entry"
 
 const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => {
+
     let [toBeRendered, setToBeRendered] = useState([]) // Stores state of all tags
     let [mainLang_toBeRendered, setMainLang_toBeRendered] = useState([]) // Stores state of main language's tags
     const [open, setOpen] = useState(false); // Used for Dialog component
     const [newLC, setNewLC] = useState(''); // Used for storing new LC from Dialog
     const [isValidLC, setisValidLC] = useState(false); // Used for validating a new LC
-    const [btnDisabled, setBtnDisabled] = useState(true) // Used for dialog button
+    const [btnDisabled, setBtnDisabled] = useState(true) // For enabling or disabling Dialog button
 
     // Helper functions for Dialog component
     function handleClose() { setOpen(false); }
 
+    // Used for addition of a translation language
     function handleAddTranslation(key) {
         const duplicateToBeRendered = [...toBeRendered, {'lc' : key, 'tags' : []}]
         setToBeRendered(duplicateToBeRendered);
@@ -32,13 +34,28 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         setNodeObject(prevState => {
             const duplicateData = {...prevState};
             duplicateData[key] = [];
-            return duplicateData 
+            return duplicateData
         })
         setOpen(false);
     }
 
     function handleOpen() {
         setOpen(true);
+    }
+
+    // Used for deleting a translation language
+    function handleDeleteTranslation(key) {
+        const duplicateToBeRendered = toBeRendered.filter(obj => !(key === obj.lc))
+        setToBeRendered(duplicateToBeRendered);
+        key = 'tags_' + key; // LC must have a prefix "tags_"
+        
+        // Make changes to the parent NodeObject
+        setNodeObject(prevState => {
+            const duplicateData = {...prevState};
+            delete duplicateData[key];
+            return duplicateData
+        })
+        setOpen(false);
     }
 
     // Changes the translations to be rendered
@@ -206,13 +223,13 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
     }
 
     return ( 
-        <div className="translations">
+        <Box className="translations">
             {/* Title */}
             <Stack direction="row" alignItems="center">
                 <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
-                <Button sx={{mt: 3.5, ml: -1, color: "#808080"}} onClick={handleOpen}>
+                <IconButton sx={{mt: 3.5, ml: 1, color: "#808080"}} onClick={handleOpen}>
                     <AddBoxIcon />
-                </Button>
+                </IconButton>
             </Stack>
 
             {/* Main Language */}
@@ -220,9 +237,9 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 <Typography variant='h6'>
                     { nodeObject && ISO6391.getName(nodeObject.main_language) }
                 </Typography>
-                <Button sx={{ml: -1, color: "#808080"}} onClick={(e) => handleAdd(nodeObject.main_language, e)}>
+                <IconButton sx={{ml: 1, color: "#808080"}} onClick={(e) => handleAdd(nodeObject.main_language, e)}>
                     <AddBoxIcon />
-                </Button>
+                </IconButton>
             </Stack>
             
             {/* Render main language tags */}
@@ -243,9 +260,9 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                         defaultValue={tag}
                                         variant="outlined" />  
                                 </Paper>
-                                <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(nodeObject.main_language, index, e)}>
-                                    <DeleteOutlineIcon />
-                                </Button>
+                                    <IconButton sx={{ml: 1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(nodeObject.main_language, index, e)}>
+                                        <DeleteOutlineIcon />
+                                    </IconButton>
                             </Stack>
 
                         )
@@ -264,9 +281,12 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                 <Typography variant="h6">
                                     {ISO6391.getName(lang)}
                                 </Typography>
-                                <Button sx={{ml: -1, color: "#808080"}} onClick={(e) => handleAdd(lang, e)}>
+                                <IconButton sx={{ml: 1, color: "#808080"}} onClick={(e) => handleAdd(lang, e)}>
                                     <AddBoxIcon />
-                                </Button>
+                                </IconButton>
+                                <IconButton sx={{ml: -1, color: "#808080"}} onClick={(e) => handleDeleteTranslation(lang, e)}>
+                                    <DeleteOutlineIcon />
+                                </IconButton>
                             </Stack>
                             {/* Render all related tags */}
                             {
@@ -285,9 +305,9 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                                     defaultValue={tag} 
                                                     variant="outlined" />
                                             </Paper>
-                                            <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(lang, index, e)}>
+                                            <IconButton sx={{ml: 1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(lang, index, e)}>
                                                  <DeleteOutlineIcon />
-                                            </Button>
+                                            </IconButton>
                                         </Stack>
                                     )
                                 })
@@ -306,11 +326,14 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 <TextField
                     autoFocus
                     margin="dense"
+                    onKeyPress={(e) => { (e.key === 'Enter') && isValidLC && handleAddTranslation(newLC, e) }} 
                     onChange={(e) => { 
                         setNewLC(e.target.value);
                         const validateBool = ISO6391.validate(e.target.value);
-                        validateBool ? setisValidLC(true) : setisValidLC(false)
-                        validateBool ? setBtnDisabled(false) : setBtnDisabled(true)
+                        const ifDuplicateBool = toBeRendered.some(el => (el.lc === e.target.value)) || 
+                                                nodeObject.main_language === e.target.value
+                        validateBool && !ifDuplicateBool ? setisValidLC(true) : setisValidLC(false)
+                        validateBool && !ifDuplicateBool ? setBtnDisabled(false) : setBtnDisabled(true)
                     }}
                     helperText={!isValidLC ? "Enter a correct language code!" : ""}
                     error={!isValidLC}
@@ -320,10 +343,14 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 </DialogContent>
                 <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>
-                <Button disabled={btnDisabled} onClick={(e) => {handleAddTranslation(newLC, e)}}>Add</Button>
+                <Button 
+                    disabled={btnDisabled}
+                    onClick={(e) => {handleAddTranslation(newLC, e)}}>
+                        Add
+                </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
      );
 }
  
