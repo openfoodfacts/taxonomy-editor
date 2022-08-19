@@ -1,0 +1,34 @@
+name: taxonomy-editor code quality checks and unit tests
+
+on:
+  pull_request:
+
+jobs:
+  # Parser quality
+  parser-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+        - "3.10"
+        - "3.9"
+
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Packages
+        run: |
+          cd parser
+          pip install -r requirements-dev.txt
+      - name: Make checks
+        run: |
+          cd parser
+          make checks
