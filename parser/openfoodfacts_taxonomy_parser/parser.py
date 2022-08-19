@@ -106,7 +106,7 @@ class Parser:
         line = re.sub(r"[\u0000-\u0027\u200b]", "-", line)
         line = re.sub(r"&\w+;", "-", line)
         line = re.sub(
-            r"[\s!\"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]",
+            r"[\s!\"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]",  # noqa: E501
             "-",
             line,
         )
@@ -130,7 +130,9 @@ class Parser:
             return words
 
     def add_line(self, line):
-        """to get a normalized string but keeping the language code "lc:" , used for id and parent tag"""
+        """to get a normalized string but keeping the language code "lc:" ,
+        used for id and parent tag
+        """
         lc, line = line.split(":", 1)
         new_line = lc + ":"
         new_line += self.remove_stopwords(lc, self.normalizing(line, lc))
@@ -163,7 +165,9 @@ class Parser:
         return data
 
     def header_harvest(self, filename):
-        """to harvest the header (comment with #), it has its own function because some header has multiple blocks"""
+        """to harvest the header (comment with #),
+        it has its own function because some header has multiple blocks
+        """
         h = 0
         header = []
         for _, line in self.file_iter(filename):
@@ -173,7 +177,8 @@ class Parser:
                 break
             h += 1
 
-        # we don't want to eat the comments of the next block and it removes the last separating line
+        # we don't want to eat the comments of the next block
+        # and it removes the last separating line
         for i in range(len(header)):
             if header.pop():
                 h -= 1
@@ -244,7 +249,7 @@ class Parser:
                 if data["id"] in saved_nodes:
                     msg = f"Entry with same id {data['id']} already created, "
                     msg += f"duplicate id in file at line {data['src_position']}. "
-                    msg += f"Node creation cancelled"
+                    msg += "Node creation cancelled"
                     logging.error(msg)
                 else:
                     data = self.remove_separating_line(data)
