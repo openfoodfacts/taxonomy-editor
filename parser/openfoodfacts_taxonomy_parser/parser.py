@@ -226,10 +226,10 @@ class Parser:
         index_stopwords = 0
         index_synonyms = 0
         language_code_prefix = re.compile(
-            "[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
+            r"[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
         )
         # Check if it is correctly written
-        correctly_written = re.compile("\w+\Z")
+        correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
 
