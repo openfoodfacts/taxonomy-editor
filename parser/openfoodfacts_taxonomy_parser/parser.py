@@ -4,7 +4,16 @@ from .exception import DuplicateIDError
 import logging
 
 
+def ellipsis(text, max=20):
+    """Cut a text adding eventual ellipsis if we do not display it fully
+    """
+    return text[:max] + ('...' if len(text) > max else '')
+
+
 class Parser:
+    """Parse a taxonomy file and build a neo4j graph
+    """
+
     def __init__(self, uri="bolt://localhost:7687"):
         self.driver = GraphDatabase.driver(uri)
         self.session = (
@@ -248,24 +257,31 @@ class Parser:
 
             # harvest the line
             if not (line) or line[0] == "#":
+                # comment or blank
                 data["preceding_lines"].append(line)
             else:
                 line = line.rstrip(",")
                 if not data["src_position"]:
                     data["src_position"] = line_number + 1
                 if line.startswith("stopwords"):
+                    # general stopwords definition for a language
                     id = "stopwords:" + str(index_stopwords)
                     data = self.set_data_id(data, id, line_number)
                     index_stopwords += 1
                     try:
                         lc, value = self.get_lc_value(line[10:])
-                    except:
-                        logging.error(f"Missing lc at line {line_number+1} ?")
+                    except ValueError:
+                        logging.error(
+                            "Missing language code at line %d ? '%s'",
+                            line_number + 1,
+                            ellipsis(line),
+                        )
                     else:
                         data["tags_" + lc] = value
                         # add the list with its lc
                         self.stopwords[lc] = value
                 elif line.startswith("synonyms"):
+                    # general synonyms definition for a language
                     id = "synonyms:" + str(index_synonyms)
                     data = self.set_data_id(data, id, line_number)
                     index_synonyms += 1
@@ -273,14 +289,20 @@ class Parser:
                     tags = [words.strip() for words in line[3:].split(",")]
                     try:
                         lc, value = self.get_lc_value(line)
-                    except:
-                        logging.error(f"Missing lc at line {line_number+1} ?")
+                    except ValueError:
+                        logging.error(
+                            "Missing language code at line %d ? '%s'",
+                            line_number + 1,
+                            ellipsis(line),
+                        )
                     else:
                         data["tags_" + lc] = tags
                         data["tags_ids_" + lc] = value
                 elif line[0] == "<":
+                    # parent definition
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
+                    # synonyms definition
                     # to transform '-' from language code to '_'
                     line = line.replace("-", "_")
                     if not data["id"]:
@@ -302,8 +324,17 @@ class Parser:
                     data["tags_" + lang] = tags_list
                     data["tags_ids_" + lang] = tagsids_list
                 else:
+                    # property definition
+                    property_name = None
                     try:
                         property_name, lc, property_value = line.split(":", 2)
+                    except ValueError:
+                        logging.error(
+                            "Reading error at line %d, unexpected format: '%s'",
+                            line_number + 1,
+                            ellipsis(line),
+                        )
+                    else:
                         # in case there is space before or after the colons
                         property_name = property_name.strip()
                         lc = lc.strip().replace("-", "_")
@@ -311,10 +342,12 @@ class Parser:
                             correctly_written.match(property_name)
                             and correctly_written.match(lc)
                         ):
-                            raise Exception
-                    except:
-                        logging.error(f"Reading error at line {line_number+1}")
-                    else:
+                            logging.error(
+                                "Reading error at line %d, unexpected format: '%s'",
+                                line_number + 1,
+                                ellipsis(line),
+                            )
+                    if property_name:
                         data["prop_" + property_name + "_" + lc] = property_value
 
         data["id"] = "__footer__"
@@ -348,11 +381,18 @@ class Parser:
             results = self.session.run(query, id=id, id_previous=id_previous)
             relation = results.values()
             if len(relation) > 1:
-                msg = f"2 or more 'is_before' links created for ids {id} and {id_previous}, "
-                msg += f"one of the ids isn't unique"
-                logging.error(msg)
+                logging.error(
+                    "2 or more 'is_before' links created for ids %s and %s, "
+                    "one of the ids isn't unique",
+                    id,
+                    id_previous,
+                )
             elif not relation[0]:
-                logging.error(f"link not created between {id} and {id_previous}")
+                logging.error(
+                    "link not created between %s and %s",
+                    id,
+                    id_previous,
+                )
 
     def parent_search(self):
         """Get the parent and the child to link"""
