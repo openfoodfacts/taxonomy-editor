@@ -11,6 +11,7 @@ def test_setup():
     query="MATCH (n) DETACH DELETE n"
     parser.Parser().session.run(query)
 
+
 def test_calling():
     test_parser = parser.Parser()
     session = test_parser.session
@@ -115,7 +116,6 @@ def test_calling():
     ]
     for pair in created_pairs:
         assert pair in expected_pairs
-    
 
     # Order link test
     test_parser.create_previous_link()
