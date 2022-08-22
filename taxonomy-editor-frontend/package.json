@@ -9,7 +9,7 @@
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.9.2",
     "@mui/x-data-grid": "^5.15.0",
-    "@mui/x-data-grid-pro": "^5.15.1",
+    "@mui/x-data-grid-pro": "^5.15.3",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
