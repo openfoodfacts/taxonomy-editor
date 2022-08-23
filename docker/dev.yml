@@ -12,6 +12,12 @@ services:
       args:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
+    environment:
+      - REACT_APP_API_URL
+      - TAXONOMY_EDITOR_DOMAIN
+      - NODE_ENV=development
+      # avoid host check in dev
+      - DANGEROUSLY_DISABLE_HOST_CHECK=true
     # this is the command to run dev server
     command: ["npm", "start"]
     volumes:
