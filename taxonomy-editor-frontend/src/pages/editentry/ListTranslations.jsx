@@ -1,9 +1,10 @@
-import { Typography, Paper, TextField, Stack } from "@mui/material";
+import { Typography, Paper, TextField, Stack, Box } from "@mui/material";
+import ISO6391 from 'iso-639-1';
 
 // Sub-component for rendering translation of an "entry"
 
-const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
-    let toBeRendered = {}
+const ListTranslations = ({ nodeObject, setNodeObject }) => {
+    let RenderedTranslations = {}
 
     Object.keys(nodeObject).forEach((key) => {
         
@@ -16,11 +17,11 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
             !key.includes('ids')) {
 
                 // Slice the language code
-                let lc = key.slice(-2);
-                toBeRendered[lc] = nodeObject[key]
+                let languageCode = key.slice(-2);
+                RenderedTranslations[languageCode] = nodeObject[key]
             }
     })
-
+    
     // Helper function used for changing state
     function changeData(key, index, value) {
         key = 'tags_' + key;
@@ -30,16 +31,16 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
     }
 
     return ( 
-        <div className="translations">
+        <Box className="translations">
             {/* Title */}
             <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
             {/* Main Language */}
             <Typography variant='h6'>
-                { nodeObject && languageNames.of(nodeObject.main_language) }
+                { ISO6391.getName(nodeObject.main_language) }
             </Typography>
             {/* Render main language tags */}
             <Typography variant='h6'> 
-                { nodeObject && 
+                {
                     nodeObject["tags_"+nodeObject['main_language']].map((tag, index) => {
                         return (
                             <Paper key={index} component={Stack} direction="column" sx={{ml: 4, width: 200}}>
@@ -49,7 +50,7 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
                                     onChange = {event => {
                                         changeData(nodeObject['main_language'], index, event.target.value)
                                     }}
-                                    defaultValue={tag} 
+                                    value={tag} 
                                     variant="outlined" />
                             </Paper>
                         )
@@ -59,11 +60,11 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
 
             {/* All other languages */}
             {
-                Object.entries(toBeRendered).map( ([lang, value]) => {
+                Object.entries(RenderedTranslations).map( ([lang, value]) => {
                     return (
-                        <div key={lang} className="translation-component">
+                        <Box key={lang} className="translation-component">
                             <Typography sx={{mt:1}} variant="h6">
-                                {languageNames.of(lang)}
+                                {ISO6391.getName(lang)}
                             </Typography>
                             {/* Render all related tags */}
                             {
@@ -76,17 +77,17 @@ const ListTranslations = ({ nodeObject, languageNames, setNodeObject }) => {
                                                 onChange = {event => {
                                                     changeData(lang, index, event.target.value)
                                                 }}
-                                                defaultValue={tag} 
+                                                value={tag} 
                                                 variant="outlined" />
                                         </Paper>
                                     )
                                 })
                             }
-                        </div>
+                        </Box>
                     )
                 } )
             }
-        </div>
+        </Box>
      );
 }
  
