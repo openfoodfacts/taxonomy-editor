@@ -303,14 +303,14 @@ class Parser:
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
                     # synonyms definition
-                    # to transform '-' from language code to '_'
-                    line = line.replace("-", "_")
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
-                        # first characters before ":" are the language code
+                        # first 2-3 characters before ":" are the language code
                         data["main_language"] = data["id"].split(":", 1)[0]
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
+                    # to transform '-' from language code to '_'
+                    lang = lang.strip().replace("-", "_")
                     tags_list = []
                     tagsids_list = []
                     for word in line.split(","):
@@ -434,6 +434,8 @@ class Parser:
 
 
 if __name__ == "__main__":
+    import sys
     logging.basicConfig(filename="parser.log", encoding="utf-8", level=logging.INFO)
-    use = Parser()
-    use("test")
+    filename = sys.argv[1] if len(sys.argv) > 1 else "test"
+    parse = Parser()
+    parse(filename)
