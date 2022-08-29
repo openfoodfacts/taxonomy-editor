@@ -1,9 +1,9 @@
-import { Typography, Box } from "@mui/material";
+import { Typography, TextField } from "@mui/material";
 
 // Sub-component used for rendering comments and properties of an "entry"
 
 const ListAllProperties = ({ nodeObject, setNodeObject }) => {
-    let toBeRendered = {}
+    let renderedProperties = {}
     Object.keys(nodeObject).forEach((key) => {
 
         // Collecting keys of properties
@@ -14,7 +14,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
 
                 // Removing "prop_" prefix from key to render only the name
                 const property_name = key.split('_').slice(1).join('_');
-                toBeRendered[property_name] = nodeObject[key]
+                renderedProperties[property_name] = nodeObject[key]
             }
     });
 
@@ -41,7 +41,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
 
             {/* Properties */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Properties</Typography>
-            { Object.entries(toBeRendered).map(([property, value]) => {
+            { Object.entries(renderedProperties).map(([property, value]) => {
                 return (
                     <div key={property} className="property-component">
                         <Typography sx={{mt: 1, mr: 2, ml: 4, float: 'left'}} variant="h6">
@@ -60,7 +60,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
             }) }
 
             {/* When no properties are present for the node */}
-            { Object.keys(toBeRendered).length === 0 && <Typography sx={{ml: 8, mb: 1}}  variant="h6">None</Typography> }
+            { Object.keys(renderedProperties).length === 0 && <Typography sx={{ml: 8, mb: 1}}  variant="h6">None</Typography> }
         </div>
     );
 }

@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link } from "react-router-dom";
 
-
 const Home = () => {
     return (
         <Container component="main" maxWidth="md">
