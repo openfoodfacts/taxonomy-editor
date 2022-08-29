@@ -1,9 +1,19 @@
 from neo4j import GraphDatabase
 import re, unicodedata, unidecode
 from .exception import DuplicateIDError
+import logging
+
+
+def ellipsis(text, max=20):
+    """Cut a text adding eventual ellipsis if we do not display it fully
+    """
+    return text[:max] + ('...' if len(text) > max else '')
 
 
 class Parser:
+    """Parse a taxonomy file and build a neo4j graph
+    """
+
     def __init__(self, uri="bolt://localhost:7687"):
         self.driver = GraphDatabase.driver(uri)
         self.session = (
@@ -212,9 +222,14 @@ class Parser:
 
     def harvest(self, filename):
         """Transform data from file to dictionary"""
+        saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile("[a-zA-Z][a-zA-Z][a-zA-Z]?:")
+        language_code_prefix = re.compile(
+            r"[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
+        )
+        # Check if it is correctly written
+        correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
 
@@ -228,43 +243,74 @@ class Parser:
         for line_number, line in self.file_iter(filename, next_line):
             # yield data if block ended
             if self.entry_end(line, data):
-                data = self.remove_separating_line(data)
-                yield data  # another function will use this dictionary to create a node
-                self.is_before = data["id"]
+                if data["id"] in saved_nodes:
+                    msg = f"Entry with same id {data['id']} already created, "
+                    msg += f"duplicate id in file at line {data['src_position']}. "
+                    msg += f"Node creation cancelled"
+                    logging.error(msg)
+                else:
+                    data = self.remove_separating_line(data)
+                    yield data  # another function will use this dictionary to create a node
+                    self.is_before = data["id"]
+                    saved_nodes.append(data["id"])
                 data = self.new_node_data()
 
             # harvest the line
             if not (line) or line[0] == "#":
+                # comment or blank
                 data["preceding_lines"].append(line)
             else:
+                line = line.rstrip(",")
                 if not data["src_position"]:
                     data["src_position"] = line_number + 1
                 if line.startswith("stopwords"):
+                    # general stopwords definition for a language
                     id = "stopwords:" + str(index_stopwords)
                     data = self.set_data_id(data, id, line_number)
                     index_stopwords += 1
-                    lc, value = self.get_lc_value(line[10:])
-                    data["tags_" + lc] = value
-                    # add the list with its lc
-                    self.stopwords[lc] = value
+                    try:
+                        lc, value = self.get_lc_value(line[10:])
+                    except ValueError:
+                        logging.error(
+                            "Missing language code at line %d ? '%s'",
+                            line_number + 1,
+                            ellipsis(line),
+                        )
+                    else:
+                        data["tags_" + lc] = value
+                        # add the list with its lc
+                        self.stopwords[lc] = value
                 elif line.startswith("synonyms"):
+                    # general synonyms definition for a language
                     id = "synonyms:" + str(index_synonyms)
                     data = self.set_data_id(data, id, line_number)
                     index_synonyms += 1
                     line = line[9:]
                     tags = [words.strip() for words in line[3:].split(",")]
-                    lc, value = self.get_lc_value(line)
-                    data["tags_" + lc] = tags
-                    data["tags_ids_" + lc] = value
+                    try:
+                        lc, value = self.get_lc_value(line)
+                    except ValueError:
+                        logging.error(
+                            "Missing language code at line %d ? '%s'",
+                            line_number + 1,
+                            ellipsis(line),
+                        )
+                    else:
+                        data["tags_" + lc] = tags
+                        data["tags_ids_" + lc] = value
                 elif line[0] == "<":
+                    # parent definition
                     data["parent_tag"].append(self.add_line(line[1:]))
                 elif language_code_prefix.match(line):
+                    # synonyms definition
                     if not data["id"]:
                         data["id"] = self.add_line(line.split(",", 1)[0])
                         # first 2-3 characters before ":" are the language code
-                        data["main_language"] = data["id"].split(":", 1)[0]  
+                        data["main_language"] = data["id"].split(":", 1)[0]
                     # add tags and tagsid
                     lang, line = line.split(":", 1)
+                    # to transform '-' from language code to '_'
+                    lang = lang.strip().replace("-", "_")
                     tags_list = []
                     tagsids_list = []
                     for word in line.split(","):
@@ -272,12 +318,38 @@ class Parser:
                         word_normalized = self.remove_stopwords(
                             lang, self.normalizing(word, lang)
                         )
-                        tagsids_list.append(word_normalized)
+                        if word_normalized not in tagsids_list:
+                            # in case 2 normalized synonyms are the same
+                            tagsids_list.append(word_normalized)
                     data["tags_" + lang] = tags_list
                     data["tags_ids_" + lang] = tagsids_list
                 else:
-                    property_name, lc, property_value = line.split(":", 2)
-                    data["prop_" + property_name + "_" + lc] = property_value
+                    # property definition
+                    property_name = None
+                    try:
+                        property_name, lc, property_value = line.split(":", 2)
+                    except ValueError:
+                        logging.error(
+                            "Reading error at line %d, unexpected format: '%s'",
+                            line_number + 1,
+                            ellipsis(line),
+                        )
+                    else:
+                        # in case there is space before or after the colons
+                        property_name = property_name.strip()
+                        lc = lc.strip().replace("-", "_")
+                        if not (
+                            correctly_written.match(property_name)
+                            and correctly_written.match(lc)
+                        ):
+                            logging.error(
+                                "Reading error at line %d, unexpected format: '%s'",
+                                line_number + 1,
+                                ellipsis(line),
+                            )
+                    if property_name:
+                        data["prop_" + property_name + "_" + lc] = property_value
+
         data["id"] = "__footer__"
         data["preceding_lines"].pop(0)
         data["src_position"] = line_number + 1 - len(data["preceding_lines"])
@@ -285,6 +357,7 @@ class Parser:
 
     def create_nodes(self, filename):
         """Adding nodes to database"""
+        logging.info("Creating nodes")
         filename = self.normalized_filename(filename)
         harvested_data = self.harvest(filename)
         self.create_headernode(next(harvested_data))
@@ -292,6 +365,7 @@ class Parser:
             self.create_node(entry)
 
     def create_previous_link(self):
+        logging.info("Creating 'is_before' links")
         query = "MATCH(n) WHERE exists(n.is_before) return n.id,n.is_before"
         results = self.session.run(query)
         for result in results:
@@ -301,9 +375,24 @@ class Parser:
             query = """
                 MATCH(n) WHERE n.id = $id
                 MATCH(p) WHERE p.id= $id_previous
-                CREATE (p)-[:is_before]->(n)
+                CREATE (p)-[r:is_before]->(n)
+                RETURN r
             """
-            self.session.run(query, id=id, id_previous=id_previous)
+            results = self.session.run(query, id=id, id_previous=id_previous)
+            relation = results.values()
+            if len(relation) > 1:
+                logging.error(
+                    "2 or more 'is_before' links created for ids %s and %s, "
+                    "one of the ids isn't unique",
+                    id,
+                    id_previous,
+                )
+            elif not relation[0]:
+                logging.error(
+                    "link not created between %s and %s",
+                    id,
+                    id_previous,
+                )
 
     def parent_search(self):
         """Get the parent and the child to link"""
@@ -317,17 +406,20 @@ class Parser:
 
     def create_child_link(self):
         """Create the relations between nodes"""
+        logging.info("Creating 'is_child_of' links")
         for parent, child_id in self.parent_search():
             lc, parent_id = parent.split(":")
-            tags_ids = "tags_ids_" + lc
             query = """ MATCH(p) WHERE $parent_id IN p.tags_ids_""" + lc
             query += """
                 MATCH(c) WHERE c.id= $child_id
-                CREATE (c)-[:is_child_of]->(p)
+                CREATE (c)-[r:is_child_of]->(p)
+                RETURN r
             """
-            self.session.run(
-                query, parent_id=parent_id, tagsid=tags_ids, child_id=child_id
-            )
+            result = self.session.run(query, parent_id=parent_id, child_id=child_id)
+            if not result.value():
+                logging.warning(
+                    f"parent not found for child {child_id} with parent {parent_id}"
+                )
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -342,5 +434,8 @@ class Parser:
 
 
 if __name__ == "__main__":
-    use = Parser()
-    use("test")
+    import sys
+    logging.basicConfig(filename="parser.log", encoding="utf-8", level=logging.INFO)
+    filename = sys.argv[1] if len(sys.argv) > 1 else "test"
+    parse = Parser()
+    parse(filename)

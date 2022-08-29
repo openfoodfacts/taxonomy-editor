@@ -1,4 +1,4 @@
-import { TextField, Typography } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 
 // Sub-component used for rendering comments and properties of an "entry"
 
