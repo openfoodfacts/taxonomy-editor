@@ -4,7 +4,7 @@ import ISO6391 from 'iso-639-1';
 // Sub-component for rendering translation of an "entry"
 
 const ListTranslations = ({ nodeObject, setNodeObject }) => {
-    let RenderedTranslations = {}
+    let renderedTranslations = {}
 
     Object.keys(nodeObject).forEach((key) => {
         
@@ -18,7 +18,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
                 // Slice the language code
                 let languageCode = key.slice(-2);
-                RenderedTranslations[languageCode] = nodeObject[key]
+                renderedTranslations[languageCode] = nodeObject[key]
             }
     })
     
@@ -31,9 +31,9 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }
 
     return ( 
-        <Box className="translations">
+        <Box sx={{ml: 4}} className="translations">
             {/* Title */}
-            <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
+            <Typography sx={{mt: 4, mb: 1}} variant='h5'>Translations</Typography>
             {/* Main Language */}
             <Typography variant='h6'>
                 { ISO6391.getName(nodeObject.main_language) }
@@ -43,6 +43,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 {
                     nodeObject["tags_"+nodeObject['main_language']].map((tag, index) => {
                         return (
+                            // TODO: Key to be replaced by a UUID 
                             <Paper key={index} component={Stack} direction="column" sx={{ml: 4, width: 200}}>
                                 <TextField 
                                     size="small" 
@@ -60,7 +61,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
             {/* All other languages */}
             {
-                Object.entries(RenderedTranslations).map( ([lang, value]) => {
+                Object.entries(renderedTranslations).map( ([lang, value]) => {
                     return (
                         <Box key={lang} className="translation-component">
                             <Typography sx={{mt:1}} variant="h6">

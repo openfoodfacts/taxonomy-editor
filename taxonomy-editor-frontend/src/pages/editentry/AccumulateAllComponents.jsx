@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import { createURL } from "./createURL";
@@ -36,20 +36,17 @@ const AccumulateAllComponents = ({ id }) => {
         )
     }
     return ( 
-        <div className="node-attributes">
+        <Box className="node-attributes">
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
-                <>  
-                    <Box className="allEntryProperties">
-                        <Typography sx={{ml: 4}} variant='h6'>
-                            { nodeObject && <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> }
-                        </Typography>
-                        { nodeObject && <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> }
-                    </Box>
-                </> :
+                <Box className="allEntryProperties">
+                    { !!nodeObject &&
+                        <>  <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
+                            <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
+                </Box> :
                 <>  <ListAllOtherProperties nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
             }
-        </div>
+        </Box>
      );
 }
  
