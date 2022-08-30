@@ -66,7 +66,7 @@ const Entry = () => {
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="left" component="td" scope="row">
-                                            <Button component={Link} to={`/${node[0].id}`}>
+                                            <Button component={Link} to={`/entry/${node[0].id}`}>
                                                 <EditIcon color="primary"/>
                                             </Button>
                                         </TableCell>

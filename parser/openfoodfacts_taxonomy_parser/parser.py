@@ -1,18 +1,20 @@
-from neo4j import GraphDatabase
-import re, unicodedata, unidecode
-from .exception import DuplicateIDError
 import logging
+import re
+import unicodedata
+
+import unidecode
+from neo4j import GraphDatabase
+
+from .exception import DuplicateIDError
 
 
 def ellipsis(text, max=20):
-    """Cut a text adding eventual ellipsis if we do not display it fully
-    """
-    return text[:max] + ('...' if len(text) > max else '')
+    """Cut a text adding eventual ellipsis if we do not display it fully"""
+    return text[:max] + ("..." if len(text) > max else "")
 
 
 class Parser:
-    """Parse a taxonomy file and build a neo4j graph
-    """
+    """Parse a taxonomy file and build a neo4j graph"""
 
     def __init__(self, uri="bolt://localhost:7687"):
         self.driver = GraphDatabase.driver(uri)
@@ -44,9 +46,7 @@ class Parser:
         elif data["id"].startswith("stopwords"):
             id_query = " CREATE (n:STOPWORDS {id: $id }) \n "
         else:
-            id_query = (
-                " CREATE (n:ENTRY {id: $id , main_language : $main_language}) \n "
-            )
+            id_query = " CREATE (n:ENTRY {id: $id , main_language : $main_language}) \n "
             if data["parent_tag"]:
                 entry_query += " SET n.parents = $parent_tag \n"
             for key in data:
@@ -66,9 +66,7 @@ class Parser:
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
-        return filename + (
-            ".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else ""
-        )
+        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
     def file_iter(self, filename, start=0):
         """generator to get the file line by line"""
@@ -108,7 +106,7 @@ class Parser:
         line = re.sub(r"[\u0000-\u0027\u200b]", "-", line)
         line = re.sub(r"&\w+;", "-", line)
         line = re.sub(
-            r"[\s!\"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]",
+            r"[\s!\"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]",  # noqa: E501
             "-",
             line,
         )
@@ -132,7 +130,9 @@ class Parser:
             return words
 
     def add_line(self, line):
-        """to get a normalized string but keeping the language code "lc:" , used for id and parent tag"""
+        """to get a normalized string but keeping the language code "lc:" ,
+        used for id and parent tag
+        """
         lc, line = line.split(":", 1)
         new_line = lc + ":"
         new_line += self.remove_stopwords(lc, self.normalizing(line, lc))
@@ -165,7 +165,9 @@ class Parser:
         return data
 
     def header_harvest(self, filename):
-        """to harvest the header (comment with #), it has its own function because some header has multiple blocks"""
+        """to harvest the header (comment with #),
+        it has its own function because some header has multiple blocks
+        """
         h = 0
         header = []
         for _, line in self.file_iter(filename):
@@ -175,7 +177,8 @@ class Parser:
                 break
             h += 1
 
-        # we don't want to eat the comments of the next block and it removes the last separating line
+        # we don't want to eat the comments of the next block
+        # and it removes the last separating line
         for i in range(len(header)):
             if header.pop():
                 h -= 1
@@ -246,7 +249,7 @@ class Parser:
                 if data["id"] in saved_nodes:
                     msg = f"Entry with same id {data['id']} already created, "
                     msg += f"duplicate id in file at line {data['src_position']}. "
-                    msg += f"Node creation cancelled"
+                    msg += "Node creation cancelled"
                     logging.error(msg)
                 else:
                     data = self.remove_separating_line(data)
@@ -315,9 +318,7 @@ class Parser:
                     tagsids_list = []
                     for word in line.split(","):
                         tags_list.append(word.strip())
-                        word_normalized = self.remove_stopwords(
-                            lang, self.normalizing(word, lang)
-                        )
+                        word_normalized = self.remove_stopwords(lang, self.normalizing(word, lang))
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
@@ -339,8 +340,7 @@ class Parser:
                         property_name = property_name.strip()
                         lc = lc.strip().replace("-", "_")
                         if not (
-                            correctly_written.match(property_name)
-                            and correctly_written.match(lc)
+                            correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
                             logging.error(
                                 "Reading error at line %d, unexpected format: '%s'",
@@ -417,9 +417,7 @@ class Parser:
             """
             result = self.session.run(query, parent_id=parent_id, child_id=child_id)
             if not result.value():
-                logging.warning(
-                    f"parent not found for child {child_id} with parent {parent_id}"
-                )
+                logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -435,6 +433,7 @@ class Parser:
 
 if __name__ == "__main__":
     import sys
+
     logging.basicConfig(filename="parser.log", encoding="utf-8", level=logging.INFO)
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
