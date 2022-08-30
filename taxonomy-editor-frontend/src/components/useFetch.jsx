@@ -28,8 +28,7 @@ const reducer = (state, action) => {
 }
 
 const useFetch = (url) => {   
-    const [fetchInfo, dispatch] = useReducer(reducer, initialState) 
-
+    const [fetchInfo, dispatch] = useReducer(reducer, initialState)
     useEffect(() => {
         const abortCont = new AbortController();
 
