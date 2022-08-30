@@ -21,6 +21,24 @@ def shutdown_db():
     session.close()
     driver.close()
 
+def create_node(label, entry):
+    """
+    Helper function used for creating a node with given id and label
+    """
+    query = [f"""CREATE (n:{label})\n """]
+
+    # Build all basic keys of a node
+    mainLanguageCode = entry[:2]
+    canonicalTag = entry[3:]
+    query.append(f""" SET n.id = $id """)
+    query.append(f""" SET n.tags_{mainLanguageCode} = ["{canonicalTag}"] """)
+    query.append(f""" SET n.main_language = "{mainLanguageCode}" """)
+    query.append(f""" SET n.preceding_lines = [] """)
+    query.append(f""" RETURN n """)
+
+    result = session.run(" ".join(query), {"id": entry})
+    return result
+
 def get_all_nodes(label):
     """
     Helper function used for getting all nodes with/without given label
@@ -84,4 +102,23 @@ def update_nodes(label, entry, incomingData):
 
     params = dict(incomingData, id=entry)
     result = session.run(" ".join(query), params)
+    return result
+
+def update_node_children(entry, incomingData):
+    """
+    Helper function used for updation of node children with given id 
+    """
+    for child in incomingData:    
+        query = []
+        is_old_node = list(get_nodes("ENTRY", child))
+
+        if (not is_old_node):
+            create_node("ENTRY", child)
+
+        query.append(f""" MATCH (a:ENTRY), (b:ENTRY) WHERE a.id = $id AND b.id = "{child}"\n """)
+        query.append(f""" MERGE (b)-[r:is_child_of]->(a)\n """)
+        
+        query.append(f""" RETURN a """)
+        result = session.run(" ".join(query), {"id": entry})
+
     return result

@@ -1,18 +1,25 @@
 import useFetch from "../../components/useFetch";
 import { Typography } from "@mui/material";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-const FetchRelations = ({url, title}) => {
-    const { data: relations, errorMessage, isPending } = useFetch(url);
+const FetchParents = ({url}) => {
+    const [relations, setRelations] = useState(null);
+    const { data: incomingData, errorMessage, isPending } = useFetch(url);
+    useEffect(() => {
+        setRelations(incomingData)
+    }, [incomingData])
+
     // Check error in fetch
     if (errorMessage) {
         return (<div>{errorMessage}</div>)
     }
+    if (isPending) {
+        return (<Typography sx={{ml: 4}} variant='h5' component={'div'}>Loading..</Typography>)
+    }
     return (
         <div className="relations">
-            {isPending && <Typography sx={{ml: 4}} variant='h5' component={'div'}>Loading..</Typography>}
-            {/* Title */}
-            {!isPending && <Typography sx={{ml: 4, mb: 1}} variant='h5' component={'div'}>{title}</Typography>}
+            {<Typography sx={{ml: 4, mb: 1}} variant='h5' component={'div'}>Parents</Typography>}
 
             {/* Renders parents or children of the node */}
             {relations && relations.map(relation => (
@@ -22,7 +29,6 @@ const FetchRelations = ({url, title}) => {
                             {relation}
                         </Typography>
                     </Link>
-
                 </div>
             )) }
 
@@ -32,4 +38,4 @@ const FetchRelations = ({url, title}) => {
     );
 }
  
-export default FetchRelations;
+export default FetchParents;

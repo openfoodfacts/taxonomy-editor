@@ -15,7 +15,7 @@ from .models import Header, Footer
 # DB helper imports
 from .entries import initialize_db, shutdown_db
 from .entries import get_all_nodes, get_nodes, get_children, get_parents
-from .entries import update_nodes
+from .entries import update_nodes, update_node_children
 #------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
@@ -199,6 +199,19 @@ async def editEntry(request: Request, entry: str):
     result = update_nodes("ENTRY", entry, incomingData)
     updatedEntry = list(result)
     return updatedEntry
+
+@app.post("/entry/{entry}/children")
+async def editEntryChildren(request: Request, entry: str):
+    """
+    Editing an entry's children in a taxonomy.
+    New children can be added, old children can be removed.
+    URL will be of format '/entry/<id>/children'
+    """
+    incomingData = await request.json()
+    result = update_node_children(entry, incomingData)
+    updatedChildren = list(result)
+    return updatedChildren
+
 
 @app.post("/synonym/{synonym}")
 async def editSynonyms(request: Request, synonym: str):

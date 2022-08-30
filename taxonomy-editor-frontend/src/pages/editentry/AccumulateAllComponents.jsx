@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../../components/useFetch";
 import { API_URL } from "../../constants";
-import FetchRelations from "./FetchAndDisplayRelations";
+import FetchParents from "./FetchAndDisplayParents";
+import FetchChildren from "./FetchAndDisplayChildren";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllOtherProperties from "./ListAllOtherProperties";
 
@@ -25,6 +26,7 @@ const AccumulateAllComponents = ({ id }) => {
 
     const [nodeObject, setNodeObject] = useState(null); // Storing original node information
     const [updatedNodeObject, setUpdatedNodeObject] = useState(null); // Storing updates to node
+    const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
     const navigate = useNavigate(); // Navigation between pages
 
@@ -38,9 +40,14 @@ const AccumulateAllComponents = ({ id }) => {
 
     // Displaying errorMessages if any
     if (errorMessage) {
-        return (<div>{errorMessage}</div>)
+        return (<Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>)
     }
 
+    // Loading...
+    if (isPending) {
+        return (<Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>)
+    }
+    
     // Helper functions for Dialog component 
     const handleClose = () => {setOpen(false)};
     const handleBack = () => {navigate('/entry')};
@@ -53,7 +60,17 @@ const AccumulateAllComponents = ({ id }) => {
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
-            setOpen(true);
+            if (isEntry) {
+                fetch(url+'children/', {
+                    method : 'POST',
+                    headers: {"Content-Type" : "application/json"},
+                    body: JSON.stringify(updateChildren)
+                }).then(() => {
+                    setOpen(true);
+                }).catch((errorMessage) => {
+                    console.log(errorMessage);
+                })
+            }
         }).catch((errorMessage) => {
             console.log(errorMessage);
         })
@@ -61,11 +78,10 @@ const AccumulateAllComponents = ({ id }) => {
     
     return ( 
         <div className="node-attributes">
-            {isPending && <Typography sx={{ml: 4}} variant='h5' component={'div'}>Loading..</Typography>}
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
-                <>  <FetchRelations url={url+'parents'} title={'Parents'} />
-                    <FetchRelations url={url+'children'} title={'Children'} />
+                <>  <FetchParents url={url+'parents'} />
+                    <FetchChildren url={url+'children'} id={id} updateNodeChildren={updateChildren} setUpdateNodeChildren={setUpdateChildren} />
                     <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </> :
                 <>  <ListAllOtherProperties nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </>
             }
