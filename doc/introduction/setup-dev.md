@@ -2,7 +2,7 @@
 
 ## Using docker
 
-The docker-compose is already ok for dev.
+The docker-compose for Taxonomy Editor is designed in such a way that all development servers can be built rapidly.
 
 So using:
 
@@ -13,12 +13,13 @@ docker-compose up
 
 You should have a running environment.
 
-The react application is exposed at: https://ui.taxonomy.localhost:8091
-The api is exposed at: https://api.taxonomy.localhost:8091
+The react application is exposed at: `http://ui.taxonomy.localhost:8091`
+
+The api is exposed at: `http://api.taxonomy.localhost:8091`
 
 You can also access the neo4j admin ui at http://localhost:7474/browser/
 
-If you modify css, js, etc. it should be taken into account instantly.
+If you modify any file in the React App, the changes will be taken into account instantly.
 
 If you modify the python code you need to restart the taxonomy_api: `docker-compose restart taxonomy_api`
 
