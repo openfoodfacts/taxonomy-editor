@@ -57,5 +57,5 @@ const AccumulateAllComponents = ({ id }) => {
         </Box>
      );
 }
- 
+
 export default AccumulateAllComponents;
