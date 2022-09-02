@@ -4,10 +4,15 @@
 
 The docker-compose for Taxonomy Editor is designed in such a way that all development servers can be built rapidly.
 
-So using:
+After first checkout, or on requirements or important element changes, run:
 
 ```bash
 DOCKER_BUILDKIT=1 docker-compose build
+```
+
+And every time, to get the server running, just use:
+
+```bash
 docker-compose up
 ```
 
