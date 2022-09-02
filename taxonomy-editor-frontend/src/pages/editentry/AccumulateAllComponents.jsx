@@ -1,8 +1,18 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import { API_URL } from "../../constants";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllOtherProperties from "./ListAllOtherProperties";
+=======
+import { Box } from "@mui/material";
+import { useEffect, useState } from "react";
+import useFetch from "../../components/useFetch";
+import { createURL } from "./createURL";
+import ListAllOtherProperties from "./ListAllOtherProperties";
+import ListAllProperties from "./ListAllProperties";
+import ListTranslations from "./ListTranslations";
+>>>>>>> origin/main
 
 // Used for rendering node information
 // If node is an "entry": Relations, translations, comments and properties are rendered
@@ -10,37 +20,41 @@ import ListAllOtherProperties from "./ListAllOtherProperties";
 // If node is "header/footer": Comments are rendered
 
 const AccumulateAllComponents = ({ id }) => {
-    
-    // Finding URL to send requests
-    let url = API_URL;
-    let isEntry = false;
-    if (id.startsWith('__header__')) { url += 'header/' }
-    else if (id.startsWith('__footer__')) { url += 'footer/' }
-    else if (id.startsWith('synonym')) { url += `synonym/${id}/` }
-    else if (id.startsWith('stopword')) { url += `stopword/${id}/` }
-    else { url += `entry/${id}/`; isEntry = true; }
-
+    const { url, isEntry } = createURL(id);
     const [nodeObject, setNodeObject] = useState(null); // Storing node information
-    const { data: node, error, isPending } = useFetch(url);
+    const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
 
     // Setting state of node after fetch
     useEffect(() => {
         setNodeObject(node?.[0]);
     }, [node])
 
-    // Displaying errors if any
-    if (error) {
-        return (<div>{error}</div>)
+    if (isError) {
+        return (
+            <Box className="node-attributes">
+                {isError && <div>{errorMessage}</div>}
+            </Box>
+        )
     }
-    
+    if (isPending) {
+        return (
+            <Box className="node-attributes">
+                {isPending && <div>Loading...</div>}
+            </Box>
+        )
+    }
     return ( 
-        <div className="node-attributes">
+        <Box className="node-attributes">
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
-                <>  <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> :
+                <Box className="allEntryProperties">
+                    { !!nodeObject &&
+                        <>  <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
+                            <ListAllProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
+                </Box> :
                 <>  <ListAllOtherProperties nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
             }
-        </div>
+        </Box>
      );
 }
  

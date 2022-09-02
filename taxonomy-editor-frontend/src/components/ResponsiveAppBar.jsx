@@ -14,7 +14,6 @@ import MuiLink from "@mui/material/Link";
 import SettingsIcon from '@mui/icons-material/Settings';
 import logo from "../assets/logosmall.jpg";
 import { Link } from "react-router-dom";
-
 import { useTranslation } from "react-i18next";
 
 const displayedPages = [
@@ -138,8 +137,8 @@ const ResponsiveAppBar = () => {
             <Typography
               variant="h6"
               noWrap
-              component="a"
-              href="/"
+              component={Link}
+              to="/"
               sx={{
                 mr: 2,
                 fontFamily: "Plus Jakarta Sans",
