@@ -7,7 +7,7 @@ The docker-compose for Taxonomy Editor is designed in such a way that all develo
 So using:
 
 ```bash
-docker-compose build
+DOCKER_BUILDKIT=1 docker-compose build
 docker-compose up
 ```
 
