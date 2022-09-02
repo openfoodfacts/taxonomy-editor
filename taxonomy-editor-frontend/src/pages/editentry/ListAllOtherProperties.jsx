@@ -1,4 +1,5 @@
 import { Box, Paper, Stack, TextField, Typography } from "@mui/material";
+import ISO6391 from 'iso-639-1';
 
 // Parent component used for rendering info
 // on a stopword, synonym, header or footer
@@ -8,9 +9,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     // Stores 2 letter language code (LC) of the tags
     let languageCode = ''; 
     // Storing keys and values that needs to be rendered for editing
-    let toBeRendered = {} 
-    // Used for conversion of LC to long-form
-    let languageNames = new Intl.DisplayNames(['en'], {type: 'language'}); 
+    let renderedOtherProperties = {} 
 
     if (nodeObject) {
         Object.keys(nodeObject).forEach((key) => {
@@ -21,7 +20,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
             if (key.startsWith('tags') && 
                 !key.includes('ids')) {
                     languageCode = key.slice(-2);
-                    toBeRendered[languageCode] = nodeObject[key]
+                    renderedOtherProperties[languageCode] = nodeObject[key]
                 }
         })
     }
@@ -41,7 +40,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
     }
 
     return ( 
-        <Box className="all-node-properties">
+        <Box>
             {/* Comments */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
@@ -51,24 +50,24 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                 onChange = {event => {
                     changeDataComment(event.target.value)
                 }}
-                defaultValue={nodeObject.preceding_lines} 
+                value={nodeObject.preceding_lines} 
                 variant="outlined" /> }
 
             {/* Main Language */}
-            { Object.keys(toBeRendered).length > 0 && 
-                <div className="language">
+            { Object.keys(renderedOtherProperties).length > 0 && 
+                <Box>
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
                     </Typography>
                     <Typography sx={{ml: 8, mt: 1.5}} variant='h6'>
-                        {languageNames.of(languageCode)}
+                        {ISO6391.getName(languageCode)}
                     </Typography>
-                </div>
+                </Box>
                 }
             
             {/* Stopwords or Synonyms */}
-            { Object.keys(toBeRendered).length > 0 && 
-                <div className="tags">
+            { Object.keys(renderedOtherProperties).length > 0 && 
+                <Box>
                     {id.startsWith('stopword') ?
                         <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
                             Stopwords
@@ -78,7 +77,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                         </Typography>}
 
                     {/* Render all tags */}
-                    { toBeRendered[languageCode].map((tag, index) => {
+                    { renderedOtherProperties[languageCode].map((tag, index) => {
                         return (
                             <Paper key={index} component={Stack} direction="column" sx={{ml: 8, width: 200}}>
                                 <TextField 
@@ -87,11 +86,11 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject }) => {
                                     onChange = {event => {
                                         changeData('tags_'+languageCode, index, event.target.value)
                                     }}
-                                    defaultValue={tag} 
+                                    value={tag} 
                                     variant="outlined" />
                             </Paper>
                         )})}
-                </div>
+                </Box>
             }
         </Box>
      );
