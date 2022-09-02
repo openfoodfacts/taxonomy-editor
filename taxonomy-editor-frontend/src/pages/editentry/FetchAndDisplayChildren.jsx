@@ -10,7 +10,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
-import ISO6391 from 'iso-639-1';
 
 const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => {
     const [relations, setRelations] = useState(null);
@@ -20,11 +19,13 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
     const { data: incomingData, errorMessage, isPending } = useFetch(url);
     
     useEffect(() => {
-        setRelations(incomingData)
-        if (incomingData) {
-            const arrayData = incomingData.map(el => el[0]);
-            setUpdateNodeChildren(arrayData);
-        }
+        setUpdateNodeChildren(incomingData.map(el => el?.[0]));
+        const arrayData = [];
+        incomingData.map((el) =>
+            arrayData.push(
+                {"index" : uuid.v4(), "child" : el?.[0]})
+            );
+        setRelations(arrayData);
     }, [incomingData])
 
     // Helper functions for Dialog component
@@ -32,14 +33,22 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
     function handleOpen() { setOpen(true); }
 
     function handleAddChild() {
-        const newChildID = newLanguageCode + ':' + newChild;
-        setRelations([...relations, newChildID]);
+        const newChildID = newLanguageCode + ':' + newChild; // Reconstructing node ID
+        setRelations([...relations, {"index" : uuid.v4(), "child": newChildID}]);
         setUpdateNodeChildren(prevState => {
             const duplicateData = [...prevState];
             duplicateData.push(newChildID);
             return duplicateData
         });
         setOpen(false);
+    }
+
+    function handleDeleteChild(index) {
+        const duplicateRelations = relations.filter(obj => !(index === obj.index))
+        setRelations(duplicateRelations);
+        // Updated tags assigned for later use
+        const tagsToBeInserted = duplicateRelations.map(el => (el.child))
+        setUpdateNodeChildren(tagsToBeInserted);
     }
 
     // Check error in fetch
@@ -58,14 +67,17 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
                 </IconButton>
             </Stack>
             {/* Renders parents or children of the node */}
-            {relations && relations.map(relation => (
-                <div className="relation-component" key={relation}>
-                    <Link to={`/entry/${relation}`} style={{color: '#0064c8', display: 'inline-block'}}>
-                        <Typography sx={{ml: 8, mb: 1}} variant='h6'>
-                            {relation}
+            {relations && relations.map(relationObject => (
+                <Stack key={relationObject['index']} direction="row" alignItems="center">
+                    <Link to={`/entry/${relationObject['child']}`} style={{color: '#0064c8', display: 'inline-block'}}>
+                        <Typography sx={{ml: 8}} variant='h6'>
+                            {relationObject['child']}
                         </Typography>
                     </Link>
-                </div>
+                    <IconButton sx={{ml: 1, color: "#808080"}} onClick={(e) => handleDeleteChild(relationObject['index'], e)}>
+                        <DeleteOutlineIcon />
+                    </IconButton>
+                </Stack>
             )) }
 
             {/* When no parents or children are present */}

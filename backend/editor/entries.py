@@ -108,17 +108,32 @@ def update_node_children(entry, incomingData):
     """
     Helper function used for updation of node children with given id 
     """
-    for child in incomingData:    
+    # Parse node ids from Neo4j Record object
+    current_children = [record["b.id"] for record in list(get_children(entry))]
+    deleted_children = list(set(current_children) ^ set(incomingData))
+
+    # Delete relationships
+    for child in deleted_children:
         query = []
         is_old_node = list(get_nodes("ENTRY", child))
 
+        # Create node if not exists
         if (not is_old_node):
             create_node("ENTRY", child)
 
+        # Delete relationships of deleted child node
+        else:
+            query.append(f""" MATCH (a:ENTRY)-[rel:is_child_of]->(b:ENTRY) WHERE b.id = $id AND a.id = "{child}"\n """)
+            query.append(f""" DELETE rel """)
+            session.run(" ".join(query), {"id": entry})
+    
+    # Stores result of last query executed
+    result = None
+    for child in incomingData:
+        query = []
+        # Create new relationships if exists
         query.append(f""" MATCH (a:ENTRY), (b:ENTRY) WHERE a.id = $id AND b.id = "{child}"\n """)
-        query.append(f""" MERGE (b)-[r:is_child_of]->(a)\n """)
-        
-        query.append(f""" RETURN a """)
+        query.append(f""" MERGE (b)-[r:is_child_of]->(a) """)
         result = session.run(" ".join(query), {"id": entry})
-
+    
     return result
