@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import { useEffect, useState } from "react";
-import useFetch from "../../components/useFetch";
-import { API_URL } from "../../constants";
-import ListAllEntryProperties from "./ListAllEntryProperties";
-import ListAllOtherProperties from "./ListAllOtherProperties";
-=======
 import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
@@ -12,7 +5,6 @@ import { createURL } from "./createURL";
 import ListAllOtherProperties from "./ListAllOtherProperties";
 import ListAllProperties from "./ListAllProperties";
 import ListTranslations from "./ListTranslations";
->>>>>>> origin/main
 
 // Used for rendering node information
 // If node is an "entry": Relations, translations, comments and properties are rendered
