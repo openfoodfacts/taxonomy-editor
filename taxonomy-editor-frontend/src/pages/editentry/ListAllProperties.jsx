@@ -11,10 +11,7 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
         // Ex: prop_vegan_en
 
         if (key.startsWith('prop')) {
-
-                // Removing "prop_" prefix from key to render only the name
-                const property_name = key.split('_').slice(1).join('_');
-                renderedProperties[property_name] = nodeObject[key]
+                renderedProperties[key] = nodeObject[key]
             }
     });
 
@@ -44,16 +41,18 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
             { Object.keys(renderedProperties).length === 0 ? 
                 <Typography sx={{ml: 8, mb: 1}} variant="h6">None</Typography> :
                 Object.entries(renderedProperties).map(([property, value]) => {
+                    // Removing "prop_" prefix from key to render only the name
+                    const property_name = property.split('_').slice(1).join('_');
                     return (
-                        <Box key={property}>
+                        <Box key={property_name}>
                             <Typography sx={{mt: 1, mr: 2, ml: 4, float: 'left'}} variant="h6">
-                                {property}:
+                                {property_name}:
                             </Typography>
                             <TextField
                                 size="small" 
                                 sx={{mt: 1}}
                                 onChange = {event => {
-                                    changeData("prop_"+property, event.target.value)
+                                    changeData(property, event.target.value)
                                 }}
                                 value={value} 
                                 variant="outlined" />
