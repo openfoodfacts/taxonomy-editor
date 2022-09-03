@@ -74,9 +74,20 @@ def update_nodes(label, entry, incomingData):
         if not re.match(r"^\w+$", key) or key == "id":
             raise ValueError("Invalid key: %s", key)
     
-    # Build query
-    query = [f"""MATCH (n:{label}) WHERE n.id = $id """, """SET n={} """, """SET n.id = $id"""]
+    # Get current node information and deleted keys
+    curr_node = list(get_nodes(label, entry).data()[0]['n'].keys())
+    deleted_keys = list(set(curr_node) ^ set(incomingData))
 
+    # Build query
+    query = [f"""MATCH (n:{label}) WHERE n.id = $id """]
+
+    # Delete keys removed by user
+    for key in deleted_keys:
+        if key == "id": # Doesn't require to be deleted
+            continue
+        query.append(f"""\nREMOVE n.{key}\n""")
+
+    # Update keys
     for key in incomingData.keys():
         query.append(f"""\nSET n.{key} = ${key}\n""")
 
