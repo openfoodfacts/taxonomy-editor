@@ -1,8 +1,9 @@
 import { Typography, Paper, TextField, Stack, Box } from "@mui/material";
 import ISO6391 from 'iso-639-1';
 
-// Sub-component for rendering translation of an "entry"
-
+/**
+ * Sub-component for rendering translation of an "entry"  
+*/
 const ListTranslations = ({ nodeObject, setNodeObject }) => {
     let renderedTranslations = {}
 

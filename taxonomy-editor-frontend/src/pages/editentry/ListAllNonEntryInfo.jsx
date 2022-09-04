@@ -19,11 +19,11 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
 
     if (nodeObject) {
         Object.keys(nodeObject).forEach((key) => {
-            /** 
-             * Get all tags and its corresponding language code
-             * Tagids need to be recomputed, so shouldn't be rendered
-             * Eg: tags_fr
-            */ 
+            
+            // Get all tags and its corresponding language code
+            // Tagids need to be recomputed, so shouldn't be rendered
+            // Eg: tags_fr
+            
             if (key.startsWith('tags') && 
                 !key.includes('ids')) {
                     languageCode = key.slice(-2);

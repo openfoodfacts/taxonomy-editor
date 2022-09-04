@@ -7,7 +7,7 @@ import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListTranslations from "./ListTranslations";
 
 /**
- * Used for rendering node information
+ * Component used for rendering node information
  * If node is an "entry": Relations, translations, comments and properties are rendered
  * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
  * If node is "header/footer": Comments are rendered  
