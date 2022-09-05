@@ -1,10 +1,10 @@
 import { API_URL } from "../../constants.js"
 
+/**
+ * Finds type of ID
+ * Eg: Stopword, Synonym, Entry, Header or Footer
+*/ 
 export function getIdType(id) {
-    /**
-     * Finds type of ID
-     * Eg: Stopword, Synonym, Entry, Header or Footer
-    */ 
     let idType = '';
 
     if (id.startsWith('__header__')) { idType = 'Header' }
@@ -16,10 +16,10 @@ export function getIdType(id) {
     return idType
 }
 
+/**
+ * Finding ID-specific URL for server requests
+*/
 export function createURL(id) {
-    /**
-     * Finding ID-specific URL for server requests
-    */
     let url = API_URL;
 
     // ID's can look like: __header__, __footer__, synomym:0, stopword:0
