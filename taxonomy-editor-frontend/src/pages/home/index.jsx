@@ -5,19 +5,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link } from "react-router-dom";
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 8, mb: 4 }}>
-      {'Copyright © '}
-      <MuiLink color="inherit" href="https://world.openfoodfacts.org/">
-        Open Food Facts
-      </MuiLink>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
 const Home = () => {
     return (
         <Container component="main" maxWidth="md">
@@ -55,7 +42,14 @@ const Home = () => {
                 Start Editing!
             </Button>
             </Box>
-            <Copyright />
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 8, mb: 4 }}>
+              {'Copyright © '}
+              <MuiLink color="inherit" href="https://world.openfoodfacts.org/">
+                Open Food Facts
+              </MuiLink>{' '}
+              {new Date().getFullYear()}
+              {'.'}
+            </Typography>
         </Container>
     );
 }

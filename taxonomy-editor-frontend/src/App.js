@@ -13,19 +13,19 @@ const theme = createTheme({
 
 function App() {
   return (
+    <ThemeProvider theme={theme}>
+    <CssBaseline />
     <Router>
-      <ThemeProvider theme={theme}>
+        <ResponsiveAppBar />
         <div className="App">
-          <CssBaseline />
-          <ResponsiveAppBar />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/entry" element={<Entry />} />
             <Route path="/entry/:id" element={<EditEntry />} />
           </Routes>
         </div>
-      </ThemeProvider>
     </Router>
+    </ThemeProvider>
   );
 }
 

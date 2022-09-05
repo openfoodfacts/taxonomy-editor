@@ -1,12 +1,39 @@
-import { useState, useEffect } from "react";
+import { useEffect, useReducer } from "react";
 
-const useFetch = (url) => {    
-    const [data, setData] = useState(null)
-    const [isPending, setIsPending] = useState(true)
-    const [error, setError] = useState(null);
+const initialState = {
+    status: 'pending',
+    data: null,
+    errorMessage: ''
+}
 
+const reducer = (state, action) => {
+    switch (action.type) {
+        case 'fetching':
+            return initialState
+        case 'success':
+            return {
+                status: 'success',
+                data: action.data,
+                errorMessage: ''
+            }    
+        case 'error':
+            return {
+                status: 'error',
+                data: null,
+                errorMessage: action.errorMessage
+            }
+        default: 
+            return state
+    }
+}
+
+const useFetch = (url) => {   
+    const [fetchInfo, dispatch] = useReducer(reducer, initialState)
     useEffect(() => {
         const abortCont = new AbortController();
+
+        dispatch({type:'fetching'})
+
         fetch(url, {signal: abortCont.signal})
             .then(res => { 
                 if (!res.ok) {
@@ -15,22 +42,23 @@ const useFetch = (url) => {
                 return res.json();
             })
             .then(data => {
-                setData(data);
-                setIsPending(false);
-                setError(null);
+                dispatch({type:'success', data:data})
             })
             .catch(err => {
                 if (err.name === 'AbortError') {
-                    console.log("Fetch aborted!");
+                    // Do nothing
                 } else {
-                    setIsPending(false);
-                    console.log(err);
-                    setError(err.message);
+                    dispatch({type: 'error', errorMessage: err.message??''})
                 }
             })
         return () => abortCont.abort();
       }, [url]);
-    return { data, isPending, error }
+
+    const isPending = fetchInfo.status === 'pending';
+    const isError = fetchInfo.status === 'error';
+    const isSuccess = fetchInfo.status === 'success';
+
+    return { data: fetchInfo.data, isPending, isError, isSuccess, errorMessage: fetchInfo.errorMessage }
 }
 
 export default useFetch;

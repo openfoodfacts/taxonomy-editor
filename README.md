@@ -3,8 +3,14 @@ Taxonomies are at the heart of Open Food Facts data structure - this project pro
 
 Docs, see [doc folder](./doc).
 
-> **NOTE:**  
+> **NOTE:**
 > This documentation tries to follow as much as possible the documentation system from [Diátaxis](https://diataxis.fr/).
+
+## Contribute
+
+- to develop: [Setup a dev environment](./doc/introduction/setup-dev.md)
+- to translate: use [Crowdin](https://crowdin.com/project/openfoodfacts), project open food facts
+- report issues, feature requests etc.
 
 
 Wiki Page: https://wiki.openfoodfacts.org/GSOC_2022_-_Taxonomy_editor
