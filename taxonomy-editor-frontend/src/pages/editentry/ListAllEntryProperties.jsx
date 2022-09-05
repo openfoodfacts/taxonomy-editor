@@ -1,8 +1,9 @@
 import { Typography, TextField, Box } from "@mui/material";
 
-// Sub-component used for rendering comments and properties of an "entry"
-
-const ListAllProperties = ({ nodeObject, setNodeObject }) => {
+/**
+ * Sub-component used for rendering comments and properties of a node with ID = "entry" 
+*/ 
+const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     let renderedProperties = {}
     Object.keys(nodeObject).forEach((key) => {
 
@@ -64,4 +65,4 @@ const ListAllProperties = ({ nodeObject, setNodeObject }) => {
     );
 }
  
-export default ListAllProperties;
+export default ListAllEntryProperties;
