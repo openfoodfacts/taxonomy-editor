@@ -12,6 +12,8 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     
     // TODO: Change variables to state variables and wrap Object.keys() inside a useEffect()
 
+    // Stores ID type of node object
+    let IDType = getIdType(id);
     // Stores 2 letter language code (LC) of the tags
     let languageCode = '';
     // Storing keys and values that needs to be rendered for editing
@@ -61,7 +63,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                 variant="outlined" /> }
 
             {/* Main Language */}
-            { Object.keys(renderedNonEntryInfo).length > 0 && 
+            { IDType === 'Synonyms' || IDType === 'Stopwords' && 
                 <Box>
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
@@ -73,10 +75,10 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                 }
             
             {/* Stopwords or Synonyms */}
-            { Object.keys(renderedNonEntryInfo).length > 0 && 
+            { IDType ==='Synonyms' || IDType === 'Stopwords' && 
                 <Box>
                     <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
-                        { getIdType(id) }
+                        { IDType }
                     </Typography>
                     {/* Render all tags */}
                     <Paper component={Stack} direction="column" sx={{ml: 8, width: 200}}>
