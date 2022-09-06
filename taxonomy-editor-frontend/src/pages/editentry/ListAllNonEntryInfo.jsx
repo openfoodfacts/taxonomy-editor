@@ -69,7 +69,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                         Language
                     </Typography>
                     <Typography sx={{ml: 8, mt: 1.5}} variant='h6'>
-                        {ISO6391.getName(languageCode)}
+                        {languageCode && ISO6391.getName(languageCode)}
                     </Typography>
                 </Box>
                 }
@@ -82,7 +82,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                     </Typography>
                     {/* Render all tags */}
                     <Paper component={Stack} direction="column" sx={{ml: 8, width: 200}}>
-                        { renderedNonEntryInfo[languageCode].map((tag, index) => {
+                        { nodeObject && renderedNonEntryInfo[languageCode].map((tag, index) => {
                             return (
                                 <TextField 
                                     key={index}

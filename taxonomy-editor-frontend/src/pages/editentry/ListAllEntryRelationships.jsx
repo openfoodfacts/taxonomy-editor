@@ -2,7 +2,7 @@ import useFetch from "../../components/useFetch";
 import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
-const FetchRelations = ({url, title}) => {
+const ListAllEntryRelationships = ({url, title}) => {
     const { data: relations, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     // Check error in fetch
     if (isError) {
@@ -27,7 +27,7 @@ const FetchRelations = ({url, title}) => {
             {/* Renders parents or children of the node */}
             {relations && relations.map(relation => (
                 <Box key={relation}>
-                    <Link to={`/entry/${relation}`} style={{color: '#0064c8', display: 'inline-block'}}>
+                    <Link to={`/entry/${relation}`}>
                         <Typography sx={{ml: 8, mb: 1}} variant='h6'>
                             {relation}
                         </Typography>
@@ -38,4 +38,4 @@ const FetchRelations = ({url, title}) => {
     );
 }
  
-export default FetchRelations;
+export default ListAllEntryRelationships;

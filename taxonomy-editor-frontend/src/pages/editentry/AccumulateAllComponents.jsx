@@ -5,7 +5,7 @@ import { createURL, getIdType } from "./createURL";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListTranslations from "./ListTranslations";
-import FetchRelations from "./FetchAndDisplayRelations";
+import ListAllEntryRelationships from "./ListAllEntryRelationships";
 
 /**
  * Component used for rendering node information
@@ -26,12 +26,12 @@ const AccumulateAllComponents = ({ id }) => {
 
     if (isError) {
         return (
-            <Box>{isError && <div>{errorMessage}</div>}</Box>
+            <Box>{isError && errorMessage}</Box>
         )
     }
     if (isPending) {
         return (
-            <Box>{isPending && <div>Loading...</div>}</Box>
+            <Box>{isPending && "Loading..."}</Box>
         )
     }
     return ( 
@@ -40,8 +40,8 @@ const AccumulateAllComponents = ({ id }) => {
             { isEntry ? 
                 <Box>
                     { !!nodeObject &&
-                        <>  <FetchRelations url={url+'parents'} title={'Parents'} />
-                            <FetchRelations url={url+'children'} title={'Children'} />
+                        <>  <ListAllEntryRelationships url={url+'parents'} title={'Parents'} />
+                            <ListAllEntryRelationships url={url+'children'} title={'Children'} />
                             <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :
