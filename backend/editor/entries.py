@@ -76,7 +76,12 @@ def update_nodes(label, entry, incomingData):
     
     # Get current node information and deleted keys
     curr_node = list(get_nodes(label, entry).data()[0]['n'].keys())
-    deleted_keys = list(set(curr_node) ^ set(incomingData))
+    deleted_keys = (set(curr_node) ^ set(incomingData))
+
+    # Check for keys having null/empty values
+    for key in curr_node:
+        if (curr_node[key] == []) or (curr_node[key] == None):
+            deleted_keys.add(key)
 
     # Build query
     query = [f"""MATCH (n:{label}) WHERE n.id = $id """]
