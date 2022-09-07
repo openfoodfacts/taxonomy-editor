@@ -75,11 +75,12 @@ def update_nodes(label, entry, incomingData):
             raise ValueError("Invalid key: %s", key)
     
     # Get current node information and deleted keys
-    curr_node = list(get_nodes(label, entry).data()[0]['n'].keys())
-    deleted_keys = (set(curr_node) ^ set(incomingData))
+    curr_node = get_nodes(label, entry).data()[0]['n']
+    curr_node_keys = list(curr_node.keys())
+    deleted_keys = (set(curr_node_keys) ^ set(incomingData))
 
     # Check for keys having null/empty values
-    for key in curr_node:
+    for key in curr_node_keys:
         if (curr_node[key] == []) or (curr_node[key] == None):
             deleted_keys.add(key)
 
