@@ -63,26 +63,26 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                 variant="outlined" /> }
 
             {/* Main Language */}
-            { IDType === 'Synonyms' || IDType === 'Stopwords' && 
+            { (IDType === 'Synonyms' || IDType === 'Stopwords') && 
                 <Box>
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
                     </Typography>
                     <Typography sx={{ml: 8, mt: 1.5}} variant='h6'>
-                        {ISO6391.getName(languageCode)}
+                        {languageCode && ISO6391.getName(languageCode)}
                     </Typography>
                 </Box>
                 }
             
             {/* Stopwords or Synonyms */}
-            { IDType ==='Synonyms' || IDType === 'Stopwords' && 
+            { (IDType ==='Synonyms' || IDType === 'Stopwords') && 
                 <Box>
                     <Typography sx={{ml: 4, mt: 1, mb: 1}} variant='h5'>
                         { IDType }
                     </Typography>
                     {/* Render all tags */}
                     <Paper component={Stack} direction="column" sx={{ml: 8, width: 200}}>
-                        { renderedNonEntryInfo[languageCode].map((tag, index) => {
+                        { nodeObject && renderedNonEntryInfo[languageCode].map((tag, index) => {
                             return (
                                 <TextField 
                                     key={index}

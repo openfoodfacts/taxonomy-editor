@@ -1,10 +1,11 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import { createURL, getIdType } from "./createURL";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListTranslations from "./ListTranslations";
+import ListAllEntryRelationships from "./ListAllEntryRelationships";
 
 /**
  * Component used for rendering node information
@@ -23,17 +24,18 @@ const AccumulateAllComponents = ({ id }) => {
         setNodeObject(node?.[0]);
     }, [node])
 
+    // Check error in fetch
     if (isError) {
         return (
-            <Box className="node-attributes">
-                {isError && <div>{errorMessage}</div>}
+            <Box>
+                <Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>
             </Box>
         )
     }
     if (isPending) {
         return (
-            <Box className="node-attributes">
-                {isPending && <div>Loading...</div>}
+            <Box>
+                <Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>
             </Box>
         )
     }
@@ -41,9 +43,11 @@ const AccumulateAllComponents = ({ id }) => {
         <Box className="node-attributes">
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
-                <Box className="allEntryProperties">
+                <Box>
                     { !!nodeObject &&
-                        <>  <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
+                        <>  <ListAllEntryRelationships url={url+'parents'} title={'Parents'} />
+                            <ListAllEntryRelationships url={url+'children'} title={'Children'} />
+                            <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :
                 <>  <ListAllNonEntryInfo nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
