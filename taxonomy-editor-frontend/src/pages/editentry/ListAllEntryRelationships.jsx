@@ -14,7 +14,9 @@ const ListAllEntryRelationships = ({url, title}) => {
     }
     if (isPending) {
         return (
-            <Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>
+            <Box>
+                <Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>
+            </Box>
         )
     }
     return (
@@ -27,7 +29,7 @@ const ListAllEntryRelationships = ({url, title}) => {
             {/* Renders parents or children of the node */}
             {relations && relations.map(relation => (
                 <Box key={relation}>
-                    <Link to={`/entry/${relation}`}>
+                    <Link to={`/entry/${relation}`} style={{color: '#0064c8'}}>
                         <Typography sx={{ml: 8, mb: 1}} variant='h6'>
                             {relation}
                         </Typography>

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import { createURL, getIdType } from "./createURL";
@@ -24,14 +24,19 @@ const AccumulateAllComponents = ({ id }) => {
         setNodeObject(node?.[0]);
     }, [node])
 
+    // Check error in fetch
     if (isError) {
         return (
-            <Box>{isError && errorMessage}</Box>
+            <Box>
+                <Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>
+            </Box>
         )
     }
     if (isPending) {
         return (
-            <Box>{isPending && "Loading..."}</Box>
+            <Box>
+                <Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>
+            </Box>
         )
     }
     return ( 
