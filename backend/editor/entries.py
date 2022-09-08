@@ -21,23 +21,72 @@ def shutdown_db():
     session.close()
     driver.close()
 
-def create_node(label, entry):
+def get_label(id):
+    """
+    Helper function for getting the label for a given id
+    """
+    if (id.startswith('stopword')): return 'STOPWORDS'
+    elif (id.startswith('synonym')): return 'SYNONYMS'
+    elif (id.startswith('__header__') or id.startswith('__footer__')): return 'TEXT'
+    else: return 'ENTRY'
+
+def create_node(label, entry, mainLanguageCode):
     """
     Helper function used for creating a node with given id and label
     """
-    query = [f"""CREATE (n:{label})\n """]
+    query = [f"""CREATE (n:{label})\n"""]
 
     # Build all basic keys of a node
-    mainLanguageCode = entry[:2]
-    canonicalTag = entry[3:]
+    if (label == "ENTRY"):
+        canonicalTag = entry[3:]
+    else:
+        canonicalTag = ""
+
     query.append(f""" SET n.id = $id """)
     query.append(f""" SET n.tags_{mainLanguageCode} = ["{canonicalTag}"] """)
     query.append(f""" SET n.main_language = "{mainLanguageCode}" """)
     query.append(f""" SET n.preceding_lines = [] """)
-    query.append(f""" RETURN n """)
 
     result = session.run(" ".join(query), {"id": entry})
     return result
+
+def add_node_to_end(label, entry):
+    """
+    Helper function which adds an existing node to end of taxonomy
+    """
+    query = [f"""MATCH (a)-[r:is_before]->(b:TEXT) WHERE b.id = "__footer__" DELETE r\n"""]
+    query.append(f"""RETURN a""")
+    result = session.run(" ".join(query))
+    end_node = result.data()[0]['a']
+    end_node_label = get_label(end_node['id'])
+    print(end_node, end_node_label)
+
+    query = []
+    query.append(f"""MATCH (n:{label}) WHERE n.id = $id\n""")
+    query.append(f"""MATCH (b:{end_node_label}) WHERE b.id = $endnodeid\n""")
+    query.append(f"""MATCH (a:TEXT) WHERE a.id = "__footer__"\n""")
+    query.append(f"""CREATE (b)-[:is_before]->(n)\n""")
+    query.append(f"""CREATE (n)-[:is_before]->(a)""")
+    result = session.run(" ".join(query), {"id": entry, "endnodeid": end_node['id']})
+
+def add_node_to_beginning(label, entry):
+    """
+    Helper function which adds an existing node to beginning of taxonomy
+    """
+    query = [f"""MATCH (b:TEXT)-[r:is_before]->(a) WHERE b.id = "__header__" DELETE r\n"""]
+    query.append(f"""RETURN a""")
+    result = session.run(" ".join(query))
+    end_node = result.data()[0]['a']
+    end_node_label = get_label(end_node['id'])
+
+    query = []
+    query.append(f"""MATCH (n:{label}) WHERE n.id = $id\n""")
+    query.append(f"""MATCH (b:{end_node_label}) WHERE b.id = $startnodeid\n""")
+    query.append(f"""MATCH (a:TEXT) WHERE a.id = "__header__"\n""")
+    query.append(f"""CREATE (n)-[:is_before]->(b)\n""")
+    query.append(f"""CREATE (a)-[:is_before]->(n)""")
+    result = session.run(" ".join(query), {"id": entry, "startnodeid": end_node['id']})
+
 
 def get_all_nodes(label):
     """
@@ -83,6 +132,7 @@ def get_children(entry):
     result = session.run(query, {"id": entry})
     return result
 
+
 def update_nodes(label, entry, incomingData):
     """
     Helper function used for updation of node with given id and label
@@ -92,9 +142,26 @@ def update_nodes(label, entry, incomingData):
         if not re.match(r"^\w+$", key) or key == "id":
             raise ValueError("Invalid key: %s", key)
     
-    # Build query
-    query = [f"""MATCH (n:{label}) WHERE n.id = $id """, """SET n={} """, """SET n.id = $id"""]
+    # Get current node information and deleted keys
+    curr_node = get_nodes(label, entry).data()[0]['n']
+    curr_node_keys = list(curr_node.keys())
+    deleted_keys = (set(curr_node_keys) ^ set(incomingData))
 
+    # Check for keys having null/empty values
+    for key in curr_node_keys:
+        if (curr_node[key] == []) or (curr_node[key] == None):
+            deleted_keys.add(key)
+
+    # Build query
+    query = [f"""MATCH (n:{label}) WHERE n.id = $id """]
+
+    # Delete keys removed by user
+    for key in deleted_keys:
+        if key == "id": # Doesn't require to be deleted
+            continue
+        query.append(f"""\nREMOVE n.{key}\n""")
+
+    # Update keys
     for key in incomingData.keys():
         query.append(f"""\nSET n.{key} = ${key}\n""")
 
@@ -115,11 +182,13 @@ def update_node_children(entry, incomingData):
     # Delete relationships
     for child in deleted_children:
         query = []
+        main_language_code = child[:2]
         is_old_node = list(get_nodes("ENTRY", child))
 
         # Create node if not exists
         if (not is_old_node):
-            create_node("ENTRY", child)
+            create_node("ENTRY", child, main_language_code)
+            add_node_to_end("ENTRY", child)
 
         # Delete relationships of deleted child node
         else:

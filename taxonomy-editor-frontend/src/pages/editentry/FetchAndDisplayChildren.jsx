@@ -1,5 +1,5 @@
 import useFetch from "../../components/useFetch";
-import { Typography, Paper, TextField, Stack, Button, IconButton, Box } from "@mui/material";
+import { Typography, TextField, Stack, Button, IconButton } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Dialog from '@mui/material/Dialog';
@@ -10,12 +10,16 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
+import ISO6391 from 'iso-639-1';
 
-const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => {
+const FetchChildren = ({url, setUpdateNodeChildren}) => {
     const [relations, setRelations] = useState(null);
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);
     const [open, setOpen] = useState(false); // Used for Dialog component
+    const [btnDisabled, setBtnDisabled] = useState(true) // For enabling or disabling Dialog button
+    const [isValidLC, setisValidLC] = useState(false); // Used for validating a new LC
+
     const { data: incomingData, errorMessage, isPending } = useFetch(url);
     
     useEffect(() => {
@@ -26,7 +30,7 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
                 {"index" : uuid.v4(), "child" : el?.[0]})
             );
         setRelations(arrayData);
-    }, [incomingData])
+    }, [incomingData, setUpdateNodeChildren])
 
     // Helper functions for Dialog component
     function handleClose() { setOpen(false); }
@@ -88,7 +92,7 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
                 <DialogTitle>Add a child</DialogTitle>
                 <DialogContent>
                 <DialogContentText>
-                    Enter the name of the child in the format "LC:child_tag"
+                    Enter the name of the child in the format "LC:child_tag_id"
                 </DialogContentText>
                 <DialogContentText>
                     Example - en:yogurts
@@ -98,8 +102,12 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
                         onKeyPress={(e) => { (e.key === 'Enter') && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewLanguageCode(e.target.value);
+                            const validateBool = ISO6391.validate(e.target.value);
+                            validateBool ? setisValidLC(true) : setisValidLC(false);
+                            validateBool ? setBtnDisabled(false) : setBtnDisabled(true);
                         }}
                         label="Language Code"
+                        error={!isValidLC}
                         sx={{width : 250, marginRight: 1}}
                         size="small"
                         variant="outlined"
@@ -122,6 +130,7 @@ const FetchChildren = ({url, id, updateNodeChildren, setUpdateNodeChildren}) => 
                 <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>
                 <Button 
+                    disabled={btnDisabled}
                     onClick={(e) => {handleAddChild(newChild, e)}}>
                         Add
                 </Button>

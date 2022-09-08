@@ -14,8 +14,9 @@ from .models import Header, Footer
 
 # DB helper imports
 from .entries import initialize_db, shutdown_db
-from .entries import get_all_nodes, get_nodes, get_children, get_parents
+from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label
 from .entries import update_nodes, update_node_children
+from .entries import create_node, add_node_to_end, add_node_to_beginning
 #------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
@@ -188,6 +189,18 @@ async def findFooter(response: Response):
 
 # Post methods
 
+@app.post("/nodes/{id}")
+async def createNewNode(request: Request, id: str):
+    """
+    Creating a new node in a taxonomy
+    """
+    incomingData = await request.json()
+    create_node(get_label(id), id, incomingData["main_language"])
+    if (get_label(id) == "ENTRY"):
+        add_node_to_end(get_label(id), id)
+    else:
+        add_node_to_beginning(get_label(id), id)
+
 @app.post("/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
@@ -211,7 +224,6 @@ async def editEntryChildren(request: Request, entry: str):
     result = update_node_children(entry, incomingData)
     updatedChildren = list(result)
     return updatedChildren
-
 
 @app.post("/synonym/{synonym}")
 async def editSynonyms(request: Request, synonym: str):

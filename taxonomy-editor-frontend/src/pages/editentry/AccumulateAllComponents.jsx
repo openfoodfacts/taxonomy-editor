@@ -81,7 +81,7 @@ const AccumulateAllComponents = ({ id }) => {
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
                 <>  <FetchParents url={url+'parents'} />
-                    <FetchChildren url={url+'children'} id={id} updateNodeChildren={updateChildren} setUpdateNodeChildren={setUpdateChildren} />
+                    <FetchChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
                     <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </> :
                 <>  <ListAllOtherProperties nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </>
             }

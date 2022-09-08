@@ -1,14 +1,13 @@
-import { Typography } from "@mui/material";
+import { Typography, Stack, Paper, IconButton } from "@mui/material";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
 import { useNavigate } from "react-router-dom";
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 const EntriesList = ({ nodes, title }) => {
     const navigate = useNavigate();
@@ -17,6 +16,10 @@ const EntriesList = ({ nodes, title }) => {
     const handleClick = (event, id) => {
         event.preventDefault();
         navigate('/entry/'+id);
+    }
+    // Helper functions for Dialog component
+    function handleAddNode(id) { 
+        // Add functionality to be completed
     }
     return ( 
         <div className="entry">
@@ -32,11 +35,16 @@ const EntriesList = ({ nodes, title }) => {
                     <Table sx={{ width: 400 }}>
                         <TableHead>
                         <TableRow>
-                            <TableCell align="left">
-                            <Typography variant="h6">
-                                Nodes
-                            </Typography>
-                            </TableCell>
+                            <Stack direction="row" alignItems="center">
+                                <TableCell align="left">
+                                <Typography variant="h6">
+                                    Nodes
+                                </Typography>
+                                </TableCell>
+                                <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleAddNode}>
+                                    <AddBoxIcon />
+                                </IconButton>
+                            </Stack>
                             <TableCell align="left">
                             <Typography variant="h6">
                                 Action
