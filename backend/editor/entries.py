@@ -59,7 +59,6 @@ def add_node_to_end(label, entry):
     result = session.run(" ".join(query))
     end_node = result.data()[0]['a']
     end_node_label = get_label(end_node['id'])
-    print(end_node, end_node_label)
 
     query = []
     query.append(f"""MATCH (n:{label}) WHERE n.id = $id\n""")
