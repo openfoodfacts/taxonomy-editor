@@ -16,7 +16,7 @@ from .models import Header, Footer
 from .entries import initialize_db, shutdown_db
 from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label
 from .entries import update_nodes, update_node_children
-from .entries import create_node, add_node_to_end, add_node_to_beginning
+from .entries import create_node, add_node_to_end, add_node_to_beginning, delete_node
 #------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
@@ -189,13 +189,15 @@ async def findFooter(response: Response):
 
 # Post methods
 
-@app.post("/nodes/{id}")
-async def createNewNode(request: Request, id: str):
+@app.post("/nodes")
+async def createNode(request: Request):
     """
     Creating a new node in a taxonomy
     """
     incomingData = await request.json()
-    create_node(get_label(id), id, incomingData["main_language"])
+    id = incomingData["id"]
+    main_language = incomingData["main_language"]
+    create_node(get_label(id), id, main_language)
     if (get_label(id) == "ENTRY"):
         add_node_to_end(get_label(id), id)
     else:
@@ -268,3 +270,14 @@ async def editFooter(incomingData: Footer):
     result = update_nodes("TEXT", "__footer__", convertedData)
     updatedFooter = list(result)
     return updatedFooter
+
+# Delete methods
+
+@app.delete("/nodes")
+async def deleteNode(request: Request):
+    """
+    Deleting given node from a taxonomy
+    """
+    incomingData = await request.json()
+    id = incomingData["id"]
+    delete_node(get_label(id), id)

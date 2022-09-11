@@ -39,12 +39,12 @@ def create_node(label, entry, mainLanguageCode):
     # Build all basic keys of a node
     if (label == "ENTRY"):
         canonicalTag = entry[3:]
+        query.append(f""" SET n.main_language = "{mainLanguageCode}" """) # Required for only an entry
     else:
         canonicalTag = ""
 
     query.append(f""" SET n.id = $id """)
     query.append(f""" SET n.tags_{mainLanguageCode} = ["{canonicalTag}"] """)
-    query.append(f""" SET n.main_language = "{mainLanguageCode}" """)
     query.append(f""" SET n.preceding_lines = [] """)
 
     result = session.run(" ".join(query), {"id": entry})
@@ -54,12 +54,14 @@ def add_node_to_end(label, entry):
     """
     Helper function which adds an existing node to end of taxonomy
     """
+    # Delete relationship between current last node and __footer__
     query = [f"""MATCH (a)-[r:is_before]->(b:TEXT) WHERE b.id = "__footer__" DELETE r\n"""]
     query.append(f"""RETURN a""")
     result = session.run(" ".join(query))
     end_node = result.data()[0]['a']
-    end_node_label = get_label(end_node['id'])
+    end_node_label = get_label(end_node['id']) # Get current last node ID
 
+    # Rebuild relationships by inserting incoming node at the end
     query = []
     query.append(f"""MATCH (n:{label}) WHERE n.id = $id\n""")
     query.append(f"""MATCH (b:{end_node_label}) WHERE b.id = $endnodeid\n""")
@@ -72,12 +74,14 @@ def add_node_to_beginning(label, entry):
     """
     Helper function which adds an existing node to beginning of taxonomy
     """
+    # Delete relationship between current first node and __header__
     query = [f"""MATCH (b:TEXT)-[r:is_before]->(a) WHERE b.id = "__header__" DELETE r\n"""]
     query.append(f"""RETURN a""")
     result = session.run(" ".join(query))
     end_node = result.data()[0]['a']
-    end_node_label = get_label(end_node['id'])
+    end_node_label = get_label(end_node['id']) # Get current first node ID
 
+    # Rebuild relationships by inserting incoming node at the beginning
     query = []
     query.append(f"""MATCH (n:{label}) WHERE n.id = $id\n""")
     query.append(f"""MATCH (b:{end_node_label}) WHERE b.id = $startnodeid\n""")
@@ -86,6 +90,21 @@ def add_node_to_beginning(label, entry):
     query.append(f"""CREATE (a)-[:is_before]->(n)""")
     result = session.run(" ".join(query), {"id": entry, "startnodeid": end_node['id']})
 
+def delete_node(label, entry):
+    """
+    Helper function used for deleting a node with given id and label
+    """
+    # Finding node to be deleted using node ID
+    query = []
+    query.append(f"""MATCH (n:{label})-[:is_before]->(a) WHERE n.id = $id\n""")
+    query.append(f"""MATCH (b)-[:is_before]->(n)\n""")
+    query.append(f"""DETACH DELETE (n)""")
+
+    # Rebuild relationships after deletion
+    query.append(f"""CREATE (b)-[:is_before]->(a)""") 
+
+    result = session.run(" ".join(query), {"id": entry})
+    return result
 
 def get_all_nodes(label):
     """
@@ -130,7 +149,6 @@ def get_children(entry):
     """
     result = session.run(query, {"id": entry})
     return result
-
 
 def update_nodes(label, entry, incomingData):
     """
