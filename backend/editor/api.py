@@ -14,8 +14,9 @@ from .models import Header, Footer
 
 # DB helper imports
 from .entries import initialize_db, shutdown_db
-from .entries import get_all_nodes, get_nodes
-from .entries import update_nodes
+from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label
+from .entries import update_nodes, update_node_children
+from .entries import create_node, add_node_to_end, add_node_to_beginning, delete_node
 #------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
@@ -97,6 +98,26 @@ async def findOneEntry(response: Response, entry: str):
     
     return oneEntry[0]
 
+@app.get("/entry/{entry}/parents")
+async def findOneEntryParents(response: Response, entry: str):
+    """
+    Get parents for a entry corresponding to id within taxonomy
+    """
+    result = get_parents(entry)
+    oneEntryParents = list(result)
+    
+    return oneEntryParents
+
+@app.get("/entry/{entry}/children")
+async def findOneEntryChildren(response: Response, entry: str):
+    """
+    Get children for a entry corresponding to id within taxonomy
+    """
+    result = get_children(entry)
+    oneEntryChildren = list(result)
+    
+    return oneEntryChildren
+
 @app.get("/entry")
 async def findAllEntries(response: Response):
     """
@@ -168,6 +189,20 @@ async def findFooter(response: Response):
 
 # Post methods
 
+@app.post("/nodes")
+async def createNode(request: Request):
+    """
+    Creating a new node in a taxonomy
+    """
+    incomingData = await request.json()
+    id = incomingData["id"]
+    main_language = incomingData["main_language"]
+    create_node(get_label(id), id, main_language)
+    if (get_label(id) == "ENTRY"):
+        add_node_to_end(get_label(id), id)
+    else:
+        add_node_to_beginning(get_label(id), id)
+
 @app.post("/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
@@ -179,6 +214,18 @@ async def editEntry(request: Request, entry: str):
     result = update_nodes("ENTRY", entry, incomingData)
     updatedEntry = list(result)
     return updatedEntry
+
+@app.post("/entry/{entry}/children")
+async def editEntryChildren(request: Request, entry: str):
+    """
+    Editing an entry's children in a taxonomy.
+    New children can be added, old children can be removed.
+    URL will be of format '/entry/<id>/children'
+    """
+    incomingData = await request.json()
+    result = update_node_children(entry, incomingData)
+    updatedChildren = list(result)
+    return updatedChildren
 
 @app.post("/synonym/{synonym}")
 async def editSynonyms(request: Request, synonym: str):
@@ -223,3 +270,14 @@ async def editFooter(incomingData: Footer):
     result = update_nodes("TEXT", "__footer__", convertedData)
     updatedFooter = list(result)
     return updatedFooter
+
+# Delete methods
+
+@app.delete("/nodes")
+async def deleteNode(request: Request):
+    """
+    Deleting given node from a taxonomy
+    """
+    incomingData = await request.json()
+    id = incomingData["id"]
+    delete_node(get_label(id), id)
