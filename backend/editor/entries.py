@@ -214,7 +214,7 @@ def update_node_children(entry, incomingData):
             session.run(" ".join(query), {"id": entry})
     
     # Stores result of last query executed
-    result = None
+    result = []
     for child in incomingData:
         query = []
         # Create new relationships if exists
