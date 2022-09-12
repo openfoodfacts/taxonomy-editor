@@ -1,4 +1,4 @@
-import { Typography, Stack, IconButton, Button } from "@mui/material";
+import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
@@ -43,9 +43,9 @@ const EditEntry = () => {
     }
 
     return (
-        <div className="main-content">
+        <Box className="main-content">
             {/* Renders id of current node */}
-            <div className="node-title">
+            <Box className="node-title">
                 <Stack direction="row" alignItems="center">
                     <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
                         You are now editing "{id}"
@@ -54,7 +54,7 @@ const EditEntry = () => {
                         <DeleteOutlineIcon />
                     </IconButton>
                 </Stack>
-            </div>
+            </Box>
             {/* Renders node info based on id */}
             <AccumulateAllComponents id={id} />
             {/* Dialog box for confirmation of deletion of node */}
@@ -96,7 +96,7 @@ const EditEntry = () => {
                 </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
     );
 }
  

@@ -107,7 +107,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject
                 onChange = {event => {
                     changeDataComment(event.target.value)
                 }}
-                defaultValue={nodeObject.preceding_lines} 
+                value={nodeObject.preceding_lines} 
                 variant="outlined" /> }
 
             {/* Main Language */}
@@ -146,7 +146,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject
                                         onChange = {event => {
                                             changeData(index, event.target.value)
                                         }}
-                                        defaultValue={tag} 
+                                        value={tag}
                                         variant="outlined" />
                                 </Paper>
                                 <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(index, e)}>

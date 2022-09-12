@@ -1,5 +1,5 @@
 import useFetch from "../../components/useFetch";
-import { Typography, TextField, Stack, Button, IconButton } from "@mui/material";
+import { Typography, TextField, Stack, Button, IconButton, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Dialog from '@mui/material/Dialog';
@@ -50,10 +50,10 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
     }
 
     function handleDeleteChild(index) {
-        const duplicateRelations = relations.filter(obj => !(index === obj.index))
-        setRelations(duplicateRelations);
+        const newRelations = relations.filter(obj => !(index === obj.index))
+        setRelations(newRelations);
         // Updated tags assigned for later use
-        const tagsToBeInserted = duplicateRelations.map(el => (el.child))
+        const tagsToBeInserted = newRelations.map(el => (el.child))
         setUpdateNodeChildren(tagsToBeInserted);
     }
 
@@ -65,7 +65,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
         return (<Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>)
     }
     return (
-        <div className="relations">
+        <Box className="relations">
             <Stack direction="row" alignItems="center">
                 <Typography sx={{ml: 4}} variant='h5' component={'div'}>Children</Typography>
                 <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpen}>
@@ -138,7 +138,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
                 </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
     );
 }
  

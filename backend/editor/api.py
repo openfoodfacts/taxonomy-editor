@@ -14,9 +14,8 @@ from .models import Header, Footer
 
 # DB helper imports
 from .entries import initialize_db, shutdown_db
-from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label
-from .entries import update_nodes, update_node_children
-from .entries import create_node, add_node_to_end, add_node_to_beginning, delete_node
+from .entries import get_all_nodes, get_nodes, get_children, get_parents
+from .entries import update_nodes
 #------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
@@ -189,20 +188,6 @@ async def findFooter(response: Response):
 
 # Post methods
 
-@app.post("/nodes")
-async def createNode(request: Request):
-    """
-    Creating a new node in a taxonomy
-    """
-    incomingData = await request.json()
-    id = incomingData["id"]
-    main_language = incomingData["main_language"]
-    create_node(get_label(id), id, main_language)
-    if (get_label(id) == "ENTRY"):
-        add_node_to_end(get_label(id), id)
-    else:
-        add_node_to_beginning(get_label(id), id)
-
 @app.post("/entry/{entry}")
 async def editEntry(request: Request, entry: str):
     """
@@ -214,18 +199,6 @@ async def editEntry(request: Request, entry: str):
     result = update_nodes("ENTRY", entry, incomingData)
     updatedEntry = list(result)
     return updatedEntry
-
-@app.post("/entry/{entry}/children")
-async def editEntryChildren(request: Request, entry: str):
-    """
-    Editing an entry's children in a taxonomy.
-    New children can be added, old children can be removed.
-    URL will be of format '/entry/<id>/children'
-    """
-    incomingData = await request.json()
-    result = update_node_children(entry, incomingData)
-    updatedChildren = list(result)
-    return updatedChildren
 
 @app.post("/synonym/{synonym}")
 async def editSynonyms(request: Request, synonym: str):
@@ -270,14 +243,3 @@ async def editFooter(incomingData: Footer):
     result = update_nodes("TEXT", "__footer__", convertedData)
     updatedFooter = list(result)
     return updatedFooter
-
-# Delete methods
-
-@app.delete("/nodes")
-async def deleteNode(request: Request):
-    """
-    Deleting given node from a taxonomy
-    """
-    incomingData = await request.json()
-    id = incomingData["id"]
-    delete_node(get_label(id), id)

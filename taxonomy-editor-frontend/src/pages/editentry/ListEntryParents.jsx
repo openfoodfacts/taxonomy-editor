@@ -1,5 +1,5 @@
 import useFetch from "../../components/useFetch";
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -13,13 +13,13 @@ const ListEntryParents = ({url}) => {
 
     // Check error in fetch
     if (isError) {
-        return (<div>{errorMessage}</div>)
+        return (<Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>)
     }
     if (isPending) {
-        return (<Typography sx={{ml: 4}} variant='h5' component={'div'}>Loading..</Typography>)
+        return (<Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>)
     }
     return (
-        <div className="relations">
+        <Box className="relations">
             {<Typography sx={{ml: 4, mb: 1}} variant='h5' component={'div'}>Parents</Typography>}
 
             {/* Renders parents or children of the node */}
@@ -35,7 +35,7 @@ const ListEntryParents = ({url}) => {
 
             {/* When no parents or children are present */}
             {relations && relations.length === 0 && <Typography sx={{ml: 8, mb: 1}} variant="h6"> None </Typography>}
-        </div>
+        </Box>
     );
 }
  

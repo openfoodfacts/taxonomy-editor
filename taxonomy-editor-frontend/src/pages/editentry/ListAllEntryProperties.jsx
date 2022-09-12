@@ -9,7 +9,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
     // Changes the properties to be rendered
     // Dependent on changes occuring in "originalNodeObject"
     useEffect(() => {
-        let toBeRendered = []
+        let renderedProperties = []
         Object.keys(originalNodeObject).forEach((key) => {
 
             // Collecting keys of properties
@@ -19,29 +19,29 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
             
                 // Removing "prop_" prefix from key to render only the name
                     let property_name = key.split('_').slice(1).join('_');
-                    toBeRendered.push({
+                    renderedProperties.push({
                         'id': uuid.v4(),
                         'propertyName': property_name,
                         'propertyValue': originalNodeObject[key]
                     })
                 }
         });
-        setData(toBeRendered);
+        setData(renderedProperties);
     }, [originalNodeObject])
 
     // Helper function used for changing comments from node
     function changeCommentData(value) {
-        const duplicateData = {...nodeObject};
-        duplicateData['preceding_lines'] = value;
-        setNodeObject(duplicateData);
+        const newNodeObject = {...nodeObject};
+        newNodeObject['preceding_lines'] = value;
+        setNodeObject(newNodeObject);
     }
 
     // Helper function used for changing properties of node
     function changePropertyData(key, value) {
         setNodeObject(prevState => {
-            const duplicateData = {...prevState};
-            duplicateData["prop_"+key] = value;
-            return duplicateData 
+            const newNodeObject = {...prevState};
+            newNodeObject["prop_"+key] = value;
+            return newNodeObject 
         })
     }
 
@@ -49,13 +49,13 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
     function deletePropertyData(key) {
         setNodeObject(prevState => {
             const toRemove = "prop_"+key;
-            const {[toRemove]: _, ...duplicateData} = prevState;
-            return duplicateData
+            const {[toRemove]: _, ...newNodeObject} = prevState;
+            return newNodeObject
         })
     }
     
     return (
-        <div className="all-properties">
+        <Box className="all-properties">
             {/* Comments */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             <TextField
@@ -65,7 +65,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
                 onChange = {event => {
                     changeCommentData(event.target.value.split('\n'))
                 }}
-                defaultValue={nodeObject.preceding_lines.join('\n')} 
+                value={nodeObject.preceding_lines.join('\n')} 
                 variant="outlined" />
 
             {/* Properties */}
@@ -132,7 +132,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
                 }}
             />
             </Box>
-        </div>
+        </Box>
     );
 }
 
