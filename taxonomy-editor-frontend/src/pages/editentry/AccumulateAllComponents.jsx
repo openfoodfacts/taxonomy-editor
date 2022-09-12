@@ -1,36 +1,32 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../../components/useFetch";
-import { API_URL } from "../../constants";
-import FetchParents from "./FetchAndDisplayParents";
-import FetchChildren from "./FetchAndDisplayChildren";
-import ListAllEntryProperties from "./ListAllEntryProperties";
-import ListAllOtherProperties from "./ListAllOtherProperties";
+import ListAllEntryProperties from "./AccumulateEntryInfo";
+import ListEntryParents from "./ListEntryParents";
+import ListEntryChildren from "./ListEntryChildren";
+import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
+import { createURL, getIdType } from "./createURL";
 
-// Used for rendering node information
-// If node is an "entry": Relations, translations, comments and properties are rendered
-// If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
-// If node is "header/footer": Comments are rendered
+/**
+ * Component used for rendering node information
+ * If node is an "entry": Relations, translations, comments and properties are rendered
+ * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
+ * If node is "header/footer": Comments are rendered  
+*/ 
 
 const AccumulateAllComponents = ({ id }) => {
-    
+
     // Finding URL to send requests
-    let url = API_URL;
-    let isEntry = false;
-    if (id.startsWith('__header__')) { url += 'header/' }
-    else if (id.startsWith('__footer__')) { url += 'footer/' }
-    else if (id.startsWith('synonym')) { url += `synonym/${id}/` }
-    else if (id.startsWith('stopword')) { url += `stopword/${id}/` }
-    else { url += `entry/${id}/`; isEntry = true; }
+    const url = createURL(id);
+    const isEntry = getIdType(id) === 'entry';
 
     const [nodeObject, setNodeObject] = useState(null); // Storing original node information
     const [updatedNodeObject, setUpdatedNodeObject] = useState(null); // Storing updates to node
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
     const navigate = useNavigate(); // Navigation between pages
-
-    const { data: node, errorMessage, isPending } = useFetch(url);
+    const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
 
     // Setting state of node after fetch
     useEffect(() => {
@@ -39,7 +35,7 @@ const AccumulateAllComponents = ({ id }) => {
     }, [node])
 
     // Displaying errorMessages if any
-    if (errorMessage) {
+    if (isError) {
         return (<Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>)
     }
 
@@ -77,13 +73,16 @@ const AccumulateAllComponents = ({ id }) => {
     }
     
     return ( 
-        <div className="node-attributes">
+        <Box className="node-attributes">
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
-                <>  <FetchParents url={url+'parents'} />
-                    <FetchChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
-                    <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </> :
-                <>  <ListAllOtherProperties nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </>
+                <Box>
+                    { !!nodeObject &&
+                        <>  <ListEntryParents url={url+'parents'} />
+                            <ListEntryChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
+                            <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </> }
+                </Box> :
+                <>  <ListAllNonEntryInfo nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </>
             }
             {/* Button for submitting edits */}
             <Button
@@ -115,7 +114,7 @@ const AccumulateAllComponents = ({ id }) => {
                 </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
      );
 }
  

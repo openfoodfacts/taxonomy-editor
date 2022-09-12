@@ -3,15 +3,16 @@ import { Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const FetchParents = ({url}) => {
+const ListEntryParents = ({url}) => {
     const [relations, setRelations] = useState(null);
-    const { data: incomingData, errorMessage, isPending } = useFetch(url);
+    const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+    
     useEffect(() => {
         setRelations(incomingData)
     }, [incomingData])
 
     // Check error in fetch
-    if (errorMessage) {
+    if (isError) {
         return (<div>{errorMessage}</div>)
     }
     if (isPending) {
@@ -38,4 +39,4 @@ const FetchParents = ({url}) => {
     );
 }
  
-export default FetchParents;
+export default ListEntryParents;

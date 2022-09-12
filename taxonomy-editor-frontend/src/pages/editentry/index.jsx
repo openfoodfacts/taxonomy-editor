@@ -68,7 +68,7 @@ const EditEntry = () => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleCloseDeleteDialog} autoFocus>
+                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleCloseDeleteDialog}>
                     Cancel
                 </Button>
                 <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif', color: '#ff0000'}} onClick={handleDeleteNode} autoFocus>

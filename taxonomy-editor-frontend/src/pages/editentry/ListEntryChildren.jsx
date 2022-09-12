@@ -12,7 +12,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
 import ISO6391 from 'iso-639-1';
 
-const FetchChildren = ({url, setUpdateNodeChildren}) => {
+const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
     const [relations, setRelations] = useState(null);
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);
@@ -20,16 +20,18 @@ const FetchChildren = ({url, setUpdateNodeChildren}) => {
     const [btnDisabled, setBtnDisabled] = useState(true) // For enabling or disabling Dialog button
     const [isValidLC, setisValidLC] = useState(false); // Used for validating a new LC
 
-    const { data: incomingData, errorMessage, isPending } = useFetch(url);
+    const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     
     useEffect(() => {
-        setUpdateNodeChildren(incomingData.map(el => el?.[0]));
-        const arrayData = [];
-        incomingData.map((el) =>
-            arrayData.push(
-                {"index" : uuid.v4(), "child" : el?.[0]})
-            );
-        setRelations(arrayData);
+        if (incomingData) {
+            setUpdateNodeChildren(incomingData.map(el => el?.[0]));
+            const arrayData = [];
+            incomingData.map((el) =>
+                arrayData.push(
+                    {"index" : uuid.v4(), "child" : el?.[0]})
+                );
+            setRelations(arrayData);
+        }
     }, [incomingData, setUpdateNodeChildren])
 
     // Helper functions for Dialog component
@@ -56,7 +58,7 @@ const FetchChildren = ({url, setUpdateNodeChildren}) => {
     }
 
     // Check error in fetch
-    if (errorMessage) {
+    if (isError) {
         return (<Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>)
     }
     if (isPending) {
@@ -140,4 +142,4 @@ const FetchChildren = ({url, setUpdateNodeChildren}) => {
     );
 }
  
-export default FetchChildren;
+export default ListEntryChildren;

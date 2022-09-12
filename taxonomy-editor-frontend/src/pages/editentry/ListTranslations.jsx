@@ -10,7 +10,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
 import ISO6391 from 'iso-639-1';
 
-// Sub-component for rendering translation of an "entry"
+/**
+ * Sub-component for rendering translation of an "entry"  
+*/
 
 const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => {
 
@@ -90,7 +92,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 // If tags are for main language, add them to mainLangTags
                 else {
                     originalNodeObject["tags_"+originalNodeObject['main_language']].map((tag) => (
-                        mainLangTags.push({
+                        mainLangTags.push({ 
                             'index' : uuid.v4(),
                             'tag' : tag
                         })

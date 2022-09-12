@@ -1,32 +1,39 @@
 import { Box, Paper, Stack, TextField, Typography, Button } from "@mui/material";
 import { useState, useEffect } from "react";
+import { getIdType } from "./createURL";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as uuid from "uuid";
 import ISO6391 from 'iso-639-1';
 
-// Parent component used for rendering info
-// on a stopword, synonym, header or footer
+/** 
+ * Parent component used for rendering info on a stopword, synonym, header or footer
+ * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
+ * If node is "header/footer": Only comments are rendered
+*/
 
-const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObject }) => {
+const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject }) => {
     
+    // Stores ID type of node object
+    let IDType = getIdType(id);
     // Stores 2 letter language code (LC) of the tags
     let [languageCode, setLanguageCode] = useState('');
     // Storing tags that need to be rendered for editing
-    let [toBeRendered, setToBeRendered] = useState([])
+    let [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([])
 
     useEffect(() => {
         let tagsExtracted = []
-        let extractedLC = ''
+        let extractedLanguageCode = ''
         if (originalNodeObject) {
             Object.keys(originalNodeObject).forEach((key) => {
     
                 // Get all tags and its corresponding language code
                 // Tagids need to be recomputed, so shouldn't be rendered
+                // Eg: tags_fr
     
                 if (key.startsWith('tags') && 
                     !key.includes('ids')) {
-                        extractedLC = key.slice(-2);
+                        extractedLanguageCode = key.slice(-2);
                         originalNodeObject[key].map((tag) => (
                             tagsExtracted.push({
                                 'index' : uuid.v4(),
@@ -36,57 +43,56 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObj
                     }
             })
         }
-        setLanguageCode(extractedLC)
-        setToBeRendered(tagsExtracted)
+        setLanguageCode(extractedLanguageCode)
+        setRenderedNonEntryInfo(tagsExtracted)
     }, [originalNodeObject])
     
     // Helper function used for changing state of "preceding_lines"
     function changeDataComment(value) {
-        const duplicateData = {...nodeObject};
-        duplicateData['preceding_lines'] = value.split('\n');
-        setNodeObject(duplicateData);
+        const newNodeObject = {...nodeObject};
+        newNodeObject['preceding_lines'] = value.split('\n');
+        setNodeObject(newNodeObject);
     }
 
     // Helper function used for changing state of properties
     function changeData(index, value) {
-        const updatedObj = {'index' : index, 'tag' : value}
-        const duplicateToBeRendered = toBeRendered.map(obj => (obj.index === index) ? updatedObj : obj)
-        setToBeRendered(duplicateToBeRendered); // Set state
+        const updatedTagObject = {'index' : index, 'tag' : value}
+        const newRenderedNonEntryInfo = renderedNonEntryInfo.map(obj => (obj.index === index) ? updatedTagObject : obj)
+        setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
         // Updated tags assigned for later use
-        const tagsToBeInserted = duplicateToBeRendered.map(el => (el.tag))
+        const tagsToBeInserted = newRenderedNonEntryInfo.map(el => (el.tag))
 
         setNodeObject(prevState => {
-            const duplicateData = {...prevState};
-            duplicateData['tags_'+languageCode] = tagsToBeInserted;
-            return duplicateData
+            const newNodeObject = {...prevState};
+            newNodeObject['tags_'+languageCode] = tagsToBeInserted;
+            return newNodeObject
         })
     }
 
     function handleAdd() {
-        const duplicateToBeRendered = [...toBeRendered, {'index': uuid.v4(), 'tag' : ''}];
-        setToBeRendered(duplicateToBeRendered); // Set state
+        const newRenderedNonEntryInfo = [...renderedNonEntryInfo, {'index': uuid.v4(), 'tag' : ''}];
+        setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
         // Updated tags assigned for later use
-        const tagsToBeInserted = duplicateToBeRendered.map(el => (el.tag))
+        const tagsToBeInserted = newRenderedNonEntryInfo.map(el => (el.tag))
         setNodeObject(prevState => {
-            const duplicateData = {...prevState};
-            duplicateData['tags_'+languageCode] = tagsToBeInserted;
-            return duplicateData
+            const newNodeObject = {...prevState};
+            newNodeObject['tags_'+languageCode] = tagsToBeInserted;
+            return newNodeObject
         })
     }
 
     function handleDelete(index) {
-        const duplicateToBeRendered = toBeRendered.filter(obj => !(obj.index === index))
-        setToBeRendered(duplicateToBeRendered); // Set state
+        const newRenderedNonEntryInfo = renderedNonEntryInfo.filter(obj => !(obj.index === index))
+        setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
         // Updated tags assigned for later use
-        const tagsToBeInserted = duplicateToBeRendered.map(el => (el.tag))
+        const tagsToBeInserted = newRenderedNonEntryInfo.map(el => (el.tag))
         setNodeObject(prevState => {
-            const duplicateData = {...prevState};
-            duplicateData['tags_'+languageCode] = tagsToBeInserted;
-            console.log(duplicateData);
-            return duplicateData
+            const newNodeObject = {...prevState};
+            newNodeObject['tags_'+languageCode] = tagsToBeInserted;
+            return newNodeObject
         })
     }
 
@@ -105,7 +111,7 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObj
                 variant="outlined" /> }
 
             {/* Main Language */}
-            { toBeRendered.length > 0 && 
+            { (IDType === 'Synonyms' || IDType === 'Stopwords') && 
                 <div className="language">
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
@@ -117,28 +123,18 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObj
                 }
             
             {/* Stopwords or Synonyms */}
-            { toBeRendered.length > 0 && 
-                <div className="tags">
-                    {id.startsWith('stopword') ?
-                        <Stack direction="row" alignItems="center">
-                            <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
-                                Stopwords
-                            </Typography>
-                            <Button sx={{ml: -1, color: "#808080"}} onClick={handleAdd}>
-                                <AddBoxIcon />
-                            </Button>
-                        </Stack> :
-                        <Stack direction="row" alignItems="center">
-                            <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
-                                Synonyms
-                            </Typography>
-                            <Button sx={{ml: -1, color: "#808080"}} onClick={handleAdd}>
-                                <AddBoxIcon />
-                            </Button>
-                        </Stack>}
-
+            { (IDType === 'Synonyms' || IDType === 'Stopwords') &&  
+                <Box className="tags">
+                    <Stack direction="row" alignItems="center">
+                        <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
+                            { IDType }
+                        </Typography>
+                        <Button sx={{ml: -1, color: "#808080"}} onClick={handleAdd}>
+                            <AddBoxIcon />
+                        </Button>
+                    </Stack>
                     {/* Render all tags */}
-                    { toBeRendered.map((tagObj) => {
+                    { renderedNonEntryInfo.map((tagObj) => {
                         const index = tagObj.index;
                         const tag = tagObj.tag;
                         return (
@@ -158,10 +154,10 @@ const ListAllOtherProperties = ({ nodeObject, id, setNodeObject, originalNodeObj
                                 </Button>
                             </Stack>
                         )})}
-                </div>
+                </Box>
             }
         </Box>
      );
 }
 
-export default ListAllOtherProperties;
+export default ListAllNonEntryInfo;
