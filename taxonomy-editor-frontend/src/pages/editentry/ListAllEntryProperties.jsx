@@ -135,5 +135,4 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
         </Box>
     );
 }
-
 export default ListAllEntryProperties;

@@ -13,7 +13,6 @@ import ISO6391 from 'iso-639-1';
 /**
  * Sub-component for rendering translation of an "entry"  
 */
-
 const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => {
 
     let [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
@@ -264,7 +263,6 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                         <DeleteOutlineIcon />
                                     </IconButton>
                             </Stack>
-
                         )
                     })
                 }
