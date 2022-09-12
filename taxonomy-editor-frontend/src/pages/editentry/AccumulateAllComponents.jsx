@@ -14,7 +14,6 @@ import { createURL, getIdType } from "./createURL";
  * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
  * If node is "header/footer": Comments are rendered  
 */ 
-
 const AccumulateAllComponents = ({ id }) => {
 
     // Finding URL to send requests
@@ -71,7 +70,6 @@ const AccumulateAllComponents = ({ id }) => {
             console.log(errorMessage);
         })
     }
-    
     return ( 
         <Box className="node-attributes">
             {/* Based on isEntry, respective components are rendered */}
@@ -117,5 +115,4 @@ const AccumulateAllComponents = ({ id }) => {
         </Box>
      );
 }
- 
 export default AccumulateAllComponents;

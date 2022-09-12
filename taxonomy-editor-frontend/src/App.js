@@ -16,8 +16,8 @@ function App() {
     <ThemeProvider theme={theme}>
     <CssBaseline />
     <Router>
+        <ResponsiveAppBar />
         <div className="App">
-          <ResponsiveAppBar />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/entry" element={<Entry />} />

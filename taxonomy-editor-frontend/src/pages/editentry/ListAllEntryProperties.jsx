@@ -135,5 +135,4 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
         </div>
     );
 }
-
 export default ListAllEntryProperties;
