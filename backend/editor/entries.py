@@ -68,12 +68,14 @@ def add_node_to_end(label, entry):
 
     # Rebuild relationships by inserting incoming node at the end
     query = []
-    query.append(f"""MATCH (new_node:{label}) WHERE new_node.id = $id\n""")
-    query.append(f"""MATCH (last_node:{end_node_label}) WHERE last_node.id = $endnodeid\n""")
-    query.append(f"""MATCH (footer:TEXT) WHERE footer.id = "__footer__"\n""")
-    query.append(f"""CREATE (last_node)-[:is_before]->(new_node)\n""")
-    query.append(f"""CREATE (new_node)-[:is_before]->(footer)""")
-    result = session.run(" ".join(query), {"id": entry, "endnodeid": end_node['id']})
+    query = f"""
+        MATCH (new_node:{label}) WHERE new_node.id = $id
+        MATCH (last_node:{end_node_label}) WHERE last_node.id = $endnodeid
+        MATCH (footer:TEXT) WHERE footer.id = "__footer__"
+        CREATE (last_node)-[:is_before]->(new_node)
+        CREATE (new_node)-[:is_before]->(footer)
+    """
+    result = session.run(query, {"id": entry, "endnodeid": end_node['id']})
 
 def add_node_to_beginning(label, entry):
     """
@@ -89,28 +91,32 @@ def add_node_to_beginning(label, entry):
     start_node_label = get_label(start_node['id']) # Get current first node ID
 
     # Rebuild relationships by inserting incoming node at the beginning
-    query = []
-    query.append(f"""MATCH (new_node:{label}) WHERE new_node.id = $id\n""")
-    query.append(f"""MATCH (first_node:{start_node_label}) WHERE first_node.id = $startnodeid\n""")
-    query.append(f"""MATCH (header:TEXT) WHERE header.id = "__header__"\n""")
-    query.append(f"""CREATE (new_node)-[:is_before]->(first_node)\n""")
-    query.append(f"""CREATE (header)-[:is_before]->(new_node)""")
-    result = session.run(" ".join(query), {"id": entry, "startnodeid": start_node['id']})
+    query= f"""
+        MATCH (new_node:{label}) WHERE new_node.id = $id
+        MATCH (first_node:{start_node_label}) WHERE first_node.id = $startnodeid
+        MATCH (header:TEXT) WHERE header.id = "__header__"
+        CREATE (new_node)-[:is_before]->(first_node)
+        CREATE (header)-[:is_before]->(new_node)
+    """
+    result = session.run(query, {"id": entry, "startnodeid": start_node['id']})
 
 def delete_node(label, entry):
     """
     Helper function used for deleting a node with given id and label
     """
     # Finding node to be deleted using node ID
-    query = []
-    query.append(f"""MATCH (deleted_node:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id\n""")
-    query.append(f"""MATCH (previous_node)-[:is_before]->(deleted_node)\n""")
-    query.append(f"""DETACH DELETE (deleted_node)""")
+    query = f"""
+        // Find node to be deleted using node ID
+        MATCH (deleted_node:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
+        MATCH (previous_node)-[:is_before]->(deleted_node)
 
-    # Rebuild relationships after deletion
-    query.append(f"""CREATE (previous_node)-[:is_before]->(next_node)""") 
+        // Remove node
+        DETACH DELETE (deleted_node)
 
-    result = session.run(" ".join(query), {"id": entry})
+        // Rebuild relationships after deletion
+        CREATE (previous_node)-[:is_before]->(next_node)
+    """
+    result = session.run(query, {"id": entry})
     return result
 
 def get_all_nodes(label):
@@ -206,32 +212,33 @@ def update_node_children(entry, new_children_ids):
 
     # Delete relationships
     for child in deleted_children:
-        query = []
-        query.append(f""" 
+        query = f""" 
             MATCH (deleted_child:ENTRY)-[rel:is_child_of]->(parent:ENTRY) 
-            WHERE parent.id = $id AND deleted_child.id = $child\n 
-        """)
-        query.append(f""" DELETE rel """)
-        session.run(" ".join(query), {"id": entry, "child": child})
+            WHERE parent.id = $id AND deleted_child.id = $child
+            DELETE rel
+        """
+        session.run(query, {"id": entry, "child": child})
 
-    # Check existence of node in new children
-    for child in added_children:
-        is_old_node = list(get_nodes("ENTRY", child))
+    # Create non-existing nodes
+    query = """MATCH (child:ENTRY) WHERE child.id in $ids RETURN child.id"""
+    existing_ids = [record['child.id'] for record in session.run(query, ids=list(added_children))]
+    to_create = added_children - set(existing_ids)
 
-        # Create node if not exists
-        if (not is_old_node):
-            create_node("ENTRY", child, main_language_code)
-            add_node_to_end("ENTRY", child)
+    for child in to_create:
+        main_language_code = child.split(":", 1)[0]
+        create_node("ENTRY", child, main_language_code)
+        
+        # TODO: We would prefer to add the node just after its parent entry
+        add_node_to_end("ENTRY", child)
 
     # Stores result of last query executed
     result = []
     for child in added_children:
-        query = []
-        main_language_code = child.split(":", 1)[0]
-
         # Create new relationships if it doesn't exist
-        query.append(f""" MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child\n """)
-        query.append(f""" MERGE (new_child)-[r:is_child_of]->(parent) """)
-        result = session.run(" ".join(query), {"id": entry, "child": child})
+        query = f"""
+            MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child
+            MERGE (new_child)-[r:is_child_of]->(parent)
+        """
+        result = session.run(query, {"id": entry, "child": child})
     
     return result

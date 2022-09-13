@@ -198,9 +198,9 @@ async def createNode(request: Request):
     id = incomingData["id"]
     main_language = incomingData["main_language"]
     if (id == None):
-        raise ValueError("Invalid id: %s", id)
+        raise HTTPException(status_code=400, detail="Invalid id")
     if (main_language == None):
-        raise ValueError("Invalid main language: %s", main_language)
+        raise HTTPException(status_code=400, detail="Invalid main language code")
 
     create_node(get_label(id), id, main_language)
     if (get_label(id) == "ENTRY"):
