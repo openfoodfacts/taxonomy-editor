@@ -197,6 +197,11 @@ async def createNode(request: Request):
     incomingData = await request.json()
     id = incomingData["id"]
     main_language = incomingData["main_language"]
+    if (id == None):
+        raise ValueError("Invalid id: %s", id)
+    if (main_language == None):
+        raise ValueError("Invalid main language: %s", main_language)
+
     create_node(get_label(id), id, main_language)
     if (get_label(id) == "ENTRY"):
         add_node_to_end(get_label(id), id)
