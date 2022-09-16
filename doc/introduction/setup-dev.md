@@ -35,4 +35,29 @@ A smarter way to customize things it to use [direnv](https://direnv.net/) with a
 
 ## Without docker
 
+### Install neo4j
+
 You should install neo4j on your system. Maybe neo4J desktop (proprietary) is an option : https://neo4j.com/download/ or get the community open source server : https://neo4j.com/download-center/#community
+
+Launch it and verify it's working by visiting: http://localhost:7474/browser/
+in the admin ui, you should connect to `localhost:7687`.
+
+### Install the backend in a python virtualenv
+
+Go to backend directory backend
+Create a virtualenv with python:
+
+```bash
+python3 -m venv .venv
+```
+and activate it:
+
+```bash
+source .venv
+```
+
+Install dependencies:
+
+```bash
+source pip install -r requirements.txt
+```
