@@ -32,3 +32,7 @@ You can modify the `.env` file to fit your needs, but you should not commit any 
 Notably, if you user `uid` is not 1000, you should personalize the `USER_UID` variable.
 
 A smarter way to customize things it to use [direnv](https://direnv.net/) with a `.envrc` file, or to simply have a script to source (see [the `.` command](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Builtins.html#Bourne-Shell-Builtins)) to load environment variables (they have priority above `.env`).
+
+## Without docker
+
+You should install neo4j on your system. Maybe neo4J desktop (proprietary) is an option : https://neo4j.com/download/ or get the community open source server : https://neo4j.com/download-center/#community
