@@ -42,7 +42,7 @@ docker-compose run --rm taxonomy_api sample/load.py sample/test-neo4j.json
 
 Add the `--reset` switch if you already have data you want to remove.
 
-Going in you neo4j admin console you should be able to see the data.
+Going into the neo4j admin console you should be able to see the data.
 
 
 ## Without docker
@@ -74,6 +74,7 @@ Install dependencies:
 
 ```bash
 source pip install -r requirements.txt
+# ROBOTOFF_URL=http://api:5500 # connect to Robotoff running in separate docker-compose deployment
 ```
 
 Start the server locally
@@ -88,7 +89,7 @@ Open http://127.0.0.1:8080 in your browser, you should see a simple message.
 
 (note: this might not be needed if you only want to work on the backend)
 
-You must have nodeJS and npm installed on your system.
+You must have nodeJS and npm installed on your system. (LTS - 16.17.0, currently)
 See https://nodejs.org/en/download/ and https://docs.npmjs.com/cli/v7/configuring-npm/install
 
 Go to `taxonomy-editor-frontend/`
@@ -123,4 +124,4 @@ python3 sample/load.py sample/test-neo4j.json
 ```
 Add the `--reset` switch if you already have data you want to remove.
 
-Going in you neo4j admin console you should be able to see the data.
+Going into the neo4j admin console you should be able to see the data.
