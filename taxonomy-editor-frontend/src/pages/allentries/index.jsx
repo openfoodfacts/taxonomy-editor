@@ -200,7 +200,7 @@ const Entry = () => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleCloseSuccessDialog} autoFocus>
+                <Button onClick={handleCloseSuccessDialog} autoFocus>
                     Continue
                 </Button>
                 </DialogActions>

@@ -43,9 +43,9 @@ const EditEntry = () => {
     }
 
     return (
-        <Box className="main-content">
+        <Box>
             {/* Renders id of current node */}
-            <Box className="node-title">
+            <Box>
                 <Stack direction="row" alignItems="center">
                     <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
                         You are now editing "{id}"
@@ -68,10 +68,10 @@ const EditEntry = () => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleCloseDeleteDialog}>
+                <Button onClick={handleCloseDeleteDialog}>
                     Cancel
                 </Button>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif', color: '#ff0000'}} onClick={handleDeleteNode} autoFocus>
+                <Button sx={{color: '#ff0000'}} onClick={handleDeleteNode} autoFocus>
                     Delete
                 </Button>
                 </DialogActions>
@@ -91,7 +91,7 @@ const EditEntry = () => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleClick} autoFocus>
+                <Button onClick={handleClick} autoFocus>
                     Continue
                 </Button>
                 </DialogActions>

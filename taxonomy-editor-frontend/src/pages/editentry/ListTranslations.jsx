@@ -222,10 +222,10 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
     }
 
     return ( 
-        <Box className="translations">
+        <Box sx={{ml: 4}}>
             {/* Title */}
             <Stack direction="row" alignItems="center">
-                <Typography sx={{mt: 4, mb: 1}} variant='h5' component={'div'}>Translations</Typography>
+                <Typography sx={{mt: 4, mb: 1}} variant='h5'>Translations</Typography>
                 <IconButton sx={{mt: 3.5, ml: 1, color: "#808080"}} onClick={handleOpen}>
                     <AddBoxIcon />
                 </IconButton>
@@ -274,7 +274,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                     const lang = allTagsObj['languageCode']
                     const value = allTagsObj['tags']
                     return (
-                        <div key={lang} className="translation-component">
+                        <Box key={lang}>
                             <Stack sx={{mt: 2}} direction="row" alignItems="center">
                                 <Typography variant="h6">
                                     {ISO6391.getName(lang)}
@@ -310,7 +310,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                     )
                                 })
                             }
-                        </div>
+                        </Box>
                     )
                 } )
             }

@@ -19,18 +19,18 @@ const ListEntryParents = ({url}) => {
         return (<Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>)
     }
     return (
-        <Box className="relations">
-            {<Typography sx={{ml: 4, mb: 1}} variant='h5' component={'div'}>Parents</Typography>}
+        <Box>
+            {<Typography sx={{ml: 4, mb: 1}} variant='h5'>Parents</Typography>}
 
             {/* Renders parents or children of the node */}
             {relations && relations.map(relation => (
-                <div className="relation-component" key={relation}>
+                <Box key={relation}>
                     <Link to={`/entry/${relation}`} style={{color: '#0064c8', display: 'inline-block'}}>
                         <Typography sx={{ml: 8, mb: 1}} variant='h6'>
                             {relation}
                         </Typography>
                     </Link>
-                </div>
+                </Box>
             )) }
 
             {/* When no parents or children are present */}

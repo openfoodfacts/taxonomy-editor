@@ -65,9 +65,9 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
         return (<Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>)
     }
     return (
-        <Box className="relations">
+        <Box>
             <Stack direction="row" alignItems="center">
-                <Typography sx={{ml: 4}} variant='h5' component={'div'}>Children</Typography>
+                <Typography sx={{ml: 4}} variant='h5'>Children</Typography>
                 <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpen}>
                     <AddBoxIcon />
                 </IconButton>

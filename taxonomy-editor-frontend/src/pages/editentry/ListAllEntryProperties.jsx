@@ -55,7 +55,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
     }
     
     return (
-        <Box className="all-properties">
+        <Box>
             {/* Comments */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             <TextField

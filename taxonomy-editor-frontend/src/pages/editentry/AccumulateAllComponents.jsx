@@ -1,10 +1,11 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import useFetch from "../../components/useFetch";
-import ListAllEntryProperties from "./AccumulateEntryInfo";
 import ListEntryParents from "./ListEntryParents";
 import ListEntryChildren from "./ListEntryChildren";
+import ListTranslations from "./ListTranslations";
+import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getIdType } from "./createURL";
 
@@ -20,16 +21,15 @@ const AccumulateAllComponents = ({ id }) => {
     const url = createURL(id);
     const isEntry = getIdType(id) === 'entry';
 
-    const [nodeObject, setNodeObject] = useState(null); // Storing original node information
+    const [originalNodeObject, setOriginalNodeObject] = useState(null); // Storing original node information
     const [updatedNodeObject, setUpdatedNodeObject] = useState(null); // Storing updates to node
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
-    const navigate = useNavigate(); // Navigation between pages
     const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
 
     // Setting state of node after fetch
     useEffect(() => {
-        setNodeObject(node?.[0]);
+        setOriginalNodeObject(node?.[0]);
         setUpdatedNodeObject(node?.[0]);
     }, [node])
 
@@ -45,42 +45,36 @@ const AccumulateAllComponents = ({ id }) => {
     
     // Helper functions for Dialog component 
     const handleClose = () => {setOpen(false)};
-    const handleBack = () => {navigate('/entry')};
 
     // Function handling updation of node
     const handleSubmit = () => {
         const {id, ...data} = updatedNodeObject // ID not allowed in POST
-        fetch(url, {
-            method : 'POST',
-            headers: {"Content-Type" : "application/json"},
-            body: JSON.stringify(data)
-        }).then(() => {
-            if (isEntry) {
-                fetch(url+'children/', {
-                    method : 'POST',
-                    headers: {"Content-Type" : "application/json"},
-                    body: JSON.stringify(updateChildren)
-                }).then(() => {
-                    setOpen(true);
-                }).catch((errorMessage) => {
-                    console.log(errorMessage);
-                })
-            }
-        }).catch((errorMessage) => {
-            console.log(errorMessage);
-        })
+        let allUrlsAndData = [[url, data]]
+        if (isEntry) {
+            allUrlsAndData.push([url+'children/', updateChildren])
+        }
+        Promise.all(allUrlsAndData.map(([url, data]) => {
+            return fetch(url, {
+                method : 'POST',
+                headers: {"Content-Type" : "application/json"},
+                body: JSON.stringify(data)
+            }).then(() => {
+                setOpen(true);
+            }).catch(() => {})
+        }))
     }
     return ( 
-        <Box className="node-attributes">
+        <Box>
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
                 <Box>
-                    { !!nodeObject &&
+                    { !!originalNodeObject &&
                         <>  <ListEntryParents url={url+'parents'} />
                             <ListEntryChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
-                            <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </> }
+                            <ListTranslations nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={originalNodeObject} /> 
+                            <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={originalNodeObject} /> </> }
                 </Box> :
-                <>  <ListAllNonEntryInfo nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={nodeObject} /> </>
+                <>  <ListAllNonEntryInfo nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={originalNodeObject} /> </>
             }
             {/* Button for submitting edits */}
             <Button
@@ -104,10 +98,10 @@ const AccumulateAllComponents = ({ id }) => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleBack}>
+                <Button component={Link} to="/entry">
                     Back to all nodes
                 </Button>
-                <Button sx={{fontFamily: 'Roboto, Helvetica, Arial, sans-serif'}} onClick={handleClose} autoFocus>
+                <Button onClick={handleClose} autoFocus>
                     Continue Editing
                 </Button>
                 </DialogActions>

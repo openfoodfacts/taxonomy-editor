@@ -97,7 +97,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject
     }
 
     return ( 
-        <Box className="all-node-properties">
+        <Box>
             {/* Comments */}
             <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
@@ -112,19 +112,19 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject
 
             {/* Main Language */}
             { (IDType === 'Synonyms' || IDType === 'Stopwords') && 
-                <div className="language">
+                <Box>
                     <Typography sx={{ml: 4, mt: 2}} variant='h5'>
                         Language
                     </Typography>
                     <Typography sx={{ml: 8, mt: 1.5}} variant='h6'>
                         {ISO6391.getName(languageCode)}
                     </Typography>
-                </div>
-                }
+                </Box>
+            }
             
             {/* Stopwords or Synonyms */}
             { (IDType === 'Synonyms' || IDType === 'Stopwords') &&  
-                <Box className="tags">
+                <Box>
                     <Stack direction="row" alignItems="center">
                         <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
                             { IDType }
