@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
+import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useFetch from "../../components/useFetch";
@@ -82,29 +82,12 @@ const AccumulateAllComponents = ({ id }) => {
                 sx={{ml: 4, mt:2, width: 130}}>
                     Submit
             </Button>
-            {/* Dialog box for acknowledgment of update */}
-            <Dialog
-                open={open}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">
-                {"Your edits have been saved!"}
-                </DialogTitle>
-                <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                    The node {id} has been successfully updated.
-                </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                <Button component={Link} to="/entry">
-                    Back to all nodes
-                </Button>
-                <Button onClick={handleClose} autoFocus>
-                    Continue Editing
-                </Button>
-                </DialogActions>
-            </Dialog>
+            {/* Snackbar for acknowledgment of update */}
+            <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'right'}} open={open} autoHideDuration={3000} onClose={handleClose}>
+                <Alert elevation={6} variant="filled" onClose={handleClose} severity="success">
+                    The node has been successfully updated!
+                </Alert>
+            </Snackbar>
         </Box>
      );
 }
