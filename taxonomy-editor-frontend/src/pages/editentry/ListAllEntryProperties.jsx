@@ -65,7 +65,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject 
                 onChange = {event => {
                     changeCommentData(event.target.value.split('\n'))
                 }}
-                value={nodeObject.preceding_lines.join('\n')} 
+                value={nodeObject?.preceding_lines.join('\n')} 
                 variant="outlined" />
 
             {/* Properties */}

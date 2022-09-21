@@ -99,7 +99,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject
     return ( 
         <Box>
             {/* Comments */}
-            <Typography sx={{ml: 4, mt: 2, mb: 1}} variant='h5'>Comments</Typography>
+            <Typography sx={{ml: 4, mb: 1}} variant='h5'>Comments</Typography>
             { nodeObject && <TextField
                 sx={{ml: 8, mt: 1, width: 250}}
                 minRows={4}

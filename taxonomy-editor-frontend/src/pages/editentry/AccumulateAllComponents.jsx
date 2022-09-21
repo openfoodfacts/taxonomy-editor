@@ -21,15 +21,14 @@ const AccumulateAllComponents = ({ id }) => {
     const url = createURL(id);
     const isEntry = getIdType(id) === 'entry';
 
-    const [originalNodeObject, setOriginalNodeObject] = useState(null); // Storing original node information
+    const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+    const originalNodeObject = node?.[0]; // Storing original node information
     const [updatedNodeObject, setUpdatedNodeObject] = useState(null); // Storing updates to node
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
-    const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
 
     // Setting state of node after fetch
     useEffect(() => {
-        setOriginalNodeObject(node?.[0]);
         setUpdatedNodeObject(node?.[0]);
     }, [node])
 
