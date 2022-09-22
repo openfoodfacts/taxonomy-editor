@@ -1,6 +1,5 @@
 import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import useFetch from "../../components/useFetch";
 import ListEntryParents from "./ListEntryParents";
 import ListEntryChildren from "./ListEntryChildren";

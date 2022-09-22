@@ -15,8 +15,8 @@ import ISO6391 from 'iso-639-1';
 */
 const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => {
 
-    let [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
-    let [mainLang_renderedTranslations, setMainLang_renderedTranslations] = useState([]) // Stores state of main language's tags
+    const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
+    const [mainLang_renderedTranslations, setMainLang_renderedTranslations] = useState([]) // Stores state of main language's tags
     const [open, setOpen] = useState(false); // Used for Dialog component
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
     const [isValidLanguageCode, setisValidLanguageCode] = useState(false); // Used for validating a new LC
@@ -236,7 +236,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 <Typography variant='h6'>
                     { nodeObject && ISO6391.getName(nodeObject.main_language) }
                 </Typography>
-                <IconButton sx={{ml: 1, color: "#808080"}} onClick={(e) => handleAdd(nodeObject.main_language, e)}>
+                <IconButton sx={{ml: 1, color: "#808080"}} onClick={() => handleAdd(nodeObject.main_language)}>
                     <AddBoxIcon />
                 </IconButton>
             </Stack>
@@ -244,9 +244,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
             {/* Render main language tags */}
             <Typography variant='h6'> 
                 { nodeObject && 
-                    mainLang_renderedTranslations.map((tagObj) => {
-                        const index = tagObj['index']
-                        const tag = tagObj['tag']
+                    mainLang_renderedTranslations.map(({index, tag}) => {
                         return (
                             <Stack key={index} direction="row" alignItems="center">
                                 <Paper component={Stack} direction="column" sx={{ml: 4, width: 200}}>
@@ -259,7 +257,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                         value={tag}
                                         variant="outlined" />  
                                 </Paper>
-                                    <IconButton sx={{ml: 1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(nodeObject.main_language, index, e)}>
+                                    <IconButton sx={{ml: 1, mt: 1, color: "#808080"}} onClick={() => handleDelete(nodeObject.main_language, index)}>
                                         <DeleteOutlineIcon />
                                     </IconButton>
                             </Stack>
@@ -279,10 +277,10 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                 <Typography variant="h6">
                                     {ISO6391.getName(lang)}
                                 </Typography>
-                                <IconButton sx={{ml: 1, color: "#808080"}} onClick={(e) => handleAdd(lang, e)}>
+                                <IconButton sx={{ml: 1, color: "#808080"}} onClick={() => handleAdd(lang)}>
                                     <AddBoxIcon />
                                 </IconButton>
-                                <IconButton sx={{ml: -1, color: "#808080"}} onClick={(e) => handleDeleteTranslation(lang, e)}>
+                                <IconButton sx={{ml: -1, color: "#808080"}} onClick={() => handleDeleteTranslation(lang)}>
                                     <DeleteOutlineIcon />
                                 </IconButton>
                             </Stack>
@@ -303,7 +301,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                                     value={tag} 
                                                     variant="outlined" />
                                             </Paper>
-                                            <IconButton sx={{ml: 1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(lang, index, e)}>
+                                            <IconButton sx={{ml: 1, mt: 1, color: "#808080"}} onClick={() => handleDelete(lang, index)}>
                                                  <DeleteOutlineIcon />
                                             </IconButton>
                                         </Stack>
@@ -343,7 +341,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 <Button onClick={handleClose}>Cancel</Button>
                 <Button 
                     disabled={btnDisabled}
-                    onClick={(e) => {handleAddTranslation(newLanguageCode, e)}}>
+                    onClick={() => {handleAddTranslation(newLanguageCode)}}>
                         Add
                 </Button>
                 </DialogActions>
