@@ -422,7 +422,7 @@ class Parser:
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
         self.session.run(query)
-    
+
     def create_fulltext_index(self):
         query = "CREATE FULLTEXT INDEX nodeSearch FOR (n:ENTRY) ON EACH [n.id]"
         self.session.run(query)
