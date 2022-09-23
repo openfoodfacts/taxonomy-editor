@@ -82,8 +82,8 @@ const Entry = () => {
                 Number of nodes in taxonomy: {nodes.length}
             </Typography>
             {/* Table for listing all nodes in taxonomy */}
-            <TableContainer sx={{ml: 2}} component={Paper}>
-                <Table sx={{ width: 400 }}>
+            <TableContainer sx={{ml: 2, width: 400}} component={Paper}>
+                <Table>
                     <TableHead>
                     <TableRow>
                         <Stack direction="row" alignItems="center">

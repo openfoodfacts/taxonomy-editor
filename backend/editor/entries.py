@@ -242,3 +242,15 @@ def update_node_children(entry, new_children_ids):
         result = session.run(query, {"id": entry, "child": child})
     
     return result
+
+def full_text_search(text):
+    """
+    Helper function used for searching a taxonomy
+    """
+    query = f"""
+        CALL db.index.fulltext.queryNodes("nodeSearch", $text) YIELD node, score
+        RETURN node.id
+    """
+    text = re.escape(text)
+    result = [record["node.id"] for record in session.run(query, {"text": '*'+text+'*'})]
+    return result
