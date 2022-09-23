@@ -422,7 +422,7 @@ class Parser:
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
         self.session.run(query)
-    
+
     def create_fulltext_index(self):
         query = "CREATE FULLTEXT INDEX nodeSearch FOR (n:ENTRY) ON EACH [n.id]"
         self.session.run(query)
@@ -435,8 +435,12 @@ class Parser:
         self.create_fulltext_index()
         # self.delete_used_properties()
 
+
 if __name__ == "__main__":
-    logging.basicConfig(handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO)
+    logging.basicConfig(
+        handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], 
+        level=logging.INFO
+    )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
     parse(filename)
