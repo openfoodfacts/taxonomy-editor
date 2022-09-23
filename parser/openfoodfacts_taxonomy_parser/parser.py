@@ -1,7 +1,7 @@
 import logging
 import re
 import unicodedata
-import sys
+
 import unidecode
 from neo4j import GraphDatabase
 
