@@ -437,6 +437,7 @@ class Parser:
 
 
 if __name__ == "__main__":
+    import sys
     logging.basicConfig(handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO)
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
