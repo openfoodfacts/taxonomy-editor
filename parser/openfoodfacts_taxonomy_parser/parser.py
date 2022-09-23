@@ -58,11 +58,7 @@ class Parser:
                 entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
-        self.session.run(
-            query,
-            data,
-            is_before=self.is_before,
-        )
+        self.session.run(query, data, is_before=self.is_before)
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
@@ -388,11 +384,7 @@ class Parser:
                     id_previous,
                 )
             elif not relation[0]:
-                logging.error(
-                    "link not created between %s and %s",
-                    id,
-                    id_previous,
-                )
+                logging.error("link not created between %s and %s", id, id_previous)
 
     def parent_search(self):
         """Get the parent and the child to link"""
@@ -438,7 +430,10 @@ class Parser:
 
 if __name__ == "__main__":
     import sys
-    logging.basicConfig(handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO)
+
+    logging.basicConfig(
+        handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO
+    )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
     parse(filename)
