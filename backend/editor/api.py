@@ -4,6 +4,7 @@ Taxonomy Editor Backend API
 # Required imports
 #------------------------------------------------------------------------#
 from datetime import datetime
+from typing import Optional
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request, HTTPException
@@ -14,7 +15,7 @@ from .models import Header, Footer
 
 # DB helper imports
 from .entries import initialize_db, shutdown_db
-from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label
+from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label, full_text_search
 from .entries import update_nodes, update_node_children
 from .entries import create_node, add_node_to_end, add_node_to_beginning, delete_node
 #------------------------------------------------------------------------#
@@ -186,6 +187,11 @@ async def findFooter(response: Response):
     result = get_nodes("TEXT", "__footer__")
     footer = list(result)
     return footer[0]
+
+@app.get("/search")
+async def searchNode(response: Response, query: str):
+    result = full_text_search(query)
+    return result
 
 # Post methods
 
