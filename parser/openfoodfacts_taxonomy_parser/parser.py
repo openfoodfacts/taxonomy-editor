@@ -1,4 +1,4 @@
-import logging
+from logging import basicConfig, FileHandler, INFO
 import re
 import unicodedata
 import sys
@@ -437,10 +437,7 @@ class Parser:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], 
-        level=logging.INFO
-    )
+    basicConfig(handlers=[FileHandler(filename="parser.log", encoding="utf-8")], level=INFO)
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
     parse(filename)
