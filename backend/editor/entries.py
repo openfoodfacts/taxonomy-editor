@@ -109,10 +109,8 @@ def delete_node(label, entry):
         // Find node to be deleted using node ID
         MATCH (deleted_node:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
         MATCH (previous_node)-[:is_before]->(deleted_node)
-
         // Remove node
         DETACH DELETE (deleted_node)
-
         // Rebuild relationships after deletion
         CREATE (previous_node)-[:is_before]->(next_node)
     """
@@ -241,39 +239,4 @@ def update_node_children(entry, new_children_ids):
         """
         result = session.run(query, {"id": entry, "child": child})
     
-    return result
-
-def full_text_search(text):
-    """
-    Helper function used for searching a taxonomy
-    """
-    normalized_text = re.sub(r"([^A-Za-z0-9])", r"\\\1", text) # Escape special characters
-    text_query_exact = "*" + normalized_text + '*'
-    text_query_fuzzy = normalized_text + "~"
-
-    # Fuzzy search on two indexes
-    # Fuzzy search has more priority, since it matches more strings
-    query = f"""
-        CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryfuzzy) YIELD node, score
-        WHERE score > 0.2
-        RETURN node.id
-        UNION
-        CALL db.index.fulltext.queryNodes("nodeSearchTags", $textqueryfuzzy) YIELD node, score
-        WHERE score > 0.2
-        RETURN node.id
-    """
-    result = [record["node.id"] for record in session.run(query, {"textqueryfuzzy" : text_query_fuzzy})]
-
-    # If result is empty, search with * symbol on the two indexes to get exact matches
-    if (not result):
-        query = f"""
-            CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryexact) YIELD node, score
-            WHERE score > 0.2
-            RETURN node.id
-            UNION
-            CALL db.index.fulltext.queryNodes("nodeSearchTags", $textqueryexact) YIELD node, score
-            WHERE score > 0.2
-            RETURN node.id
-        """
-        result = [record["node.id"] for record in session.run(query, {"textqueryexact" : text_query_exact})]
     return result
