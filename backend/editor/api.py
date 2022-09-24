@@ -4,7 +4,6 @@ Taxonomy Editor Backend API
 # Required imports
 #------------------------------------------------------------------------#
 from datetime import datetime
-from typing import Optional
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request, HTTPException
