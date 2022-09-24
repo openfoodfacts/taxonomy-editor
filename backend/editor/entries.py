@@ -109,10 +109,8 @@ def delete_node(label, entry):
         // Find node to be deleted using node ID
         MATCH (deleted_node:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
         MATCH (previous_node)-[:is_before]->(deleted_node)
-
         // Remove node
         DETACH DELETE (deleted_node)
-
         // Rebuild relationships after deletion
         CREATE (previous_node)-[:is_before]->(next_node)
     """
