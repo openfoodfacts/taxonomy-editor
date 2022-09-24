@@ -70,7 +70,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
             // Tagids need to be recomputed, so shouldn't be rendered
             // Eg: tags_fr
         
-            if (key.startsWith('tags') && !key.includes('ids')) {
+            if (key.startsWith('tags') && !key.includes('ids') && !key.includes('str')) {
 
                 // If tags are not for the main language, add them to otherLangTags
                 if (!key.endsWith(originalNodeObject.main_language)) {

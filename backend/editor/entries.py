@@ -247,10 +247,33 @@ def full_text_search(text):
     """
     Helper function used for searching a taxonomy
     """
+    normalized_text = re.sub(r"([^A-Za-z0-9])", r"\\\1", text) # Escape special characters
+    text_query_exact = "*" + normalized_text + '*'
+    text_query_fuzzy = normalized_text + "~"
+
+    # Fuzzy search on two indexes
+    # Fuzzy search has more priority, since it matches more strings
     query = f"""
-        CALL db.index.fulltext.queryNodes("nodeSearch", $text) YIELD node, score
+        CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryfuzzy) YIELD node, score
+        WHERE score > 0.2
+        RETURN node.id
+        UNION
+        CALL db.index.fulltext.queryNodes("nodeSearchTags", $textqueryfuzzy) YIELD node, score
+        WHERE score > 0.2
         RETURN node.id
     """
-    text = re.escape(text)
-    result = [record["node.id"] for record in session.run(query, {"text": '*'+text+'*'})]
+    result = [record["node.id"] for record in session.run(query, {"textqueryfuzzy" : text_query_fuzzy})]
+
+    # If result is empty, search with * symbol on the two indexes to get exact matches
+    if (not result):
+        query = f"""
+            CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryexact) YIELD node, score
+            WHERE score > 0.2
+            RETURN node.id
+            UNION
+            CALL db.index.fulltext.queryNodes("nodeSearchTags", $textqueryexact) YIELD node, score
+            WHERE score > 0.2
+            RETURN node.id
+        """
+        result = [record["node.id"] for record in session.run(query, {"textqueryexact" : text_query_exact})]
     return result

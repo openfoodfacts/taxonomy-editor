@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const SearchNode = () => {
     const [query, setQuery] = useState("");
+    const [isDisabled, setIsDisabled] = useState(true);
     const navigate = useNavigate();
 
     return (
@@ -35,6 +36,7 @@ const SearchNode = () => {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
+                                disabled={isDisabled}
                                 component={Link}
                                 to={{
                                   pathname: '/results',
@@ -48,11 +50,13 @@ const SearchNode = () => {
                       }}
                     fullWidth
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" && !isDisabled) {
                         navigate(`/results?query=${query}`)
                       }
                     }}
                     onChange = {event => {
+                        if (event.target.value === "") setIsDisabled(true)
+                        else setIsDisabled(false)
                         setQuery(event.target.value)
                     }}
                     value={query} />
