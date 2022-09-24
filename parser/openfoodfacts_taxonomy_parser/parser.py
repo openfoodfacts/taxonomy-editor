@@ -60,11 +60,7 @@ class Parser:
                 entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
-        self.session.run(
-            query,
-            data,
-            is_before=self.is_before,
-        )
+        self.session.run(query, data, is_before=self.is_before)
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
@@ -325,7 +321,7 @@ class Parser:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
                     data["tags_" + lang] = tags_list
-                    data["tags_" + lang + "_str"] = ' '.join(tags_list)
+                    data["tags_" + lang + "_str"] = " ".join(tags_list)
                     data["tags_ids_" + lang] = tagsids_list
                 else:
                     # property definition
@@ -391,11 +387,7 @@ class Parser:
                     id_previous,
                 )
             elif not relation[0]:
-                logging.error(
-                    "link not created between %s and %s",
-                    id,
-                    id_previous,
-                )
+                logging.error("link not created between %s and %s", id, id_previous)
 
     def parent_search(self):
         """Get the parent and the child to link"""
@@ -430,10 +422,12 @@ class Parser:
         query = """CREATE FULLTEXT INDEX nodeSearchIds FOR (n:ENTRY) ON EACH [n.id]"""
         self.session.run(query)
 
-        language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != '']
-        tags_prefixed_lc = ['n.tags_' + lc + '_str' for lc in language_codes]
-        tags_prefixed_lc = ', '.join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX nodeSearchTags FOR (n:ENTRY) ON EACH [{tags_prefixed_lc}]"""
+        language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
+        tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
+        tags_prefixed_lc = ", ".join(tags_prefixed_lc)
+        query = (
+            f"""CREATE FULLTEXT INDEX nodeSearchTags FOR (n:ENTRY) ON EACH [{tags_prefixed_lc}]"""
+        )
         self.session.run(query)
 
     def __call__(self, filename):
@@ -446,7 +440,9 @@ class Parser:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO)
+    logging.basicConfig(
+        handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO
+    )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     parse = Parser()
     parse(filename)
