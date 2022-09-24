@@ -1,9 +1,10 @@
+import iso639
 import logging
 import re
-import unicodedata
 import sys
+import unicodedata
 import unidecode
-import iso639
+
 from neo4j import GraphDatabase
 
 from .exception import DuplicateIDError
