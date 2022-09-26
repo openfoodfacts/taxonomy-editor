@@ -245,7 +245,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 mainLangRenderedTranslations.map(({index, tag}) => {
                     return (
                         <Stack sx={{ml: 2}} key={index} direction="row" alignItems="center">
-                            <TextField 
+                            <TextField
                                 size="small" 
                                 sx={{mt: 1}} 
                                 onChange = {event => {
@@ -266,7 +266,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
             {
                 renderedTranslations.map( (allTagsObj) => {
                     const lang = allTagsObj['languageCode']
-                    const value = allTagsObj['tags']
+                    const tagValue = allTagsObj['tags']
                     return (
                         <Box key={lang}>
                             <Stack sx={{mt: 2}} direction="row" alignItems="center">
@@ -282,7 +282,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                             </Stack>
                             {/* Render all related tags */}
                             {
-                                value.map((tagObj) => {
+                                tagValue.map((tagObj) => {
                                     const index = tagObj['index']
                                     const tag = tagObj['tag']
                                     return (
@@ -293,7 +293,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                                 onChange = {event => {
                                                     changeData(lang, index, event.target.value)
                                                 }}
-                                                value={tag} 
+                                                tagValue={tag} 
                                                 variant="outlined" />
                                             <IconButton sx={{ml: 1, mt: 1}} onClick={() => handleDelete(lang, index)}>
                                                  <DeleteOutlineIcon />
