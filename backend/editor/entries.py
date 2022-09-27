@@ -2,6 +2,7 @@
 Database helper functions for API
 """
 import re
+from . import graph_db # Neo4J transactions helper
 
 def get_label(id):
     """
@@ -12,7 +13,7 @@ def get_label(id):
     elif (id.startswith('__header__') or id.startswith('__footer__')): return 'TEXT'
     else: return 'ENTRY'
 
-def create_node(label, entry, main_language_code, txn):
+def create_node(label, entry, main_language_code):
     """
     Helper function used for creating a node with given id and label
     """
@@ -32,10 +33,10 @@ def create_node(label, entry, main_language_code, txn):
     query.append(f""" SET n.preceding_lines = [] """)
 
     params["canonical_tag"] = canonical_tag
-    result = txn.run(" ".join(query), params)
+    result = graph_db.txn.run(" ".join(query), params)
     return result
 
-def add_node_to_end(label, entry, txn):
+def add_node_to_end(label, entry):
     """
     Helper function which adds an existing node to end of taxonomy
     """
@@ -44,7 +45,7 @@ def add_node_to_end(label, entry, txn):
        MATCH (last_node)-[r:is_before]->(footer:TEXT) WHERE footer.id = "__footer__" DELETE r 
        RETURN last_node
     """
-    result = txn.run(query)
+    result = graph_db.txn.run(query)
     end_node = result.data()[0]['last_node']
     end_node_label = get_label(end_node['id']) # Get current last node ID
 
@@ -57,9 +58,9 @@ def add_node_to_end(label, entry, txn):
         CREATE (last_node)-[:is_before]->(new_node)
         CREATE (new_node)-[:is_before]->(footer)
     """
-    result = txn.run(query, {"id": entry, "endnodeid": end_node['id']})
+    result = graph_db.txn.run(query, {"id": entry, "endnodeid": end_node['id']})
 
-def add_node_to_beginning(label, entry, txn):
+def add_node_to_beginning(label, entry):
     """
     Helper function which adds an existing node to beginning of taxonomy
     """
@@ -68,7 +69,7 @@ def add_node_to_beginning(label, entry, txn):
         MATCH (header:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
         RETURN first_node
     """
-    result = txn.run(query)
+    result = graph_db.txn.run(query)
     start_node = result.data()[0]['first_node']
     start_node_label = get_label(start_node['id']) # Get current first node ID
 
@@ -80,9 +81,9 @@ def add_node_to_beginning(label, entry, txn):
         CREATE (new_node)-[:is_before]->(first_node)
         CREATE (header)-[:is_before]->(new_node)
     """
-    result = txn.run(query, {"id": entry, "startnodeid": start_node['id']})
+    result = graph_db.txn.run(query, {"id": entry, "startnodeid": start_node['id']})
 
-def delete_node(label, entry, txn):
+def delete_node(label, entry):
     """
     Helper function used for deleting a node with given id and label
     """
@@ -98,10 +99,10 @@ def delete_node(label, entry, txn):
         // Rebuild relationships after deletion
         CREATE (previous_node)-[:is_before]->(next_node)
     """
-    result = txn.run(query, {"id": entry})
+    result = graph_db.txn.run(query, {"id": entry})
     return result
 
-def get_all_nodes(label, txn):
+def get_all_nodes(label):
     """
     Helper function used for getting all nodes with/without given label
     """
@@ -109,10 +110,10 @@ def get_all_nodes(label, txn):
     query = f"""
         MATCH (n{qualifier}) RETURN n
     """
-    result = txn.run(query)
+    result = graph_db.txn.run(query)
     return result
 
-def get_nodes(label, entry, txn):
+def get_nodes(label, entry):
     """
     Helper function used for getting the node with given id and label
     """
@@ -120,10 +121,10 @@ def get_nodes(label, entry, txn):
         MATCH (n:{label}) WHERE n.id = $id 
         RETURN n
     """
-    result = txn.run(query, {"id": entry})
+    result = graph_db.txn.run(query, {"id": entry})
     return result
 
-def get_parents(entry, txn):
+def get_parents(entry):
     """
     Helper function used for getting node parents with given id
     """
@@ -131,10 +132,10 @@ def get_parents(entry, txn):
         MATCH (child_node:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
         RETURN parent.id
     """
-    result = txn.run(query, {"id": entry})
+    result = graph_db.txn.run(query, {"id": entry})
     return result
 
-def get_children(entry, txn):
+def get_children(entry):
     """
     Helper function used for getting node children with given id
     """
@@ -142,10 +143,10 @@ def get_children(entry, txn):
         MATCH (child)-[r:is_child_of]->(parent_node:ENTRY) WHERE parent_node.id = $id 
         RETURN child.id
     """
-    result = txn.run(query, {"id": entry})
+    result = graph_db.txn.run(query, {"id": entry})
     return result
 
-def update_nodes(label, entry, new_node_keys, txn):
+def update_nodes(label, entry, new_node_keys):
     """
     Helper function used for updation of node with given id and label
     """
@@ -180,10 +181,10 @@ def update_nodes(label, entry, new_node_keys, txn):
     query.append(f"""RETURN n""")
 
     params = dict(new_node_keys, id=entry)
-    result = txn.run(" ".join(query), params)
+    result = graph_db.txn.run(" ".join(query), params)
     return result
 
-def update_node_children(entry, new_children_ids, txn):
+def update_node_children(entry, new_children_ids):
     """
     Helper function used for updation of node children with given id 
     """
@@ -199,11 +200,11 @@ def update_node_children(entry, new_children_ids, txn):
             WHERE parent.id = $id AND deleted_child.id = $child
             DELETE rel
         """
-        txn.run(query, {"id": entry, "child": child})
+        graph_db.txn.run(query, {"id": entry, "child": child})
 
     # Create non-existing nodes
     query = """MATCH (child:ENTRY) WHERE child.id in $ids RETURN child.id"""
-    existing_ids = [record['child.id'] for record in txn.run(query, ids=list(added_children))]
+    existing_ids = [record['child.id'] for record in graph_db.txn.run(query, ids=list(added_children))]
     to_create = added_children - set(existing_ids)
 
     for child in to_create:
@@ -221,11 +222,11 @@ def update_node_children(entry, new_children_ids, txn):
             MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child
             MERGE (new_child)-[r:is_child_of]->(parent)
         """
-        result = txn.run(query, {"id": entry, "child": child})
+        result = graph_db.txn.run(query, {"id": entry, "child": child})
     
     return result
 
-def full_text_search(text, txn):
+def full_text_search(text):
     """
     Helper function used for searching a taxonomy
     """
@@ -244,7 +245,7 @@ def full_text_search(text, txn):
         WHERE score > 0.2
         RETURN node.id
     """
-    result = [record["node.id"] for record in txn.run(query, {"textqueryfuzzy" : text_query_fuzzy})]
+    result = [record["node.id"] for record in graph_db.txn.run(query, {"textqueryfuzzy" : text_query_fuzzy})]
     # If result is empty, search with * symbol on the two indexes to get exact matches
     if (not result):
         query = f"""
@@ -256,5 +257,5 @@ def full_text_search(text, txn):
             WHERE score > 0.2
             RETURN node.id
         """
-        result = [record["node.id"] for record in txn.run(query, {"textqueryexact" : text_query_exact})]
+        result = [record["node.id"] for record in graph_db.txn.run(query, {"textqueryexact" : text_query_exact})]
     return result

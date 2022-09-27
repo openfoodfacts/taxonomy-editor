@@ -12,11 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # Data model imports
 from .models import Header, Footer
 
-from neo4j import GraphDatabase         # Interface with Neo4J
-from . import settings                  # Neo4J settings
-
 # DB helper imports
-from .entries import initialize_db, shutdown_db
+from . import graph_db
 from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label, full_text_search
 from .entries import update_nodes, update_node_children
 from .entries import create_node, add_node_to_end, add_node_to_beginning, delete_node
@@ -44,25 +41,25 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     """
-    Initialize Neo4J database
+    Initialize database
     """
-    global driver, session
-    uri = settings.uri
-    driver = GraphDatabase.driver(uri)
+    graph_db.initialize_db()
 
 @app.on_event("shutdown")
 async def shutdown():
     """
-    Close driver of Neo4J database
+    Shutdown database
     """
-    driver.close()
+    graph_db.shutdown_db()
 
 @app.middleware("http")
-async def transaction_creation(request: Request, call_next):
-    with driver.session() as session:
-        global txn
-        txn = session.begin_transaction()
-        response = await call_next(request)
+async def initialize_neo4j_transactions(request: Request, call_next):
+    with graph_db.driver.session() as session:
+        with session.begin_transaction() as _txn:
+            # Make it the current transaction
+            graph_db.txn = _txn
+            response = await call_next(request)
+        graph_db.txn = None
         return response
 
 # Helper methods
@@ -95,7 +92,7 @@ async def findAllNodes(response: Response):
     """
     Get all nodes within taxonomy
     """
-    result = get_all_nodes("", txn)
+    result = get_all_nodes("")
     allNodes = list(result)
     return allNodes
 
@@ -104,7 +101,7 @@ async def findOneEntry(response: Response, entry: str):
     """
     Get entry corresponding to id within taxonomy
     """
-    result = get_nodes("ENTRY", entry, txn)
+    result = get_nodes("ENTRY", entry)
     oneEntry = list(result)
 
     check_single(oneEntry)
@@ -116,7 +113,7 @@ async def findOneEntryParents(response: Response, entry: str):
     """
     Get parents for a entry corresponding to id within taxonomy
     """
-    result = get_parents(entry, txn)
+    result = get_parents(entry)
     oneEntryParents = list(result)
     
     return oneEntryParents
@@ -126,7 +123,7 @@ async def findOneEntryChildren(response: Response, entry: str):
     """
     Get children for a entry corresponding to id within taxonomy
     """
-    result = get_children(entry, txn)
+    result = get_children(entry)
     oneEntryChildren = list(result)
     
     return oneEntryChildren
@@ -136,7 +133,7 @@ async def findAllEntries(response: Response):
     """
     Get all entries within taxonomy
     """
-    result = get_all_nodes("ENTRY", txn)
+    result = get_all_nodes("ENTRY")
     allEntries = list(result)
     return allEntries
 
@@ -145,7 +142,7 @@ async def findOneSynonym(response: Response, synonym: str):
     """
     Get synonym corresponding to id within taxonomy
     """
-    result = get_nodes("SYNONYMS", synonym, txn)
+    result = get_nodes("SYNONYMS", synonym)
     oneSynonym = list(result)
 
     check_single(oneSynonym)
@@ -157,7 +154,7 @@ async def findAllSynonyms(response: Response):
     """
     Get all synonyms within taxonomy
     """
-    result = get_all_nodes("SYNONYMS", txn)
+    result = get_all_nodes("SYNONYMS")
     allSyononyms = list(result)
     return allSyononyms
 
@@ -166,7 +163,7 @@ async def findOneStopword(response: Response, stopword: str):
     """
     Get stopword corresponding to id within taxonomy
     """
-    result = get_nodes("STOPWORDS", stopword, txn)
+    result = get_nodes("STOPWORDS", stopword)
     oneStopword = list(result)
     
     check_single(oneStopword)
@@ -178,7 +175,7 @@ async def findAllStopwords(response: Response):
     """
     Get all stopwords within taxonomy
     """
-    result = get_all_nodes("STOPWORDS", txn)
+    result = get_all_nodes("STOPWORDS")
     allStopwords = list(result)
     return allStopwords
 
@@ -187,7 +184,7 @@ async def findHeader(response: Response):
     """
     Get __header__ within taxonomy
     """
-    result = get_nodes("TEXT", "__header__", txn)
+    result = get_nodes("TEXT", "__header__")
     header = list(result)
     return header[0]
 
@@ -196,13 +193,13 @@ async def findFooter(response: Response):
     """
     Get __footer__ within taxonomy
     """
-    result = get_nodes("TEXT", "__footer__", txn)
+    result = get_nodes("TEXT", "__footer__")
     footer = list(result)
     return footer[0]
 
 @app.get("/search")
 async def searchNode(response: Response, query: str):
-    result = full_text_search(query, txn)
+    result = full_text_search(query)
     return result
 
 # Post methods
@@ -220,11 +217,11 @@ async def createNode(request: Request):
     if (main_language == None):
         raise HTTPException(status_code=400, detail="Invalid main language code")
 
-    create_node(get_label(id), id, main_language, txn)
+    create_node(get_label(id), id, main_language)
     if (get_label(id) == "ENTRY"):
-        add_node_to_end(get_label(id), id, txn)
+        add_node_to_end(get_label(id), id)
     else:
-        add_node_to_beginning(get_label(id), id, txn)
+        add_node_to_beginning(get_label(id), id)
 
 @app.post("/entry/{entry}")
 async def editEntry(request: Request, entry: str):
@@ -234,7 +231,7 @@ async def editEntry(request: Request, entry: str):
     URL will be of format '/entry/<id>'
     """
     incomingData = await request.json()
-    result = update_nodes("ENTRY", entry, incomingData, txn)
+    result = update_nodes("ENTRY", entry, incomingData)
     updatedEntry = list(result)
     return updatedEntry
 
@@ -246,7 +243,7 @@ async def editEntryChildren(request: Request, entry: str):
     URL will be of format '/entry/<id>/children'
     """
     incomingData = await request.json()
-    result = update_node_children(entry, incomingData, txn)
+    result = update_node_children(entry, incomingData)
     updatedChildren = list(result)
     return updatedChildren
 
