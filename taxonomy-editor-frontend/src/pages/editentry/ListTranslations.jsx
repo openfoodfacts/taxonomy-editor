@@ -316,7 +316,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 <TextField
                     autoFocus
                     margin="dense"
-                    onKeyPress={(e) => { (e.keyCode === 13 || e.key === 'Enter') && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
+                    onKeyPress={(e) => { (e.keyCode === 13) && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
                     onChange={(e) => { 
                         setNewLanguageCode(e.target.value);
                         const validateBool = ISO6391.validate(e.target.value);
