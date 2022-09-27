@@ -62,7 +62,6 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         // Main langauge tags are considered separately, since they have to be rendered first
         const mainLangTags = []
         const otherLangTags = []
-
         Object.keys(originalNodeObject).forEach((key) => {
         
             // Get all tags and its corresponding language code
@@ -96,7 +95,6 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                 }
             }
         })
-
         // Set states
         setMainLangRenderedTranslations(mainLangTags);
         setRenderedTranslations(otherLangTags);
@@ -293,7 +291,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
                                                 onChange = {event => {
                                                     changeData(lang, index, event.target.value)
                                                 }}
-                                                tagValue={tag} 
+                                                value={tag} 
                                                 variant="outlined" />
                                             <IconButton sx={{ml: 1, mt: 1}} onClick={() => handleDelete(lang, index)}>
                                                  <DeleteOutlineIcon />
