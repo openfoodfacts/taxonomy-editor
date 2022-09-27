@@ -12,6 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # Data model imports
 from .models import Header, Footer
 
+from neo4j import GraphDatabase         # Interface with Neo4J
+from . import settings                  # Neo4J settings
+
 # DB helper imports
 from .entries import initialize_db, shutdown_db
 from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label, full_text_search
@@ -41,16 +44,26 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     """
-    Initialize database
+    Initialize Neo4J database
     """
-    initialize_db()
+    global driver, session
+    uri = settings.uri
+    driver = GraphDatabase.driver(uri)
 
 @app.on_event("shutdown")
 async def shutdown():
     """
-    Shutdown database
+    Close driver of Neo4J database
     """
-    shutdown_db()
+    driver.close()
+
+@app.middleware("http")
+async def transaction_creation(request: Request, call_next):
+    with driver.session() as session:
+        global txn
+        txn = session.begin_transaction()
+        response = await call_next(request)
+        return response
 
 # Helper methods
 
@@ -82,7 +95,7 @@ async def findAllNodes(response: Response):
     """
     Get all nodes within taxonomy
     """
-    result = get_all_nodes("")
+    result = get_all_nodes("", txn)
     allNodes = list(result)
     return allNodes
 
@@ -91,7 +104,7 @@ async def findOneEntry(response: Response, entry: str):
     """
     Get entry corresponding to id within taxonomy
     """
-    result = get_nodes("ENTRY", entry)
+    result = get_nodes("ENTRY", entry, txn)
     oneEntry = list(result)
 
     check_single(oneEntry)
@@ -103,7 +116,7 @@ async def findOneEntryParents(response: Response, entry: str):
     """
     Get parents for a entry corresponding to id within taxonomy
     """
-    result = get_parents(entry)
+    result = get_parents(entry, txn)
     oneEntryParents = list(result)
     
     return oneEntryParents
@@ -113,7 +126,7 @@ async def findOneEntryChildren(response: Response, entry: str):
     """
     Get children for a entry corresponding to id within taxonomy
     """
-    result = get_children(entry)
+    result = get_children(entry, txn)
     oneEntryChildren = list(result)
     
     return oneEntryChildren
@@ -123,7 +136,7 @@ async def findAllEntries(response: Response):
     """
     Get all entries within taxonomy
     """
-    result = get_all_nodes("ENTRY")
+    result = get_all_nodes("ENTRY", txn)
     allEntries = list(result)
     return allEntries
 
@@ -132,7 +145,7 @@ async def findOneSynonym(response: Response, synonym: str):
     """
     Get synonym corresponding to id within taxonomy
     """
-    result = get_nodes("SYNONYMS", synonym)
+    result = get_nodes("SYNONYMS", synonym, txn)
     oneSynonym = list(result)
 
     check_single(oneSynonym)
@@ -144,7 +157,7 @@ async def findAllSynonyms(response: Response):
     """
     Get all synonyms within taxonomy
     """
-    result = get_all_nodes("SYNONYMS")
+    result = get_all_nodes("SYNONYMS", txn)
     allSyononyms = list(result)
     return allSyononyms
 
@@ -153,7 +166,7 @@ async def findOneStopword(response: Response, stopword: str):
     """
     Get stopword corresponding to id within taxonomy
     """
-    result = get_nodes("STOPWORDS", stopword)
+    result = get_nodes("STOPWORDS", stopword, txn)
     oneStopword = list(result)
     
     check_single(oneStopword)
@@ -165,7 +178,7 @@ async def findAllStopwords(response: Response):
     """
     Get all stopwords within taxonomy
     """
-    result = get_all_nodes("STOPWORDS")
+    result = get_all_nodes("STOPWORDS", txn)
     allStopwords = list(result)
     return allStopwords
 
@@ -174,7 +187,7 @@ async def findHeader(response: Response):
     """
     Get __header__ within taxonomy
     """
-    result = get_nodes("TEXT", "__header__")
+    result = get_nodes("TEXT", "__header__", txn)
     header = list(result)
     return header[0]
 
@@ -183,13 +196,13 @@ async def findFooter(response: Response):
     """
     Get __footer__ within taxonomy
     """
-    result = get_nodes("TEXT", "__footer__")
+    result = get_nodes("TEXT", "__footer__", txn)
     footer = list(result)
     return footer[0]
 
 @app.get("/search")
 async def searchNode(response: Response, query: str):
-    result = full_text_search(query)
+    result = full_text_search(query, txn)
     return result
 
 # Post methods
@@ -207,11 +220,11 @@ async def createNode(request: Request):
     if (main_language == None):
         raise HTTPException(status_code=400, detail="Invalid main language code")
 
-    create_node(get_label(id), id, main_language)
+    create_node(get_label(id), id, main_language, txn)
     if (get_label(id) == "ENTRY"):
-        add_node_to_end(get_label(id), id)
+        add_node_to_end(get_label(id), id, txn)
     else:
-        add_node_to_beginning(get_label(id), id)
+        add_node_to_beginning(get_label(id), id, txn)
 
 @app.post("/entry/{entry}")
 async def editEntry(request: Request, entry: str):
@@ -221,7 +234,7 @@ async def editEntry(request: Request, entry: str):
     URL will be of format '/entry/<id>'
     """
     incomingData = await request.json()
-    result = update_nodes("ENTRY", entry, incomingData)
+    result = update_nodes("ENTRY", entry, incomingData, txn)
     updatedEntry = list(result)
     return updatedEntry
 
@@ -233,7 +246,7 @@ async def editEntryChildren(request: Request, entry: str):
     URL will be of format '/entry/<id>/children'
     """
     incomingData = await request.json()
-    result = update_node_children(entry, incomingData)
+    result = update_node_children(entry, incomingData, txn)
     updatedChildren = list(result)
     return updatedChildren
 
