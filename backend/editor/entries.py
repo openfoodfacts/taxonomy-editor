@@ -252,7 +252,7 @@ def full_text_search(text):
     text_query_fuzzy = normalized_text + "~"
 
     # Fuzzy search on two indexes
-    # Fuzzy search has more priority, since it matches more strings
+    # Fuzzy search has more priority, since it matches more close strings
     query = f"""
         CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryfuzzy) YIELD node, score
         WHERE score > 0.2
