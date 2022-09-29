@@ -2,7 +2,7 @@
 Database helper functions for API
 """
 import re
-from . import graph_db # Neo4J transactions helper
+from .graph_db import get_current_transaction # Neo4J transactions helper
 
 def get_label(id):
     """
@@ -33,7 +33,7 @@ def create_node(label, entry, main_language_code):
     query.append(f""" SET n.preceding_lines = [] """)
 
     params["canonical_tag"] = canonical_tag
-    result = graph_db.txn.run(" ".join(query), params)
+    result = get_current_transaction().run(" ".join(query), params)
     return result
 
 def add_node_to_end(label, entry):
@@ -45,7 +45,7 @@ def add_node_to_end(label, entry):
        MATCH (last_node)-[r:is_before]->(footer:TEXT) WHERE footer.id = "__footer__" DELETE r 
        RETURN last_node
     """
-    result = graph_db.txn.run(query)
+    result = get_current_transaction().run(query)
     end_node = result.data()[0]['last_node']
     end_node_label = get_label(end_node['id']) # Get current last node ID
 
@@ -58,7 +58,7 @@ def add_node_to_end(label, entry):
         CREATE (last_node)-[:is_before]->(new_node)
         CREATE (new_node)-[:is_before]->(footer)
     """
-    result = graph_db.txn.run(query, {"id": entry, "endnodeid": end_node['id']})
+    result = get_current_transaction().run(query, {"id": entry, "endnodeid": end_node['id']})
 
 def add_node_to_beginning(label, entry):
     """
@@ -69,7 +69,7 @@ def add_node_to_beginning(label, entry):
         MATCH (header:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
         RETURN first_node
     """
-    result = graph_db.txn.run(query)
+    result = get_current_transaction().run(query)
     start_node = result.data()[0]['first_node']
     start_node_label = get_label(start_node['id']) # Get current first node ID
 
@@ -81,7 +81,7 @@ def add_node_to_beginning(label, entry):
         CREATE (new_node)-[:is_before]->(first_node)
         CREATE (header)-[:is_before]->(new_node)
     """
-    result = graph_db.txn.run(query, {"id": entry, "startnodeid": start_node['id']})
+    result = get_current_transaction().run(query, {"id": entry, "startnodeid": start_node['id']})
 
 def delete_node(label, entry):
     """
@@ -99,7 +99,7 @@ def delete_node(label, entry):
         // Rebuild relationships after deletion
         CREATE (previous_node)-[:is_before]->(next_node)
     """
-    result = graph_db.txn.run(query, {"id": entry})
+    result = get_current_transaction().run(query, {"id": entry})
     return result
 
 def get_all_nodes(label):
@@ -110,7 +110,7 @@ def get_all_nodes(label):
     query = f"""
         MATCH (n{qualifier}) RETURN n
     """
-    result = graph_db.txn.run(query)
+    result = get_current_transaction().run(query)
     return result
 
 def get_nodes(label, entry):
@@ -121,7 +121,7 @@ def get_nodes(label, entry):
         MATCH (n:{label}) WHERE n.id = $id 
         RETURN n
     """
-    result = graph_db.txn.run(query, {"id": entry})
+    result = get_current_transaction().run(query, {"id": entry})
     return result
 
 def get_parents(entry):
@@ -132,7 +132,7 @@ def get_parents(entry):
         MATCH (child_node:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
         RETURN parent.id
     """
-    result = graph_db.txn.run(query, {"id": entry})
+    result = get_current_transaction().run(query, {"id": entry})
     return result
 
 def get_children(entry):
@@ -143,7 +143,7 @@ def get_children(entry):
         MATCH (child)-[r:is_child_of]->(parent_node:ENTRY) WHERE parent_node.id = $id 
         RETURN child.id
     """
-    result = graph_db.txn.run(query, {"id": entry})
+    result = get_current_transaction().run(query, {"id": entry})
     return result
 
 def update_nodes(label, entry, new_node_keys):
@@ -181,7 +181,7 @@ def update_nodes(label, entry, new_node_keys):
     query.append(f"""RETURN n""")
 
     params = dict(new_node_keys, id=entry)
-    result = graph_db.txn.run(" ".join(query), params)
+    result = get_current_transaction().run(" ".join(query), params)
     return result
 
 def update_node_children(entry, new_children_ids):
@@ -200,11 +200,11 @@ def update_node_children(entry, new_children_ids):
             WHERE parent.id = $id AND deleted_child.id = $child
             DELETE rel
         """
-        graph_db.txn.run(query, {"id": entry, "child": child})
+        get_current_transaction().run(query, {"id": entry, "child": child})
 
     # Create non-existing nodes
     query = """MATCH (child:ENTRY) WHERE child.id in $ids RETURN child.id"""
-    existing_ids = [record['child.id'] for record in graph_db.txn.run(query, ids=list(added_children))]
+    existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
     to_create = added_children - set(existing_ids)
 
     for child in to_create:
@@ -222,7 +222,7 @@ def update_node_children(entry, new_children_ids):
             MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child
             MERGE (new_child)-[r:is_child_of]->(parent)
         """
-        result = graph_db.txn.run(query, {"id": entry, "child": child})
+        result = get_current_transaction().run(query, {"id": entry, "child": child})
     
     return result
 
@@ -245,7 +245,7 @@ def full_text_search(text):
         WHERE score > 0.2
         RETURN node.id
     """
-    result = [record["node.id"] for record in graph_db.txn.run(query, {"textqueryfuzzy" : text_query_fuzzy})]
+    result = [record["node.id"] for record in get_current_transaction().run(query, {"textqueryfuzzy" : text_query_fuzzy})]
     # If result is empty, search with * symbol on the two indexes to get exact matches
     if (not result):
         query = f"""
@@ -257,5 +257,5 @@ def full_text_search(text):
             WHERE score > 0.2
             RETURN node.id
         """
-        result = [record["node.id"] for record in graph_db.txn.run(query, {"textqueryexact" : text_query_exact})]
+        result = [record["node.id"] for record in get_current_transaction().run(query, {"textqueryexact" : text_query_exact})]
     return result

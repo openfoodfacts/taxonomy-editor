@@ -54,13 +54,9 @@ async def shutdown():
 
 @app.middleware("http")
 async def initialize_neo4j_transactions(request: Request, call_next):
-    with graph_db.driver.session() as session:
-        with session.begin_transaction() as _txn:
-            # Make it the current transaction
-            graph_db.txn = _txn
-            response = await call_next(request)
-        graph_db.txn = None
-        return response
+    with graph_db.TransactionCtx():
+        response = await call_next(request)
+    return response
 
 # Helper methods
 
