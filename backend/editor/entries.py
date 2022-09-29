@@ -2,7 +2,8 @@
 Database helper functions for API
 """
 import re
-from .graph_db import get_current_transaction # Neo4J transactions helper
+from .graph_db import get_current_transaction   # Neo4J transactions helper
+from .normalizer import normalizing             # Normalizing tags
 
 def get_label(id):
     """
@@ -230,32 +231,45 @@ def full_text_search(text):
     """
     Helper function used for searching a taxonomy
     """
-    normalized_text = re.sub(r"([^A-Za-z0-9])", r"\\\1", text) # Escape special characters
+    # Escape special characters
+    normalized_text = re.sub(r"([^A-Za-z0-9 _])", r"\\\1", text)
+    normalized_id_text = re.sub(r"(-)", r"\\\1", normalizing(text))
+
     text_query_exact = "*" + normalized_text + '*'
     text_query_fuzzy = normalized_text + "~"
-    
-    # Fuzzy search on two indexes
-    # Fuzzy search has more priority, since it matches more strings
-    query = f"""
-        CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryfuzzy) YIELD node, score
-        WHERE score > 0.2
-        RETURN node.id
-        UNION
-        CALL db.index.fulltext.queryNodes("nodeSearchTags", $textqueryfuzzy) YIELD node, score
-        WHERE score > 0.2
-        RETURN node.id
-    """
-    result = [record["node.id"] for record in get_current_transaction().run(query, {"textqueryfuzzy" : text_query_fuzzy})]
-    # If result is empty, search with * symbol on the two indexes to get exact matches
-    if (not result):
-        query = f"""
-            CALL db.index.fulltext.queryNodes("nodeSearchIds", $textqueryexact) YIELD node, score
-            WHERE score > 0.2
-            RETURN node.id
+    text_id_query_fuzzy = normalized_id_text + "~"
+    text_id_query_exact = "*" + normalized_id_text + "*"
+    params = {
+        "text_query_fuzzy" : text_query_fuzzy,
+        "text_query_exact" : text_query_exact,
+        "text_id_query_fuzzy" : text_id_query_fuzzy,
+        "text_id_query_exact" : text_id_query_exact 
+    }
+
+    # Fuzzy search and "* search" search on two indexes
+    # Fuzzy search has more priority, since it matches more close strings
+    query = """
+        CALL {
+                CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_fuzzy)
+                yield node, score as score_
+                return node, score_ * 3 as score
             UNION
-            CALL db.index.fulltext.queryNodes("nodeSearchTags", $textqueryexact) YIELD node, score
-            WHERE score > 0.2
-            RETURN node.id
-        """
-        result = [record["node.id"] for record in get_current_transaction().run(query, {"textqueryexact" : text_query_exact})]
+                CALL db.index.fulltext.queryNodes("nodeSearchTags",  $text_query_fuzzy)
+                yield node, score as score_
+                return node, score_ * 5 as score
+            UNION
+                CALL db.index.fulltext.queryNodes("nodeSearchIds",  $text_id_query_exact)
+                yield node, score as score_
+                return node, score_ as score
+            UNION
+                CALL db.index.fulltext.queryNodes("nodeSearchTags", $text_query_exact)
+                yield node, score as score_
+                return node, score_ as score 
+        }
+        with node.id as node, score
+        RETURN node, avg(score) as score
+        
+        ORDER BY score DESC
+    """
+    result = [record["node"] for record in session.run(query, params)]
     return result
