@@ -4,7 +4,7 @@ Database helper functions for API
 import re
 from neo4j import GraphDatabase         # Interface with Neo4J
 from . import settings                  # Neo4J settings
-from normalizer import normalizing      # Normalizing tags
+from .normalizer import normalizing      # Normalizing tags
 
 def initialize_db():
     """
@@ -254,8 +254,8 @@ def full_text_search(text):
 
     text_query_exact = "*" + normalized_text + '*'
     text_query_fuzzy = normalized_text + "~"
-    text_id_query_exact = normalized_id_text + "~"
-    text_id_query_fuzzy = "*" + normalized_id_text + "*"
+    text_id_query_fuzzy = normalized_id_text + "~"
+    text_id_query_exact = "*" + normalized_id_text + "*"
     params = {
         "text_query_fuzzy" : text_query_fuzzy,
         "text_query_exact" : text_query_exact,
