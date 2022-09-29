@@ -1,7 +1,8 @@
 import contextlib
 import contextvars
-from neo4j import GraphDatabase         # Interface with Neo4J
-from . import settings                  # Neo4J settings
+from neo4j import GraphDatabase                     # Interface with Neo4J
+from . import settings                              # Neo4J settings
+from .exceptions import TransactionMissingError     # Custom exceptions
 
 txn = contextvars.ContextVar('txn')
 txn.set(None)
@@ -36,5 +37,5 @@ def shutdown_db():
 def get_current_transaction():
     curr_txn = txn.get()
     if (curr_txn == None):
-        raise ValueError("Transaction context variable is set to None")
+        raise TransactionMissingError()
     return curr_txn
