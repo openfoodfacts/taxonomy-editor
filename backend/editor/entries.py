@@ -250,7 +250,7 @@ def full_text_search(text):
     """
     # Escape special characters
     normalized_text = re.sub(r"([^A-Za-z0-9 _])", r"\\\1", text)
-    normalized_id_text = re.sub(r"(-)", r"\\\1", normalizing(text))
+    normalized_id_text = normalizing(text)
 
     text_query_exact = "*" + normalized_text + '*'
     text_query_fuzzy = normalized_text + "~"
