@@ -5,6 +5,7 @@ import unicodedata
 
 import iso639
 import unidecode
+import uuid
 from neo4j import GraphDatabase
 
 from .exception import DuplicateIDError
@@ -221,6 +222,11 @@ class Parser:
                 data["preceding_lines"].pop(0)
         return data
 
+    def tag_uuids(self, n):
+        """To create uuids for each tag for display in frontend"""
+        tags_with_uuids = [str(uuid.uuid4()) for num in range(n)]
+        return tags_with_uuids
+
     def harvest(self, filename):
         """Transform data from file to dictionary"""
         saved_nodes = []
@@ -279,6 +285,7 @@ class Parser:
                         )
                     else:
                         data["tags_" + lc] = value
+                        data["tags_" + lc + "_uuid"] = self.tag_uuids(len(value))
                         # add the list with its lc
                         self.stopwords[lc] = value
                 elif line.startswith("synonyms"):
@@ -298,6 +305,7 @@ class Parser:
                         )
                     else:
                         data["tags_" + lc] = tags
+                        data["tags_" + lc + "_uuid"] = self.tag_uuids(len(tags))
                         data["tags_ids_" + lc] = value
                 elif line[0] == "<":
                     # parent definition
@@ -322,6 +330,7 @@ class Parser:
                             tagsids_list.append(word_normalized)
                     data["tags_" + lang] = tags_list
                     data["tags_" + lang + "_str"] = " ".join(tags_list)
+                    data["tags_" + lang + "_uuid"] = self.tag_uuids(len(tags_list))
                     data["tags_ids_" + lang] = tagsids_list
                 else:
                     # property definition
@@ -347,6 +356,7 @@ class Parser:
                                 ellipsis(line),
                             )
                     if property_name:
+                        data["prop_" + property_name + "_" + lc + "_uuid"] = self.tag_uuids(1)
                         data["prop_" + property_name + "_" + lc] = property_value
 
         data["id"] = "__footer__"
