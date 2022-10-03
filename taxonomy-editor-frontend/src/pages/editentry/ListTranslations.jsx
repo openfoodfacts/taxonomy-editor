@@ -13,7 +13,7 @@ import ISO6391 from 'iso-639-1';
 /**
  * Sub-component for rendering translation of an "entry"  
 */
-const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => {
+const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
@@ -30,11 +30,13 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         const newRenderedTranslations = [...renderedTranslations, {'languageCode' : key, 'tags' : []}]
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
+        const uuidKey = key + '_uuid' // Format for the uuid
         
         // Make changes to the parent NodeObject
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
             newNodeObject[key] = [];
+            newNodeObject[uuidKey] = [uuid.v4()];
             return newNodeObject
         })
         setOpen(false);
@@ -45,11 +47,13 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         const newRenderedTranslations = renderedTranslations.filter(obj => !(key === obj.languageCode))
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
+        const uuidKey = key + '_uuid' // Format for the uuid
         
         // Make changes to the parent NodeObject
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
             delete newNodeObject[key];
+            delete newNodeObject[uuidKey];
             return newNodeObject
         })
         setOpen(false);
@@ -62,43 +66,47 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         // Main langauge tags are considered separately, since they have to be rendered first
         const mainLangTags = []
         const otherLangTags = []
-        Object.keys(originalNodeObject).forEach((key) => {
+        Object.keys(nodeObject).forEach((key) => {
         
             // Get all tags and its corresponding language code
             // Tagids need to be recomputed, so shouldn't be rendered
             // Eg: tags_fr
         
             if (key.startsWith('tags') && !key.includes('ids') && !key.includes('str')) {
-                
-                // If tags are for main language, add them to mainLangTags
-                if (key.endsWith(originalNodeObject.main_language)) {
-                    originalNodeObject["tags_"+originalNodeObject['main_language']].forEach((tag) => (
-                        mainLangTags.push({ 
-                            'index' : uuid.v4(),
-                            'tag' : tag
-                        })
-                    ))
-                }
-                
-                // If tags are not for the main language, add them to otherLangTags
-                else {
-                    // Slice the language code
-                    let languageCode = key.slice(-2);
-                    let tobeInsertedObj = {'languageCode' : languageCode, 'tags' : []} // General format for storing tags for different lc's
-                    originalNodeObject[key].forEach((tag) => (
-                        tobeInsertedObj['tags'].push({
-                            'index' : uuid.v4(), // Give a unique identifier for each tag
-                            'tag' : tag
-                        })
-                    ))
-                    otherLangTags.push(tobeInsertedObj);
+                if (key.endsWith('uuid')) {
+                    const uuids = nodeObject[key]
+                    // If tags are for main language, add them to mainLangTags
+                    if (key.includes(nodeObject.main_language)) {
+                        nodeObject["tags_"+nodeObject['main_language']].forEach((tag, index) => (
+                            mainLangTags.push({ 
+                                'index' : uuids[index],
+                                'tag' : tag
+                            })
+                        ))
+                    }
+                    
+                    // If tags are not for the main language, add them to otherLangTags
+                    else {
+                        // Slice the language code
+                        const languageCode = key.split('_').slice(1,-1)[0]
+                        // General format for storing tags for different lc's
+                        const tobeInsertedObj = {'languageCode' : languageCode, 'tags' : []}
+                        const tagsKey = key.split('_').slice(0,-1).join('_')
+                        nodeObject[tagsKey].forEach((tag, index) => (
+                            tobeInsertedObj['tags'].push({
+                                'index' : uuids[index], // Give a unique identifier for each tag
+                                'tag' : tag
+                            })
+                        ))
+                        otherLangTags.push(tobeInsertedObj);
+                    }
                 }
             }
         })
         // Set states
         setMainLangRenderedTranslations(mainLangTags);
         setRenderedTranslations(otherLangTags);
-    }, [originalNodeObject]);
+    }, [nodeObject]);
 
     // Helper function used for changing state
     function changeData(key, index, value) {
@@ -151,10 +159,11 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
 
     // Helper function for adding a translation for a LC
     function handleAdd(key) {
-        let tagsToBeInserted = []
-        // State of "MainLang_renderedTranslations" is updated according to format used
+        let tagsToBeInserted = [];
+        const newUUID = uuid.v4();
+        // State of "MainLangRenderedTranslations" is updated according to format used
         if (key === nodeObject.main_language) {
-            const duplicateMainLangRenderedTranslations = [...mainLangRenderedTranslations, {'index': uuid.v4(), 'tag' : ''}];
+            const duplicateMainLangRenderedTranslations = [...mainLangRenderedTranslations, {'index': newUUID, 'tag' : ''}];
             setMainLangRenderedTranslations(duplicateMainLangRenderedTranslations); // Set state
 
             // Updated tags assigned for later use
@@ -165,7 +174,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
             const newRenderedTranslations = [...renderedTranslations];
             newRenderedTranslations.map((allTagsObj) => (allTagsObj['languageCode'] === key) ? 
                 (
-                    allTagsObj['tags'].push({'index': uuid.v4(), 'tag' : ''}),
+                    allTagsObj['tags'].push({'index': newUUID, 'tag' : ''}),
                     // Updated tags assigned for later use
                     tagsToBeInserted = allTagsObj['tags'].map(el => (el.tag))
                 ) : allTagsObj
@@ -177,6 +186,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
             newNodeObject['tags_'+key] = tagsToBeInserted;
+            newNodeObject['tags_'+key+'_uuid'].push(newUUID);
             return newNodeObject
         })
     }
@@ -214,11 +224,12 @@ const ListTranslations = ({ nodeObject, setNodeObject, originalNodeObject }) => 
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
             newNodeObject['tags_'+key] = tagsToBeInserted;
+            newNodeObject['tags_'+key+'_uuid'] = newNodeObject['tags_'+key+'_uuid'].filter(currIndex => !(currIndex === index)) 
             return newNodeObject
         })
     }
 
-    return ( 
+    return (
         <Box sx={{ml: 4}}>
             {/* Title */}
             <Stack direction="row" alignItems="center">
