@@ -2,9 +2,10 @@
 Database helper functions for API
 """
 import re
+import uuid                             # Creating UUIDs
 from neo4j import GraphDatabase         # Interface with Neo4J
 from . import settings                  # Neo4J settings
-from .normalizer import normalizing      # Normalizing tags
+from .normalizer import normalizing     # Normalizing tags
 
 def initialize_db():
     """
@@ -36,7 +37,7 @@ def create_node(label, entry, main_language_code):
     Helper function used for creating a node with given id and label
     """
     query = [f"""CREATE (n:{label})\n"""]
-    params = {"id": entry}
+    params = {"id": entry, "uuid": str(uuid.uuid4())}
 
     # Build all basic keys of a node
     if (label == "ENTRY"):
@@ -48,6 +49,7 @@ def create_node(label, entry, main_language_code):
 
     query.append(f""" SET n.id = $id """)
     query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
+    query.append(f""" SET n.tags_{main_language_code}_uuid = [$uuid] """)
     query.append(f""" SET n.preceding_lines = [] """)
 
     params["canonical_tag"] = canonical_tag
