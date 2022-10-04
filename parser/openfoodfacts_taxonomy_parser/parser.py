@@ -429,7 +429,10 @@ class Parser:
         self.session.run(query)
 
     def create_fulltext_index(self):
-        query = """CREATE FULLTEXT INDEX nodeSearchIds FOR (n:ENTRY) ON EACH [n.id]"""
+        query = """
+            CREATE FULLTEXT INDEX nodeSearchIds FOR (n:ENTRY) ON EACH [n.id]
+            OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}
+        """
         self.session.run(query)
 
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
