@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .models import Header, Footer
 
 # DB helper imports
-from .entries import initialize_db, shutdown_db
+from . import graph_db
 from .entries import get_all_nodes, get_nodes, get_children, get_parents, get_label, full_text_search
 from .entries import update_nodes, update_node_children
 from .entries import create_node, add_node_to_end, add_node_to_beginning, delete_node
@@ -43,14 +43,20 @@ async def startup():
     """
     Initialize database
     """
-    initialize_db()
+    graph_db.initialize_db()
 
 @app.on_event("shutdown")
 async def shutdown():
     """
     Shutdown database
     """
-    shutdown_db()
+    graph_db.shutdown_db()
+
+@app.middleware("http")
+async def initialize_neo4j_transactions(request: Request, call_next):
+    with graph_db.TransactionCtx():
+        response = await call_next(request)
+    return response
 
 # Helper methods
 
