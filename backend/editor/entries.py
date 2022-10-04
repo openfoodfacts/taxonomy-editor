@@ -249,7 +249,7 @@ def full_text_search(text):
     Helper function used for searching a taxonomy
     """
     # Escape special characters
-    normalized_text = re.sub(r"([^A-Za-z0-9 _])", r"\\\1", text)
+    normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
     normalized_id_text = normalizing(text)
 
     text_query_exact = "*" + normalized_text + '*'
@@ -263,19 +263,20 @@ def full_text_search(text):
         "text_id_query_exact" : text_id_query_exact 
     }
 
-    # Fuzzy search and "* search" search on two indexes
+    # Fuzzy search and wildcard (*) search on two indexes
     # Fuzzy search has more priority, since it matches more close strings
+    # IDs are given slightly lower priority than tags in fuzzy search
     query = """
         CALL {
                 CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_fuzzy)
                 yield node, score as score_
                 return node, score_ * 3 as score
             UNION
-                CALL db.index.fulltext.queryNodes("nodeSearchTags",  $text_query_fuzzy)
+                CALL db.index.fulltext.queryNodes("nodeSearchTags", $text_query_fuzzy)
                 yield node, score as score_
                 return node, score_ * 5 as score
             UNION
-                CALL db.index.fulltext.queryNodes("nodeSearchIds",  $text_id_query_exact)
+                CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_exact)
                 yield node, score as score_
                 return node, score_ as score
             UNION
@@ -284,7 +285,7 @@ def full_text_search(text):
                 return node, score_ as score 
         }
         with node.id as node, score
-        RETURN node, avg(score) as score
+        RETURN node, sum(score) as score
         
         ORDER BY score DESC
     """
