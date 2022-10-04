@@ -420,7 +420,7 @@ class Parser:
 
     def create_fulltext_index(self):
         query = """
-            CREATE FULLTEXT INDEX nodeSearchIds FOR (n:ENTRY) ON EACH [n.id] 
+            CREATE FULLTEXT INDEX nodeSearchIds FOR (n:ENTRY) ON EACH [n.id]
             OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}
         """
         self.session.run(query)
