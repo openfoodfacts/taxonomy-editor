@@ -2,10 +2,10 @@ import logging
 import re
 import sys
 import unicodedata
+import uuid
 
 import iso639
 import unidecode
-import uuid
 from neo4j import GraphDatabase
 
 from .exception import DuplicateIDError
