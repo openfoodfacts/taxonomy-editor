@@ -60,7 +60,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }
 
     // Changes the translations to be rendered
-    // Dependent on changes occuring in "originalNodeObject"
+    // Dependent on changes occuring in "nodeObject"
     useEffect(() => {
 
         // Main langauge tags are considered separately, since they have to be rendered first
@@ -193,7 +193,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     function handleDelete(key, index) {
         let tagsToBeInserted = []
-        // State of "MainLang_renderedTranslations" is updated according to format used
+        // State of "MainLangRenderedTranslations" is updated according to format used
         if (key === nodeObject.main_language) {
             const duplicateMainLangRenderedTranslations = mainLangRenderedTranslations.filter(obj => !(index === obj.index))
             setMainLangRenderedTranslations(duplicateMainLangRenderedTranslations); // Set state

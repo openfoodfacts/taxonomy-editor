@@ -7,7 +7,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     const [data, setData] = useState([]);
 
     // Changes the properties to be rendered
-    // Dependent on changes occuring in "originalNodeObject"
+    // Dependent on changes occuring in "nodeObject"
     useEffect(() => {
         let renderedProperties = []
         Object.keys(nodeObject).forEach((key) => {

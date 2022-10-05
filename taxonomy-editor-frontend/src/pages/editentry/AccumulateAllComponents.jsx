@@ -30,7 +30,7 @@ const AccumulateAllComponents = ({ id }) => {
         setNodeObject(node?.[0]);
     }, [node])
 
-    // Displaying errorMessages if any
+    // Displaying error messages if any
     if (isError) {
         return (<Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>)
     }
@@ -45,6 +45,7 @@ const AccumulateAllComponents = ({ id }) => {
 
     // Function handling updation of node
     const handleSubmit = () => {
+        if (!nodeObject) return
         const {id, ...data} = nodeObject // ID not allowed in POST
         let allUrlsAndData = [[url, data]]
         if (isEntry) {
