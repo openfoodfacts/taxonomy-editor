@@ -1,4 +1,4 @@
-# taxonomy-editor
+# Taxonomy Editor
 Taxonomies are at the heart of Open Food Facts data structure - this project provides an editor
 
 Docs, see [doc folder](./doc).
@@ -19,12 +19,11 @@ GitHub project: https://github.com/orgs/openfoodfacts/projects/28/views/1
 
 Meeting notes: https://docs.google.com/document/d/1tdYkUmoRU8BxFPdCwtewoUi7PV8PmDlXtExOcPYyu-I/edit#
 
+## Screenshots
 
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 16 32" src="https://user-images.githubusercontent.com/1689815/194068140-f98606b4-aace-46c4-90a6-c9a22fcb7710.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 16 39" src="https://user-images.githubusercontent.com/1689815/194068146-188fb886-72d4-419f-bbf5-fc01cfb250b3.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 17 01" src="https://user-images.githubusercontent.com/1689815/194068147-42dd8ec2-455d-4666-9fbf-56bd486eb7da.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 18 01" src="https://user-images.githubusercontent.com/1689815/194068150-0e07bb06-03cc-4119-b0d0-3ddbc23b6412.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 18 17" src="https://user-images.githubusercontent.com/1689815/194068152-ae5a2d6e-f8bc-4d6c-ab1a-f9fb4e56dbfa.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 18 47" src="https://user-images.githubusercontent.com/1689815/194068155-0cf8be49-7508-4f08-ac23-7786460589f1.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 21 56" src="https://user-images.githubusercontent.com/1689815/194068159-7bb4b9a4-ee85-496b-aa52-3c03086a0e10.png">
-<img width="895" alt="Capture d’écran 2022-10-04 à 17 22 01" src="https://user-images.githubusercontent.com/1689815/194068160-14918fa1-679a-4e74-bbe8-2e7854c537ab.png">
+![Main Page](https://user-images.githubusercontent.com/25586296/194070542-962fb4ab-180b-4bc2-a8fd-b99ac4ffd87f.png)
+![Nodes](https://user-images.githubusercontent.com/25586296/194070696-0f32452e-2a35-4a47-b6cb-880aee82360e.png)
+![Editing Page](https://user-images.githubusercontent.com/25586296/194070712-9599da94-1a5a-4246-85ed-2c2c7a2499ae.png)
+![Properties](https://user-images.githubusercontent.com/25586296/194070730-302c0cac-800e-4c2a-80f6-67bad360bb74.png)
+![Search](https://user-images.githubusercontent.com/25586296/194070769-99beed88-081f-435d-8fe0-b97e4c363fea.png)
+![Search Results](https://user-images.githubusercontent.com/25586296/194070779-da4684d3-26ea-4fd9-8916-0e8c4fdea0c9.png)
