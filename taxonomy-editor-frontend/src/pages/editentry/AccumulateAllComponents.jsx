@@ -28,8 +28,9 @@ const AccumulateAllComponents = ({ id }) => {
 
     // Setting state of node after fetch
     useEffect(() => {
+        let duplicateNode = null;
         if (node) {
-            const duplicateNode = {...node[0]}
+            duplicateNode = {...node[0]}
             // Adding UUIDs for tags and properties
             Object.keys(node[0]).forEach((key) => {
                 if (key.startsWith('tags') && !key.includes('ids') && !key.includes('str')) {
@@ -42,9 +43,8 @@ const AccumulateAllComponents = ({ id }) => {
                     duplicateNode[key+'_uuid'] = [uuid.v4()];
                 }
             })
-            console.log(duplicateNode)
-            setNodeObject(duplicateNode);
         }
+        setNodeObject(duplicateNode);
     }, [node])
 
     // Displaying error messages if any
