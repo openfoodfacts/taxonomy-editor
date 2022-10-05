@@ -7,7 +7,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import * as uuid from "uuid";
 import ISO6391 from 'iso-639-1';
 
 /**
@@ -36,7 +35,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
             newNodeObject[key] = [];
-            newNodeObject[uuidKey] = [uuid.v4()];
+            newNodeObject[uuidKey] = [Math.random().toString()];
             return newNodeObject
         })
         setOpen(false);
@@ -160,7 +159,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     // Helper function for adding a translation for a LC
     function handleAdd(key) {
         let tagsToBeInserted = [];
-        const newUUID = uuid.v4();
+        const newUUID = Math.random().toString();
         // State of "MainLangRenderedTranslations" is updated according to format used
         if (key === nodeObject.main_language) {
             const duplicateMainLangRenderedTranslations = [...mainLangRenderedTranslations, {'index': newUUID, 'tag' : ''}];

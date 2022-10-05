@@ -9,7 +9,6 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import * as uuid from "uuid";
 import ISO6391 from 'iso-639-1';
 
 const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
@@ -28,7 +27,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
             const arrayData = [];
             incomingData.map((el) =>
                 arrayData.push(
-                    {"index" : uuid.v4(), "child" : el?.[0]})
+                    {"index" : Math.random().toString(), "child" : el?.[0]})
                 );
             setRelations(arrayData);
         }
@@ -40,7 +39,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
 
     function handleAddChild() {
         const newChildID = newLanguageCode + ':' + newChild; // Reconstructing node ID
-        setRelations([...relations, {"index" : uuid.v4(), "child": newChildID}]);
+        setRelations([...relations, {"index" : Math.random().toString(), "child": newChildID}]);
         setUpdateNodeChildren(prevState => {
             const duplicateData = [...prevState];
             duplicateData.push(newChildID);

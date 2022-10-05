@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { getIdType } from "./createURL";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import * as uuid from "uuid";
 import ISO6391 from 'iso-639-1';
 
 /** 
@@ -76,7 +75,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     }
 
     function handleAdd() {
-        const newRenderedNonEntryInfo = [...renderedNonEntryInfo, {'index': uuid.v4(), 'tag' : ''}];
+        const newRenderedNonEntryInfo = [...renderedNonEntryInfo, {'index': Math.random().toString(), 'tag' : ''}];
         setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
         // Updated tags assigned for later use

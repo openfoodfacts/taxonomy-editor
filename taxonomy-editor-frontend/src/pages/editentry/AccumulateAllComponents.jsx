@@ -7,7 +7,6 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getIdType } from "./createURL";
-import * as uuid from "uuid";
 
 /**
  * Component used for rendering node information
@@ -36,11 +35,11 @@ const AccumulateAllComponents = ({ id }) => {
                 if (key.startsWith('tags') && !key.includes('ids') && !key.includes('str')) {
                     duplicateNode[key+'_uuid'] = [];
                     duplicateNode[key].forEach(() => {
-                        duplicateNode[key+'_uuid'].push(uuid.v4());
+                        duplicateNode[key+'_uuid'].push(Math.random().toString());
                     })
                 }
                 else if (key.startsWith('prop')) {
-                    duplicateNode[key+'_uuid'] = [uuid.v4()];
+                    duplicateNode[key+'_uuid'] = [Math.random().toString()];
                 }
             })
         }
