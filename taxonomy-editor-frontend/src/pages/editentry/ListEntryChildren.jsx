@@ -101,7 +101,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
                 </DialogContentText>
                 <Stack sx={{mt: 2}} direction="row" alignItems="center">
                     <TextField
-                        onKeyPress={(e) => { (e.key === 'Enter') && handleAddChild(e) }} 
+                        onKeyPress={(e) => { (e.keyCode === 13) && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewLanguageCode(e.target.value);
                             const validateBool = ISO6391.validate(e.target.value);
@@ -117,7 +117,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
                     <Typography component="h4">:</Typography>
                     <TextField
                         margin="dense"
-                        onKeyPress={(e) => { (e.key === 'Enter') && handleAddChild(e) }} 
+                        onKeyPress={(e) => { (e.keyCode === 13) && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewChild(e.target.value);
                         }}

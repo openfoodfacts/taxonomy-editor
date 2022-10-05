@@ -12,40 +12,45 @@ import ISO6391 from 'iso-639-1';
  * If node is "header/footer": Only comments are rendered
 */
 
-const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject, originalNodeObject }) => {
+const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     
     // Stores ID type of node object
-    let IDType = getIdType(id);
+    const IDType = getIdType(id);
     // Stores 2 letter language code (LC) of the tags
-    let [languageCode, setLanguageCode] = useState('');
+    const [languageCode, setLanguageCode] = useState('');
     // Storing tags that need to be rendered for editing
-    let [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([])
+    const [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([])
 
     useEffect(() => {
-        let tagsExtracted = []
+        const tagsExtracted = []
         let extractedLanguageCode = ''
-        if (originalNodeObject) {
-            Object.keys(originalNodeObject).forEach((key) => {
+        if (nodeObject) {
+            Object.keys(nodeObject).forEach((key) => {
     
-                // Get all tags and its corresponding language code
-                // Tagids need to be recomputed, so shouldn't be rendered
-                // Eg: tags_fr
-    
-                if (key.startsWith('tags') && 
-                    !key.includes('ids')) {
-                        extractedLanguageCode = key.slice(-2);
-                        originalNodeObject[key].map((tag) => (
+                // Get all tag UUIDs
+                // Ex: tags_en_uuid
+
+                if (key.startsWith('tags') && !key.includes('ids')) {
+                    if (key.endsWith('uuid')) {
+                        // Get all tags and its corresponding language code
+                        // Tagids need to be recomputed, so it shouldn't be rendered
+                        // Eg: tags_fr
+                        extractedLanguageCode = key.split('_').slice(1,-1)[0]
+                        const uuids = nodeObject[key]
+                        const tagsKey = key.split('_').slice(0,-1).join('_')
+                        nodeObject[tagsKey].map((tag, index) => (
                             tagsExtracted.push({
-                                'index' : uuid.v4(),
+                                'index' : uuids[index],
                                 'tag' : tag
                             })
                         ))
                     }
+                }
             })
         }
         setLanguageCode(extractedLanguageCode)
         setRenderedNonEntryInfo(tagsExtracted)
-    }, [originalNodeObject])
+    }, [nodeObject])
     
     // Helper function used for changing state of "preceding_lines"
     function changeDataComment(value) {
