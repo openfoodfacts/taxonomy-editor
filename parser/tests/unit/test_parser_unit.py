@@ -23,7 +23,7 @@ def test_fileiter():
     for counter, (_, line) in enumerate(file):
         assert line == "" or line[0] == "#" or ":" in line
         if counter == 26:
-            assert line == "carbon_footprint_fr_foodges_value:fr:10"
+            assert line == "vegan:en:no"
     assert counter == 37
 
 

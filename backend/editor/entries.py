@@ -273,5 +273,5 @@ def full_text_search(text):
         
         ORDER BY score DESC
     """
-    result = [record["node"] for record in session.run(query, params)]
+    result = [record["node"] for record in get_current_transaction().run(query, params)]
     return result
