@@ -8,6 +8,10 @@ import Home from './pages/home';
 const theme = createTheme({
   typography: {
       fontFamily : 'Plus Jakarta Sans',
+      button: {
+        fontFamily : 'Roboto, Helvetica, Arial, sans-serif',
+        color: '#808080'
+      },
   },
 });
 
