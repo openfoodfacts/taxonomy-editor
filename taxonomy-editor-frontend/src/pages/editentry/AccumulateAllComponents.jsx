@@ -7,6 +7,7 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getIdType } from "./createURL";
+import * as uuid from "uuid";
 
 /**
  * Component used for rendering node information
@@ -27,7 +28,23 @@ const AccumulateAllComponents = ({ id }) => {
 
     // Setting state of node after fetch
     useEffect(() => {
-        setNodeObject(node?.[0]);
+        if (node) {
+            const duplicateNode = {...node[0]}
+            // Adding UUIDs for tags and properties
+            Object.keys(node[0]).forEach((key) => {
+                if (key.startsWith('tags') && !key.includes('ids') && !key.includes('str')) {
+                    duplicateNode[key+'_uuid'] = [];
+                    duplicateNode[key].forEach(() => {
+                        duplicateNode[key+'_uuid'].push(uuid.v4());
+                    })
+                }
+                else if (key.startsWith('prop')) {
+                    duplicateNode[key+'_uuid'] = [uuid.v4()];
+                }
+            })
+            console.log(duplicateNode)
+            setNodeObject(duplicateNode);
+        }
     }, [node])
 
     // Displaying error messages if any
@@ -47,15 +64,22 @@ const AccumulateAllComponents = ({ id }) => {
     const handleSubmit = () => {
         if (!nodeObject) return
         const {id, ...data} = nodeObject // ID not allowed in POST
-        let allUrlsAndData = [[url, data]]
+        const dataToBeSent = {};
+        // Remove UUIDs from data
+        Object.keys(data).forEach((key) => {
+            if (!key.endsWith('uuid')) {
+                dataToBeSent[key] = data[key];
+            }
+        })
+        const allUrlsAndData = [[url, dataToBeSent]]
         if (isEntry) {
             allUrlsAndData.push([url+'children/', updateChildren])
         }
-        Promise.all(allUrlsAndData.map(([url, data]) => {
+        Promise.all(allUrlsAndData.map(([url, dataToBeSent]) => {
             return fetch(url, {
                 method : 'POST',
                 headers: {"Content-Type" : "application/json"},
-                body: JSON.stringify(data)
+                body: JSON.stringify(dataToBeSent)
             })
         })).then(() => {
             setOpen(true);
