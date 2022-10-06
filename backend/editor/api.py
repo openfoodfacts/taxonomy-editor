@@ -2,7 +2,7 @@
 Taxonomy Editor Backend API
 """
 # Required imports
-#---------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------#
 from datetime import datetime
 
 # FastAPI
@@ -15,7 +15,7 @@ from .models import Header, Footer
 # DB helper imports
 from . import graph_db
 from .entries import TaxonomyGraph
-#---------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------#
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
 
