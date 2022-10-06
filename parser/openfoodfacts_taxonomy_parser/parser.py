@@ -24,31 +24,34 @@ class Parser:
             self.driver.session()
         )  # Doesn't create error even if there is no active database
 
-    def create_headernode(self, header):
-        """create the node for the header"""
-        query = """
-                CREATE (n:TEXT {id: '__header__' })
+    def create_headernode(self, header, multi_label):
+        """Create the node for the header"""
+        query = f"""
+                CREATE (n:{multi_label}:TEXT)
+                SET n.id = '__header__'
                 SET n.preceding_lines= $header
                 SET n.src_position= 1
             """
         self.session.run(query, header=header)
 
-    def create_node(self, data):
-        """run the query to create the node with data dictionary"""
+    def create_node(self, data, multi_label):
+        """Run the query to create the node with data dictionary"""
         position_query = """
+            SET n.id = $id
             SET n.is_before = $is_before
-            SET n.preceding_lines= $preceding_lines
-            SET n.src_position= $src_position
+            SET n.preceding_lines = $preceding_lines
+            SET n.src_position = $src_position
         """
         entry_query = ""
         if data["id"] == "__footer__":
-            id_query = " CREATE (n:TEXT {id: $id }) \n "
+            id_query = f" CREATE (n:{multi_label}:TEXT) \n "
         elif data["id"].startswith("synonyms"):
-            id_query = " CREATE (n:SYNONYMS {id: $id }) \n "
+            id_query = f" CREATE (n:{multi_label}:SYNONYMS) \n "
         elif data["id"].startswith("stopwords"):
-            id_query = " CREATE (n:STOPWORDS {id: $id }) \n "
+            id_query = f" CREATE (n:{multi_label}:STOPWORDS) \n "
         else:
-            id_query = " CREATE (n:ENTRY {id: $id , main_language : $main_language}) \n "
+            id_query = f" CREATE (n:{multi_label}:ENTRY) \n "
+            position_query += " SET n.main_language = $main_language "
             if data["parent_tag"]:
                 entry_query += " SET n.parents = $parent_tag \n"
             for key in data:
@@ -63,11 +66,15 @@ class Parser:
         self.session.run(query, data, is_before=self.is_before)
 
     def normalized_filename(self, filename):
-        """add the .txt extension if it is missing in the filename"""
+        """Add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
+    def create_multi_label(self, filename, branch_name):
+        """Create a combined label with taxonomy name and branch name"""
+        return ("t_" + filename[:-4]) + ":" + ("b_" + branch_name)
+
     def file_iter(self, filename, start=0):
-        """generator to get the file line by line"""
+        """Generator to get the file line by line"""
         with open(filename, "r", encoding="utf8") as file:
             for line_number, line in enumerate(file):
                 if line_number < start:
@@ -87,35 +94,35 @@ class Parser:
                 yield line_number, line
         yield line_number, ""  # to end the last entry if not ended
 
-    def normalizing(self, line, lang="default"):
-        """normalize a string depending of the language code lang"""
+    def normalizing(self, line, lang="default", char="-"):
+        """Normalize a string depending on the language code"""
         line = unicodedata.normalize("NFC", line)
 
-        # removing accent
+        # Removing accent
         if lang in ["fr", "ca", "es", "it", "nl", "pt", "sk", "en"]:
-            line = re.sub(r"[¢£¤¥§©ª®°²³µ¶¹º¼½¾×‰€™]", "-", line)
+            line = re.sub(r"[¢£¤¥§©ª®°²³µ¶¹º¼½¾×‰€™]", char, line)
             line = unidecode.unidecode(line)
 
-        # lower case except if language in list
+        # Lower case except if language in list
         if lang not in []:
             line = line.lower()
 
-        # changing unwanted character to "-"
-        line = re.sub(r"[\u0000-\u0027\u200b]", "-", line)
-        line = re.sub(r"&\w+;", "-", line)
+        # Changing unwanted character to "-"
+        line = re.sub(r"[\u0000-\u0027\u200b]", char, line)
+        line = re.sub(r"&\w+;", char, line)
         line = re.sub(
             r"[\s!\"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]",  # noqa: E501
-            "-",
+            char,
             line,
         )
 
-        # removing excess "-"
-        line = re.sub(r"-+", "-", line)
-        line = line.strip("-")
+        # Removing excess "-"
+        line = re.sub(r"-+", char, line)
+        line = line.strip(char)
         return line
 
     def remove_stopwords(self, lc, words):
-        """to remove the stopwords that were read at the beginning of the file"""
+        """Remove the stopwords that were read at the beginning of the file"""
         # First check if this language has stopwords
         if lc in self.stopwords:
             words_to_remove = self.stopwords[lc]
@@ -128,7 +135,8 @@ class Parser:
             return words
 
     def add_line(self, line):
-        """to get a normalized string but keeping the language code "lc:" ,
+        """
+        Get a normalized string but keeping the language code "lc:",
         used for id and parent tag
         """
         lc, line = line.split(":", 1)
@@ -137,7 +145,7 @@ class Parser:
         return new_line
 
     def get_lc_value(self, line):
-        """to get the language code "lc" and a list of normalized values"""
+        """Get the language code "lc" and a list of normalized values"""
         lc, line = line.split(":", 1)
         new_line = []
         for word in line.split(","):
@@ -163,7 +171,8 @@ class Parser:
         return data
 
     def header_harvest(self, filename):
-        """to harvest the header (comment with #),
+        """
+        Harvest the header (comment with #),
         it has its own function because some header has multiple blocks
         """
         h = 0
@@ -354,26 +363,25 @@ class Parser:
         data["src_position"] = line_number + 1 - len(data["preceding_lines"])
         yield data
 
-    def create_nodes(self, filename):
+    def create_nodes(self, filename, multi_label):
         """Adding nodes to database"""
         logging.info("Creating nodes")
-        filename = self.normalized_filename(filename)
         harvested_data = self.harvest(filename)
-        self.create_headernode(next(harvested_data))
+        self.create_headernode(next(harvested_data), multi_label)
         for entry in harvested_data:
-            self.create_node(entry)
+            self.create_node(entry, multi_label)
 
-    def create_previous_link(self):
+    def create_previous_link(self, multi_label):
         logging.info("Creating 'is_before' links")
-        query = "MATCH(n) WHERE exists(n.is_before) return n.id,n.is_before"
+        query = f"MATCH(n:{multi_label}) WHERE exists(n.is_before) return n.id, n.is_before"
         results = self.session.run(query)
         for result in results:
             id = result["n.id"]
             id_previous = result["n.is_before"]
 
-            query = """
-                MATCH(n) WHERE n.id = $id
-                MATCH(p) WHERE p.id= $id_previous
+            query = f"""
+                MATCH(n:{multi_label}) WHERE n.id = $id
+                MATCH(p:{multi_label}) WHERE p.id= $id_previous
                 CREATE (p)-[r:is_before]->(n)
                 RETURN r
             """
@@ -389,9 +397,9 @@ class Parser:
             elif not relation[0]:
                 logging.error("link not created between %s and %s", id, id_previous)
 
-    def parent_search(self):
+    def parent_search(self, multi_label):
         """Get the parent and the child to link"""
-        query = "match(n) WHERE size(n.parents)>0 return n.id, n.parents"
+        query = f"MATCH (n:{multi_label}:ENTRY) WHERE SIZE(n.parents)>0 RETURN n.id, n.parents"
         results = self.session.run(query)
         for result in results:
             id = result["n.id"]
@@ -399,14 +407,14 @@ class Parser:
             for parent in parent_list:
                 yield parent, id
 
-    def create_child_link(self):
+    def create_child_link(self, multi_label):
         """Create the relations between nodes"""
         logging.info("Creating 'is_child_of' links")
-        for parent, child_id in self.parent_search():
+        for parent, child_id in self.parent_search(multi_label):
             lc, parent_id = parent.split(":")
-            query = """ MATCH(p) WHERE $parent_id IN p.tags_ids_""" + lc
-            query += """
-                MATCH(c) WHERE c.id= $child_id
+            query = f""" MATCH (p:{multi_label}:ENTRY) WHERE $parent_id IN p.tags_ids_""" + lc
+            query += f"""
+                MATCH (c:{multi_label}) WHERE c.id= $child_id
                 CREATE (c)-[r:is_child_of]->(p)
                 RETURN r
             """
@@ -418,27 +426,32 @@ class Parser:
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
         self.session.run(query)
 
-    def create_fulltext_index(self):
-        query = """
-            CREATE FULLTEXT INDEX nodeSearchIds FOR (n:ENTRY) ON EACH [n.id]
-            OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}
-        """
-        self.session.run(query)
+    def create_fulltext_index(self, multi_label, branch_name):
+        """Create indexes for search"""
+        index_name = multi_label.replace(":", "_")
+        query = [
+            f"""CREATE FULLTEXT INDEX {index_name+'SearchIds'}
+            FOR (n:{'b_'+branch_name}) ON EACH [n.id]\n"""
+        ]
+        query.append("""OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}""")
+        self.session.run("".join(query))
 
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
         tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = (
-            f"""CREATE FULLTEXT INDEX nodeSearchTags FOR (n:ENTRY) ON EACH [{tags_prefixed_lc}]"""
-        )
+        query = f"""CREATE FULLTEXT INDEX {index_name+'SearchTags'}
+            FOR (n:{'b_'+branch_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 
-    def __call__(self, filename):
-        """process the file"""
-        self.create_nodes(filename)
-        self.create_child_link()
-        self.create_previous_link()
-        self.create_fulltext_index()
+    def __call__(self, filename, branch_name):
+        """Process the file"""
+        filename = self.normalized_filename(filename)
+        branch_name = self.normalizing(branch_name, char="_")
+        multi_label = self.create_multi_label(filename, branch_name)
+        self.create_nodes(filename, multi_label)
+        self.create_child_link(multi_label)
+        self.create_previous_link(multi_label)
+        self.create_fulltext_index(multi_label, branch_name)
         # self.delete_used_properties()
 
 
@@ -447,5 +460,6 @@ if __name__ == "__main__":
         handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO
     )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
+    branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     parse = Parser()
-    parse(filename)
+    parse(filename, branch_name)
