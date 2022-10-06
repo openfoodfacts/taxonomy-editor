@@ -1,3 +1,6 @@
+"""
+String normalizer
+"""
 import re
 import unicodedata
 import unidecode

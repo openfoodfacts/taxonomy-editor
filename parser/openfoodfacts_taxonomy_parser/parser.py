@@ -430,7 +430,7 @@ class Parser:
         """Create indexes for search"""
         index_name = multi_label.replace(":", "_")
         query = [
-            f"""CREATE FULLTEXT INDEX {index_name+'SearchIds'}
+            f"""CREATE FULLTEXT INDEX {index_name+'_SearchIds'}
             FOR (n:{'b_'+branch_name}) ON EACH [n.id]\n"""
         ]
         query.append("""OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}""")
@@ -439,7 +439,7 @@ class Parser:
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
         tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX {index_name+'SearchTags'}
+        query = f"""CREATE FULLTEXT INDEX {index_name+'_SearchTags'}
             FOR (n:{'b_'+branch_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 

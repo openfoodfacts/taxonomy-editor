@@ -1,3 +1,6 @@
+"""
+Neo4J Transactions manager for DB operations
+"""
 import contextlib
 import contextvars
 from neo4j import GraphDatabase                     # Interface with Neo4J

@@ -1,3 +1,6 @@
+"""
+Custom exceptions for Taxonomy Editor API
+"""
 class TransactionMissingError(RuntimeError):
     """
     Raised when attempting to run a query using null transaction context variable
