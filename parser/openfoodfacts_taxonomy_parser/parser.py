@@ -2,6 +2,7 @@ import logging
 import re
 import sys
 import unicodedata
+from pathlib import Path
 
 import iso639
 import unidecode
@@ -71,7 +72,8 @@ class Parser:
 
     def create_multi_label(self, filename, branch_name):
         """Create a combined label with taxonomy name and branch name"""
-        return ("t_" + filename[:-4]) + ":" + ("b_" + branch_name)
+        filename_without_extension = Path(filename).stem
+        return ("t_" + filename_without_extension) + ":" + ("b_" + branch_name)
 
     def file_iter(self, filename, start=0):
         """Generator to get the file line by line"""

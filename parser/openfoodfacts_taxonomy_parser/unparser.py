@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+
 from neo4j import GraphDatabase
 
 
@@ -13,13 +16,19 @@ class WriteTaxonomy:
         """add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
-    def get_all_nodes(self):
+    def create_multi_label(self, filename, branch_name):
+        """Create a combined label with taxonomy name and branch name"""
+        filename_without_extension = Path(filename).stem
+        return ("t_" + filename_without_extension) + ":" + ("b_" + branch_name)
+
+    def get_all_nodes(self, multi_label):
         """query the database and yield each node with its parents,
         this function use the relationships between nodes"""
-        query = """
+        query = f"""
             MATCH path = ShortestPath(
-                (h:TEXT{id:"__header__"})-[:is_before*]->(f:TEXT{id:"__footer__"})
+                (h:{multi_label}:TEXT)-[:is_before*]->(f:{multi_label}:TEXT)
             )
+            WHERE h.id="__header__" AND f.id="__footer__"
             UNWIND nodes(path) AS n
             RETURN n , [(n)-[:is_child_of]->(m) | m ]
         """
@@ -71,9 +80,9 @@ class WriteTaxonomy:
             parent_id = parent["tags_" + lc][0]
             yield "<" + lc + ":" + parent_id
 
-    def iter_lines(self):
+    def iter_lines(self, multi_label):
         previous_block_id = ""
-        for node, parents in self.get_all_nodes():
+        for node, parents in self.get_all_nodes(multi_label):
             node = dict(node)
             has_content = node["id"] not in ["__header__", "__footer__"]
             # eventually add a blank line but in specific case
@@ -118,14 +127,16 @@ class WriteTaxonomy:
             for line in lines:
                 file.write(line + "\n")
 
-    def __call__(self, filename):
-        lines = self.iter_lines()
+    def __call__(self, filename, branch_name):
+        filename = self.normalized_filename(filename)
+        branch_name = self.normalizing(branch_name, char="_")
+        multi_label = self.create_multi_label(filename, branch_name)
+        lines = self.iter_lines(multi_label)
         self.rewrite_file(filename, lines)
 
 
 if __name__ == "__main__":
-    import sys
-
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
+    branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     write = WriteTaxonomy()
-    write(filename)
+    write(filename, branch_name)

@@ -6,12 +6,13 @@ from openfoodfacts_taxonomy_parser import parser, unparser
 
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
+MULTI_LABEL = "t_test:b_branch"
 
 
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes and relations in the database
-    query = "MATCH (n) DETACH DELETE n"
+    query = f"MATCH (n:{MULTI_LABEL}) DETACH DELETE n"
     neo4j.session().run(query)
 
 
@@ -21,9 +22,9 @@ def test_round_trip():
     session = test_parser.session
 
     # parse taxonomy
-    test_parser(TEST_TAXONOMY_TXT)
+    test_parser(TEST_TAXONOMY_TXT, "branch")
     # just quick check it runs ok with total number of nodes
-    query = "MATCH (n) RETURN COUNT(*)"
+    query = f"MATCH (n:{MULTI_LABEL}) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
@@ -31,7 +32,7 @@ def test_round_trip():
 
     # dump taxonomy back
     test_dumper = unparser.WriteTaxonomy()
-    lines = list(test_dumper.iter_lines())
+    lines = list(test_dumper.iter_lines(MULTI_LABEL))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks

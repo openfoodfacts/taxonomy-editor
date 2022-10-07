@@ -5,13 +5,14 @@ import pytest
 from openfoodfacts_taxonomy_parser import parser
 
 # taxonomy in text format : test.txt
-TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test")
+TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
+MULTI_LABEL = "t_test:b_branch"
 
 
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes and relations in the database
-    query = "MATCH (n) DETACH DELETE n"
+    query = f"MATCH (n:{MULTI_LABEL}) DETACH DELETE n"
     neo4j.session().run(query)
 
 
@@ -20,22 +21,22 @@ def test_calling():
     session = test_parser.session
 
     # Create node test
-    test_parser.create_nodes(TEST_TAXONOMY_TXT)
+    test_parser.create_nodes(TEST_TAXONOMY_TXT, MULTI_LABEL)
 
     # total number of nodes
-    query = "MATCH (n) RETURN COUNT(*)"
+    query = f"MATCH (n:{MULTI_LABEL}) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
 
     # header correctly added
-    query = "MATCH (n) WHERE n.id = '__header__' RETURN n.preceding_lines"
+    query = f"MATCH (n:{MULTI_LABEL}) WHERE n.id = '__header__' RETURN n.preceding_lines"
     result = session.run(query)
     header = result.value()[0]
     assert header == ["# test taxonomy"]
 
     # synonyms correctly added
-    query = "MATCH (n:SYNONYMS) RETURN n ORDER BY n.src_position"
+    query = f"MATCH (n:{MULTI_LABEL}:SYNONYMS) RETURN n ORDER BY n.src_position"
     results = session.run(query)
     expected_synonyms = [
         {
@@ -59,7 +60,7 @@ def test_calling():
             assert node[key] == expected_synonyms[i][key]
 
     # stopwords correctly added
-    query = "MATCH (n:STOPWORDS) RETURN n"
+    query = f"MATCH (n:{MULTI_LABEL}:STOPWORDS) RETURN n"
     results = session.run(query)
     expected_stopwords = {
         "id": "stopwords:0",
@@ -73,8 +74,8 @@ def test_calling():
 
     # entries correctly added
     # check for two of them
-    query = """
-        MATCH (n:ENTRY)
+    query = f"""
+        MATCH (n:{MULTI_LABEL}:ENTRY)
         WHERE n.id='en:banana-yogurts'
         OR n.id='en:meat'
         RETURN n
@@ -103,8 +104,8 @@ def test_calling():
             assert node[key] == expected_entries[i][key]
 
     # Child link test
-    test_parser.create_child_link()  # nodes already added
-    query = "MATCH (c)-[:is_child_of]->(p) RETURN c.id, p.id"
+    test_parser.create_child_link(MULTI_LABEL)  # nodes already added
+    query = f"MATCH (c:{MULTI_LABEL})-[:is_child_of]->(p:{MULTI_LABEL}) RETURN c.id, p.id"
     results = session.run(query)
     created_pairs = results.values()
 
@@ -125,8 +126,8 @@ def test_calling():
         assert pair in expected_pairs
 
     # Order link test
-    test_parser.create_previous_link()
-    query = "MATCH (n)-[:is_before]->(p) RETURN n.id, p.id "
+    test_parser.create_previous_link(MULTI_LABEL)
+    query = f"MATCH (n:{MULTI_LABEL})-[:is_before]->(p:{MULTI_LABEL}) RETURN n.id, p.id "
     results = session.run(query)
     created_pairs = results.values()
 
