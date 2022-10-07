@@ -21,17 +21,16 @@ const AccumulateAllComponents = ({ id }) => {
     const isEntry = getIdType(id) === 'entry';
 
     const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
-    const originalNodeObject = node?.[0]; // Storing original node information
-    const [updatedNodeObject, setUpdatedNodeObject] = useState(null); // Storing updates to node
+    const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
 
     // Setting state of node after fetch
     useEffect(() => {
-        setUpdatedNodeObject(node?.[0]);
+        setNodeObject(node?.[0]);
     }, [node])
 
-    // Displaying errorMessages if any
+    // Displaying error messages if any
     if (isError) {
         return (<Typography sx={{ml: 4}} variant='h5'>{errorMessage}</Typography>)
     }
@@ -46,7 +45,8 @@ const AccumulateAllComponents = ({ id }) => {
 
     // Function handling updation of node
     const handleSubmit = () => {
-        const {id, ...data} = updatedNodeObject // ID not allowed in POST
+        if (!nodeObject) return
+        const {id, ...data} = nodeObject // ID not allowed in POST
         let allUrlsAndData = [[url, data]]
         if (isEntry) {
             allUrlsAndData.push([url+'children/', updateChildren])
@@ -66,13 +66,13 @@ const AccumulateAllComponents = ({ id }) => {
             {/* Based on isEntry, respective components are rendered */}
             { isEntry ? 
                 <Box>
-                    { !!originalNodeObject &&
+                    { !!nodeObject &&
                         <>  <ListEntryParents url={url+'parents'} />
                             <ListEntryChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
-                            <ListTranslations nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={originalNodeObject} /> 
-                            <ListAllEntryProperties nodeObject={updatedNodeObject} setNodeObject={setUpdatedNodeObject} originalNodeObject={originalNodeObject} /> </> }
+                            <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
+                            <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :
-                <>  <ListAllNonEntryInfo nodeObject={updatedNodeObject} id={id} setNodeObject={setUpdatedNodeObject} originalNodeObject={originalNodeObject} /> </>
+                <>  <ListAllNonEntryInfo nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
             }
             {/* Button for submitting edits */}
             <Button

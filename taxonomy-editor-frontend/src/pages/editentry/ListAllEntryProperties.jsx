@@ -3,31 +3,36 @@ import MaterialTable, { MTableToolbar } from '@material-table/core';
 import { useEffect, useState } from "react";
 import * as uuid from "uuid";
 
-const ListAllEntryProperties = ({ nodeObject, setNodeObject, originalNodeObject }) => {
+const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     const [data, setData] = useState([]);
 
     // Changes the properties to be rendered
-    // Dependent on changes occuring in "originalNodeObject"
+    // Dependent on changes occuring in "nodeObject"
     useEffect(() => {
         let renderedProperties = []
-        Object.keys(originalNodeObject).forEach((key) => {
+        Object.keys(nodeObject).forEach((key) => {
+            // Collecting uuids of properties
+            // UUID of properties will have a "_uuid" suffix
+            // Ex: prop_vegan_en_uuid
 
-            // Collecting keys of properties
-            // Properties have a prefix "prop_" followed by their name
-            // Ex: prop_vegan_en
-            if (key.startsWith('prop')) {
-            
+            if (key.startsWith('prop') && key.endsWith('uuid')) {
+                const uuid = nodeObject[key][0]; // UUID
                 // Removing "prop_" prefix from key to render only the name
-                    let property_name = key.split('_').slice(1).join('_');
-                    renderedProperties.push({
-                        'id': uuid.v4(),
-                        'propertyName': property_name,
-                        'propertyValue': originalNodeObject[key]
-                    })
-                }
+                const property_name = key.split('_').slice(1, -1).join('_');
+
+                // Properties have a prefix "prop_" followed by their name
+                // Getting key for accessing property value
+                const property_key = "prop_" + property_name
+
+                renderedProperties.push({
+                    'id': uuid,
+                    'propertyName': property_name,
+                    'propertyValue': nodeObject[property_key]
+                })
+            }
         });
         setData(renderedProperties);
-    }, [originalNodeObject])
+    }, [nodeObject])
 
     // Helper function used for changing comments from node
     function changeCommentData(value) {
