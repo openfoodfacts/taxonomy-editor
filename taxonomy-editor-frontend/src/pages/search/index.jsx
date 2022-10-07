@@ -2,44 +2,46 @@ import { Typography, Box, TextField, Grid, IconButton, InputAdornment } from "@m
 import SearchIcon from '@mui/icons-material/Search';
 import Container from '@mui/material/Container';
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import SearchResults from "./results";
 
 const SearchNode = () => {
-    const [query, setQuery] = useState("");
-    const [isDisabled, setIsDisabled] = useState(true);
-    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    let queryString = searchParams.get('query');
+    if (queryString === "") queryString = "\"\""
 
+    const [query, setQuery] = useState("");
+    const navigate = useNavigate();
     return (
+      <Box>
         <Container component="main" maxWidth="xs">
             <Grid
             container
-            spacing={0}
             direction="column"
             alignItems="center"
             justifyContent="center"
-            style={{ minHeight: '75vh' }}
             >
-                <Grid item xs={3}>
-                    <Typography variant="h3">Search</Typography>
+                <Grid item xs={3} sx={{mt: 4}}>
+                     <Typography variant="h3">Search</Typography>
                 </Grid>
                 <Box
                   component="img"
                   sx={{mt: 2}}
-                  width={128} 
-                  height={128}
+                  width={100} 
+                  height={100}
                   src={require('../../assets/classification.png')} 
                   alt="Classification Logo" 
                 />
                 <TextField
-                    sx={{mt: 4}}
+                    sx={{mt: 3}}
                     InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                                disabled={isDisabled}
+                                disabled={query.trim().length === 0}
                                 component={Link}
                                 to={{
-                                  pathname: '/results',
+                                  pathname: '/search',
                                   search: `?query=${query}`
                                 }}
                             >
@@ -50,18 +52,18 @@ const SearchNode = () => {
                       }}
                     fullWidth
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !isDisabled) {
-                        navigate(`/results?query=${query}`)
+                      if (e.key === "Enter" && query.trim().length !== 0) {
+                        navigate(`/search?query=${query}`)
                       }
                     }}
                     onChange = {event => {
-                        if (event.target.value === "") setIsDisabled(true)
-                        else setIsDisabled(false)
-                        setQuery(event.target.value)
+                        setQuery(event.target.value.trim())
                     }}
                     value={query} />
             </Grid>
         </Container>
+        {queryString !== null && <SearchResults query={queryString}/>}
+      </Box>
     );
 }
 

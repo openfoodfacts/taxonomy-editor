@@ -78,7 +78,7 @@ const AccumulateAllComponents = ({ id }) => {
             <Button
                 variant="contained"
                 onClick={handleSubmit}
-                sx={{ml: 4, mt:2, width: 130}}>
+                sx={{ml: 4, mt:2, width: 130, mb: 2}}>
                     Submit
             </Button>
             {/* Snackbar for acknowledgment of update */}

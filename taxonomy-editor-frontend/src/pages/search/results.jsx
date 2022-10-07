@@ -1,8 +1,9 @@
+import { Typography, Box, TextField, Grid, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { API_URL } from "../../constants";
-import { Typography, Box, TextField, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
+import Container from '@mui/material/Container';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -19,10 +20,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 
-const SearchResults = () => {
-    const [searchParams] = useSearchParams();
-    let query = searchParams.get('query');
-    if (query === "") query = "\"\""
+const SearchResults = ({query}) => {
     const url = API_URL+`search?query=${query}`
     const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
@@ -56,7 +54,7 @@ const SearchResults = () => {
             handleCloseAddDialog();
             handleOpenSuccessDialog();
         }).catch((errorMessage) => {
-            console.log(errorMessage);
+            // Do nothing
         })
     }
 
@@ -67,141 +65,161 @@ const SearchResults = () => {
 
     // Loading...
     if (isPending) {
-        return (<Typography variant='h5'>Loading..</Typography>)
+        return (
+            <Container component="main" maxWidth="xs">
+            <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            >
+                <Typography variant='h5'>Loading..</Typography>
+                </Grid>   
+            </Container>
+        )
     }
 
     return (
         <Box>
-            <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
-                Search Results
-            </Typography>
-            <Typography variant="h6" sx={{mt: 2, ml: 2, mb: 1}}>
+            <Container component="main" maxWidth="xs">
+            <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            >
+                <Grid item xs={3} sx={{mt: 4}}>
+                     <Typography variant="h4">Search Results</Typography>
+                </Grid>
+                <Typography variant="h6" sx={{mt: 2, mb: 1}}>
                 Number of nodes found: {nodes.length}
-            </Typography>
-            {/* Table for listing all nodes in taxonomy */}
-            <TableContainer sx={{ml: 2, width: 400}} component={Paper}>
-                <Table>
-                    <TableHead>
-                    <TableRow>
-                        <Stack direction="row" alignItems="center">
+                </Typography>
+                {/* Table for listing all nodes in taxonomy */}
+                <TableContainer sx={{ml: 2, width: 400}} component={Paper}>
+                    <Table>
+                        <TableHead>
+                        <TableRow>
+                            <Stack direction="row" alignItems="center">
+                                <TableCell align="left">
+                                <Typography variant="h6">
+                                    Nodes
+                                </Typography>
+                                </TableCell>
+                                <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenAddDialog}>
+                                    <AddBoxIcon />
+                                </IconButton>
+                            </Stack>
                             <TableCell align="left">
                             <Typography variant="h6">
-                                Nodes
+                                Action
                             </Typography>
                             </TableCell>
-                            <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenAddDialog}>
-                                <AddBoxIcon />
-                            </IconButton>
-                        </Stack>
-                        <TableCell align="left">
-                        <Typography variant="h6">
-                            Action
-                        </Typography>
-                        </TableCell>
-                    </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {nodes.map((node) => (
-                            <TableRow
-                            key={node}
+                        </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {nodes.map((node) => (
+                                <TableRow
+                                key={node}
+                                >
+                                    <TableCell align="left" component="td" scope="row">
+                                        <Typography variant="subtitle1">
+                                            {node}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="left" component="td" scope="row">
+                                        <IconButton onClick={event => handleClick(event, node) } aria-label="edit">
+                                            <EditIcon color="primary"/>
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                {/* Dialog box for adding nodes */}
+                <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
+                    <DialogTitle>Add a node</DialogTitle>
+                    <DialogContent>
+                    <Stack direction="row" alignItems="center" sx={{mt: 1, ml: 2, mr: 2, mb: 2}}>
+                        <Typography>Type of node</Typography>
+                        <FormControl sx={{ml: 6.5}}>
+                            <InputLabel>Type</InputLabel>
+                            <Select
+                                native
+                                label="Type"
+                                value={nodeType}
+                                onChange={(e) => {
+                                    setNodeType(e.target.value);
+                                }}
                             >
-                                <TableCell align="left" component="td" scope="row">
-                                    <Typography variant="subtitle1">
-                                        {node}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell align="left" component="td" scope="row">
-                                    <IconButton onClick={event => handleClick(event, node) } aria-label="edit">
-                                        <EditIcon color="primary"/>
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            {/* Dialog box for adding nodes */}
-            <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
-                <DialogTitle>Add a node</DialogTitle>
-                <DialogContent>
-                <Stack direction="row" alignItems="center" sx={{mt: 1, ml: 2, mr: 2, mb: 2}}>
-                    <Typography>Type of node</Typography>
-                    <FormControl sx={{ml: 6.5}}>
-                        <InputLabel>Type</InputLabel>
-                        <Select
-                            native
-                            label="Type"
-                            value={nodeType}
-                            onChange={(e) => {
-                                setNodeType(e.target.value);
-                            }}
-                        >
-                            {/* TODO: Add support for synonyms and stopwords */}
-                            <option value={'entry'}>Entry</option>
-                        </Select>
-                    </FormControl>
-                </Stack>
-                <Stack direction="row" alignItems="center" sx={{m: 2}}>
-                    <Typography>Main Language</Typography>
-                    <TextField
-                        onChange={(e) => { 
-                            setNewLanguageCode(e.target.value);
-                            const validateBool = ISO6391.validate(e.target.value);
-                            validateBool ? setisValidLC(true) : setisValidLC(false);
-                            validateBool ? setBtnDisabled(false) : setBtnDisabled(true);
-                        }}
-                        label="Language Code"
-                        error={!isValidLC}
-                        sx={{width : 150, ml: 4.5}}
-                        size="small"
-                        variant="outlined"
-                    />
-                </Stack>
-                {
-                    nodeType === 'entry' &&
-                    <Stack direction="row" alignItems="center" sx={{mt: 2, ml: 2, mr: 2}}>
-                    <Typography>Node ID</Typography>
-                    <TextField
-                        onChange={(e) => { 
-                            setnewNode(e.target.value);
-                        }}
-                        label="Node ID"
-                        sx={{width : 150, ml: 11}}
-                        size="small"
-                        variant="outlined"
-                    />
+                                {/* TODO: Add support for synonyms and stopwords */}
+                                <option value={'entry'}>Entry</option>
+                            </Select>
+                        </FormControl>
                     </Stack>
-                }
-                </DialogContent>
-                <DialogActions>
-                <Button onClick={handleCloseAddDialog}>Cancel</Button>
-                <Button 
-                    disabled={btnDisabled}
-                    onClick={(e) => {handleAddNode(e)}}>
-                        Add
-                </Button>
-                </DialogActions>
-            </Dialog>
-            {/* Dialog box for acknowledgement of addition of node */}
-            <Dialog
-                open={openSuccessDialog}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">
-                {"Your edits have been saved!"}
-                </DialogTitle>
-                <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                    The node {newNode} has been successfully added.
-                </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                <Button onClick={handleCloseSuccessDialog} autoFocus>
-                    Continue
-                </Button>
-                </DialogActions>
-            </Dialog>
+                    <Stack direction="row" alignItems="center" sx={{m: 2}}>
+                        <Typography>Main Language</Typography>
+                        <TextField
+                            onChange={(e) => { 
+                                setNewLanguageCode(e.target.value);
+                                const validateBool = ISO6391.validate(e.target.value);
+                                validateBool ? setisValidLC(true) : setisValidLC(false);
+                                validateBool ? setBtnDisabled(false) : setBtnDisabled(true);
+                            }}
+                            label="Language Code"
+                            error={!isValidLC}
+                            sx={{width : 150, ml: 4.5}}
+                            size="small"
+                            variant="outlined"
+                        />
+                    </Stack>
+                    {
+                        nodeType === 'entry' &&
+                        <Stack direction="row" alignItems="center" sx={{mt: 2, ml: 2, mr: 2}}>
+                        <Typography>Node ID</Typography>
+                        <TextField
+                            onChange={(e) => { 
+                                setnewNode(e.target.value);
+                            }}
+                            label="Node ID"
+                            sx={{width : 150, ml: 11}}
+                            size="small"
+                            variant="outlined"
+                        />
+                        </Stack>
+                    }
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={handleCloseAddDialog}>Cancel</Button>
+                    <Button 
+                        disabled={btnDisabled}
+                        onClick={(e) => {handleAddNode(e)}}>
+                            Add
+                    </Button>
+                    </DialogActions>
+                </Dialog>
+                {/* Dialog box for acknowledgement of addition of node */}
+                <Dialog
+                    open={openSuccessDialog}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">
+                    {"Your edits have been saved!"}
+                    </DialogTitle>
+                    <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        The node {newNode} has been successfully added.
+                    </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={handleCloseSuccessDialog} autoFocus>
+                        Continue
+                    </Button>
+                    </DialogActions>
+                </Dialog>   
+            </Grid>
+        </Container>
         </Box>
     );
 }
