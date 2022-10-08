@@ -2,8 +2,8 @@
 Database helper functions for API
 """
 import re
-from .graph_db import get_current_transaction   # Neo4J transactions helper
-from .normalizer import normalizing             # Normalizing tags
+from .graph_db import get_current_transaction               # Neo4J transactions helper
+from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
 
 class TaxonomyGraph:
 
@@ -163,7 +163,7 @@ class TaxonomyGraph:
                 raise ValueError("Invalid key: %s", key)
         
         # Get current node information and deleted keys
-        curr_node = self.get_nodes(label, entry, self.multi_label).data()[0]['n']
+        curr_node = self.get_nodes(label, entry).data()[0]['n']
         curr_node_keys = list(curr_node.keys())
         deleted_keys = (set(curr_node_keys) ^ set(new_node_keys))
 
@@ -196,7 +196,7 @@ class TaxonomyGraph:
         Helper function used for updation of node children with given id 
         """
         # Parse node ids from Neo4j Record object
-        current_children = [record["child.id"] for record in list(self.get_children(entry, self.multi_label))]
+        current_children = [record["child.id"] for record in list(self.get_children(entry))]
         deleted_children = set(current_children) - set(new_children_ids)
         added_children = set(new_children_ids) - set(current_children)
 
@@ -216,10 +216,10 @@ class TaxonomyGraph:
 
         for child in to_create:
             main_language_code = child.split(":", 1)[0]
-            self.create_node("ENTRY", child, main_language_code, self.multi_label)
+            self.create_node("ENTRY", child, main_language_code)
             
             # TODO: We would prefer to add the node just after its parent entry
-            self.add_node_to_end("ENTRY", child, self.multi_label)
+            self.add_node_to_end("ENTRY", child)
 
         # Stores result of last query executed
         result = []
@@ -240,7 +240,7 @@ class TaxonomyGraph:
         """
         # Escape special characters
         normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
-        normalized_id_text = normalizing(text)
+        normalized_id_text = normalizer.normalizing(text)
 
         id_index = self.multi_label_search+'_SearchIds'
         tags_index = self.multi_label_search+'_SearchTags'

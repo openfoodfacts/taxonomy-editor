@@ -1,14 +1,12 @@
 import logging
 import re
 import sys
-import unicodedata
-from pathlib import Path
 
 import iso639
-import unidecode
 from neo4j import GraphDatabase
 
 from .exception import DuplicateIDError
+from .normalizer import normalizing
 
 
 def ellipsis(text, max=20):
@@ -70,10 +68,9 @@ class Parser:
         """Add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
-    def create_multi_label(self, filename, branch_name):
+    def create_multi_label(self, taxonomy_name, branch_name):
         """Create a combined label with taxonomy name and branch name"""
-        filename_without_extension = Path(filename).stem
-        return ("t_" + filename_without_extension) + ":" + ("b_" + branch_name)
+        return ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
 
     def file_iter(self, filename, start=0):
         """Generator to get the file line by line"""
@@ -96,33 +93,6 @@ class Parser:
                 yield line_number, line
         yield line_number, ""  # to end the last entry if not ended
 
-    def normalizing(self, line, lang="default", char="-"):
-        """Normalize a string depending on the language code"""
-        line = unicodedata.normalize("NFC", line)
-
-        # Removing accent
-        if lang in ["fr", "ca", "es", "it", "nl", "pt", "sk", "en"]:
-            line = re.sub(r"[¢£¤¥§©ª®°²³µ¶¹º¼½¾×‰€™]", char, line)
-            line = unidecode.unidecode(line)
-
-        # Lower case except if language in list
-        if lang not in []:
-            line = line.lower()
-
-        # Changing unwanted character to "-"
-        line = re.sub(r"[\u0000-\u0027\u200b]", char, line)
-        line = re.sub(r"&\w+;", char, line)
-        line = re.sub(
-            r"[\s!\"#\$%&'()*+,\/:;<=>?@\[\\\]^_`{\|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×ˆ˜–—‘’‚“”„†‡•…‰‹›€™\t]",  # noqa: E501
-            char,
-            line,
-        )
-
-        # Removing excess "-"
-        line = re.sub(r"-+", char, line)
-        line = line.strip(char)
-        return line
-
     def remove_stopwords(self, lc, words):
         """Remove the stopwords that were read at the beginning of the file"""
         # First check if this language has stopwords
@@ -143,7 +113,7 @@ class Parser:
         """
         lc, line = line.split(":", 1)
         new_line = lc + ":"
-        new_line += self.remove_stopwords(lc, self.normalizing(line, lc))
+        new_line += self.remove_stopwords(lc, normalizing(line, lc))
         return new_line
 
     def get_lc_value(self, line):
@@ -151,7 +121,7 @@ class Parser:
         lc, line = line.split(":", 1)
         new_line = []
         for word in line.split(","):
-            new_line.append(self.remove_stopwords(lc, self.normalizing(word, lc)))
+            new_line.append(self.remove_stopwords(lc, normalizing(word, lc)))
         return lc, new_line
 
     def new_node_data(self):
@@ -327,7 +297,7 @@ class Parser:
                     tagsids_list = []
                     for word in line.split(","):
                         tags_list.append(word.strip())
-                        word_normalized = self.remove_stopwords(lang, self.normalizing(word, lang))
+                        word_normalized = self.remove_stopwords(lang, normalizing(word, lang))
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
@@ -432,7 +402,7 @@ class Parser:
         """Create indexes for search"""
         index_name = multi_label.replace(":", "_")
         query = [
-            f"""CREATE FULLTEXT INDEX {index_name+'_SearchIds'}
+            f"""CREATE FULLTEXT INDEX {index_name+'_SearchIds'} IF NOT EXISTS
             FOR (n:{'b_'+branch_name}) ON EACH [n.id]\n"""
         ]
         query.append("""OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}""")
@@ -441,15 +411,15 @@ class Parser:
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
         tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX {index_name+'_SearchTags'}
+        query = f"""CREATE FULLTEXT INDEX {index_name+'_SearchTags'} IF NOT EXISTS
             FOR (n:{'b_'+branch_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 
-    def __call__(self, filename, branch_name):
+    def __call__(self, filename, branch_name, taxonomy_name):
         """Process the file"""
         filename = self.normalized_filename(filename)
-        branch_name = self.normalizing(branch_name, char="_")
-        multi_label = self.create_multi_label(filename, branch_name)
+        branch_name = normalizing(branch_name, char="_")
+        multi_label = self.create_multi_label(taxonomy_name, branch_name)
         self.create_nodes(filename, multi_label)
         self.create_child_link(multi_label)
         self.create_previous_link(multi_label)
@@ -463,5 +433,6 @@ if __name__ == "__main__":
     )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
+    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else "test"
     parse = Parser()
-    parse(filename, branch_name)
+    parse(filename, branch_name, taxonomy_name)

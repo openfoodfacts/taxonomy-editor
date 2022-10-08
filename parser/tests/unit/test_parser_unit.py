@@ -1,6 +1,7 @@
 import pathlib
 
 from openfoodfacts_taxonomy_parser import parser
+from openfoodfacts_taxonomy_parser import normalizer
 
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -30,10 +31,10 @@ def test_fileiter():
 def test_normalizing():
     x = parser.Parser()
     text = "Numéro #1, n°1 des ¾ des Français*"
-    text = x.normalizing(text, "fr")
+    text = normalizer.normalizing(text, "fr")
     assert text == "numero-1-n-1-des-des-francais"
     text = "Randôm Languäge wìth àccénts"
-    normal_text = x.normalizing(text, "fr")
+    normal_text = normalizer.normalizing(text, "fr")
     assert normal_text == "random-language-with-accents"
-    normal_text = x.normalizing(text, "de")
+    normal_text = normalizer.normalizing(text, "de")
     assert normal_text == "randôm-languäge-wìth-àccénts"

@@ -1,7 +1,8 @@
 import sys
-from pathlib import Path
 
 from neo4j import GraphDatabase
+
+from .normalizer import normalizing
 
 
 class WriteTaxonomy:
@@ -16,10 +17,9 @@ class WriteTaxonomy:
         """add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
-    def create_multi_label(self, filename, branch_name):
+    def create_multi_label(self, taxonomy_name, branch_name):
         """Create a combined label with taxonomy name and branch name"""
-        filename_without_extension = Path(filename).stem
-        return ("t_" + filename_without_extension) + ":" + ("b_" + branch_name)
+        return ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
 
     def get_all_nodes(self, multi_label):
         """query the database and yield each node with its parents,
@@ -127,10 +127,10 @@ class WriteTaxonomy:
             for line in lines:
                 file.write(line + "\n")
 
-    def __call__(self, filename, branch_name):
+    def __call__(self, filename, branch_name, taxonomy_name):
         filename = self.normalized_filename(filename)
-        branch_name = self.normalizing(branch_name, char="_")
-        multi_label = self.create_multi_label(filename, branch_name)
+        branch_name = normalizing(branch_name, char="_")
+        multi_label = self.create_multi_label(taxonomy_name, branch_name)
         lines = self.iter_lines(multi_label)
         self.rewrite_file(filename, lines)
 
@@ -138,5 +138,6 @@ class WriteTaxonomy:
 if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
+    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else "test"
     write = WriteTaxonomy()
-    write(filename, branch_name)
+    write(filename, branch_name, taxonomy_name)
