@@ -71,7 +71,7 @@ def test_round_trip():
     assert expected_lines == lines
 
 
-def two_branch_round_trip():
+def test_two_branch_round_trip():
     """test parsing and dumping the same taxonomy with two different branches"""
     test_parser = parser.Parser()
     session = test_parser.session
