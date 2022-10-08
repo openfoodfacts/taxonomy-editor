@@ -1,7 +1,6 @@
 import { Box, Grid, Paper, TextField, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from '@material-table/core';
 import { useEffect, useState } from "react";
-import * as uuid from "uuid";
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     const [data, setData] = useState([]);
@@ -84,7 +83,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                 editable={{
                     onRowAdd: (newRow) => new Promise((resolve, reject) => {
                         // Add new property to rendered rows
-                        const updatedRows = [...data, { id: uuid.v4(), ...newRow }]
+                        const updatedRows = [...data, { id: Math.random().toString(), ...newRow }]
                         setData(updatedRows);
 
                         // Add new key-value pair of a property in nodeObject
