@@ -1,4 +1,4 @@
-import { Typography, Box, TextField, Grid, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
+import { Typography, Snackbar, Alert, Box, TextField, Grid, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -15,7 +15,6 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
@@ -23,13 +22,13 @@ import ISO6391 from 'iso-639-1';
 const SearchResults = ({query}) => {
     const url = API_URL+`search?query=${query}`
     const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
     const [newNode, setnewNode] = useState(null); // Used for storing canonical tag
-    const [isValidLC, setisValidLC] = useState(false); // Used for validating a new LC
+    const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
-    const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-    const [btnDisabled, setBtnDisabled] = useState(true);
+    const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
     const navigate = useNavigate();
 
     // Handler function for button clicks
@@ -40,19 +39,19 @@ const SearchResults = ({query}) => {
     // Helper functions for Dialog component
     function handleCloseAddDialog() { setOpenAddDialog(false); }
     function handleOpenAddDialog() { setOpenAddDialog(true); }
-    function handleCloseSuccessDialog() { setOpenSuccessDialog(false); }
-    function handleOpenSuccessDialog() { setOpenSuccessDialog(true); }
+    function handleOpenSuccessSnackbar() { setOpenSuccessSnackbar(true); }
+    function handleCloseSuccessSnackbar() { setOpenSuccessSnackbar(false); }
     
     function handleAddNode() {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(url, {
+        fetch(API_URL+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
             handleCloseAddDialog();
-            handleOpenSuccessDialog();
+            handleOpenSuccessSnackbar();
         }).catch((errorMessage) => {
             // Do nothing
         })
@@ -60,7 +59,18 @@ const SearchResults = ({query}) => {
 
     // Displaying errorMessages if any
     if (isError) {
-        return (<Typography variant='h5'>{errorMessage}</Typography>)
+        return (
+            <Container component="main" maxWidth="xs">
+            <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            >
+                <Typography sx={{mt: 2}} variant='h5'>{errorMessage}</Typography>
+                </Grid>   
+            </Container>
+        )
     }
 
     // Loading...
@@ -73,7 +83,7 @@ const SearchResults = ({query}) => {
             alignItems="center"
             justifyContent="center"
             >
-                <Typography variant='h5'>Loading..</Typography>
+                <Typography sx={{mt: 2}} variant='h5'>Loading..</Typography>
                 </Grid>   
             </Container>
         )
@@ -95,7 +105,7 @@ const SearchResults = ({query}) => {
                 Number of nodes found: {nodes.length}
                 </Typography>
                 {/* Table for listing all nodes in taxonomy */}
-                <TableContainer sx={{ml: 2, width: 400}} component={Paper}>
+                <TableContainer sx={{width: 375}} component={Paper}>
                     <Table>
                         <TableHead>
                         <TableRow>
@@ -117,17 +127,17 @@ const SearchResults = ({query}) => {
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                            {nodes.map((node) => (
+                            {nodes.map((nodeID) => (
                                 <TableRow
-                                key={node}
+                                key={nodeID}
                                 >
                                     <TableCell align="left" component="td" scope="row">
                                         <Typography variant="subtitle1">
-                                            {node}
+                                            {nodeID}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="left" component="td" scope="row">
-                                        <IconButton onClick={event => handleClick(event, node) } aria-label="edit">
+                                        <IconButton onClick={event => handleClick(event, nodeID) } aria-label="edit">
                                             <EditIcon color="primary"/>
                                         </IconButton>
                                     </TableCell>
@@ -163,11 +173,14 @@ const SearchResults = ({query}) => {
                             onChange={(e) => { 
                                 setNewLanguageCode(e.target.value);
                                 const validateBool = ISO6391.validate(e.target.value);
-                                validateBool ? setisValidLC(true) : setisValidLC(false);
-                                validateBool ? setBtnDisabled(false) : setBtnDisabled(true);
+                                if (validateBool) {
+                                    setIsValidLanguageCode(true);
+                                } else {
+                                    setIsValidLanguageCode(false);
+                                }
                             }}
                             label="Language Code"
-                            error={!isValidLC}
+                            error={!isValidLanguageCode}
                             sx={{width : 150, ml: 4.5}}
                             size="small"
                             variant="outlined"
@@ -192,32 +205,23 @@ const SearchResults = ({query}) => {
                     <DialogActions>
                     <Button onClick={handleCloseAddDialog}>Cancel</Button>
                     <Button 
-                        disabled={btnDisabled}
+                        disabled={!isValidLanguageCode}
                         onClick={(e) => {handleAddNode(e)}}>
                             Add
                     </Button>
                     </DialogActions>
                 </Dialog>
-                {/* Dialog box for acknowledgement of addition of node */}
-                <Dialog
-                    open={openSuccessDialog}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
+                {/* Snackbar for acknowledgment of addition of node */}
+                <Snackbar 
+                    anchorOrigin={{vertical: 'top', horizontal: 'right'}} 
+                    open={openSuccessSnackbar} 
+                    autoHideDuration={3000} 
+                    onClose={handleCloseSuccessSnackbar}
                 >
-                    <DialogTitle id="alert-dialog-title">
-                    {"Your edits have been saved!"}
-                    </DialogTitle>
-                    <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        The node {newNode} has been successfully added.
-                    </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                    <Button onClick={handleCloseSuccessDialog} autoFocus>
-                        Continue
-                    </Button>
-                    </DialogActions>
-                </Dialog>   
+                    <Alert elevation={6} variant="filled" onClose={handleCloseSuccessSnackbar} severity="success">
+                        The node has been successfully added!
+                    </Alert>
+                </Snackbar>
             </Grid>
         </Container>
         </Box>

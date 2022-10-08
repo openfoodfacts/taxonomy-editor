@@ -1,20 +1,14 @@
 import { Typography, Box, TextField, Grid, IconButton, InputAdornment } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import Container from '@mui/material/Container';
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import SearchResults from "./results";
 
 const SearchNode = () => {
-    const [searchParams] = useSearchParams();
-    let queryString = searchParams.get('query');
-    if (queryString === "") queryString = "\"\""
-
     const [query, setQuery] = useState("");
-    const navigate = useNavigate();
+    const [queryToBeSent, setQueryToBeSent] = useState(null);
     return (
       <Box>
-        <Container component="main" maxWidth="xs">
+        {/* <Container component="main" maxWidth="xs"> */}
             <Grid
             container
             direction="column"
@@ -32,37 +26,34 @@ const SearchNode = () => {
                   src={require('../../assets/classification.png')} 
                   alt="Classification Logo" 
                 />
-                <TextField
-                    sx={{mt: 3}}
+                <form onSubmit={(event) => {event.preventDefault(); setQueryToBeSent(query)}}>
+                  <TextField
+                    sx={{mt: 3, width: 350}}
                     InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                                disabled={query.trim().length === 0}
-                                component={Link}
-                                to={{
-                                  pathname: '/search',
-                                  search: `?query=${query}`
-                                }}
+                                disabled={query.length === 0}
+                                type="submit"
                             >
                               <SearchIcon />
                             </IconButton>
                           </InputAdornment>
                         )
                       }}
-                    fullWidth
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && query.trim().length !== 0) {
-                        navigate(`/search?query=${query}`)
+                      if (e.keyCode === 13 && query.length !== 0) {
+                        setQueryToBeSent(query)
                       }
                     }}
                     onChange = {event => {
                         setQuery(event.target.value.trim())
                     }}
                     value={query} />
+                </form>
             </Grid>
-        </Container>
-        {queryString !== null && <SearchResults query={queryString}/>}
+        {/* </Container> */}
+        {queryToBeSent !== null && <SearchResults query={queryToBeSent}/>}
       </Box>
     );
 }
