@@ -1,6 +1,6 @@
 import { Typography, Snackbar, Alert, Box, TextField, Grid, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { API_URL } from "../../constants";
 import Container from '@mui/material/Container';
@@ -20,8 +20,7 @@ import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 
 const SearchResults = ({query}) => {
-    const url = API_URL+`search?query=${query}`
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+    const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}search?query=${encodeURI(query)}`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -29,13 +28,7 @@ const SearchResults = ({query}) => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
-    const navigate = useNavigate();
 
-    // Handler function for button clicks
-    const handleClick = (event, id) => {
-        event.preventDefault();
-        navigate('/entry/'+id);
-    }
     // Helper functions for Dialog component
     function handleCloseAddDialog() { setOpenAddDialog(false); }
     function handleOpenAddDialog() { setOpenAddDialog(true); }
@@ -76,7 +69,6 @@ const SearchResults = ({query}) => {
     // Loading...
     if (isPending) {
         return (
-            <Container component="main" maxWidth="xs">
             <Grid
             container
             direction="column"
@@ -84,14 +76,12 @@ const SearchResults = ({query}) => {
             justifyContent="center"
             >
                 <Typography sx={{mt: 2}} variant='h5'>Loading..</Typography>
-                </Grid>   
-            </Container>
+            </Grid>   
         )
     }
 
     return (
         <Box>
-            <Container component="main" maxWidth="xs">
             <Grid
             container
             direction="column"
@@ -102,7 +92,7 @@ const SearchResults = ({query}) => {
                      <Typography variant="h4">Search Results</Typography>
                 </Grid>
                 <Typography variant="h6" sx={{mt: 2, mb: 1}}>
-                Number of nodes found: {nodes.length}
+                Number of nodes found: {nodeIds.length}
                 </Typography>
                 {/* Table for listing all nodes in taxonomy */}
                 <TableContainer sx={{width: 375}} component={Paper}>
@@ -127,17 +117,20 @@ const SearchResults = ({query}) => {
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                            {nodes.map((nodeID) => (
+                            {nodeIds.map((nodeId) => (
                                 <TableRow
-                                key={nodeID}
+                                key={nodeId}
                                 >
                                     <TableCell align="left" component="td" scope="row">
                                         <Typography variant="subtitle1">
-                                            {nodeID}
+                                            {nodeId}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="left" component="td" scope="row">
-                                        <IconButton onClick={event => handleClick(event, nodeID) } aria-label="edit">
+                                        <IconButton 
+                                            component={Link}
+                                            to={`/entry/${nodeId}`}
+                                            aria-label="edit">
                                             <EditIcon color="primary"/>
                                         </IconButton>
                                     </TableCell>
@@ -152,7 +145,7 @@ const SearchResults = ({query}) => {
                     <DialogContent>
                     <Stack direction="row" alignItems="center" sx={{mt: 1, ml: 2, mr: 2, mb: 2}}>
                         <Typography>Type of node</Typography>
-                        <FormControl sx={{ml: 6.5}}>
+                        <FormControl sx={{ml: 7}}>
                             <InputLabel>Type</InputLabel>
                             <Select
                                 native
@@ -172,16 +165,11 @@ const SearchResults = ({query}) => {
                         <TextField
                             onChange={(e) => { 
                                 setNewLanguageCode(e.target.value);
-                                const validateBool = ISO6391.validate(e.target.value);
-                                if (validateBool) {
-                                    setIsValidLanguageCode(true);
-                                } else {
-                                    setIsValidLanguageCode(false);
-                                }
+                                setIsValidLanguageCode(ISO6391.validate(e.target.value));
                             }}
                             label="Language Code"
                             error={!isValidLanguageCode}
-                            sx={{width : 150, ml: 4.5}}
+                            sx={{width : 150, ml: 5}}
                             size="small"
                             variant="outlined"
                         />
@@ -195,7 +183,7 @@ const SearchResults = ({query}) => {
                                 setnewNode(e.target.value);
                             }}
                             label="Node ID"
-                            sx={{width : 150, ml: 11}}
+                            sx={{width : 150, ml: 11.5}}
                             size="small"
                             variant="outlined"
                         />
@@ -223,7 +211,6 @@ const SearchResults = ({query}) => {
                     </Alert>
                 </Snackbar>
             </Grid>
-        </Container>
         </Box>
     );
 }

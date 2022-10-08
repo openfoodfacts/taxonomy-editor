@@ -1,59 +1,56 @@
 import { Typography, Box, TextField, Grid, IconButton, InputAdornment } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
-import SearchResults from "./results";
+import SearchResults from "./SearchResults";
 
 const SearchNode = () => {
-    const [query, setQuery] = useState("");
-    const [queryToBeSent, setQueryToBeSent] = useState(null);
+    const [searchStringState, setSearchStringState] = useState("");
+    const [queryFetchString, setQueryFetchString] = useState("");
+    const ENTER_KEYCODE = 13;
     return (
       <Box>
-        {/* <Container component="main" maxWidth="xs"> */}
-            <Grid
-            container
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            >
-                <Grid item xs={3} sx={{mt: 4}}>
-                     <Typography variant="h3">Search</Typography>
-                </Grid>
-                <Box
-                  component="img"
-                  sx={{mt: 2}}
-                  width={100} 
-                  height={100}
-                  src={require('../../assets/classification.png')} 
-                  alt="Classification Logo" 
-                />
-                <form onSubmit={(event) => {event.preventDefault(); setQueryToBeSent(query)}}>
-                  <TextField
-                    sx={{mt: 3, width: 350}}
-                    InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                                disabled={query.length === 0}
-                                type="submit"
-                            >
-                              <SearchIcon />
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                    onKeyDown={(e) => {
-                      if (e.keyCode === 13 && query.length !== 0) {
-                        setQueryToBeSent(query)
-                      }
+          <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          >
+              <Typography sx={{mt: 4}} variant="h3">Search</Typography>
+              <Box
+                component="img"
+                sx={{mt: 2}}
+                width={100} 
+                height={100}
+                src={require('../../assets/classification.png')} 
+                alt="Classification Logo" 
+              />
+              <form onSubmit={(event) => {event.preventDefault(); setQueryFetchString(searchStringState)}}>
+                <TextField
+                  sx={{mt: 3, width: 350}}
+                  InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                              disabled={searchStringState.length === 0}
+                              type="submit"
+                          >
+                            <SearchIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      )
                     }}
-                    onChange = {event => {
-                        setQuery(event.target.value.trim())
-                    }}
-                    value={query} />
-                </form>
-            </Grid>
-        {/* </Container> */}
-        {queryToBeSent !== null && <SearchResults query={queryToBeSent}/>}
+                  onKeyDown={(e) => {
+                    if (e.keyCode === ENTER_KEYCODE && searchStringState.length !== 0) {
+                      setQueryFetchString(searchStringState)
+                    }
+                  }}
+                  onChange = {event => {
+                      setSearchStringState(event.target.value.trim())
+                  }}
+                  value={searchStringState} />
+              </form>
+          </Grid>
+        {queryFetchString !== "" && <SearchResults query={queryFetchString}/>}
       </Box>
     );
 }

@@ -14,6 +14,7 @@ import ISO6391 from 'iso-639-1';
 */
 const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
+    const ENTER_KEYCODE = 13
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
     const [openDialog, setOpen] = useState(false); // Used for Dialog component
@@ -324,7 +325,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 <TextField
                     autoFocus
                     margin="dense"
-                    onKeyPress={(e) => { (e.keyCode === 13) && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
+                    onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
                     onChange={(e) => { 
                         setNewLanguageCode(e.target.value);
                         const validateBool = ISO6391.validate(e.target.value);
