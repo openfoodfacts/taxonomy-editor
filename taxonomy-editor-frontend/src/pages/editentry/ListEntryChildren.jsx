@@ -10,9 +10,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
+import { ENTER_KEYCODE } from "../../constants";
+
 
 const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
-    const ENTER_KEYCODE = 13;
     const [relations, setRelations] = useState(null);
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);

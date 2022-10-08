@@ -8,13 +8,13 @@ import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
+import { ENTER_KEYCODE } from "../../constants";
 
 /**
  * Sub-component for rendering translation of an "entry"  
 */
 const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
-    const ENTER_KEYCODE = 13
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
     const [openDialog, setOpen] = useState(false); // Used for Dialog component

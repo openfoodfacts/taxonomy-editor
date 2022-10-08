@@ -2,11 +2,11 @@ import { Typography, Box, TextField, Grid, IconButton, InputAdornment } from "@m
 import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
 import SearchResults from "./SearchResults";
+import { ENTER_KEYCODE } from "../../constants";
 
 const SearchNode = () => {
     const [searchStringState, setSearchStringState] = useState("");
     const [queryFetchString, setQueryFetchString] = useState("");
-    const ENTER_KEYCODE = 13;
     return (
       <Box>
           <Grid
