@@ -77,9 +77,9 @@ def test_two_branch_round_trip():
     session = test_parser.session
 
     # parse taxonomy with branch1
-    test_parser(TEST_TAXONOMY_TXT, "branch1")
+    test_parser(TEST_TAXONOMY_TXT, "branch1", "test")
     # parse taxonomy with branch2
-    test_parser(TEST_TAXONOMY_TXT, "branch2")
+    test_parser(TEST_TAXONOMY_TXT, "branch2", "test")
 
     # just quick check it runs ok with total number of nodes
     query = "MATCH (n:t_test:b_branch1) RETURN COUNT(*)"
