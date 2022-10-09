@@ -24,14 +24,14 @@ const SearchNode = () => {
                 src={require('../../assets/classification.png')} 
                 alt="Classification Logo" 
               />
-              <form onSubmit={(event) => {event.preventDefault(); setQueryFetchString(searchStringState)}}>
+              <form onSubmit={(event) => {event.preventDefault(); setQueryFetchString(searchStringState.trim())}}>
                 <TextField
                   sx={{mt: 3, width: 350}}
                   InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
-                              disabled={searchStringState.length === 0}
+                              disabled={searchStringState.trim().length === 0}
                               type="submit"
                           >
                             <SearchIcon />
@@ -41,11 +41,11 @@ const SearchNode = () => {
                     }}
                   onKeyDown={(e) => {
                     if (e.keyCode === ENTER_KEYCODE && searchStringState.length !== 0) {
-                      setQueryFetchString(searchStringState)
+                      setQueryFetchString(searchStringState.trim())
                     }
                   }}
                   onChange = {event => {
-                      setSearchStringState(event.target.value.trim())
+                      setSearchStringState(event.target.value)
                   }}
                   value={searchStringState} />
               </form>
