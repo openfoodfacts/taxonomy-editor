@@ -2,6 +2,7 @@
 Database helper functions for API
 """
 import re
+from unittest import result
 from .graph_db import get_current_transaction               # Neo4J transactions helper
 from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
 
@@ -116,6 +117,16 @@ class TaxonomyGraph:
         qualifier = f":{label}" if label else ""
         query = f"""
             MATCH (n:{self.multi_label}{qualifier}) RETURN n
+        """
+        result = get_current_transaction().run(query)
+        return result
+    
+    def get_all_root_nodes(self):
+        """
+        Helper function used for getting all root nodes in a taxonomy
+        """
+        query = f"""
+            MATCH (n:{self.multi_label}) WHERE NOT (n)-[:is_child_of]->() RETURN n
         """
         result = get_current_transaction().run(query)
         return result
