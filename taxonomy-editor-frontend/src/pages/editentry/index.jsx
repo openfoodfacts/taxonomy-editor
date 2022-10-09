@@ -8,11 +8,11 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import AccumulateAllComponents from "./AccumulateAllComponents";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { API_URL } from "../../constants";
+import { createBaseURL } from "./createURL";
 
 const EditEntry = () => {
-    const { id } = useParams();
-    const url = API_URL+'nodes';
+    const { taxonomyName, branchName, id } = useParams();
+    const url = createBaseURL(taxonomyName, branchName);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
     const navigate = useNavigate();
@@ -30,7 +30,7 @@ const EditEntry = () => {
     
     function handleDeleteNode() {
         const data = {"id" : id}
-        fetch(url, {
+        fetch(url+'nodes', {
             method : 'DELETE',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
@@ -56,7 +56,7 @@ const EditEntry = () => {
                 </Stack>
             </Box>
             {/* Renders node info based on id */}
-            <AccumulateAllComponents id={id} />
+            <AccumulateAllComponents id={id} taxonomyName={taxonomyName} branchName={branchName} />
             {/* Dialog box for confirmation of deletion of node */}
             <Dialog
                 open={openDeleteDialog}

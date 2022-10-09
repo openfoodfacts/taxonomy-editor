@@ -1,8 +1,7 @@
 import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
-import { API_URL } from "../../constants";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -17,10 +16,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
+import { createBaseURL } from "../editentry/createURL";
 
 const Entry = () => {
-    const title = "Test";
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}rootnodes`);
+    const { taxonomyName, branchName } = useParams();
+    const title = taxonomyName.charAt(0).toUpperCase() + taxonomyName.slice(1);
+    const url = createBaseURL(taxonomyName, branchName);
+    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${url}rootnodes`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -38,7 +40,7 @@ const Entry = () => {
     function handleAddNode() {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(API_URL+'nodes', {
+        fetch(url+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)

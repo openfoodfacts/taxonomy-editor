@@ -14,10 +14,10 @@ import { createURL, getIdType } from "./createURL";
  * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
  * If node is "header/footer": Comments are rendered  
 */ 
-const AccumulateAllComponents = ({ id }) => {
+const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
     // Finding URL to send requests
-    const url = createURL(id);
+    const url = createURL(id, taxonomyName, branchName);
     const isEntry = getIdType(id) === 'entry';
 
     const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);

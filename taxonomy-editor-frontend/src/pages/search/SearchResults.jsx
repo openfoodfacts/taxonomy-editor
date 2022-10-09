@@ -18,9 +18,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
+import { createBaseURL } from "../editentry/createURL";
 
-const SearchResults = ({query}) => {
-    const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}search?query=${encodeURI(query)}`);
+const SearchResults = ({query, taxonomyName, branchName}) => {
+    const url = createBaseURL(taxonomyName, branchName);
+    const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${url}search?query=${encodeURI(query)}`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -38,7 +40,7 @@ const SearchResults = ({query}) => {
     function handleAddNode() {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(API_URL+'nodes', {
+        fetch(url+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)

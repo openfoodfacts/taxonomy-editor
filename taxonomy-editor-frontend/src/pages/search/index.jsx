@@ -3,8 +3,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
+import { useParams } from "react-router-dom";
 
 const SearchNode = () => {
+    const { taxonomyName, branchName } = useParams();
     const [searchStringState, setSearchStringState] = useState("");
     const [queryFetchString, setQueryFetchString] = useState("");
     return (
@@ -50,7 +52,7 @@ const SearchNode = () => {
                   value={searchStringState} />
               </form>
           </Grid>
-        {queryFetchString !== "" && <SearchResults query={queryFetchString}/>}
+        {queryFetchString !== "" && <SearchResults query={queryFetchString} taxonomyName={taxonomyName} branchName={branchName} />}
       </Box>
     );
 }

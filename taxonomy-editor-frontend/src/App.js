@@ -25,9 +25,9 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/entry" element={<Entry />} />
-            <Route path="/entry/:id" element={<EditEntry />} />
-            <Route path="/search" element={<SearchNode />} />
+            <Route path=":taxonomyName/:branchName/entry" element={<Entry />} />
+            <Route path=":taxonomyName/:branchName/entry/:id" element={<EditEntry />} />
+            <Route path=":taxonomyName/:branchName/search" element={<SearchNode />} />
           </Routes>
         </div>
     </Router>
