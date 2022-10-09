@@ -20,7 +20,7 @@ import ISO6391 from 'iso-639-1';
 
 const Entry = () => {
     const title = "Test";
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}nodes`);
+    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}rootnodes`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -66,10 +66,10 @@ const Entry = () => {
     return (
         <Box>
             <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
-                List of nodes in {title} Taxonomy:
+                List of root nodes in {title} Taxonomy:
             </Typography>
             <Typography variant="h6" sx={{mt: 2, ml: 2, mb: 1}}>
-                Number of nodes in taxonomy: {nodes.length}
+                Number of root nodes in taxonomy: {nodes.length}
             </Typography>
             {/* Table for listing all nodes in taxonomy */}
             <TableContainer sx={{ml: 2, width: 375}} component={Paper}>
