@@ -2,7 +2,6 @@
 Database helper functions for API
 """
 import re
-from unittest import result
 from .graph_db import get_current_transaction               # Neo4J transactions helper
 from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
 
