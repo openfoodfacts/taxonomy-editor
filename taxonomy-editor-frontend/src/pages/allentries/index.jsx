@@ -17,12 +17,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
+import { useEffect } from "react";
 
-const Entry = () => {
+const Entry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
     const title = taxonomyName.charAt(0).toUpperCase() + taxonomyName.slice(1);
-    const url = createBaseURL(taxonomyName, branchName);
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${url}rootnodes`);
+    const baseURL = createBaseURL(taxonomyName, branchName);
+    const urlPrefix = `${taxonomyName}/${branchName}/`;
+    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseURL}rootnodes`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -30,6 +32,13 @@ const Entry = () => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
+
+    useEffect(() => {
+        setDisplayedPages([
+            { url: urlPrefix+"entry", translationKey: "Nodes" },
+            { url: urlPrefix+"search", translationKey: "Search" }
+        ])
+    }, [urlPrefix])
 
     // Helper functions for Dialog component
     function handleCloseAddDialog() { setOpenAddDialog(false); }
@@ -40,7 +49,7 @@ const Entry = () => {
     function handleAddNode() {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(url+'nodes', {
+        fetch(baseURL+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
@@ -108,7 +117,7 @@ const Entry = () => {
                                 <TableCell align="left" component="td" scope="row">
                                     <IconButton 
                                         component={Link}
-                                        to={`/entry/${node[0].id}`}
+                                        to={`${node[0].id}`}
                                         aria-label="edit">
                                         <EditIcon color="primary"/>
                                     </IconButton>

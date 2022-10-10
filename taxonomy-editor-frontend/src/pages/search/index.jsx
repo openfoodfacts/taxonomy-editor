@@ -4,11 +4,21 @@ import { useState } from "react";
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
 import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
-const SearchNode = () => {
+const SearchNode = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
+    const urlPrefix = `${taxonomyName}/${branchName}/`;
     const [searchStringState, setSearchStringState] = useState("");
     const [queryFetchString, setQueryFetchString] = useState("");
+
+    useEffect(() => {
+        setDisplayedPages([
+            { url: urlPrefix+"entry", translationKey: "Nodes" },
+            { url: urlPrefix+"search", translationKey: "Search" }
+        ])
+    }, [urlPrefix])
+
     return (
       <Box>
           <Grid

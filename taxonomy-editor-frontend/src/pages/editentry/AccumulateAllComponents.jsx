@@ -17,7 +17,7 @@ import { createURL, getIdType } from "./createURL";
 const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
     // Finding URL to send requests
-    const url = createURL(id, taxonomyName, branchName);
+    const url = createURL(taxonomyName, branchName, id);
     const isEntry = getIdType(id) === 'entry';
 
     const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);

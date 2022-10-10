@@ -1,4 +1,5 @@
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import Entry from "./pages/allentries";
@@ -17,17 +18,18 @@ const theme = createTheme({
 });
 
 function App() {
+  const [displayedPages, setDisplayedPages] = useState([]);
   return (
     <ThemeProvider theme={theme}>
     <CssBaseline />
     <Router>
-        <ResponsiveAppBar />
+        <ResponsiveAppBar displayedPages={displayedPages}/>
         <div className="App">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path=":taxonomyName/:branchName/entry" element={<Entry />} />
-            <Route path=":taxonomyName/:branchName/entry/:id" element={<EditEntry />} />
-            <Route path=":taxonomyName/:branchName/search" element={<SearchNode />} />
+            <Route path="/" element={<Home setDisplayedPages={setDisplayedPages} />} />
+            <Route path=":taxonomyName/:branchName/entry" element={<Entry setDisplayedPages={setDisplayedPages} />} />
+            <Route path=":taxonomyName/:branchName/entry/:id" element={<EditEntry setDisplayedPages={setDisplayedPages} />} />
+            <Route path=":taxonomyName/:branchName/search" element={<SearchNode setDisplayedPages={setDisplayedPages} />} />
           </Routes>
         </div>
     </Router>

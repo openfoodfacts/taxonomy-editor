@@ -9,18 +9,27 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AccumulateAllComponents from "./AccumulateAllComponents";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { createBaseURL } from "./createURL";
+import { useEffect } from "react";
 
-const EditEntry = () => {
+const EditEntry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName, id } = useParams();
+    const urlPrefix = `${taxonomyName}/${branchName}/`;
     const url = createBaseURL(taxonomyName, branchName);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        setDisplayedPages([
+            { url: urlPrefix+"entry", translationKey: "Nodes" },
+            { url: urlPrefix+"search", translationKey: "Search" }
+        ])
+    }, [urlPrefix])
+
     // Handler function for button clicks
     const handleClick = (event) => {
         event.preventDefault();
-        navigate('/entry');
+        navigate(urlPrefix+`entry`);
     }
 
     // Helper functions for Dialog component

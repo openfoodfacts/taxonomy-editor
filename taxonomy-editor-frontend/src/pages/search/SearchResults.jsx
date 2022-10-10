@@ -2,7 +2,6 @@ import { Typography, Snackbar, Alert, Box, TextField, Grid, Stack, Button, IconB
 import useFetch from "../../components/useFetch";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { API_URL } from "../../constants";
 import Container from '@mui/material/Container';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -22,6 +21,7 @@ import { createBaseURL } from "../editentry/createURL";
 
 const SearchResults = ({query, taxonomyName, branchName}) => {
     const url = createBaseURL(taxonomyName, branchName);
+    const urlPrefix = `/${taxonomyName}/${branchName}`
     const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${url}search?query=${encodeURI(query)}`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
@@ -131,7 +131,7 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
                                     <TableCell align="left" component="td" scope="row">
                                         <IconButton 
                                             component={Link}
-                                            to={`/entry/${nodeId}`}
+                                            to={`${urlPrefix}/entry/${nodeId}`}
                                             aria-label="edit">
                                             <EditIcon color="primary"/>
                                         </IconButton>

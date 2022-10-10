@@ -4,8 +4,14 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link } from "react-router-dom";
+import { useEffect } from 'react';
 
-const Home = () => {
+const Home = ({setDisplayedPages}) => {
+
+    useEffect(() => {
+        setDisplayedPages([])
+    }, [])
+
     return (
         <Container component="main" maxWidth="md">
             <Box
@@ -37,7 +43,7 @@ const Home = () => {
             <Button 
                 variant="contained" 
                 component={Link}
-                to="/entry"
+                to="test/branch/entry"
                 sx={{textDecoration: 'none', mb: 2, backgroundColor: '#0064c8'}}>
                 Start Editing!
             </Button>
