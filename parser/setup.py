@@ -1,7 +1,13 @@
 from setuptools import setup
 
-requires = [req for req in open("requirements.txt").read().split("\n") if req.strip()]
-test_requirements = [req for req in open("requirements-test.txt").read().split("\n") if req.strip()]
+requires = [
+    req.replace("==", ">=")
+    for req in open("requirements.txt").read().split("\n") if req.strip()
+]
+test_requirements = [
+    req.replace("==", ">=")
+    for req in open("requirements-test.txt").read().split("\n") if req.strip()
+]
 
 setup(
     name="openfoodfacts_taxonomy_parser",
