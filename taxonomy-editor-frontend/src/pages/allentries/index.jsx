@@ -33,12 +33,13 @@ const Entry = ({setDisplayedPages}) => {
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
+    // Set url prefix for navbar component
     useEffect(() => {
         setDisplayedPages([
             { url: urlPrefix+"entry", translationKey: "Nodes" },
             { url: urlPrefix+"search", translationKey: "Search" }
         ])
-    }, [urlPrefix])
+    }, [urlPrefix, setDisplayedPages])
 
     // Helper functions for Dialog component
     function handleCloseAddDialog() { setOpenAddDialog(false); }

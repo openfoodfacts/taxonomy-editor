@@ -8,9 +8,10 @@ import { useEffect } from 'react';
 
 const Home = ({setDisplayedPages}) => {
 
+    // Hide pages in navbar component at home
     useEffect(() => {
         setDisplayedPages([])
-    }, [])
+    }, [setDisplayedPages])
 
     return (
         <Container component="main" maxWidth="md">
@@ -43,6 +44,7 @@ const Home = ({setDisplayedPages}) => {
             <Button 
                 variant="contained" 
                 component={Link}
+                // TODO: Change to start new project page
                 to="test/branch/entry"
                 sx={{textDecoration: 'none', mb: 2, backgroundColor: '#0064c8'}}>
                 Start Editing!

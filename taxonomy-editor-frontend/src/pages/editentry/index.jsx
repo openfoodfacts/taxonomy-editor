@@ -19,12 +19,13 @@ const EditEntry = ({setDisplayedPages}) => {
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
     const navigate = useNavigate();
 
+    // Set url prefix for navbar component
     useEffect(() => {
         setDisplayedPages([
             { url: urlPrefix+"entry", translationKey: "Nodes" },
             { url: urlPrefix+"search", translationKey: "Search" }
         ])
-    }, [urlPrefix])
+    }, [urlPrefix, setDisplayedPages])
 
     // Handler function for button clicks
     const handleClick = (event) => {

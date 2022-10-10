@@ -18,6 +18,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
     // Finding URL to send requests
     const url = createURL(taxonomyName, branchName, id);
+    const urlPrefix = `/${taxonomyName}/${branchName}`;
     const isEntry = getIdType(id) === 'entry';
 
     const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
@@ -90,8 +91,8 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
             { isEntry ? 
                 <Box>
                     { !!nodeObject &&
-                        <>  <ListEntryParents url={url+'parents'} />
-                            <ListEntryChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
+                        <>  <ListEntryParents url={url+'parents'} urlPrefix={urlPrefix} />
+                            <ListEntryChildren url={url+'children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
                             <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :

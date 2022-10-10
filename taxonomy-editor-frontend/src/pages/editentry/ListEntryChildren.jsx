@@ -13,7 +13,7 @@ import ISO6391 from 'iso-639-1';
 import { ENTER_KEYCODE } from "../../constants";
 
 
-const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
+const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     const [relations, setRelations] = useState(null);
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);
@@ -76,7 +76,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
             {/* Renders parents or children of the node */}
             {relations && relations.map(relationObject => (
                 <Stack key={relationObject['index']} direction="row" alignItems="center">
-                    <Link to={`/entry/${relationObject['child']}`} style={{color: '#0064c8', display: 'inline-block'}}>
+                    <Link to={`${urlPrefix}/entry/${relationObject['child']}`} style={{color: '#0064c8', display: 'inline-block'}}>
                         <Typography sx={{ml: 8}} variant='h6'>
                             {relationObject['child']}
                         </Typography>
