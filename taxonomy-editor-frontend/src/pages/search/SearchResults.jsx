@@ -156,6 +156,7 @@ const SearchResults = ({query}) => {
                                 }}
                             >
                                 {/* TODO: Add support for synonyms and stopwords */}
+                                {/* https://github.com/openfoodfacts/taxonomy-editor/issues/108 */}
                                 <option value={'entry'}>Entry</option>
                             </Select>
                         </FormControl>
