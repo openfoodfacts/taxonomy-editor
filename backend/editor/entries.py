@@ -11,7 +11,6 @@ class TaxonomyGraph:
     
     def __init__(self, branch_name, taxonomy_name):
         self.project_name = 'p_' + taxonomy_name + '_' + branch_name
-        self.multi_label = self.project_name + ':' + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
         
     def get_label(self, id):
         """
@@ -26,7 +25,7 @@ class TaxonomyGraph:
         """
         Helper function used for creating a node with given id and label
         """
-        query = [f"""CREATE (n:{self.multi_label}:{label})\n"""]
+        query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
         params = {"id": entry}
 
         # Build all basic keys of a node
@@ -51,7 +50,7 @@ class TaxonomyGraph:
         """
         # Delete relationship between current last node and __footer__
         query = f"""
-        MATCH (last_node)-[r:is_before]->(footer:{self.multi_label}:TEXT) WHERE footer.id = "__footer__" DELETE r 
+        MATCH (last_node)-[r:is_before]->(footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__" DELETE r 
         RETURN last_node
         """
         result = get_current_transaction().run(query)
@@ -61,9 +60,9 @@ class TaxonomyGraph:
         # Rebuild relationships by inserting incoming node at the end
         query = []
         query = f"""
-            MATCH (new_node:{self.multi_label}:{label}) WHERE new_node.id = $id
-            MATCH (last_node:{self.multi_label}:{end_node_label}) WHERE last_node.id = $endnodeid
-            MATCH (footer:{self.multi_label}:TEXT) WHERE footer.id = "__footer__"
+            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
+            MATCH (last_node:{self.project_name}:{end_node_label}) WHERE last_node.id = $endnodeid
+            MATCH (footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__"
             CREATE (last_node)-[:is_before]->(new_node)
             CREATE (new_node)-[:is_before]->(footer)
         """
@@ -75,7 +74,7 @@ class TaxonomyGraph:
         """
         # Delete relationship between current first node and __header__
         query = f"""
-            MATCH (header:{self.multi_label}:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
+            MATCH (header:{self.project_name}:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
             RETURN first_node
         """
         result = get_current_transaction().run(query)
@@ -84,9 +83,9 @@ class TaxonomyGraph:
 
         # Rebuild relationships by inserting incoming node at the beginning
         query= f"""
-            MATCH (new_node:{self.multi_label}:{label}) WHERE new_node.id = $id
-            MATCH (first_node:{self.multi_label}:{start_node_label}) WHERE first_node.id = $startnodeid
-            MATCH (header:{self.multi_label}:TEXT) WHERE header.id = "__header__"
+            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
+            MATCH (first_node:{self.project_name}:{start_node_label}) WHERE first_node.id = $startnodeid
+            MATCH (header:{self.project_name}:TEXT) WHERE header.id = "__header__"
             CREATE (new_node)-[:is_before]->(first_node)
             CREATE (header)-[:is_before]->(new_node)
         """
@@ -99,7 +98,7 @@ class TaxonomyGraph:
         # Finding node to be deleted using node ID
         query = f"""
             // Find node to be deleted using node ID
-            MATCH (deleted_node:{self.multi_label}:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
+            MATCH (deleted_node:{self.project_name}:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
             MATCH (previous_node)-[:is_before]->(deleted_node)
             // Remove node
             DETACH DELETE (deleted_node)
@@ -115,7 +114,7 @@ class TaxonomyGraph:
         """
         qualifier = f":{label}" if label else ""
         query = f"""
-            MATCH (n:{self.multi_label}{qualifier}) RETURN n
+            MATCH (n:{self.project_name}{qualifier}) RETURN n
         """
         result = get_current_transaction().run(query)
         return result
@@ -125,7 +124,7 @@ class TaxonomyGraph:
         Helper function used for getting the node with given id and label
         """
         query = f"""
-            MATCH (n:{self.multi_label}:{label}) WHERE n.id = $id 
+            MATCH (n:{self.project_name}:{label}) WHERE n.id = $id 
             RETURN n
         """
         result = get_current_transaction().run(query, {"id": entry})
@@ -136,7 +135,7 @@ class TaxonomyGraph:
         Helper function used for getting node parents with given id
         """
         query = f"""
-            MATCH (child_node:{self.multi_label}:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
+            MATCH (child_node:{self.project_name}:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
             RETURN parent.id
         """
         result = get_current_transaction().run(query, {"id": entry})
@@ -147,7 +146,7 @@ class TaxonomyGraph:
         Helper function used for getting node children with given id
         """
         query = f"""
-            MATCH (child)-[r:is_child_of]->(parent_node:{self.multi_label}:ENTRY) WHERE parent_node.id = $id 
+            MATCH (child)-[r:is_child_of]->(parent_node:{self.project_name}:ENTRY) WHERE parent_node.id = $id 
             RETURN child.id
         """
         result = get_current_transaction().run(query, {"id": entry})
@@ -173,7 +172,7 @@ class TaxonomyGraph:
                 deleted_keys.add(key)
 
         # Build query
-        query = [f"""MATCH (n:{self.multi_label}:{label}) WHERE n.id = $id """]
+        query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
 
         # Delete keys removed by user
         for key in deleted_keys:
@@ -203,14 +202,14 @@ class TaxonomyGraph:
         # Delete relationships
         for child in deleted_children:
             query = f""" 
-                MATCH (deleted_child:{self.multi_label}:ENTRY)-[rel:is_child_of]->(parent:{self.multi_label}:ENTRY) 
+                MATCH (deleted_child:{self.project_name}:ENTRY)-[rel:is_child_of]->(parent:{self.project_name}:ENTRY) 
                 WHERE parent.id = $id AND deleted_child.id = $child
                 DELETE rel
             """
             get_current_transaction().run(query, {"id": entry, "child": child})
 
         # Create non-existing nodes
-        query = f"""MATCH (child:{self.multi_label}:ENTRY) WHERE child.id in $ids RETURN child.id"""
+        query = f"""MATCH (child:{self.project_name}:ENTRY) WHERE child.id in $ids RETURN child.id"""
         existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
         to_create = added_children - set(existing_ids)
 
@@ -226,7 +225,7 @@ class TaxonomyGraph:
         for child in added_children:
             # Create new relationships if it doesn't exist
             query = f"""
-                MATCH (parent:{self.multi_label}:ENTRY), (new_child:{self.multi_label}:ENTRY) 
+                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY) 
                 WHERE parent.id = $id AND new_child.id = $child
                 MERGE (new_child)-[r:is_child_of]->(parent)
             """
