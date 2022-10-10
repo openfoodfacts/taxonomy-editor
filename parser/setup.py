@@ -1,12 +1,12 @@
 from setuptools import setup
 
 requires = [
-    req.replace("==", ">=")
-    for req in open("requirements.txt").read().split("\n") if req.strip()
+    req.replace("==", ">=") for req in open("requirements.txt").read().split("\n") if req.strip()
 ]
 test_requirements = [
     req.replace("==", ">=")
-    for req in open("requirements-test.txt").read().split("\n") if req.strip()
+    for req in open("requirements-test.txt").read().split("\n")
+    if req.strip()
 ]
 
 setup(
