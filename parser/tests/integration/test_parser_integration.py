@@ -11,11 +11,11 @@ TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.tx
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes and relations in the database
-    query = "MATCH (n:t_test:b_branch) DETACH DELETE n"
+    query = "MATCH (n:p_test_branch:t_test:b_branch) DETACH DELETE n"
     neo4j.session().run(query)
-    query = "DROP INDEX t_test_b_branch_SearchIds IF EXISTS"
+    query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
     neo4j.session().run(query)
-    query = "DROP INDEX t_test_b_branch_SearchTags IF EXISTS"
+    query = "DROP INDEX p_test_branch_SearchTags IF EXISTS"
     neo4j.session().run(query)
 
 
@@ -24,22 +24,24 @@ def test_calling():
     session = test_parser.session
 
     # Create node test
-    test_parser.create_nodes(TEST_TAXONOMY_TXT, "t_test:b_branch")
+    test_parser.create_nodes(TEST_TAXONOMY_TXT, "p_test_branch:t_test:b_branch")
 
     # total number of nodes
-    query = "MATCH (n:t_test:b_branch) RETURN COUNT(*)"
+    query = "MATCH (n:p_test_branch:t_test:b_branch) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
 
     # header correctly added
-    query = "MATCH (n:t_test:b_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
+    query = (
+        "MATCH (n:p_test_branch:t_test:b_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
+    )
     result = session.run(query)
     header = result.value()[0]
     assert header == ["# test taxonomy"]
 
     # synonyms correctly added
-    query = "MATCH (n:t_test:b_branch:SYNONYMS) RETURN n ORDER BY n.src_position"
+    query = "MATCH (n:p_test_branch:t_test:b_branch:SYNONYMS) RETURN n ORDER BY n.src_position"
     results = session.run(query)
     expected_synonyms = [
         {
@@ -63,7 +65,7 @@ def test_calling():
             assert node[key] == expected_synonyms[i][key]
 
     # stopwords correctly added
-    query = "MATCH (n:t_test:b_branch:STOPWORDS) RETURN n"
+    query = "MATCH (n:p_test_branch:t_test:b_branch:STOPWORDS) RETURN n"
     results = session.run(query)
     expected_stopwords = {
         "id": "stopwords:0",
@@ -78,7 +80,7 @@ def test_calling():
     # entries correctly added
     # check for two of them
     query = """
-        MATCH (n:t_test:b_branch:ENTRY)
+        MATCH (n:p_test_branch:t_test:b_branch:ENTRY)
         WHERE n.id='en:banana-yogurts'
         OR n.id='en:meat'
         RETURN n
@@ -107,8 +109,11 @@ def test_calling():
             assert node[key] == expected_entries[i][key]
 
     # Child link test
-    test_parser.create_child_link("t_test:b_branch")  # nodes already added
-    query = "MATCH (c:t_test:b_branch)-[:is_child_of]->(p:t_test:b_branch) RETURN c.id, p.id"
+    test_parser.create_child_link("p_test_branch:t_test:b_branch")  # nodes already added
+    query = """
+        MATCH (c:p_test_branch:t_test:b_branch)-[:is_child_of]->(p:p_test_branch:t_test:b_branch)
+        RETURN c.id, p.id
+    """
     results = session.run(query)
     created_pairs = results.values()
 
@@ -129,8 +134,11 @@ def test_calling():
         assert pair in expected_pairs
 
     # Order link test
-    test_parser.create_previous_link("t_test:b_branch")
-    query = "MATCH (n:t_test:b_branch)-[:is_before]->(p:t_test:b_branch) RETURN n.id, p.id "
+    test_parser.create_previous_link("p_test_branch:t_test:b_branch")
+    query = """
+        MATCH (n:p_test_branch:t_test:b_branch)-[:is_before]->(p:p_test_branch:t_test:b_branch)
+        RETURN n.id, p.id
+    """
     results = session.run(query)
     created_pairs = results.values()
 

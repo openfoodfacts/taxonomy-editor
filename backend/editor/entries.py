@@ -10,8 +10,8 @@ class TaxonomyGraph:
     """Class for database operations"""
     
     def __init__(self, branch_name, taxonomy_name):
-        self.multi_label = ('t_'+taxonomy_name)+':'+('b_'+branch_name)
-        self.multi_label_search = ('t_'+taxonomy_name)+'_'+('b_'+branch_name)
+        self.project_name = 'p_' + taxonomy_name + '_' + branch_name
+        self.multi_label = self.project_name + ':' + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
         
     def get_label(self, id):
         """
@@ -242,8 +242,8 @@ class TaxonomyGraph:
         normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
         normalized_id_text = normalizer.normalizing(text)
 
-        id_index = self.multi_label_search+'_SearchIds'
-        tags_index = self.multi_label_search+'_SearchTags'
+        id_index = self.project_name+'_SearchIds'
+        tags_index = self.project_name+'_SearchTags'
 
         text_query_exact = "*" + normalized_text + '*'
         text_query_fuzzy = normalized_text + "~"

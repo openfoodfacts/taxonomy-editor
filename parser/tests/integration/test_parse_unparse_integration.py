@@ -11,25 +11,25 @@ TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.tx
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes, relations and search indexes in the database
-    query = "MATCH (n:t_test:b_branch) DETACH DELETE n"
+    query = "MATCH (n:p_test_branch:t_test:b_branch) DETACH DELETE n"
     neo4j.session().run(query)
-    query = "DROP INDEX t_test_b_branch_SearchIds IF EXISTS"
+    query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
     neo4j.session().run(query)
-    query = "DROP INDEX t_test_b_branch_SearchTags IF EXISTS"
+    query = "DROP INDEX p_test_branch_SearchTags IF EXISTS"
     neo4j.session().run(query)
 
-    query1 = "MATCH (n:t_test:b_branch1) DETACH DELETE n"
+    query1 = "MATCH (n:p_test_branch1:t_test:b_branch1) DETACH DELETE n"
     neo4j.session().run(query1)
-    query1 = "DROP INDEX t_test_b_branch1_SearchIds IF EXISTS"
+    query1 = "DROP INDEX p_test_branch1_SearchIds IF EXISTS"
     neo4j.session().run(query1)
-    query1 = "DROP INDEX t_test_b_branch1_SearchTags IF EXISTS"
+    query1 = "DROP INDEX p_test_branch1_SearchTags IF EXISTS"
     neo4j.session().run(query1)
 
-    query2 = "MATCH (n:t_test:b_branch2) DETACH DELETE n"
+    query2 = "MATCH (n:p_test_branch2:t_test:b_branch2) DETACH DELETE n"
     neo4j.session().run(query2)
-    query2 = "DROP INDEX t_test_b_branch2_SearchIds IF EXISTS"
+    query2 = "DROP INDEX p_test_branch2_SearchIds IF EXISTS"
     neo4j.session().run(query2)
-    query2 = "DROP INDEX t_test_b_branch2_SearchTags IF EXISTS"
+    query2 = "DROP INDEX p_test_branch2_SearchTags IF EXISTS"
     neo4j.session().run(query2)
 
 
@@ -41,7 +41,7 @@ def test_round_trip():
     # parse taxonomy
     test_parser(TEST_TAXONOMY_TXT, "branch", "test")
     # just quick check it runs ok with total number of nodes
-    query = "MATCH (n:t_test:b_branch) RETURN COUNT(*)"
+    query = "MATCH (n:p_test_branch:t_test:b_branch) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
@@ -49,7 +49,7 @@ def test_round_trip():
 
     # dump taxonomy back
     test_dumper = unparser.WriteTaxonomy()
-    lines = list(test_dumper.iter_lines("t_test:b_branch"))
+    lines = list(test_dumper.iter_lines("p_test_branch:t_test:b_branch"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
@@ -82,12 +82,12 @@ def test_two_branch_round_trip():
     test_parser(TEST_TAXONOMY_TXT, "branch2", "test")
 
     # just quick check it runs ok with total number of nodes
-    query = "MATCH (n:t_test:b_branch1) RETURN COUNT(*)"
+    query = "MATCH (n:p_test_branch1:t_test:b_branch1) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
 
-    query = "MATCH (n:t_test:b_branch2) RETURN COUNT(*)"
+    query = "MATCH (n:p_test_branch2:t_test:b_branch2) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
@@ -95,8 +95,8 @@ def test_two_branch_round_trip():
 
     # dump taxonomy back
     test_dumper = unparser.WriteTaxonomy()
-    lines_branch1 = list(test_dumper.iter_lines("t_test:b_branch1"))
-    lines_branch2 = list(test_dumper.iter_lines("t_test:b_branch2"))
+    lines_branch1 = list(test_dumper.iter_lines("p_test_branch1:t_test:b_branch1"))
+    lines_branch2 = list(test_dumper.iter_lines("p_test_branch2:t_test:b_branch2"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks

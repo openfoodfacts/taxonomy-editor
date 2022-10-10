@@ -68,9 +68,14 @@ class Parser:
         """Add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
+    def get_project_name(self, taxonomy_name, branch_name):
+        """Create a project name for given branch and taxonomy"""
+        return "p_" + taxonomy_name + "_" + branch_name
+
     def create_multi_label(self, taxonomy_name, branch_name):
         """Create a combined label with taxonomy name and branch name"""
-        return ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
+        project_name = self.get_project_name(taxonomy_name, branch_name)
+        return project_name + ":" + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
 
     def file_iter(self, filename, start=0):
         """Generator to get the file line by line"""
@@ -398,12 +403,12 @@ class Parser:
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
         self.session.run(query)
 
-    def create_fulltext_index(self, multi_label, branch_name):
+    def create_fulltext_index(self, taxonomy_name, branch_name):
         """Create indexes for search"""
-        index_name = multi_label.replace(":", "_")
+        project_name = self.get_project_name(taxonomy_name, branch_name)
         query = [
-            f"""CREATE FULLTEXT INDEX {index_name+'_SearchIds'} IF NOT EXISTS
-            FOR (n:{'b_'+branch_name}) ON EACH [n.id]\n"""
+            f"""CREATE FULLTEXT INDEX {project_name+'_SearchIds'} IF NOT EXISTS
+            FOR (n:{project_name}) ON EACH [n.id]\n"""
         ]
         query.append("""OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}""")
         self.session.run("".join(query))
@@ -411,8 +416,8 @@ class Parser:
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
         tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX {index_name+'_SearchTags'} IF NOT EXISTS
-            FOR (n:{'b_'+branch_name}) ON EACH [{tags_prefixed_lc}]"""
+        query = f"""CREATE FULLTEXT INDEX {project_name+'_SearchTags'} IF NOT EXISTS
+            FOR (n:{project_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 
     def __call__(self, filename, branch_name, taxonomy_name):
@@ -423,7 +428,7 @@ class Parser:
         self.create_nodes(filename, multi_label)
         self.create_child_link(multi_label)
         self.create_previous_link(multi_label)
-        self.create_fulltext_index(multi_label, branch_name)
+        self.create_fulltext_index(taxonomy_name, branch_name)
         # self.delete_used_properties()
 
 
@@ -433,6 +438,6 @@ if __name__ == "__main__":
     )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
-    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else "test"
+    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
     parse = Parser()
     parse(filename, branch_name, taxonomy_name)

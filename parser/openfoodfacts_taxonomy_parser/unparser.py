@@ -17,9 +17,14 @@ class WriteTaxonomy:
         """add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
+    def get_project_name(self, taxonomy_name, branch_name):
+        """Create a project name for given branch and taxonomy"""
+        return "p_" + taxonomy_name + "_" + branch_name
+
     def create_multi_label(self, taxonomy_name, branch_name):
         """Create a combined label with taxonomy name and branch name"""
-        return ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
+        project_name = self.get_project_name(taxonomy_name, branch_name)
+        return project_name + ":" + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
 
     def get_all_nodes(self, multi_label):
         """query the database and yield each node with its parents,
@@ -138,6 +143,6 @@ class WriteTaxonomy:
 if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
-    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else "test"
+    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
     write = WriteTaxonomy()
     write(filename, branch_name, taxonomy_name)
