@@ -251,18 +251,22 @@ def full_text_search(text):
         CALL {
                 CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_fuzzy)
                 yield node, score as score_
+                where score_ > 0
                 return node, score_ * 3 as score
             UNION
                 CALL db.index.fulltext.queryNodes("nodeSearchTags", $text_query_fuzzy)
                 yield node, score as score_
+                where score_ > 0
                 return node, score_ * 5 as score
             UNION
                 CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_exact)
                 yield node, score as score_
+                where score_ > 0
                 return node, score_ as score
             UNION
                 CALL db.index.fulltext.queryNodes("nodeSearchTags", $text_query_exact)
                 yield node, score as score_
+                where score_ > 0
                 return node, score_ as score 
         }
         with node.id as node, score

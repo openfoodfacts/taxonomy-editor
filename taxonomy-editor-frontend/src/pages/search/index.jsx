@@ -19,7 +19,7 @@ const SearchNode = ({setDisplayedPages}) => {
             { url: urlPrefix+"search", translationKey: "Search" }
         ])
     }, [urlPrefix, setDisplayedPages])
-
+    
     return (
       <Box>
           <Grid
