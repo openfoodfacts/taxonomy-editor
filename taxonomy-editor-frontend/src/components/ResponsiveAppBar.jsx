@@ -17,7 +17,8 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const displayedPages = [
-  { url: "entry", translationKey: "Nodes" }
+  { url: "entry", translationKey: "Nodes" },
+  { url: "search", translationKey: "Search" }
 ];
 
 const ResponsiveAppBar = () => {

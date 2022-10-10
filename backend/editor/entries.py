@@ -255,7 +255,7 @@ class TaxonomyGraph:
             "text_query_fuzzy" : text_query_fuzzy,
             "text_query_exact" : text_query_exact,
             "text_id_query_fuzzy" : text_id_query_fuzzy,
-            "text_id_query_exact" : text_id_query_exact 
+            "text_id_query_exact" : text_id_query_exact
         }
 
         # Fuzzy search and wildcard (*) search on two indexes
@@ -265,18 +265,22 @@ class TaxonomyGraph:
             CALL {
                     CALL db.index.fulltext.queryNodes($id_index, $text_id_query_fuzzy)
                     yield node, score as score_
+                    where score_ > 0
                     return node, score_ * 3 as score
                 UNION
                     CALL db.index.fulltext.queryNodes($tags_index, $text_query_fuzzy)
                     yield node, score as score_
+                    where score_ > 0
                     return node, score_ * 5 as score
                 UNION
                     CALL db.index.fulltext.queryNodes($id_index, $text_id_query_exact)
                     yield node, score as score_
+                    where score_ > 0
                     return node, score_ as score
                 UNION
                     CALL db.index.fulltext.queryNodes($tags_index, $text_query_exact)
                     yield node, score as score_
+                    where score_ > 0
                     return node, score_ as score 
             }
             with node.id as node, score
