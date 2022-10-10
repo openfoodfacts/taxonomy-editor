@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
+import { ENTER_KEYCODE } from "../../constants";
 
 /**
  * Sub-component for rendering translation of an "entry"  
@@ -324,7 +325,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 <TextField
                     autoFocus
                     margin="dense"
-                    onKeyPress={(e) => { (e.keyCode === 13) && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
+                    onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
                     onChange={(e) => { 
                         setNewLanguageCode(e.target.value);
                         const validateBool = ISO6391.validate(e.target.value);
