@@ -2,7 +2,6 @@
 Database helper functions for API
 """
 import re
-from types import new_class
 from .graph_db import get_current_transaction   # Neo4J transactions helper
 from .normalizer import normalizing             # Normalizing tags
 
