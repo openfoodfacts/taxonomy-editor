@@ -91,6 +91,16 @@ async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
     allNodes = list(result)
     return allNodes
 
+@app.get("/{taxonomy_name}/{branch}/rootnodes")
+async def findAllRootNodes(response: Response, branch: str, taxonomy_name: str):
+    """
+    Get all root nodes within taxonomy
+    """
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = taxonomy.get_all_root_nodes()
+    allRootNodes = list(result)
+    return allRootNodes
+
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}")
 async def findOneEntry(response: Response, branch: str, taxonomy_name: str, entry: str):
     """

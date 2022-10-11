@@ -118,6 +118,16 @@ class TaxonomyGraph:
         """
         result = get_current_transaction().run(query)
         return result
+    
+    def get_all_root_nodes(self):
+        """
+        Helper function used for getting all root nodes in a taxonomy
+        """
+        query = f"""
+            MATCH (n:{self.multi_label}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+        """
+        result = get_current_transaction().run(query)
+        return result
 
     def get_nodes(self, label, entry):
         """
