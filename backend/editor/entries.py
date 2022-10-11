@@ -180,15 +180,16 @@ def update_nodes(label, entry, new_node_keys):
     #Normalising Node to be Updated
     normalised_new_node_keys = {}
     for keys in new_node_keys.keys():
-        if keys.startswith("tags") and "ids" not in keys and not keys.endswith("str"):
-            keys_language_code = keys.split('_', 1)[1]
-            normalised_value = []
-            for values in new_node_keys[keys]:
-                normalised_value.append(normalizing(values, keys_language_code))
-            normalised_new_node_keys["tags_"+keys_language_code] = normalised_value
+        if keys.startswith("tags") and not keys.endswith("str"):
+            if "ids" not in keys:
+                keys_language_code = keys.split('_', 1)[1]
+                normalised_value = []
+                for values in new_node_keys[keys]:
+                    normalised_value.append(normalizing(values, keys_language_code))
+                normalised_new_node_keys[keys] = normalised_value
+                normalised_new_node_keys["tags_ids_"+keys_language_code] = normalised_value
         else:
             normalised_new_node_keys[keys] = new_node_keys[keys]
-    return normalised_new_node_keys
 
     # Update keys
     for key in normalised_new_node_keys.keys():
