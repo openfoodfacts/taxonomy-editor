@@ -16,3 +16,4 @@ function taxonomyApiUrlFromUi(location) {
     }
 }
 export const API_URL = taxonomyApiUrlFromUi(window.location);
+export const ENTER_KEYCODE = 13;

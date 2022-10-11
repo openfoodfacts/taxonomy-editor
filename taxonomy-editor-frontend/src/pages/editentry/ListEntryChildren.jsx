@@ -10,6 +10,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
+import { ENTER_KEYCODE } from "../../constants";
+
 
 const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
     const [relations, setRelations] = useState(null);
@@ -100,7 +102,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
                 </DialogContentText>
                 <Stack sx={{mt: 2}} direction="row" alignItems="center">
                     <TextField
-                        onKeyPress={(e) => { (e.keyCode === 13) && handleAddChild(e) }} 
+                        onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewLanguageCode(e.target.value);
                             const validateBool = ISO6391.validate(e.target.value);
@@ -116,7 +118,7 @@ const ListEntryChildren = ({url, setUpdateNodeChildren}) => {
                     <Typography component="h4">:</Typography>
                     <TextField
                         margin="dense"
-                        onKeyPress={(e) => { (e.keyCode === 13) && handleAddChild(e) }} 
+                        onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewChild(e.target.value);
                         }}
