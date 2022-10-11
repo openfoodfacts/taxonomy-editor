@@ -17,9 +17,8 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     const [relations, setRelations] = useState(null);
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);
-    const [open, setOpen] = useState(false); // Used for Dialog component
-    const [btnDisabled, setBtnDisabled] = useState(true) // For enabling or disabling Dialog button
-    const [isValidLC, setisValidLC] = useState(false); // Used for validating a new LC
+    const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
+    const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
 
     const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     
@@ -36,8 +35,8 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     }, [incomingData, setUpdateNodeChildren])
 
     // Helper functions for Dialog component
-    function handleClose() { setOpen(false); }
-    function handleOpen() { setOpen(true); }
+    function handleCloseDialog() { setOpenDialog(false); }
+    function handleOpenDialog() { setOpenDialog(true); }
 
     function handleAddChild() {
         const newChildID = newLanguageCode + ':' + newChild; // Reconstructing node ID
@@ -47,7 +46,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
             duplicateData.push(newChildID);
             return duplicateData
         });
-        setOpen(false);
+        setOpenDialog(false);
     }
 
     function handleDeleteChild(index) {
@@ -69,7 +68,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
         <Box>
             <Stack direction="row" alignItems="center">
                 <Typography sx={{ml: 4}} variant='h5'>Children</Typography>
-                <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpen}>
+                <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenDialog}>
                     <AddBoxIcon />
                 </IconButton>
             </Stack>
@@ -91,7 +90,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
             {relations && relations.length === 0 && <Typography sx={{ml: 8, mb: 1, mt: 1}} variant="h6"> None </Typography>}
 
             {/* Dialog box for adding translations */}
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog openDialog={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Add a child</DialogTitle>
                 <DialogContent>
                 <DialogContentText>
@@ -105,12 +104,10 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
                         onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewLanguageCode(e.target.value);
-                            const validateBool = ISO6391.validate(e.target.value);
-                            validateBool ? setisValidLC(true) : setisValidLC(false);
-                            validateBool ? setBtnDisabled(false) : setBtnDisabled(true);
+                            setIsValidLanguageCode(ISO6391.validate(e.target.value));
                         }}
                         label="Language Code"
-                        error={!isValidLC}
+                        error={!isValidLanguageCode}
                         sx={{width : 250, marginRight: 1}}
                         size="small"
                         variant="outlined"
@@ -131,9 +128,9 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
                 </Stack>
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={handleClose}>Cancel</Button>
+                <Button onClick={handleCloseDialog}>Cancel</Button>
                 <Button 
-                    disabled={btnDisabled}
+                    disabled={!isValidLanguageCode}
                     onClick={(e) => {handleAddChild(newChild, e)}}>
                         Add
                 </Button>

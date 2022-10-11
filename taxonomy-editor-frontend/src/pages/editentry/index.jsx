@@ -1,6 +1,6 @@
 import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,7 +17,6 @@ const EditEntry = ({setDisplayedPages}) => {
     const url = createBaseURL(taxonomyName, branchName);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-    const navigate = useNavigate();
 
     // Set url prefix for navbar component
     useEffect(() => {
@@ -26,12 +25,6 @@ const EditEntry = ({setDisplayedPages}) => {
             { url: urlPrefix+"search", translationKey: "Search" }
         ])
     }, [urlPrefix, setDisplayedPages])
-
-    // Handler function for button clicks
-    const handleClick = (event) => {
-        event.preventDefault();
-        navigate(urlPrefix+`entry`);
-    }
 
     // Helper functions for Dialog component
     function handleCloseDeleteDialog() { setOpenDeleteDialog(false); }
@@ -101,7 +94,11 @@ const EditEntry = ({setDisplayedPages}) => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={handleClick} autoFocus>
+                <Button 
+                    component={Link} 
+                    to={`${urlPrefix}/entry`}
+                    autoFocus
+                >
                     Continue
                 </Button>
                 </DialogActions>

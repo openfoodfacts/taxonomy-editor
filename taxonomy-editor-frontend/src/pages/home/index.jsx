@@ -44,8 +44,7 @@ const Home = ({setDisplayedPages}) => {
             <Button 
                 variant="contained" 
                 component={Link}
-                // TODO: Change to start new project page
-                to="test/branch/entry"
+                to="start"
                 sx={{textDecoration: 'none', mb: 2, backgroundColor: '#0064c8'}}>
                 Start Editing!
             </Button>

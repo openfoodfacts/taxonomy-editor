@@ -73,7 +73,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         })
         const allUrlsAndData = [[url, dataToBeSent]]
         if (isEntry) {
-            allUrlsAndData.push([url+'children/', updateChildren])
+            allUrlsAndData.push([url+'children', updateChildren])
         }
         Promise.all(allUrlsAndData.map(([url, dataToBeSent]) => {
             return fetch(url, {
@@ -81,7 +81,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 headers: {"Content-Type" : "application/json"},
                 body: JSON.stringify(dataToBeSent)
             })
-        })).then(() => {
+        })).then((response) => {
             setOpen(true);
         }).catch(() => {})
     }
