@@ -18,19 +18,22 @@ def create_node(label, entry, main_language_code):
     """
     Helper function used for creating a node with given id and label
     """
+    #Normalising New Node
+    normalised_language_code, normalised_entry = normalizing(label,main_language_code)
+     
     query = [f"""CREATE (n:{label})\n"""]
-    params = {"id": entry}
+    params = {"id": normalised_entry}
 
     # Build all basic keys of a node
     if (label == "ENTRY"):
-        canonical_tag = entry.split(":", 1)[1]
-        query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
-        params["main_language_code"] = main_language_code
+        canonical_tag = normalised_entry.split(":", 1)[1]
+        query.append(f""" SET n.main_language = $normalised_language_code """) # Required for only an entry
+        params["main_language_code"] = normalised_language_code
     else:
         canonical_tag = ""
 
     query.append(f""" SET n.id = $id """)
-    query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
+    query.append(f""" SET n.tags_{normalised_language_code} = [$canonical_tag] """)
     query.append(f""" SET n.preceding_lines = [] """)
 
     params["canonical_tag"] = canonical_tag
@@ -173,8 +176,14 @@ def update_nodes(label, entry, new_node_keys):
             continue
         query.append(f"""\nREMOVE n.{key}\n""")
 
+    #Normalising Node to be Updated
+    normalised_new_node_keys = set()
+    for key in new_node_keys:
+        new_node_language_code, new_node_name = key.split(":")
+        normalised_new_node_keys.add(normalizing(new_node_name,new_node_language_code))
+    
     # Update keys
-    for key in new_node_keys.keys():
+    for key in normalised_new_node_keys.keys():
         query.append(f"""\nSET n.{key} = ${key}\n""")
 
     query.append(f"""RETURN n""")
@@ -192,6 +201,12 @@ def update_node_children(entry, new_children_ids):
     deleted_children = set(current_children) - set(new_children_ids)
     added_children = set(new_children_ids) - set(current_children)
 
+    #Normalising new children
+    normalised_added_children = set()
+    for child_node in added_children:
+        child_language_code, new_child_name = child_node.split(":")
+        normalised_added_children.add(normalizing(new_child_name,child_language_code))
+
     # Delete relationships
     for child in deleted_children:
         query = f""" 
@@ -203,8 +218,8 @@ def update_node_children(entry, new_children_ids):
 
     # Create non-existing nodes
     query = """MATCH (child:ENTRY) WHERE child.id in $ids RETURN child.id"""
-    existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
-    to_create = added_children - set(existing_ids)
+    existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(normalised_added_children))]
+    to_create = normalised_added_children - set(existing_ids)
 
     for child in to_create:
         main_language_code = child.split(":", 1)[0]
@@ -215,7 +230,7 @@ def update_node_children(entry, new_children_ids):
 
     # Stores result of last query executed
     result = []
-    for child in added_children:
+    for child in normalised_added_children:
         # Create new relationships if it doesn't exist
         query = f"""
             MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child
