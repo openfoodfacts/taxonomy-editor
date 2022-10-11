@@ -186,7 +186,8 @@ def update_nodes(label, entry, new_node_keys):
                 normalised_value = []
                 for values in new_node_keys[keys]:
                     normalised_value.append(normalizing(values, keys_language_code))
-                normalised_new_node_keys[keys] = normalised_value
+                normalised_new_node_keys[keys] = new_node_keys[keys]
+
                 normalised_new_node_keys["tags_ids_"+keys_language_code] = normalised_value
         else:
             normalised_new_node_keys[keys] = new_node_keys[keys]
