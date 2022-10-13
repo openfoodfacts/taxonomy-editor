@@ -90,7 +90,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
             {relations && relations.length === 0 && <Typography sx={{ml: 8, mb: 1, mt: 1}} variant="h6"> None </Typography>}
 
             {/* Dialog box for adding translations */}
-            <Dialog openDialog={openDialog} onClose={handleCloseDialog}>
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Add a child</DialogTitle>
                 <DialogContent>
                 <DialogContentText>

@@ -1,16 +1,36 @@
-import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select, Button } from "@mui/material";
+import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select, Button, Alert, Snackbar } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TAXONOMY_NAMES } from "../../constants";
+import { createBaseURL } from "../editentry/createURL";
 
-const StartProject = () => {
-    const [branchName, setBranchName] = useState("")
-    const [taxonomyName, setTaxonomyName] = useState("additives")
-    const [description, setDescription] = useState("");
+const GotoProject = () => {
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [branchName, setBranchName] = useState("");
+    const [taxonomyName, setTaxonomyName] = useState("additives");
     const navigate = useNavigate();
-    
+
+    // Helper functions for Dialog component 
+    const handleClose = () => {setOpenSnackbar(false)};
+
     function handleSubmit() {
-        // Work in progress..
+        const url = createBaseURL(taxonomyName, branchName);
+        fetch(url+'rootnodes', {
+            method: 'GET',
+        }).then(res => { 
+            if (!res.ok) {
+                throw Error("Could not fetch the data for resource!")
+            }
+            return res.json();
+        }).then((data) => {
+            console.log(data);
+            if (data.length === 0) {
+                setOpenSnackbar(true);
+            } 
+            else {
+                navigate(`/${taxonomyName}/${branchName}/entry`);
+            }
+        }).catch(() => {})
     }
     return (
         <Box>
@@ -20,8 +40,8 @@ const StartProject = () => {
             alignItems="center"
             justifyContent="center"
             >
-                <Typography sx={{mt: 4}} variant="h3">Start a project</Typography>
-                <Stack sx={{mt: 4, mb: 4}} direction="row" alignItems="center">
+                <Typography sx={{mt: 4}} variant="h3">Existing project?</Typography>
+                <Stack sx={{mt: 6, mb: 4}} direction="row" alignItems="center">
                     <Typography sx={{mr: 4}} variant="h5">Taxonomy Name</Typography>
                     <FormControl>
                         <InputLabel>Type</InputLabel>
@@ -54,18 +74,6 @@ const StartProject = () => {
                         value={branchName}
                         variant="outlined" />
                 </Stack>
-                <Stack sx={{mt: 4}} direction="row" alignItems="center">
-                    <Typography sx={{mr: 10}} variant="h5">Description</Typography>
-                    <TextField
-                        sx={{width: 265}}
-                        minRows={4}
-                        multiline
-                        onChange = {event => {
-                            setDescription(event.target.value)
-                        }}
-                        value={description} 
-                        variant="outlined" />
-                </Stack>
                 {/* Button for submitting edits */}
                 <Button
                     variant="contained"
@@ -74,8 +82,15 @@ const StartProject = () => {
                         Submit
                 </Button>
             </Grid>
+            {/* Snackbar for acknowledgment of update */}
+            <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'right'}} open={openSnackbar} autoHideDuration={3000} onClose={handleClose}>
+                <Alert elevation={6} variant="filled" onClose={handleClose} severity="error">
+                    Your project is not found!
+                </Alert>
+            </Snackbar>
         </Box>
+        
     );
 }
  
-export default StartProject;
+export default GotoProject;
