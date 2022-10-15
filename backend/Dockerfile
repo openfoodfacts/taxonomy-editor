@@ -15,9 +15,11 @@ RUN groupadd -g $USER_GID off && \
     chown off:off -R /code /home/off
 
 COPY ./requirements.txt /code/requirements.txt
+RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
+    pip3 install --upgrade -r /code/requirements.txt
 
 USER off:off
-RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY --chown=off:off ./editor /code/editor
 
 CMD ["uvicorn", "editor.api:app", "--host", "0.0.0.0", "--port", "80"]
