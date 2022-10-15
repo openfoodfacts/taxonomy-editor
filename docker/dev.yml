@@ -40,3 +40,11 @@ services:
     volumes:
       # mount public folder dynamically
       - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
+  taxonomy-backend:
+    image: taxonomy-editor/taxonomy_backend:dev
+    build:
+      context: backend
+      # align user id
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
