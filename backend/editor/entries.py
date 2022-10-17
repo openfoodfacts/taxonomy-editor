@@ -2,11 +2,14 @@
 Database helper functions for API
 """
 import re
-import urllib.request
+import os
 
-from .graph_db import get_current_transaction, get_current_session               # Neo4J transactions helper
-from openfoodfacts_taxonomy_parser import parser            # Parser for taxonomies
-from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
+import urllib.request                                                           # Sending requests
+from .exceptions import TaxnonomyImportError, TaxonomyParsingError              # Custom exceptions
+from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
+
+from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
+from openfoodfacts_taxonomy_parser import normalizer                            # Normalizing tags
 
 class TaxonomyGraph:
 
@@ -50,22 +53,30 @@ class TaxonomyGraph:
         return result
 
     def parse_taxonomy(self, filename):
+        # Close current transaction to use the session variable in parser
+        get_current_transaction().commit()
+
+        # Create parser object and pass current session to it
         parser_object = parser.Parser(get_current_session())
         try:
+            # Parse taxonomy with given file name and branch name
             parser_object(filename, self.branch_name, self.taxonomy_name)
             return True
         except:
-            return False
+            return TaxonomyParsingError()
 
     def import_from_github(self):
         base_url = "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/main/taxonomies/"
         filename = ('_'.join(self.taxonomy_name.lower().split()) + '.txt')
         base_url += filename
         try:
+            # Downloads and creates taxonomy file in current working directory
             urllib.request.urlretrieve(base_url, filename)
-            return self.parse_taxonomy(filename)
+            status = self.parse_taxonomy(filename) # Parse the taxonomy
+            os.remove(filename) # Removes taxonomy file after parsing
+            return status
         except:
-            return False
+            return TaxnonomyImportError()
 
     def add_node_to_end(self, label, entry):
         """

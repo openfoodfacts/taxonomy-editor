@@ -17,14 +17,14 @@ session.set(None)
 def TransactionCtx():
     """
     Transaction context will set global transaction "txn" for the code in context
-    Transactions are automatically rollbacked if an exception occurs within the context
+    Transactions are automatically rollback if an exception occurs within the context
     """
-    global txn
+    global txn, session
     with driver.session() as _session:
         with _session.begin_transaction() as _txn:
             txn.set(_txn)
             session.set(_session)
-            yield txn
+            yield txn, session
     txn.set(None)
     session.set(None)
 
