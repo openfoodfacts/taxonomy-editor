@@ -81,6 +81,15 @@ async def pong(response: Response):
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
 
+@app.get("/{taxonomy_name}/{branch}/import")
+async def importFromGithub(response: Response, branch: str, taxonomy_name: str):
+    """
+    Get taxonomy from Product Opener GitHub repository 
+    """
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = taxonomy.import_from_github()
+    return result
+
 @app.get("/{taxonomy_name}/{branch}/nodes")
 async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
     """

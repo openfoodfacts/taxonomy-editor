@@ -2,7 +2,10 @@
 Database helper functions for API
 """
 import re
+import urllib.request
+
 from .graph_db import get_current_transaction               # Neo4J transactions helper
+from openfoodfacts_taxonomy_parser import parser            # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
 
 class TaxonomyGraph:
@@ -10,6 +13,8 @@ class TaxonomyGraph:
     """Class for database operations"""
     
     def __init__(self, branch_name, taxonomy_name):
+        self.taxonomy_name = taxonomy_name
+        self.branch_name = branch_name
         self.project_name = 'p_' + taxonomy_name + '_' + branch_name
         
     def get_label(self, id):
@@ -43,6 +48,24 @@ class TaxonomyGraph:
         params["canonical_tag"] = canonical_tag
         result = get_current_transaction().run(" ".join(query), params)
         return result
+
+    def parse_taxonomy(self, filename):
+        parser_object = parser.Parser()
+        try:
+            parser_object(filename, self.branch_name, self.taxonomy_name)
+            return True
+        except:
+            return False
+
+    def import_from_github(self):
+        base_url = "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/main/taxonomies/"
+        filename = ('_'.join(self.taxonomy_name.lower().split()) + '.txt')
+        base_url += filename
+        try:
+            urllib.request.urlretrieve(base_url, filename)
+            return self.parse_taxonomy(filename)
+        except:
+            return False
 
     def add_node_to_end(self, label, entry):
         """
@@ -124,7 +147,7 @@ class TaxonomyGraph:
         Helper function used for getting all root nodes in a taxonomy
         """
         query = f"""
-            MATCH (n:{self.multi_label}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+            MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
         """
         result = get_current_transaction().run(query)
         return result
