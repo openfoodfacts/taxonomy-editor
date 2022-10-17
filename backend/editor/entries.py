@@ -53,6 +53,9 @@ class TaxonomyGraph:
         return result
 
     def parse_taxonomy(self, filename):
+        """
+        Helper function to call the Open Food Facts Python Taxonomy Parser
+        """
         # Close current transaction to use the session variable in parser
         get_current_transaction().commit()
 
@@ -65,18 +68,52 @@ class TaxonomyGraph:
         except:
             return TaxonomyParsingError()
 
-    def import_from_github(self):
+    def import_from_github(self, description):
+        """
+        Helper function to import a taxonomy from GitHub
+        """
         base_url = "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/main/taxonomies/"
-        filename = ('_'.join(self.taxonomy_name.lower().split()) + '.txt')
+        filename = self.taxonomy_name + '.txt'
         base_url += filename
         try:
             # Downloads and creates taxonomy file in current working directory
             urllib.request.urlretrieve(base_url, filename)
             status = self.parse_taxonomy(filename) # Parse the taxonomy
+            self.create_project(description) # Creates a "project node" in neo4j
             os.remove(filename) # Removes taxonomy file after parsing
             return status
         except:
             return TaxnonomyImportError()
+    
+    def check_if_project_exists(self):
+        """
+        Helper function to check the existence of a project
+        """
+        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n"""
+        result = get_current_transaction().run(query, {"project_name" : self.project_name})
+        if (result.data() == []):
+            return False
+        else:
+            return True
+    
+    def create_project(self, description):
+        """
+        Helper function to create a node with label "PROJECT"
+        """
+        query = """
+            CREATE (n:PROJECT) 
+            SET n.id = $project_name
+            SET n.taxonomy_name = $taxonomy_name
+            SET n.branch_name = $branch_name
+            SET n.description = $description
+        """
+        params = {
+            'project_name' : self.project_name,
+            'taxonomy_name' : self.taxonomy_name,
+            'branch_name' : self.branch_name,
+            'description' : description
+        }
+        result = get_current_session().run(query, params)
 
     def add_node_to_end(self, label, entry):
         """

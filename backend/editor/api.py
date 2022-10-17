@@ -81,15 +81,6 @@ async def pong(response: Response):
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
 
-@app.get("/{taxonomy_name}/{branch}/import")
-async def importFromGithub(response: Response, branch: str, taxonomy_name: str):
-    """
-    Get taxonomy from Product Opener GitHub repository 
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.import_from_github()
-    return result
-
 @app.get("/{taxonomy_name}/{branch}/nodes")
 async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
     """
@@ -228,6 +219,21 @@ async def searchNode(response: Response, branch: str, taxonomy_name: str, query:
     return result
 
 # Post methods
+
+@app.post("/{taxonomy_name}/{branch}/import")
+async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
+    """
+    Get taxonomy from Product Opener GitHub repository 
+    """
+    incomingData = await request.json()
+    description = incomingData["description"]
+
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    if (taxonomy.check_if_project_exists()):
+        raise HTTPException(status_code=500, detail="Project already exists!")
+    
+    result = taxonomy.import_from_github(description)
+    return result
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
 async def createNode(request: Request, branch: str, taxonomy_name: str):
