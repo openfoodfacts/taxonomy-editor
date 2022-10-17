@@ -3,7 +3,6 @@ import re
 import sys
 
 import iso639
-from neo4j import GraphDatabase
 
 from .exception import DuplicateIDError
 from .normalizer import normalizing
