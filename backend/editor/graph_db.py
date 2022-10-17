@@ -10,6 +10,9 @@ from .exceptions import TransactionMissingError     # Custom exceptions
 txn = contextvars.ContextVar('txn')
 txn.set(None)
 
+session = contextvars.ContextVar('session')
+session.set(None)
+
 @contextlib.contextmanager
 def TransactionCtx():
     """
@@ -17,11 +20,13 @@ def TransactionCtx():
     Transactions are automatically rollbacked if an exception occurs within the context
     """
     global txn
-    with driver.session() as session:
-        with session.begin_transaction() as _txn:
+    with driver.session() as _session:
+        with _session.begin_transaction() as _txn:
             txn.set(_txn)
+            session.set(_session)
             yield txn
     txn.set(None)
+    session.set(None)
 
 def initialize_db():
     """
@@ -42,3 +47,10 @@ def get_current_transaction():
     if (curr_txn == None):
         raise TransactionMissingError()
     return curr_txn
+
+
+def get_current_session():
+    curr_session = session.get()
+    if (curr_session == None):
+        raise TransactionMissingError()
+    return curr_session

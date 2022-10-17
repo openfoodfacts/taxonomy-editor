@@ -50,7 +50,7 @@ class TaxonomyGraph:
         return result
 
     def parse_taxonomy(self, filename):
-        parser_object = parser.Parser()
+        parser_object = parser.Parser(get_current_session())
         try:
             parser_object(filename, self.branch_name, self.taxonomy_name)
             return True

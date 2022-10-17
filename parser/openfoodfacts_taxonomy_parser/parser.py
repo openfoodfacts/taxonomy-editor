@@ -17,11 +17,8 @@ def ellipsis(text, max=20):
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
 
-    def __init__(self, uri="bolt://localhost:7687"):
-        self.driver = GraphDatabase.driver(uri)
-        self.session = (
-            self.driver.session()
-        )  # Doesn't create error even if there is no active database
+    def __init__(self, session):
+        self.session = session
 
     def create_headernode(self, header, multi_label):
         """Create the node for the header"""
