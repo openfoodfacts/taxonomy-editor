@@ -4,7 +4,7 @@ Database helper functions for API
 import re
 import urllib.request
 
-from .graph_db import get_current_transaction               # Neo4J transactions helper
+from .graph_db import get_current_transaction, get_current_session               # Neo4J transactions helper
 from openfoodfacts_taxonomy_parser import parser            # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
 
