@@ -23,7 +23,6 @@ const GotoProject = () => {
             }
             return res.json();
         }).then((data) => {
-            console.log(data);
             if (data.length === 0) {
                 setOpenSnackbar(true);
             } 
@@ -56,7 +55,7 @@ const GotoProject = () => {
                             {
                                 TAXONOMY_NAMES.map((element) => {
                                     return (
-                                        <option value={element.toLowerCase()}>{element}</option>
+                                        <option key={element} value={element.toLowerCase()}>{element}</option>
                                     )
                                 })
                             }
@@ -77,6 +76,7 @@ const GotoProject = () => {
                 {/* Button for submitting edits */}
                 <Button
                     variant="contained"
+                    disabled={!branchName || !taxonomyName}
                     onClick={handleSubmit}
                     sx={{mt:4, width: 130}}>
                         Submit

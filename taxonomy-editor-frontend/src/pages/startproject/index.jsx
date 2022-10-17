@@ -1,16 +1,33 @@
-import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select, Button } from "@mui/material";
+import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select } from "@mui/material";
+import LoadingButton from '@mui/lab/LoadingButton';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TAXONOMY_NAMES } from "../../constants";
+import { createBaseURL } from "../editentry/createURL";
 
 const StartProject = () => {
     const [branchName, setBranchName] = useState("")
     const [taxonomyName, setTaxonomyName] = useState("additives")
     const [description, setDescription] = useState("");
+    const [loading, setLoading] = useState(false); 
     const navigate = useNavigate();
     
     function handleSubmit() {
-        // Work in progress..
+        const url = createBaseURL(taxonomyName, branchName)
+        setLoading(true);
+        const dataToBeSent = {'description' : description};
+        fetch(url+'import', {
+            method : 'POST',
+            headers: {"Content-Type" : "application/json"},
+            body: JSON.stringify(dataToBeSent)
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error("Project already exists!");
+            }
+            navigate(`/${taxonomyName}/${branchName}/entry`)
+        }).catch((errorMessage) => {
+            console.log(errorMessage)
+        })
     }
     return (
         <Box>
@@ -36,7 +53,7 @@ const StartProject = () => {
                             {
                                 TAXONOMY_NAMES.map((element) => {
                                     return (
-                                        <option value={element.toLowerCase()}>{element}</option>
+                                        <option key={element} value={element.toLowerCase().replaceAll(/\s/g, '_')}>{element}</option>
                                     )
                                 })
                             }
@@ -67,12 +84,14 @@ const StartProject = () => {
                         variant="outlined" />
                 </Stack>
                 {/* Button for submitting edits */}
-                <Button
+                <LoadingButton
                     variant="contained"
+                    loading={loading}
+                    disabled={!branchName || !taxonomyName}
                     onClick={handleSubmit}
                     sx={{mt:4, width: 130}}>
                         Submit
-                </Button>
+                </LoadingButton>
             </Grid>
         </Box>
     );
