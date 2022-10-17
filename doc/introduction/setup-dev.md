@@ -112,7 +112,7 @@ export REACT_APP_API_URL="http://localhost:8080/"
 npm start
 ```
 
-This should open http://localhost:3000/
+This should open http://localhost:8080/
 
 
 ### Importing some test data
