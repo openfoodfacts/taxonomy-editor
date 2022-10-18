@@ -229,7 +229,7 @@ async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
     description = incomingData["description"]
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    if (taxonomy.check_branch_name()):
+    if (not taxonomy.check_branch_name()):
         raise HTTPException(status_code=500, detail="Enter a valid branch name!")
     if (taxonomy.check_if_project_exists()):
         raise HTTPException(status_code=500, detail="Project already exists!")
