@@ -96,6 +96,23 @@ class TaxonomyGraph:
         else:
             return True
     
+    def check_if_branch_is_unique(self):
+        """
+        Helper function to check uniqueness of GitHub branch
+        """
+        query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
+        result = get_current_transaction().run(query, {"branch_name" : self.branch_name})
+        if (result.data() == []):
+            return False
+        else:
+            return True
+    
+    def check_branch_name(self):
+        """
+        Helper function to check if a branch name is valid
+        """
+        return normalizer.normalizing(self.branch_name) == self.branch_name
+    
     def create_project(self, description):
         """
         Helper function to create a node with label "PROJECT"
