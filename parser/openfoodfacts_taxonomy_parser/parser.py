@@ -438,7 +438,7 @@ if __name__ == "__main__":
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
 
-    # Initialize noe4j
+    # Initialize neo4j
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     driver = GraphDatabase.driver(uri)
     session = driver.session()

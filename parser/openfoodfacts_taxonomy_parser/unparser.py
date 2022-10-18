@@ -1,3 +1,4 @@
+import os
 import sys
 
 from neo4j import GraphDatabase
@@ -8,10 +9,8 @@ from .normalizer import normalizing
 class WriteTaxonomy:
     """Write the taxonomy of the neo4j database into a file"""
 
-    def __init__(self, uri="bolt://localhost:7687"):
-        self.driver = GraphDatabase.driver(uri)
-        # Doesn't create error even if there is no active database
-        self.session = self.driver.session()
+    def __init__(self, session):
+        self.session = session
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
@@ -144,5 +143,12 @@ if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
-    write = WriteTaxonomy()
+
+    # Initialize neo4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    # Pass session variable to unparser object
+    write = WriteTaxonomy(session)
     write(filename, branch_name, taxonomy_name)

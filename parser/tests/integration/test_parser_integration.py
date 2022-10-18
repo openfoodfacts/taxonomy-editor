@@ -3,7 +3,6 @@ import pathlib
 
 import pytest
 from neo4j import GraphDatabase
-
 from openfoodfacts_taxonomy_parser import parser
 
 # taxonomy in text format : test.txt

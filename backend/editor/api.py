@@ -7,6 +7,7 @@ from datetime import datetime
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Data model imports
@@ -218,6 +219,12 @@ async def searchNode(response: Response, branch: str, taxonomy_name: str, query:
     result = taxonomy.full_text_search(query)
     return result
 
+@app.get("/{taxonomy_name}/{branch}/export")
+async def exportToTextFile(response: Response, branch: str, taxonomy_name: str):
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = taxonomy.export_taxonomy()
+    return FileResponse(result)
+
 # Post methods
 
 @app.post("/{taxonomy_name}/{branch}/import")
@@ -235,6 +242,7 @@ async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
         raise HTTPException(status_code=500, detail="Project already exists!")
     if (taxonomy.check_if_branch_is_unique()):
         raise HTTPException(status_code=500, detail="Branch name should be unique!")
+
     result = taxonomy.import_from_github(description)
     return result
 

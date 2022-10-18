@@ -3,7 +3,6 @@ import pathlib
 
 import pytest
 from neo4j import GraphDatabase
-
 from openfoodfacts_taxonomy_parser import parser, unparser
 
 # taxonomy in text format : test.txt
@@ -52,11 +51,12 @@ def test_round_trip():
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
-    session.close()
 
     # dump taxonomy back
-    test_dumper = unparser.WriteTaxonomy()
+    test_dumper = unparser.WriteTaxonomy(session)
     lines = list(test_dumper.iter_lines("p_test_branch:t_test:b_branch"))
+
+    session.close()
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
@@ -81,7 +81,7 @@ def test_round_trip():
 def test_two_branch_round_trip():
     """test parsing and dumping the same taxonomy with two different branches"""
 
-    # Initialize noe4j
+    # Initialize neo4j
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     driver = GraphDatabase.driver(uri)
     session = driver.session()
@@ -103,12 +103,13 @@ def test_two_branch_round_trip():
     result = session.run(query)
     number_of_nodes = result.value()[0]
     assert number_of_nodes == 13
-    session.close()
 
     # dump taxonomy back
-    test_dumper = unparser.WriteTaxonomy()
+    test_dumper = unparser.WriteTaxonomy(session)
     lines_branch1 = list(test_dumper.iter_lines("p_test_branch1:t_test:b_branch1"))
     lines_branch2 = list(test_dumper.iter_lines("p_test_branch2:t_test:b_branch2"))
+
+    session.close()
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks

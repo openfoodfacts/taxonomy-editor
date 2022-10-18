@@ -5,10 +5,12 @@ import re
 import os
 
 import urllib.request                                                           # Sending requests
-from .exceptions import TaxnonomyImportError, TaxonomyParsingError              # Custom exceptions
+from .exceptions import TaxnonomyImportError
+from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError            # Custom exceptions
 from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
 
 from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
+from openfoodfacts_taxonomy_parser import unparser                              # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import normalizer                            # Normalizing tags
 
 class TaxonomyGraph:
@@ -84,6 +86,24 @@ class TaxonomyGraph:
             return status
         except:
             return TaxnonomyImportError()
+    
+    def export_taxonomy(self):
+        """
+        Helper function to export a taxonomy for download
+        """
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        # Create unparser object and pass current session to it
+        unparser_object = unparser.WriteTaxonomy(get_current_session())
+        filename = self.taxonomy_name + '.txt'
+        try:
+            # Parse taxonomy with given file name and branch name
+            unparser_object(filename, self.branch_name, self.taxonomy_name)
+            return filename
+        except:
+            return TaxonomyUnparsingError()
+
     
     def check_if_project_exists(self):
         """

@@ -25,3 +25,11 @@ class TaxonomyParsingError(RuntimeError):
     def __init__(self):
         exception_message = "Unable to parse the requested taxonomy file imported from GitHub"
         return super().__init__(exception_message)
+
+class TaxonomyUnparsingError(RuntimeError):
+    """
+    Raised whem attempting to unparse a taxonomy exported from Neo4j
+    """
+    def __init__(self):
+        exception_message = "Unable to unparse the requested taxonomy exported from Neo4j"
+        return super().__init__(exception_message)
