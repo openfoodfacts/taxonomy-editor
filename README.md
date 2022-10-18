@@ -1,16 +1,16 @@
 # Taxonomy Editor
-Taxonomies are at the 🧡 of Open Food Facts data structure which provides an editor.
+Taxonomies are at the 🧡 of Open Food Facts data structure. This project provides an user-friendly editor for editing taxonomies easily.
 
 ![Github Repo Size](https://img.shields.io/github/repo-size/openfoodfacts/taxonomy-editor?style=for-the-badge&color=aqua)
 
 
-Visit the [doc folder](./doc)
+Please visit the [doc folder](./doc) for more documentation about the Taxonomy Editor.
 > This documentation tries to follow as much as possible the documentation system from [Diataxis](https://diataxis.fr/).
 
 ## Contributing
 
-- <b>to develop:</b> [Setup a dev environment](./doc/introduction/setup-dev.md)
-- <b>to translate:</b> use [Crowdin](https://crowdin.com/project/openfoodfacts), project open food facts
+- <b>To develop:</b> [Setup a dev environment](./doc/introduction/setup-dev.md)
+- <b>To translate:</b> use [Crowdin](https://crowdin.com/project/openfoodfacts), project Open Food Facts.
 - report issues, feature requests etc.
 
 
