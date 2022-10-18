@@ -1,4 +1,4 @@
-import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select } from "@mui/material";
+import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select, Snackbar, Alert } from "@mui/material";
 import LoadingButton from '@mui/lab/LoadingButton';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,8 @@ const StartProject = () => {
     const [taxonomyName, setTaxonomyName] = useState("additives")
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false); 
+    const [open, setOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("")
     const navigate = useNavigate();
     
     function handleSubmit() {
@@ -22,13 +24,15 @@ const StartProject = () => {
             body: JSON.stringify(dataToBeSent)
         }).then((response) => {
             if (!response.ok) {
-                throw new Error("Project already exists!");
+                return response.json();
             }
             navigate(`/${taxonomyName}/${branchName}/entry`)
-        }).catch((errorMessage) => {
-            console.log(errorMessage)
+        }).then((responseBody) => {
+            setErrorMessage(responseBody.detail)
+            setOpen(true); setLoading(false);
         })
     }
+    function handleClose() {setOpen(false);}
     return (
         <Box>
             <Grid
@@ -93,6 +97,11 @@ const StartProject = () => {
                         Submit
                 </LoadingButton>
             </Grid>
+            <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'right'}} open={open} autoHideDuration={3000} onClose={handleClose}>
+                <Alert elevation={6} variant="filled" onClose={handleClose} severity="error">
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

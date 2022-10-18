@@ -55,7 +55,7 @@ const GotoProject = () => {
                             {
                                 TAXONOMY_NAMES.map((element) => {
                                     return (
-                                        <option key={element} value={element.toLowerCase()}>{element}</option>
+                                        <option key={element} value={element.toLowerCase().replaceAll(/\s/g, '_')}>{element}</option>
                                     )
                                 })
                             }
