@@ -1,6 +1,8 @@
+import os
 import pathlib
 
 import pytest
+from neo4j import GraphDatabase
 
 from openfoodfacts_taxonomy_parser import parser
 
@@ -20,8 +22,13 @@ def test_setup(neo4j):
 
 
 def test_calling():
-    test_parser = parser.Parser()
-    session = test_parser.session
+
+    # Initialize neo4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    test_parser = parser.Parser(session)
 
     # Create node test
     test_parser.create_nodes(TEST_TAXONOMY_TXT, "p_test_branch:t_test:b_branch")
@@ -163,3 +170,4 @@ def test_calling():
     ]
     for pair in created_pairs:
         assert pair in expected_pairs
+    session.close()

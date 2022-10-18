@@ -1,8 +1,10 @@
 import logging
+import os
 import re
 import sys
 
 import iso639
+from neo4j import GraphDatabase
 
 from .exception import DuplicateIDError
 from .normalizer import normalizing
@@ -435,5 +437,12 @@ if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
-    parse = Parser()
+
+    # Initialize noe4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    # Pass session variable to parser object
+    parse = Parser(session)
     parse(filename, branch_name, taxonomy_name)

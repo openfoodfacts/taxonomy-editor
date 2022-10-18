@@ -1,6 +1,8 @@
+import os
 import pathlib
 
 import pytest
+from neo4j import GraphDatabase
 
 from openfoodfacts_taxonomy_parser import parser, unparser
 
@@ -35,8 +37,13 @@ def test_setup(neo4j):
 
 def test_round_trip():
     """test parsing and dumping back a taxonomy"""
-    test_parser = parser.Parser()
-    session = test_parser.session
+
+    # Initialize neo4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    test_parser = parser.Parser(session)
 
     # parse taxonomy
     test_parser(TEST_TAXONOMY_TXT, "branch", "test")
@@ -73,8 +80,13 @@ def test_round_trip():
 
 def test_two_branch_round_trip():
     """test parsing and dumping the same taxonomy with two different branches"""
-    test_parser = parser.Parser()
-    session = test_parser.session
+
+    # Initialize noe4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    test_parser = parser.Parser(session)
 
     # parse taxonomy with branch1
     test_parser(TEST_TAXONOMY_TXT, "branch1", "test")
