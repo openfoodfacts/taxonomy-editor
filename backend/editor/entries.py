@@ -20,7 +20,7 @@ def create_node(label, entry, main_language_code):
     """
     #Normalising new Node ID
 
-    normalised_entry = normalizing(entry, main_language_code).split(':', 1)[1]
+    normalised_entry = normalizing(entry, main_language_code)
      
     query = [f"""CREATE (n:{label})\n"""]
     params = {"id": normalised_entry}
@@ -177,28 +177,30 @@ def update_nodes(label, entry, new_node_keys):
             continue
         query.append(f"""\nREMOVE n.{key}\n""")
 
-    #Normalising Node to be Updated
-    normalised_new_node_keys = {}
+    # Adding normalized tags ids corresponding to entry tags
+    normalised_new_node_key = {}
     for keys in new_node_keys.keys():
-        if keys.startswith("tags") and not keys.endswith("str"):
-            if "ids" not in keys:
+        if keys.startswith("tags_") and not keys.endswith("_str"):
+            if "_ids_" not in keys:
                 keys_language_code = keys.split('_', 1)[1]
                 normalised_value = []
                 for values in new_node_keys[keys]:
                     normalised_value.append(normalizing(values, keys_language_code))
-                normalised_new_node_keys[keys] = new_node_keys[keys]
-
-                normalised_new_node_keys["tags_ids_"+keys_language_code] = normalised_value
+                normalised_new_node_key[keys] = normalised_value
+                normalised_new_node_key["tags_ids_"+keys_language_code] = normalised_value
+            else:
+                pass
         else:
-            normalised_new_node_keys[keys] = new_node_keys[keys]
+            # No need to normalise
+            normalised_new_node_key[keys] = new_node_keys[keys]
 
     # Update keys
-    for key in normalised_new_node_keys.keys():
+    for key in normalised_new_node_key.keys():
         query.append(f"""\nSET n.{key} = ${key}\n""")
 
     query.append(f"""RETURN n""")
 
-    params = dict(normalised_new_node_keys, id=entry)
+    params = dict(normalised_new_node_key, id=entry)
     result = get_current_transaction().run(" ".join(query), params)
     return result
 
@@ -225,22 +227,19 @@ def update_node_children(entry, new_children_ids):
     existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
     to_create = added_children - set(existing_ids)
 
-    #Normalising new children node ID
-    normalised_added_children = set()
-    for child_node in to_create:
-        child_language_code, new_child_name = child_node.split(":",1)
-        normalised_added_children.add(normalizing(new_child_name,child_language_code))
-
-    for child in normalised_added_children:
+    # Normalising new children node ID
+    created_child_ids = []
+    for child in to_create:
         main_language_code = child.split(":", 1)[0]
-        create_node("ENTRY", child, main_language_code)
+        created_node = create_node("ENTRY", child, main_language_code)
+        created_child_ids.append(created_node.id)
         
         # TODO: We would prefer to add the node just after its parent entry
         add_node_to_end("ENTRY", child)
 
     # Stores result of last query executed
     result = []
-    for child in normalised_added_children:
+    for child in created_child_ids:
         # Create new relationships if it doesn't exist
         query = f"""
             MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child
