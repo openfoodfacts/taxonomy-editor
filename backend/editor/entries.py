@@ -189,7 +189,7 @@ def update_nodes(label, entry, new_node_keys):
                 normalised_new_node_key[keys] = normalised_value
                 normalised_new_node_key["tags_ids_"+keys_language_code] = normalised_value
             else:
-                pass
+                pass   # we generate tags_ids, and ignore the one sent
         else:
             # No need to normalise
             normalised_new_node_key[keys] = new_node_keys[keys]
