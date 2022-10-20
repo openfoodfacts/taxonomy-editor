@@ -3,6 +3,7 @@ import pathlib
 
 import pytest
 from neo4j import GraphDatabase
+
 from openfoodfacts_taxonomy_parser import parser
 
 # taxonomy in text format : test.txt
@@ -20,13 +21,8 @@ def test_setup(neo4j):
     neo4j.session().run(query)
 
 
-def test_calling():
-
-    # Initialize neo4j
-    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
-
+def test_calling(neo4j):
+    session = neo4j.session()
     test_parser = parser.Parser(session)
 
     # Create node test

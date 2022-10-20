@@ -3,6 +3,7 @@ Database helper functions for API
 """
 import re
 import os
+import tempfile
 
 import urllib.request                                                           # Sending requests
 from .exceptions import TaxnonomyImportError
@@ -68,7 +69,7 @@ class TaxonomyGraph:
             parser_object(filename, self.branch_name, self.taxonomy_name)
             return True
         except:
-            return TaxonomyParsingError()
+            raise TaxonomyParsingError()
 
     def import_from_github(self, description):
         """
@@ -78,14 +79,19 @@ class TaxonomyGraph:
         filename = self.taxonomy_name + '.txt'
         base_url += filename
         try:
-            # Downloads and creates taxonomy file in current working directory
-            urllib.request.urlretrieve(base_url, filename)
-            status = self.parse_taxonomy(filename) # Parse the taxonomy
-            self.create_project(description) # Creates a "project node" in neo4j
-            os.remove(filename) # Removes taxonomy file after parsing
-            return status
+            with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+
+                # File to save the downloaded taxonomy
+                filepath = f"{tmpdir}/{filename}"
+
+                # Downloads and creates taxonomy file in current working directory
+                urllib.request.urlretrieve(base_url, filepath)
+
+                status = self.parse_taxonomy(filepath) # Parse the taxonomy
+                self.create_project(description) # Creates a "project node" in neo4j
+                return status
         except:
-            return TaxnonomyImportError()
+            raise TaxnonomyImportError()
     
     def export_taxonomy(self):
         """
@@ -102,10 +108,10 @@ class TaxonomyGraph:
             unparser_object(filename, self.branch_name, self.taxonomy_name)
             return filename
         except:
-            return TaxonomyUnparsingError()
+            raise TaxonomyUnparsingError()
 
     
-    def check_if_project_exists(self):
+    def does_project_exist(self):
         """
         Helper function to check the existence of a project
         """
@@ -116,7 +122,7 @@ class TaxonomyGraph:
         else:
             return True
     
-    def check_if_branch_is_unique(self):
+    def is_branch_unique(self):
         """
         Helper function to check uniqueness of GitHub branch
         """
@@ -127,7 +133,7 @@ class TaxonomyGraph:
         else:
             return True
     
-    def check_branch_name(self):
+    def is_valid_branch_name(self):
         """
         Helper function to check if a branch name is valid
         """
@@ -143,12 +149,14 @@ class TaxonomyGraph:
             SET n.taxonomy_name = $taxonomy_name
             SET n.branch_name = $branch_name
             SET n.description = $description
+            SET n.status = $status
         """
         params = {
             'project_name' : self.project_name,
             'taxonomy_name' : self.taxonomy_name,
             'branch_name' : self.branch_name,
-            'description' : description
+            'description' : description,
+            'status' : 'OPEN'
         }
         result = get_current_session().run(query, params)
 

@@ -9,12 +9,8 @@ from openfoodfacts_taxonomy_parser import normalizer, parser
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
 
 
-def test_normalized_filename():
-
-    # Initialize neo4j
-    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
+def test_normalized_filename(neo4j):
+    session = neo4j.session()
 
     x = parser.Parser(session)
     normalizer = x.normalized_filename
@@ -27,15 +23,11 @@ def test_normalized_filename():
     session.close()
 
 
-def test_fileiter():
-
-    # Initialize neo4j
-    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
-
+def test_fileiter(neo4j):
+    session = neo4j.session()
     x = parser.Parser(session)
     file = x.file_iter(TEST_TAXONOMY_TXT)
+
     for counter, (_, line) in enumerate(file):
         assert line == "" or line[0] == "#" or ":" in line
         if counter == 26:

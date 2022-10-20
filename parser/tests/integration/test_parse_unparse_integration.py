@@ -3,6 +3,7 @@ import pathlib
 
 import pytest
 from neo4j import GraphDatabase
+
 from openfoodfacts_taxonomy_parser import parser, unparser
 
 # taxonomy in text format : test.txt
@@ -34,14 +35,9 @@ def test_setup(neo4j):
     neo4j.session().run(query2)
 
 
-def test_round_trip():
+def test_round_trip(neo4j):
     """test parsing and dumping back a taxonomy"""
-
-    # Initialize neo4j
-    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
-
+    session = neo4j.session()
     test_parser = parser.Parser(session)
 
     # parse taxonomy
@@ -78,13 +74,10 @@ def test_round_trip():
     assert expected_lines == lines
 
 
-def test_two_branch_round_trip():
+def test_two_branch_round_trip(neo4j):
     """test parsing and dumping the same taxonomy with two different branches"""
 
-    # Initialize neo4j
-    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
+    session = neo4j.session()
 
     test_parser = parser.Parser(session)
 
