@@ -1,7 +1,4 @@
-import os
 import pathlib
-
-from neo4j import GraphDatabase
 
 from openfoodfacts_taxonomy_parser import normalizer, parser
 
