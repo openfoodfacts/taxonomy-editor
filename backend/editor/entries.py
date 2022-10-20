@@ -2,7 +2,6 @@
 Database helper functions for API
 """
 import re
-import os
 import tempfile
 
 import urllib.request                                                           # Sending requests
@@ -100,6 +99,8 @@ class TaxonomyGraph:
         # Close current transaction to use the session variable in unparser
         get_current_transaction().commit()
 
+        self.close_project() # Close the project
+
         # Create unparser object and pass current session to it
         unparser_object = unparser.WriteTaxonomy(get_current_session())
         filename = self.taxonomy_name + '.txt'
@@ -110,7 +111,6 @@ class TaxonomyGraph:
         except:
             raise TaxonomyUnparsingError()
 
-    
     def does_project_exist(self):
         """
         Helper function to check the existence of a project
@@ -150,15 +150,43 @@ class TaxonomyGraph:
             SET n.branch_name = $branch_name
             SET n.description = $description
             SET n.status = $status
+            SET n.created_at = datetime() 
         """
         params = {
             'project_name' : self.project_name,
             'taxonomy_name' : self.taxonomy_name,
             'branch_name' : self.branch_name,
             'description' : description,
-            'status' : 'OPEN'
+            'status' : "OPEN"
         }
         result = get_current_session().run(query, params)
+    
+    def close_project(self):
+        """
+        Helper function to close a Taxonomy Editor project and updates project status as "CLOSED"
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.id = $project_name
+            SET n.status = $status
+        """
+        params = {
+            'project_name' : self.project_name,
+            'status' : "CLOSED"
+        }
+        result = get_current_session().run(query, params)
+
+    def list_existing_projects(self):
+        """
+        Helper function for listing all existing projects created in Taxonomy Editor
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.status = "OPEN" RETURN n 
+            ORDER BY n.created_at
+        """
+        result = get_current_transaction().run(query)
+        return result
 
     def add_node_to_end(self, label, entry):
         """

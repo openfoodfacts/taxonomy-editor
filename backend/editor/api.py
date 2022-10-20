@@ -4,6 +4,7 @@ Taxonomy Editor Backend API
 # Required imports
 #----------------------------------------------------------------------------#
 from datetime import datetime
+from unittest import result
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request, HTTPException
@@ -81,6 +82,16 @@ async def pong(response: Response):
     """
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
+
+@app.get("/projects")
+async def listAllProjects(response: Response):
+    """
+    List all open projects created in the Taxonomy Editor
+    """
+    # Listing all projects doesn't require a taoxnomy name or branch name
+    taxonony = TaxonomyGraph("", "")
+    result = list(taxonony.list_existing_projects())
+    return result
 
 @app.get("/{taxonomy_name}/{branch}/nodes")
 async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
