@@ -4,6 +4,8 @@ Taxonomy Editor Backend API
 # Required imports
 #----------------------------------------------------------------------------#
 from datetime import datetime
+import os
+from starlette.background import BackgroundTask
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request, HTTPException
@@ -67,6 +69,12 @@ def check_single(id):
         raise HTTPException(status_code=404, detail="Entry not found")
     elif len(id) > 1:
         raise HTTPException(status_code=500, detail="Multiple entries found")
+    
+def file_cleanup(filepath):
+    try:
+        os.remove(filepath)
+    except:
+        raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
 
 # Get methods
 
@@ -232,8 +240,8 @@ async def searchNode(response: Response, branch: str, taxonomy_name: str, query:
 @app.get("/{taxonomy_name}/{branch}/export")
 async def exportToTextFile(response: Response, branch: str, taxonomy_name: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.export_taxonomy()
-    return FileResponse(result)
+    file = taxonomy.export_taxonomy()
+    return FileResponse(file, background=BackgroundTask(file_cleanup, file))
 
 # Post methods
 
