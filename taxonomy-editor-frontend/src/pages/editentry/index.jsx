@@ -1,5 +1,5 @@
 import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -9,7 +9,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AccumulateAllComponents from "./AccumulateAllComponents";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { createBaseURL } from "./createURL";
-import { useEffect } from "react";
 
 const EditEntry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName, id } = useParams();

@@ -1,7 +1,7 @@
 import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
 import { Link, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -17,11 +17,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
-import { useEffect } from "react";
+import { toTitleCase } from "../editentry/interConvertNames"
 
 const Entry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
-    const title = taxonomyName.charAt(0).toUpperCase() + taxonomyName.slice(1);
+    const title = toTitleCase(taxonomyName);
     const baseURL = createBaseURL(taxonomyName, branchName);
     const urlPrefix = `${taxonomyName}/${branchName}/`;
     const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseURL}rootnodes`);
