@@ -6,7 +6,7 @@ import { API_URL } from "../../constants";
 import MaterialTable from '@material-table/core';
 import EditIcon from '@mui/icons-material/Edit';
 import { useEffect } from "react";
-import { toSnakeCase, toTitleCase } from "../editentry/interConvertNames";
+import { toSnakeCase, toTitleCase } from "../../components/interConvertNames";
 
 const GotoProject = () => {
     const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}projects`);

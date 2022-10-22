@@ -17,7 +17,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
-import { toTitleCase } from "../editentry/interConvertNames"
+import { toTitleCase } from "../../components/interConvertNames"
 
 const Entry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
@@ -37,7 +37,8 @@ const Entry = ({setDisplayedPages}) => {
     useEffect(() => {
         setDisplayedPages([
             { url: urlPrefix+"entry", translationKey: "Nodes" },
-            { url: urlPrefix+"search", translationKey: "Search" }
+            { url: urlPrefix+"search", translationKey: "Search" },
+            { url: urlPrefix+"export", translationKey: "Export" }
         ])
     }, [urlPrefix, setDisplayedPages])
 
@@ -78,7 +79,7 @@ const Entry = ({setDisplayedPages}) => {
     return (
         <Box>
             <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
-                List of current root nodes
+                Root Nodes:
             </Typography>
             <TableContainer sx={{ml: 2, width: 375}}>
                 <Table style={{border: "solid", borderWidth: 1.5}}>

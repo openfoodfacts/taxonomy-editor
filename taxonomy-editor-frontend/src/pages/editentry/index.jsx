@@ -21,7 +21,8 @@ const EditEntry = ({setDisplayedPages}) => {
     useEffect(() => {
         setDisplayedPages([
             { url: urlPrefix+"entry", translationKey: "Nodes" },
-            { url: urlPrefix+"search", translationKey: "Search" }
+            { url: urlPrefix+"search", translationKey: "Search" },
+            { url: urlPrefix+"export", translationKey: "Export" }
         ])
     }, [urlPrefix, setDisplayedPages])
 

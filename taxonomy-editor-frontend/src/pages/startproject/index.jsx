@@ -7,7 +7,7 @@ import { createBaseURL } from "../editentry/createURL";
 
 const StartProject = () => {
     const [branchName, setBranchName] = useState("")
-    const [taxonomyName, setTaxonomyName] = useState("additives")
+    const [taxonomyName, setTaxonomyName] = useState(null)
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false); 
     const [open, setOpen] = useState(false);
@@ -30,7 +30,7 @@ const StartProject = () => {
         }).then((responseBody) => {
             setErrorMessage(responseBody.detail)
             setOpen(true); setLoading(false);
-        })
+        }).catch(() => {})
     }
     function handleClose() {setOpen(false);}
     return (

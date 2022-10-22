@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import Entry from "./pages/allentries";
 import EditEntry from "./pages/editentry";
+import ExportTaxonomy from "./pages/export";
 import GotoProject from "./pages/gotoproject";
 import Home from './pages/home';
 import SearchNode from "./pages/search";
@@ -31,6 +32,7 @@ function App() {
             <Route path="/" element={<Home setDisplayedPages={setDisplayedPages} />} />
             <Route path="/startproject" element={<StartProject />} />
             <Route path="/gotoproject" element={<GotoProject />} />
+            <Route path=":taxonomyName/:branchName/export" element={<ExportTaxonomy setDisplayedPages={setDisplayedPages} />}></Route>
             <Route path=":taxonomyName/:branchName/entry" element={<Entry setDisplayedPages={setDisplayedPages} />} />
             <Route path=":taxonomyName/:branchName/entry/:id" element={<EditEntry setDisplayedPages={setDisplayedPages} />} />
             <Route path=":taxonomyName/:branchName/search" element={<SearchNode setDisplayedPages={setDisplayedPages} />} />

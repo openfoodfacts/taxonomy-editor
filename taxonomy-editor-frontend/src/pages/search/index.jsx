@@ -1,10 +1,9 @@
 import { Typography, Box, TextField, Grid, IconButton, InputAdornment } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
 import { useParams } from "react-router-dom";
-import { useEffect } from "react";
 
 const SearchNode = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
@@ -16,7 +15,8 @@ const SearchNode = ({setDisplayedPages}) => {
     useEffect(() => {
         setDisplayedPages([
             { url: urlPrefix+"entry", translationKey: "Nodes" },
-            { url: urlPrefix+"search", translationKey: "Search" }
+            { url: urlPrefix+"search", translationKey: "Search" },
+            { url: urlPrefix+"export", translationKey: "Export" }
         ])
     }, [urlPrefix, setDisplayedPages])
     
