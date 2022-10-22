@@ -254,11 +254,11 @@ async def exportToTextFile(response: Response, branch: str, taxonomy_name: str):
 async def exportToGithub(response: Response, branch: str, taxonomy_name: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
-        status, file = taxonomy.export_taxonomy(type_of_export="github")
+        url, file = taxonomy.export_taxonomy(type_of_export="github")
         # Add a background task for removing exported taxonomy file
         tasks = BackgroundTasks()
         tasks.add_task(file_cleanup, file)
-        return status
+        return url
 
     except GithubBranchExistsError:
         raise HTTPException(status_code=500, detail="The Github branch already exists!")

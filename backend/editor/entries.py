@@ -133,8 +133,8 @@ class TaxonomyGraph:
             raise GithubBranchExistsError()
         try:
             github_object.update_file(filename)
-            github_object.create_pr(description)
-            return (True, filename)
+            pr_object = github_object.create_pr(description)
+            return (pr_object.html_url, filename)
         except:
             raise GithubUploadError()
 

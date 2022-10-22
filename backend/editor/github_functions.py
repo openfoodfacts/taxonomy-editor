@@ -64,4 +64,4 @@ class GithubOperations:
         ### Description
         {description}
         """)
-        self.repo.create_pull(title=title, body=body, head=self.branch_name, base="main")
+        return self.repo.create_pull(title=title, body=body, head=self.branch_name, base="main")
