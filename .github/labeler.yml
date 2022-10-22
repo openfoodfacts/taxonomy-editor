@@ -78,3 +78,4 @@ tests:
 - parser/tests/conftest.py
 - parser/tests/data/test.txt
 - parser/tests/integration/__init__.py
+- parser/tests/**/*
