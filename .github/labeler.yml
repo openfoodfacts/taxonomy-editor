@@ -14,6 +14,7 @@ documentation:
 - doc/introduction/setup-dev.md
 - doc/references/taxonomy-parser.md
 - doc/assets/.empty
+- doc/**/*
 
 docker:
 - backend/Dockerfile
