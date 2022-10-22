@@ -17,6 +17,7 @@ documentation:
 
 docker:
 - backend/Dockerfile
+- taxonomy-editor-frontend/Dockerfile
 - docker-compose.yml
 - docker/dev.yml
 
