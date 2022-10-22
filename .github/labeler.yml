@@ -37,11 +37,13 @@ backend:
 - backend/sample/test.json
 - backend/sample/test.txt
 
-dependancies:
+dependencies:
 - backend/requirements.txt
 - parser/requirements-dev.txt
 - parser/requirements-test.txt
 - parser/requirements.txt
+- taxonomy-editor-frontend/package.json
+- taxonomy-editor-frontend/package-lock.json
 
 api:
 - backend/editor/api.py
