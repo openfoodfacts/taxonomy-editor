@@ -5,8 +5,12 @@ import re
 import tempfile
 
 import urllib.request                                                           # Sending requests
+from .github_functions import GithubOperations                                  # Github functions
+
 from .exceptions import TaxnonomyImportError
-from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError            # Custom exceptions
+from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError            
+from .exceptions import GithubUploadError, GithubBranchExistsError              # Custom exceptions
+
 from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
 
 from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
@@ -92,9 +96,9 @@ class TaxonomyGraph:
         except:
             raise TaxnonomyImportError()
     
-    def export_taxonomy(self):
+    def export_taxonomy(self, type_of_export):
         """
-        Helper function to export a taxonomy for download
+        Helper function to export a taxonomy through download or Github
         """
         # Close current transaction to use the session variable in unparser
         get_current_transaction().commit()
@@ -107,9 +111,32 @@ class TaxonomyGraph:
         try:
             # Parse taxonomy with given file name and branch name
             unparser_object(filename, self.branch_name, self.taxonomy_name)
-            return filename
+            if type_of_export == "download":
+                return filename
+            elif type_of_export == "github":
+                return self.export_to_github(filename)
         except:
             raise TaxonomyUnparsingError()
+    
+    def export_to_github(self, filename):
+        """
+        Helper function to export a taxonomy to GitHub
+        """
+        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
+        result = get_current_session().run(query, {"project_name": self.project_name})
+        description = result.data()[0]['n.description']
+
+        github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+        try:
+            github_object.checkout_branch()
+        except:
+            raise GithubBranchExistsError()
+        try:
+            github_object.update_file(filename)
+            github_object.create_pr(description)
+            return (True, filename)
+        except:
+            raise GithubUploadError()
 
     def does_project_exist(self):
         """
@@ -128,10 +155,14 @@ class TaxonomyGraph:
         """
         query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
         result = get_current_transaction().run(query, {"branch_name" : self.branch_name})
-        if (result.data() == []):
-            return False
-        else:
+
+        github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+        current_branches = github_object.list_all_branches()
+
+        if ((result.data() == []) and (self.branch_name not in current_branches)):
             return True
+        else:
+            return False
     
     def is_valid_branch_name(self):
         """

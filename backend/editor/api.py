@@ -5,12 +5,14 @@ Taxonomy Editor Backend API
 #----------------------------------------------------------------------------#
 from datetime import datetime
 import os
-from starlette.background import BackgroundTask
 
 # FastAPI
-from fastapi import FastAPI, status, Response, Request, HTTPException
+from fastapi import FastAPI, status, Response, Request, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+# Custom exceptions
+from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
 from .models import Header, Footer
@@ -237,11 +239,32 @@ async def searchNode(response: Response, branch: str, taxonomy_name: str, query:
     result = taxonomy.full_text_search(query)
     return result
 
-@app.get("/{taxonomy_name}/{branch}/export")
+@app.get("/{taxonomy_name}/{branch}/downloadexport")
 async def exportToTextFile(response: Response, branch: str, taxonomy_name: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    file = taxonomy.export_taxonomy()
-    return FileResponse(file, background=BackgroundTask(file_cleanup, file))
+    file = taxonomy.export_taxonomy(type_of_export="download")
+
+    # Add a background task for removing exported taxonomy file
+    tasks = BackgroundTasks()
+    tasks.add_task(file_cleanup, file)
+
+    return FileResponse(file, background=tasks)
+
+@app.get("/{taxonomy_name}/{branch}/githubexport")
+async def exportToGithub(response: Response, branch: str, taxonomy_name: str):
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    try:
+        status, file = taxonomy.export_taxonomy(type_of_export="github")
+        # Add a background task for removing exported taxonomy file
+        tasks = BackgroundTasks()
+        tasks.add_task(file_cleanup, file)
+        return status
+
+    except GithubBranchExistsError:
+        raise HTTPException(status_code=500, detail="The Github branch already exists!")
+
+    except GithubUploadError:
+        raise HTTPException(status_code=500, detail="Github upload error!")
 
 # Post methods
 
@@ -258,7 +281,7 @@ async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
         raise HTTPException(status_code=500, detail="Enter a valid branch name!")
     if (taxonomy.does_project_exist()):
         raise HTTPException(status_code=500, detail="Project already exists!")
-    if (taxonomy.is_branch_unique()):
+    if (not taxonomy.is_branch_unique()):
         raise HTTPException(status_code=500, detail="Branch name should be unique!")
 
     result = taxonomy.import_from_github(description)
