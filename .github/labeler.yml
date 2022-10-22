@@ -71,6 +71,7 @@ parser:
 - parser/tests/conftest.py
 - parser/tests/data/test.txt
 - parser/tests/integration/__init__.py
+- parser/**/*
 
 tests:
 - parser/tests/__init__.py
