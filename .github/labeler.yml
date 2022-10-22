@@ -52,7 +52,7 @@ nginx:
 - conf/nginx.conf
 
 neo4j:
-- neo4j/.empty
+- neo4j/**/*
   
 parser:
 - parser/Makefile
