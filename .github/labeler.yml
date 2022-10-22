@@ -37,6 +37,7 @@ backend:
 - backend/sample/test-neo4j.json
 - backend/sample/test.json
 - backend/sample/test.txt
+- backend/**/*
 
 dependencies:
 - backend/requirements.txt
