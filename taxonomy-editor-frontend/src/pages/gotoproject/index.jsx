@@ -46,7 +46,7 @@ const GotoProject = () => {
             alignItems="center"
             justifyContent="center"
             >
-                <Typography sx={{mt: 4}} variant="h3">Existing project?</Typography>
+                <Typography sx={{mt: 4}} variant="h3">Existing Project?</Typography>
                 <Typography sx={{mt: 2}} variant="h6">List of open projects</Typography>
                 <MaterialTable
                     data={projectData}
@@ -56,16 +56,13 @@ const GotoProject = () => {
                         { title: 'Branch', field: 'branchName' }
                     ]}
                     options={{
-                        rowStyle: {
-                            overflowWrap: 'break-word'
-                        },
                         actionsColumnIndex: -1, addRowPosition: "last",
                         showTitle: false,
                     }}
                     actions={[
                         {
                             icon: () => <EditIcon />,
-                            tooltip: "Go to project",
+                            tooltip: "Edit project",
                             onClick: (event, rowData) => {
                                 navigate(`/${toSnakeCase(rowData['taxonomyName'])}/${rowData['branchName']}/entry`);
                             }

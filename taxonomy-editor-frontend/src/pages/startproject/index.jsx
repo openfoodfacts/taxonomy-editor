@@ -1,4 +1,4 @@
-import { Typography, Box, Grid, TextField, Stack, FormControl, InputLabel, Select, Snackbar, Alert } from "@mui/material";
+import { Typography, Box, Grid, TextField, Stack, Autocomplete, Snackbar, Alert } from "@mui/material";
 import LoadingButton from '@mui/lab/LoadingButton';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -44,25 +44,16 @@ const StartProject = () => {
                 <Typography sx={{mt: 4}} variant="h3">Start a project</Typography>
                 <Stack sx={{mt: 4, mb: 4}} direction="row" alignItems="center">
                     <Typography sx={{mr: 4}} variant="h5">Taxonomy Name</Typography>
-                    <FormControl>
-                        <InputLabel>Type</InputLabel>
-                        <Select
-                            native
-                            label="Type"
-                            value={taxonomyName}
-                            onChange={(e) => {
-                                setTaxonomyName(e.target.value);
-                            }}
-                        >
-                            {
-                                TAXONOMY_NAMES.map((element) => {
-                                    return (
-                                        <option key={element} value={element.toLowerCase().replaceAll(/\s/g, '_')}>{element}</option>
-                                    )
-                                })
-                            }
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        sx={{width: 265}}
+                        options={ TAXONOMY_NAMES }
+                        onChange={(e, selectedTaxonomy) => {
+                            if (selectedTaxonomy) setTaxonomyName(selectedTaxonomy.toLowerCase().replaceAll(/\s/g, '_'));
+                            else setTaxonomyName(null);
+                        }}
+                        renderInput={(params) => <TextField {...params} />}
+                    >
+                    </Autocomplete>
                 </Stack>
                 <Stack direction="row" alignItems="center">
                     <Typography sx={{mr: 8}} variant="h5">Branch Name</Typography>

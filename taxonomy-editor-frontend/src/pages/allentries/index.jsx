@@ -1,4 +1,4 @@
-import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
+import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -77,14 +77,42 @@ const Entry = ({setDisplayedPages}) => {
     }
     return (
         <Box>
-            <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
-                List of root nodes in {title} Taxonomy:
+            <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
+                List of current root nodes
             </Typography>
+            <TableContainer sx={{ml: 2, width: 375}}>
+                <Table style={{border: "solid", borderWidth: 1.5}}>
+                    <TableHead>
+                        <TableCell align="left">
+                            <Typography variant="h6">
+                                Taxonony Name
+                            </Typography>
+                        </TableCell>
+                        <TableCell align="left">
+                            <Typography variant="h6">
+                                Branch Name
+                            </Typography>
+                        </TableCell>
+                    </TableHead>
+                    <TableBody>
+                        <TableCell align="left" component="td" scope="row">
+                            <Typography variant="body1">
+                                {title}                                
+                            </Typography>
+                        </TableCell>
+                        <TableCell align="left" component="td" scope="row">
+                            <Typography variant="body1">
+                                {branchName}
+                            </Typography>
+                        </TableCell>
+                    </TableBody>
+                </Table>
+            </TableContainer>
             <Typography variant="h6" sx={{mt: 2, ml: 2, mb: 1}}>
                 Number of root nodes in taxonomy: {nodes.length}
             </Typography>
             {/* Table for listing all nodes in taxonomy */}
-            <TableContainer sx={{ml: 2, width: 375}} component={Paper}>
+            <TableContainer sx={{ml: 2, width: 375}}>
                 <Table>
                     <TableHead>
                     <TableRow>
