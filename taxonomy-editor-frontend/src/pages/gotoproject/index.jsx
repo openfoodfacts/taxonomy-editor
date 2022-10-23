@@ -16,11 +16,10 @@ const GotoProject = () => {
     useEffect(() => { 
         const renderedProjects = [];
         if (incomingData) {
-            console.log(incomingData);
             incomingData.forEach((element) => {
                 const projectNode = element[0];
                 renderedProjects.push({
-                    'id' : Math.random().toString(),
+                    'id' : Math.random().toString(),    // Used as Material Table component key
                     'projectName' : projectNode['id'],
                     'taxonomyName' : toTitleCase(projectNode['taxonomy_name']),
                     'branchName' : projectNode['branch_name']
