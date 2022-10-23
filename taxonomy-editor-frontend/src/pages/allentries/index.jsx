@@ -22,9 +22,9 @@ import { toTitleCase } from "../editentry/interConvertNames"
 const Entry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
     const title = toTitleCase(taxonomyName);
-    const baseURL = createBaseURL(taxonomyName, branchName);
+    const baseUrl = createBaseURL(taxonomyName, branchName);
     const urlPrefix = `${taxonomyName}/${branchName}/`;
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseURL}rootnodes`);
+    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseUrl}rootnodes`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -32,34 +32,35 @@ const Entry = ({setDisplayedPages}) => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
+    const greyHexCode = "#808080";
 
     // Set url prefix for navbar component
-    useEffect(() => {
-        setDisplayedPages([
-            { url: urlPrefix+"entry", translationKey: "Nodes" },
-            { url: urlPrefix+"search", translationKey: "Search" }
-        ])
-    }, [urlPrefix, setDisplayedPages])
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([
+                { url: urlPrefix+"entry", translationKey: "Nodes" },
+                { url: urlPrefix+"search", translationKey: "Search" }
+            ])
+        }, [urlPrefix, setDisplayedPages]
+    );
 
     // Helper functions for Dialog component
-    function handleCloseAddDialog() { setOpenAddDialog(false); }
-    function handleOpenAddDialog() { setOpenAddDialog(true); }
-    function handleOpenSuccessSnackbar() { setOpenSuccessSnackbar(true); }
-    function handleCloseSuccessSnackbar() { setOpenSuccessSnackbar(false); }
+    const handleCloseAddDialog = () => { setOpenAddDialog(false); }
+    const handleOpenAddDialog = () => { setOpenAddDialog(true); }
+    const handleOpenSuccessSnackbar = () => { setOpenSuccessSnackbar(true); }
+    const handleCloseSuccessSnackbar = () => { setOpenSuccessSnackbar(false); }
     
-    function handleAddNode() {
+    const handleAddNode = () => {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(baseURL+'nodes', {
+        fetch(baseUrl+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
             handleCloseAddDialog();
             handleOpenSuccessSnackbar();
-        }).catch((errorMessage) => {
-            // Do nothing
-        })
+        }).catch(() => {})
     }
     if (isError) {
         return (
@@ -122,7 +123,7 @@ const Entry = ({setDisplayedPages}) => {
                                 Nodes
                             </Typography>
                             </TableCell>
-                            <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenAddDialog}>
+                            <IconButton sx={{ml: 1, color: greyHexCode}} onClick={handleOpenAddDialog}>
                                 <AddBoxIcon />
                             </IconButton>
                         </Stack>

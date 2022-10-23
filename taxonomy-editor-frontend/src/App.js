@@ -26,7 +26,7 @@ function App() {
     <CssBaseline />
     <Router>
         <ResponsiveAppBar displayedPages={displayedPages}/>
-        <div className="App">
+        <div>
           <Routes>
             <Route path="/" element={<Home setDisplayedPages={setDisplayedPages} />} />
             <Route path="/startproject" element={<StartProject />} />

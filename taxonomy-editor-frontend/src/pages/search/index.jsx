@@ -13,12 +13,14 @@ const SearchNode = ({setDisplayedPages}) => {
     const [queryFetchString, setQueryFetchString] = useState("");
 
     // Set url prefix for navbar component
-    useEffect(() => {
-        setDisplayedPages([
-            { url: urlPrefix+"entry", translationKey: "Nodes" },
-            { url: urlPrefix+"search", translationKey: "Search" }
-        ])
-    }, [urlPrefix, setDisplayedPages])
+    useEffect(
+      function addUrlPrefixToNavbar() {
+          setDisplayedPages([
+              { url: urlPrefix+"entry", translationKey: "Nodes" },
+              { url: urlPrefix+"search", translationKey: "Search" }
+          ])
+      }, [urlPrefix, setDisplayedPages]
+    );
     
     return (
       <Box>

@@ -9,10 +9,12 @@ import { useEffect } from 'react';
 
 const Home = ({setDisplayedPages}) => {
 
-    // Hide pages in navbar component at home
-    useEffect(() => {
-        setDisplayedPages([])
-    }, [setDisplayedPages])
+    // Hide pages in navbar component at home    
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([])
+        }, [setDisplayedPages]
+    );
 
     return (
         <Container component="main" maxWidth="md">
