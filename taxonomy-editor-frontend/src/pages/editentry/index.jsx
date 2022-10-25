@@ -13,36 +13,37 @@ import { createBaseURL } from "./createURL";
 const EditEntry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName, id } = useParams();
     const urlPrefix = `${taxonomyName}/${branchName}/`;
-    const url = createBaseURL(taxonomyName, branchName);
+    const baseUrl = createBaseURL(taxonomyName, branchName);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+    const greyHexCode = "#808080";
 
     // Set url prefix for navbar component
-    useEffect(() => {
-        setDisplayedPages([
-            { url: urlPrefix+"entry", translationKey: "Nodes" },
-            { url: urlPrefix+"search", translationKey: "Search" },
-            { url: urlPrefix+"export", translationKey: "Export" }
-        ])
-    }, [urlPrefix, setDisplayedPages])
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([
+                { url: urlPrefix+"entry", translationKey: "Nodes" },
+                { url: urlPrefix+"search", translationKey: "Search" },
+                { url: urlPrefix+"export", translationKey: "Export" }
+            ])
+        }, [urlPrefix, setDisplayedPages]
+    );
 
     // Helper functions for Dialog component
-    function handleCloseDeleteDialog() { setOpenDeleteDialog(false); }
-    function handleOpenDeleteDialog() { setOpenDeleteDialog(true); }
-    function handleOpenSuccessDialog() { setOpenSuccessDialog(true); }
+    const handleCloseDeleteDialog = () => { setOpenDeleteDialog(false); }
+    const handleOpenDeleteDialog = () => { setOpenDeleteDialog(true); }
+    const handleOpenSuccessDialog = () => { setOpenSuccessDialog(true); }
     
-    function handleDeleteNode() {
+    const handleDeleteNode = () => {
         const data = {"id" : id}
-        fetch(url+'nodes', {
+        fetch(baseUrl+'nodes', {
             method : 'DELETE',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
             handleCloseDeleteDialog();
             handleOpenSuccessDialog();
-        }).catch((errorMessage) => {
-            console.log(errorMessage);
-        })
+        }).catch(() => {})
     }
 
     return (
@@ -53,7 +54,7 @@ const EditEntry = ({setDisplayedPages}) => {
                     <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
                         You are now editing "{id}"
                     </Typography>
-                    <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenDeleteDialog}>
+                    <IconButton sx={{ml: 1, color: greyHexCode}} onClick={handleOpenDeleteDialog}>
                         <DeleteOutlineIcon />
                     </IconButton>
                 </Stack>

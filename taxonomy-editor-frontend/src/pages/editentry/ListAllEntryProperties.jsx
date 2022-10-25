@@ -34,14 +34,14 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     }, [nodeObject])
 
     // Helper function used for changing comments from node
-    function changeCommentData(value) {
+    const changeCommentData = (value) => {
         const newNodeObject = {...nodeObject};
         newNodeObject['preceding_lines'] = value;
         setNodeObject(newNodeObject);
     }
 
     // Helper function used for changing properties of node
-    function changePropertyData(key, value) {
+    const changePropertyData = (key, value) => {
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
             newNodeObject["prop_"+key] = value;
@@ -50,7 +50,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     }
 
     // Helper function used for deleting properties of node
-    function deletePropertyData(key) {
+    const deletePropertyData = (key) => {
         setNodeObject(prevState => {
             const toRemove = "prop_"+key;
             const {[toRemove]: _, ...newNodeObject} = prevState;

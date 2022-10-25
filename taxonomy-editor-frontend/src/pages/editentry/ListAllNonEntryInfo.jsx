@@ -19,6 +19,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     const [languageCode, setLanguageCode] = useState('');
     // Storing tags that need to be rendered for editing
     const [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([])
+    const greyHexCode = "#808080";
 
     useEffect(() => {
         const tagsExtracted = []
@@ -52,14 +53,14 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     }, [nodeObject])
     
     // Helper function used for changing state of "preceding_lines"
-    function changeDataComment(value) {
+    const changeDataComment = (value) => {
         const newNodeObject = {...nodeObject};
         newNodeObject['preceding_lines'] = value.split('\n');
         setNodeObject(newNodeObject);
     }
 
     // Helper function used for changing state of properties
-    function changeData(index, value) {
+    const changeData = (index, value) => {
         const updatedTagObject = {'index' : index, 'tag' : value}
         const newRenderedNonEntryInfo = renderedNonEntryInfo.map(obj => (obj.index === index) ? updatedTagObject : obj)
         setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
@@ -74,7 +75,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
         })
     }
 
-    function handleAdd() {
+    const handleAdd = () => {
         const newRenderedNonEntryInfo = [...renderedNonEntryInfo, {'index': Math.random().toString(), 'tag' : ''}];
         setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
@@ -87,7 +88,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
         })
     }
 
-    function handleDelete(index) {
+    const handleDelete = (index) => {
         const newRenderedNonEntryInfo = renderedNonEntryInfo.filter(obj => !(obj.index === index))
         setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
@@ -133,7 +134,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                         <Typography sx={{ml: 4, mt: 1, mb: 1.3}} variant='h5'>
                             { IDType }
                         </Typography>
-                        <Button sx={{ml: -1, color: "#808080"}} onClick={handleAdd}>
+                        <Button sx={{ml: -1, color: greyHexCode}} onClick={handleAdd}>
                             <AddBoxIcon />
                         </Button>
                     </Stack>
@@ -153,7 +154,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                                         value={tag}
                                         variant="outlined" />
                                 </Paper>
-                                <Button sx={{ml: -1, mt: 1, color: "#808080"}} onClick={(e) => handleDelete(index, e)}>
+                                <Button sx={{ml: -1, mt: 1, color: greyHexCode}} onClick={(e) => handleDelete(index, e)}>
                                     <DeleteOutlineIcon />
                                 </Button>
                             </Stack>

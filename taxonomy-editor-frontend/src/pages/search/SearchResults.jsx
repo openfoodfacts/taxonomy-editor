@@ -20,9 +20,9 @@ import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
 
 const SearchResults = ({query, taxonomyName, branchName}) => {
-    const url = createBaseURL(taxonomyName, branchName);
+    const baseUrl = createBaseURL(taxonomyName, branchName);
     const urlPrefix = `/${taxonomyName}/${branchName}`
-    const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${url}search?query=${encodeURI(query)}`);
+    const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseUrl}search?query=${encodeURI(query)}`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -30,26 +30,25 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
+    const greyHexCode = "#808080";
 
     // Helper functions for Dialog component
-    function handleCloseAddDialog() { setOpenAddDialog(false); }
-    function handleOpenAddDialog() { setOpenAddDialog(true); }
-    function handleOpenSuccessSnackbar() { setOpenSuccessSnackbar(true); }
-    function handleCloseSuccessSnackbar() { setOpenSuccessSnackbar(false); }
+    const handleCloseAddDialog = () => { setOpenAddDialog(false); }
+    const handleOpenAddDialog = () => { setOpenAddDialog(true); }
+    const handleOpenSuccessSnackbar = () => { setOpenSuccessSnackbar(true); }
+    const handleCloseSuccessSnackbar = () => { setOpenSuccessSnackbar(false); }
     
     function handleAddNode() {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(url+'nodes', {
+        fetch(baseUrl+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
             handleCloseAddDialog();
             handleOpenSuccessSnackbar();
-        }).catch((errorMessage) => {
-            // Do nothing
-        })
+        }).catch(() => {})
     }
 
     // Displaying errorMessages if any
@@ -107,7 +106,7 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
                                     Nodes
                                 </Typography>
                                 </TableCell>
-                                <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenAddDialog}>
+                                <IconButton sx={{ml: 1, color: greyHexCode}} onClick={handleOpenAddDialog}>
                                     <AddBoxIcon />
                                 </IconButton>
                             </Stack>

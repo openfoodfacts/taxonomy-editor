@@ -1,35 +1,45 @@
-import { Typography, Box, Grid, TextField, Stack, Autocomplete, Snackbar, Alert, Button, CircularProgress } from "@mui/material";
+import { Typography, Box, Grid, TextField, Stack, Autocomplete, Snackbar, Alert, CircularProgress, Button } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
+import { toSnakeCase } from "../editentry/interConvertNames";
 
 const StartProject = () => {
     const [branchName, setBranchName] = useState("")
     const [taxonomyName, setTaxonomyName] = useState(null)
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false); 
-    const [open, setOpen] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("")
+    const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
     
-    function handleSubmit() {
-        const url = createBaseURL(taxonomyName, branchName)
+    const handleSubmit = () => {
+        const baseUrl = createBaseURL(taxonomyName, branchName)
         setLoading(true);
         const dataToBeSent = {'description' : description};
-        fetch(url+'import', {
+        fetch(baseUrl+'import', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(dataToBeSent)
-        }).then((response) => {
+        }).then(async (response) => {
+            const responseBody = await response.json();
             if (!response.ok) {
-                return response.json();
+                throw Error(responseBody.detail)
             }
             navigate(`/${taxonomyName}/${branchName}/entry`)
-        }).then((responseBody) => {
-            setErrorMessage(responseBody.detail)
-            setOpen(true); setLoading(false);
-        }).catch(() => {})
+        }).catch((detail) => {
+            setErrorMessage(detail.message); setLoading(false);
+        })
+    }
+    const handleClose = () => {setErrorMessage(null);}
+    const LoadingButton = (props) => {
+        const { onClick, loading, text, sx } = props;
+        return (
+            <Button variant="contained" sx={sx} onClick={onClick} disabled={loading}>
+                {loading && <CircularProgress size={24} />}
+                {!loading && text}
+            </Button>
+        );    
     }
     function handleClose() {setOpen(false);}
     function LoadingButton(props) {
@@ -56,7 +66,7 @@ const StartProject = () => {
                         sx={{width: 265}}
                         options={ TAXONOMY_NAMES }
                         onChange={(e, selectedTaxonomy) => {
-                            if (selectedTaxonomy) setTaxonomyName(selectedTaxonomy.toLowerCase().replaceAll(/\s/g, '_'));
+                            if (selectedTaxonomy) setTaxonomyName(toSnakeCase(selectedTaxonomy));
                             else setTaxonomyName(null);
                         }}
                         renderInput={(params) => <TextField {...params} />}
@@ -96,7 +106,12 @@ const StartProject = () => {
                 >
                 </LoadingButton>
             </Grid>
-            <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'right'}} open={open} autoHideDuration={3000} onClose={handleClose}>
+            <Snackbar 
+                anchorOrigin={{vertical: 'top', horizontal: 'right'}} 
+                open={!!errorMessage} 
+                autoHideDuration={3000} 
+                onClose={handleClose}
+            >
                 <Alert elevation={6} variant="filled" onClose={handleClose} severity="error">
                     {errorMessage}
                 </Alert>

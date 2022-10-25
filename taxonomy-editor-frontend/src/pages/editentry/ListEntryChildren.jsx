@@ -19,6 +19,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     const [newLanguageCode, setNewLanguageCode] = useState(null);
     const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
+    const greyHexCode = "#808080";
 
     const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     
@@ -35,10 +36,10 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     }, [incomingData, setUpdateNodeChildren])
 
     // Helper functions for Dialog component
-    function handleCloseDialog() { setOpenDialog(false); }
-    function handleOpenDialog() { setOpenDialog(true); }
+    const handleCloseDialog = () => { setOpenDialog(false); }
+    const handleOpenDialog = () => { setOpenDialog(true); }
 
-    function handleAddChild() {
+    const handleAddChild = () => {
         const newChildID = newLanguageCode + ':' + newChild; // Reconstructing node ID
         setRelations([...relations, {"index" : Math.random().toString(), "child": newChildID}]);
         setUpdateNodeChildren(prevState => {
@@ -49,7 +50,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
         setOpenDialog(false);
     }
 
-    function handleDeleteChild(index) {
+    const handleDeleteChild = (index) => {
         const newRelations = relations.filter(obj => !(index === obj.index))
         setRelations(newRelations);
         // Updated tags assigned for later use
@@ -68,7 +69,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
         <Box>
             <Stack direction="row" alignItems="center">
                 <Typography sx={{ml: 4}} variant='h5'>Children</Typography>
-                <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenDialog}>
+                <IconButton sx={{ml: 1, color: greyHexCode}} onClick={handleOpenDialog}>
                     <AddBoxIcon />
                 </IconButton>
             </Stack>
@@ -80,7 +81,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
                             {relationObject['child']}
                         </Typography>
                     </Link>
-                    <IconButton sx={{ml: 1, color: "#808080"}} onClick={(e) => handleDeleteChild(relationObject['index'], e)}>
+                    <IconButton sx={{ml: 1, color: greyHexCode}} onClick={(e) => handleDeleteChild(relationObject['index'], e)}>
                         <DeleteOutlineIcon />
                     </IconButton>
                 </Stack>
