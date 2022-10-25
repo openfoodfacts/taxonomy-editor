@@ -1,5 +1,4 @@
-import { Typography, Box, Grid, TextField, Stack, Autocomplete, Snackbar, Alert } from "@mui/material";
-import LoadingButton from '@mui/lab/LoadingButton';
+import { Typography, Box, Grid, TextField, Stack, Autocomplete, Snackbar, Alert, Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TAXONOMY_NAMES } from "../../constants";
@@ -33,6 +32,15 @@ const StartProject = () => {
         }).catch(() => {})
     }
     function handleClose() {setOpen(false);}
+    function LoadingButton(props) {
+        const { onClick, loading, text, sx } = props;
+        return (
+            <Button variant="contained" sx={sx} onClick={onClick} disabled={loading}>
+                {loading && <CircularProgress size={24} />}
+                {!loading && text}
+            </Button>
+        );    
+    }
     return (
         <Box>
             <Grid
@@ -80,12 +88,12 @@ const StartProject = () => {
                 </Stack>
                 {/* Button for submitting edits */}
                 <LoadingButton
-                    variant="contained"
                     loading={loading}
                     disabled={!branchName || !taxonomyName}
                     onClick={handleSubmit}
-                    sx={{mt:4, width: 130}}>
-                        Submit
+                    sx={{mt:4, width: 130}}
+                    text="Submit"
+                >
                 </LoadingButton>
             </Grid>
             <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'right'}} open={open} autoHideDuration={3000} onClose={handleClose}>
