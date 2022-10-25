@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
-import { toSnakeCase } from "../editentry/interConvertNames";
+import { toSnakeCase } from "../../components/interConvertNames";
 
 const StartProject = () => {
     const [branchName, setBranchName] = useState("")
@@ -33,16 +33,6 @@ const StartProject = () => {
     }
     const handleClose = () => {setErrorMessage(null);}
     const LoadingButton = (props) => {
-        const { onClick, loading, text, sx } = props;
-        return (
-            <Button variant="contained" sx={sx} onClick={onClick} disabled={loading}>
-                {loading && <CircularProgress size={24} />}
-                {!loading && text}
-            </Button>
-        );    
-    }
-    function handleClose() {setOpen(false);}
-    function LoadingButton(props) {
         const { onClick, loading, text, sx } = props;
         return (
             <Button variant="contained" sx={sx} onClick={onClick} disabled={loading}>
