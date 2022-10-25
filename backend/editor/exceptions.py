@@ -10,6 +10,15 @@ class TransactionMissingError(RuntimeError):
         exception_message = "Transaction context variable is null/missing"
         return super().__init__(exception_message)
 
+class SessionMissingError(RuntimeError):
+    """
+    Raised when attempting to run a query using null session context variable
+    """
+
+    def __init__(self):
+        exception_message = "Session context variable is null/missing"
+        return super().__init__(exception_message)
+
 class TaxnonomyImportError(RuntimeError):
     """
     Raised when attempting to fetch a taxonomy from GitHub

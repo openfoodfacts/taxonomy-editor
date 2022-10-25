@@ -12,6 +12,7 @@ from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError
 from .exceptions import GithubUploadError, GithubBranchExistsError              # Custom exceptions
 
 from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
+from .graph_db import TransactionCtx                                            # Neo4J transactions context manager
 
 from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser                              # Unparser for taxonomies
@@ -96,34 +97,47 @@ class TaxonomyGraph:
         except:
             raise TaxnonomyImportError()
     
-    def export_taxonomy(self, type_of_export):
+    def dump_taxonomy(self):
         """
-        Helper function to export a taxonomy through download or Github
+        Helper function to create the txt file of a taxonomy
         """
-        # Close current transaction to use the session variable in unparser
-        get_current_transaction().commit()
-
-        self.close_project() # Close the project
-
         # Create unparser object and pass current session to it
         unparser_object = unparser.WriteTaxonomy(get_current_session())
-        filename = self.taxonomy_name + '.txt'
+        # Creates a unique file for dumping the taxonomy
+        filename = self.project_name + '.txt'
         try:
             # Parse taxonomy with given file name and branch name
             unparser_object(filename, self.branch_name, self.taxonomy_name)
-            if type_of_export == "download":
-                return filename
-            elif type_of_export == "github":
-                return self.export_to_github(filename)
-        except:
+            return filename
+        except Exception:
             raise TaxonomyUnparsingError()
+        
+    def file_export(self):
+        """Export a taxonomy for download"""
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        filepath = self.dump_taxonomy()
+        return filepath
+    
+    def github_export(self):
+        """Export a taxonomy to Github"""
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        filepath = self.dump_taxonomy()
+        # Create a new transaction context
+        with TransactionCtx():
+            result = self.export_to_github(filepath)
+            self.close_project()
+        return result
     
     def export_to_github(self, filename):
         """
         Helper function to export a taxonomy to GitHub
         """
         query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
-        result = get_current_session().run(query, {"project_name": self.project_name})
+        result = get_current_transaction().run(query, {"project_name": self.project_name})
         description = result.data()[0]['n.description']
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
@@ -190,7 +204,7 @@ class TaxonomyGraph:
             'description' : description,
             'status' : "OPEN"
         }
-        result = get_current_session().run(query, params)
+        get_current_transaction().run(query, params)
     
     def close_project(self):
         """
@@ -205,7 +219,7 @@ class TaxonomyGraph:
             'project_name' : self.project_name,
             'status' : "CLOSED"
         }
-        result = get_current_session().run(query, params)
+        get_current_transaction().run(query, params)
 
     def list_existing_projects(self):
         """

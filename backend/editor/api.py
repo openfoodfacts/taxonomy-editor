@@ -73,6 +73,9 @@ def check_single(id):
         raise HTTPException(status_code=500, detail="Multiple entries found")
     
 def file_cleanup(filepath):
+    """
+    Helper function to delete a taxonomy file from local storage
+    """
     try:
         os.remove(filepath)
     except:
@@ -240,24 +243,21 @@ async def searchNode(response: Response, branch: str, taxonomy_name: str, query:
     return result
 
 @app.get("/{taxonomy_name}/{branch}/downloadexport")
-async def exportToTextFile(response: Response, branch: str, taxonomy_name: str):
+async def exportToTextFile(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    file = taxonomy.export_taxonomy(type_of_export="download")
+    file = taxonomy.file_export()
 
     # Add a background task for removing exported taxonomy file
-    tasks = BackgroundTasks()
-    tasks.add_task(file_cleanup, file)
-
-    return FileResponse(file, background=tasks)
+    background_tasks.add_task(file_cleanup, file)
+    return FileResponse(file)
 
 @app.get("/{taxonomy_name}/{branch}/githubexport")
-async def exportToGithub(response: Response, branch: str, taxonomy_name: str):
+async def exportToGithub(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
-        url, file = taxonomy.export_taxonomy(type_of_export="github")
+        url, file = taxonomy.github_export()
         # Add a background task for removing exported taxonomy file
-        tasks = BackgroundTasks()
-        tasks.add_task(file_cleanup, file)
+        background_tasks.add_task(file_cleanup, file)
         return url
 
     except GithubBranchExistsError:
