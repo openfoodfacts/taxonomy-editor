@@ -11,6 +11,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
 import { ENTER_KEYCODE } from "../../constants";
+import { greyHexCode } from "../../constants";
 
 
 const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
@@ -19,7 +20,6 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     const [newLanguageCode, setNewLanguageCode] = useState(null);
     const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
-    const greyHexCode = "#808080";
 
     const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     

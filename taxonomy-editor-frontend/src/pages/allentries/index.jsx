@@ -18,6 +18,7 @@ import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
 import { toTitleCase } from "../editentry/interConvertNames"
+import { greyHexCode } from "../../constants";
 
 const Entry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
@@ -32,7 +33,6 @@ const Entry = ({setDisplayedPages}) => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
-    const greyHexCode = "#808080";
 
     // Set url prefix for navbar component
     useEffect(

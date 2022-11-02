@@ -4,6 +4,7 @@ import { getIdType } from "./createURL";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
+import { greyHexCode } from "../../constants";
 
 /** 
  * Parent component used for rendering info on a stopword, synonym, header or footer
@@ -19,7 +20,6 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     const [languageCode, setLanguageCode] = useState('');
     // Storing tags that need to be rendered for editing
     const [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([])
-    const greyHexCode = "#808080";
 
     useEffect(() => {
         const tagsExtracted = []

@@ -18,6 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
+import { greyHexCode } from "../../constants";
 
 const SearchResults = ({query, taxonomyName, branchName}) => {
     const baseUrl = createBaseURL(taxonomyName, branchName);
@@ -30,7 +31,6 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
-    const greyHexCode = "#808080";
 
     // Helper functions for Dialog component
     const handleCloseAddDialog = () => { setOpenAddDialog(false); }
