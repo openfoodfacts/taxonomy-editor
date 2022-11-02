@@ -19,7 +19,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);
     const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
-    const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
+    const isValidLanguageCode = ISO6391.validate(newLanguageCode); // Used for validating a new LC
 
     const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     
@@ -105,7 +105,6 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
                         onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && handleAddChild(e) }} 
                         onChange={(e) => { 
                             setNewLanguageCode(e.target.value);
-                            setIsValidLanguageCode(ISO6391.validate(e.target.value));
                         }}
                         label="Language Code"
                         error={!isValidLanguageCode}
