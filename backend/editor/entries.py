@@ -92,7 +92,10 @@ class TaxonomyGraph:
                 urllib.request.urlretrieve(base_url, filepath)
 
                 status = self.parse_taxonomy(filepath) # Parse the taxonomy
-                self.create_project(description) # Creates a "project node" in neo4j
+
+                with TransactionCtx():
+                    self.create_project(description) # Creates a "project node" in neo4j
+                    
                 return status
         except:
             raise TaxnonomyImportError()
