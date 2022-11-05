@@ -40,12 +40,15 @@ class TaxonomyGraph:
         """
         Helper function used for creating a node with given id and label
         """
+        # Normalizing new Node ID
+        normalised_entry = normalizer.normalizing(entry, main_language_code)
+
         query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
-        params = {"id": entry}
+        params = {"id": normalised_entry}
 
         # Build all basic keys of a node
         if (label == "ENTRY"):
-            canonical_tag = entry.split(":", 1)[1]
+            canonical_tag = normalised_entry.split(":", 1)[1]
             query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
             params["main_language_code"] = main_language_code
         else:
@@ -54,6 +57,7 @@ class TaxonomyGraph:
         query.append(f""" SET n.id = $id """)
         query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
         query.append(f""" SET n.preceding_lines = [] """)
+        query.apppend(f""" RETURN n """)
 
         params["canonical_tag"] = canonical_tag
         result = get_current_transaction().run(" ".join(query), params)
@@ -382,13 +386,30 @@ class TaxonomyGraph:
                 continue
             query.append(f"""\nREMOVE n.{key}\n""")
 
+        # Adding normalized tags ids corresponding to entry tags
+        normalised_new_node_keys = {}
+        for keys in new_node_keys.keys():
+            if keys.startswith("tags_") and not keys.endswith("_str"):
+                if "_ids_" not in keys:
+                    keys_language_code = keys.split('_', 1)[1]
+                    normalised_value = []
+                    for values in new_node_keys[keys]:
+                        normalised_value.append(normalizer.normalizing(values, keys_language_code))
+                    normalised_new_node_keys[keys] = normalised_value
+                    normalised_new_node_keys["tags_ids_"+keys_language_code] = normalised_value
+                else:
+                    pass # We generate tags_ids, and ignore the one sent
+            else:
+                # No need to normalise
+                normalised_new_node_keys[keys] = new_node_keys[keys] 
+
         # Update keys
-        for key in new_node_keys.keys():
+        for key in normalised_new_node_keys.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
 
         query.append(f"""RETURN n""")
 
-        params = dict(new_node_keys, id=entry)
+        params = dict(normalised_new_node_keys, id=entry)
         result = get_current_transaction().run(" ".join(query), params)
         return result
 
@@ -415,16 +436,21 @@ class TaxonomyGraph:
         existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
         to_create = added_children - set(existing_ids)
 
+        # Normalising new children node ID
+        created_child_ids = []
+
         for child in to_create:
             main_language_code = child.split(":", 1)[0]
-            self.create_node("ENTRY", child, main_language_code)
+            created_node = self.create_node("ENTRY", child, main_language_code)
+            created_node_id = created_node.data()[0]['n']['id']
+            created_child_ids.append(created_node_id)
             
             # TODO: We would prefer to add the node just after its parent entry
             self.add_node_to_end("ENTRY", child)
 
         # Stores result of last query executed
         result = []
-        for child in added_children:
+        for child in created_child_ids:
             # Create new relationships if it doesn't exist
             query = f"""
                 MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY) 
