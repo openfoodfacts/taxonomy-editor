@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import sys
 
@@ -17,11 +18,8 @@ def ellipsis(text, max=20):
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
 
-    def __init__(self, uri="bolt://localhost:7687"):
-        self.driver = GraphDatabase.driver(uri)
-        self.session = (
-            self.driver.session()
-        )  # Doesn't create error even if there is no active database
+    def __init__(self, session):
+        self.session = session
 
     def create_headernode(self, header, multi_label):
         """Create the node for the header"""
@@ -439,5 +437,12 @@ if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
-    parse = Parser()
+
+    # Initialize neo4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    # Pass session variable to parser object
+    parse = Parser(session)
     parse(filename, branch_name, taxonomy_name)

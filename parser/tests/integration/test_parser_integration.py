@@ -19,9 +19,9 @@ def test_setup(neo4j):
     neo4j.session().run(query)
 
 
-def test_calling():
-    test_parser = parser.Parser()
-    session = test_parser.session
+def test_calling(neo4j):
+    session = neo4j.session()
+    test_parser = parser.Parser(session)
 
     # Create node test
     test_parser.create_nodes(TEST_TAXONOMY_TXT, "p_test_branch:t_test:b_branch")
@@ -163,3 +163,4 @@ def test_calling():
     ]
     for pair in created_pairs:
         assert pair in expected_pairs
+    session.close()

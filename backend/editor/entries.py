@@ -2,14 +2,29 @@
 Database helper functions for API
 """
 import re
-from .graph_db import get_current_transaction               # Neo4J transactions helper
-from openfoodfacts_taxonomy_parser import normalizer        # Normalizing tags
+import tempfile
+
+import urllib.request                                                           # Sending requests
+from .github_functions import GithubOperations                                  # Github functions
+
+from .exceptions import TaxnonomyImportError
+from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError            
+from .exceptions import GithubUploadError, GithubBranchExistsError              # Custom exceptions
+
+from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
+from .graph_db import TransactionCtx                                            # Neo4J transactions context manager
+
+from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
+from openfoodfacts_taxonomy_parser import unparser                              # Unparser for taxonomies
+from openfoodfacts_taxonomy_parser import normalizer                            # Normalizing tags
 
 class TaxonomyGraph:
 
     """Class for database operations"""
     
     def __init__(self, branch_name, taxonomy_name):
+        self.taxonomy_name = taxonomy_name
+        self.branch_name = branch_name
         self.project_name = 'p_' + taxonomy_name + '_' + branch_name
         
     def get_label(self, id):
@@ -42,6 +57,183 @@ class TaxonomyGraph:
 
         params["canonical_tag"] = canonical_tag
         result = get_current_transaction().run(" ".join(query), params)
+        return result
+
+    def parse_taxonomy(self, filename):
+        """
+        Helper function to call the Open Food Facts Python Taxonomy Parser
+        """
+        # Close current transaction to use the session variable in parser
+        get_current_transaction().commit()
+
+        # Create parser object and pass current session to it
+        parser_object = parser.Parser(get_current_session())
+        try:
+            # Parse taxonomy with given file name and branch name
+            parser_object(filename, self.branch_name, self.taxonomy_name)
+            return True
+        except:
+            raise TaxonomyParsingError()
+
+    def import_from_github(self, description):
+        """
+        Helper function to import a taxonomy from GitHub
+        """
+        base_url = "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/main/taxonomies/"
+        filename = self.taxonomy_name + '.txt'
+        base_url += filename
+        try:
+            with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+
+                # File to save the downloaded taxonomy
+                filepath = f"{tmpdir}/{filename}"
+
+                # Downloads and creates taxonomy file in current working directory
+                urllib.request.urlretrieve(base_url, filepath)
+
+                status = self.parse_taxonomy(filepath) # Parse the taxonomy
+
+                with TransactionCtx():
+                    self.create_project(description) # Creates a "project node" in neo4j
+                    
+                return status
+        except:
+            raise TaxnonomyImportError()
+    
+    def dump_taxonomy(self):
+        """
+        Helper function to create the txt file of a taxonomy
+        """
+        # Create unparser object and pass current session to it
+        unparser_object = unparser.WriteTaxonomy(get_current_session())
+        # Creates a unique file for dumping the taxonomy
+        filename = self.project_name + '.txt'
+        try:
+            # Parse taxonomy with given file name and branch name
+            unparser_object(filename, self.branch_name, self.taxonomy_name)
+            return filename
+        except Exception:
+            raise TaxonomyUnparsingError()
+        
+    def file_export(self):
+        """Export a taxonomy for download"""
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        filepath = self.dump_taxonomy()
+        return filepath
+    
+    def github_export(self):
+        """Export a taxonomy to Github"""
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        filepath = self.dump_taxonomy()
+        # Create a new transaction context
+        with TransactionCtx():
+            result = self.export_to_github(filepath)
+            self.close_project()
+        return result
+    
+    def export_to_github(self, filename):
+        """
+        Helper function to export a taxonomy to GitHub
+        """
+        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
+        result = get_current_transaction().run(query, {"project_name": self.project_name})
+        description = result.data()[0]['n.description']
+
+        github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+        try:
+            github_object.checkout_branch()
+        except:
+            raise GithubBranchExistsError()
+        try:
+            github_object.update_file(filename)
+            pr_object = github_object.create_pr(description)
+            return (pr_object.html_url, filename)
+        except:
+            raise GithubUploadError()
+
+    def does_project_exist(self):
+        """
+        Helper function to check the existence of a project
+        """
+        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n"""
+        result = get_current_transaction().run(query, {"project_name" : self.project_name})
+        if (result.data() == []):
+            return False
+        else:
+            return True
+    
+    def is_branch_unique(self):
+        """
+        Helper function to check uniqueness of GitHub branch
+        """
+        query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
+        result = get_current_transaction().run(query, {"branch_name" : self.branch_name})
+
+        github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+        current_branches = github_object.list_all_branches()
+
+        if ((result.data() == []) and (self.branch_name not in current_branches)):
+            return True
+        else:
+            return False
+    
+    def is_valid_branch_name(self):
+        """
+        Helper function to check if a branch name is valid
+        """
+        return normalizer.normalizing(self.branch_name) == self.branch_name
+    
+    def create_project(self, description):
+        """
+        Helper function to create a node with label "PROJECT"
+        """
+        query = """
+            CREATE (n:PROJECT) 
+            SET n.id = $project_name
+            SET n.taxonomy_name = $taxonomy_name
+            SET n.branch_name = $branch_name
+            SET n.description = $description
+            SET n.status = $status
+            SET n.created_at = datetime() 
+        """
+        params = {
+            'project_name' : self.project_name,
+            'taxonomy_name' : self.taxonomy_name,
+            'branch_name' : self.branch_name,
+            'description' : description,
+            'status' : "OPEN"
+        }
+        get_current_transaction().run(query, params)
+    
+    def close_project(self):
+        """
+        Helper function to close a Taxonomy Editor project and updates project status as "CLOSED"
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.id = $project_name
+            SET n.status = $status
+        """
+        params = {
+            'project_name' : self.project_name,
+            'status' : "CLOSED"
+        }
+        get_current_transaction().run(query, params)
+
+    def list_existing_projects(self):
+        """
+        Helper function for listing all existing projects created in Taxonomy Editor
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.status = "OPEN" RETURN n 
+            ORDER BY n.created_at
+        """
+        result = get_current_transaction().run(query)
         return result
 
     def add_node_to_end(self, label, entry):
@@ -124,7 +316,7 @@ class TaxonomyGraph:
         Helper function used for getting all root nodes in a taxonomy
         """
         query = f"""
-            MATCH (n:{self.multi_label}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+            MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
         """
         result = get_current_transaction().run(query)
         return result

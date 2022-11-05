@@ -4,10 +4,15 @@ Taxonomy Editor Backend API
 # Required imports
 #----------------------------------------------------------------------------#
 from datetime import datetime
+import os
 
 # FastAPI
-from fastapi import FastAPI, status, Response, Request, HTTPException
+from fastapi import FastAPI, status, Response, Request, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+# Custom exceptions
+from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
 from .models import Header, Footer
@@ -66,6 +71,15 @@ def check_single(id):
         raise HTTPException(status_code=404, detail="Entry not found")
     elif len(id) > 1:
         raise HTTPException(status_code=500, detail="Multiple entries found")
+    
+def file_cleanup(filepath):
+    """
+    Helper function to delete a taxonomy file from local storage
+    """
+    try:
+        os.remove(filepath)
+    except:
+        raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
 
 # Get methods
 
@@ -80,6 +94,16 @@ async def pong(response: Response):
     """
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
+
+@app.get("/projects")
+async def listAllProjects(response: Response):
+    """
+    List all open projects created in the Taxonomy Editor
+    """
+    # Listing all projects doesn't require a taoxnomy name or branch name
+    taxonony = TaxonomyGraph("", "")
+    result = list(taxonony.list_existing_projects())
+    return result
 
 @app.get("/{taxonomy_name}/{branch}/nodes")
 async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
@@ -218,7 +242,50 @@ async def searchNode(response: Response, branch: str, taxonomy_name: str, query:
     result = taxonomy.full_text_search(query)
     return result
 
+@app.get("/{taxonomy_name}/{branch}/downloadexport")
+async def exportToTextFile(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    file = taxonomy.file_export()
+
+    # Add a background task for removing exported taxonomy file
+    background_tasks.add_task(file_cleanup, file)
+    return FileResponse(file)
+
+@app.get("/{taxonomy_name}/{branch}/githubexport")
+async def exportToGithub(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    try:
+        url, file = taxonomy.github_export()
+        # Add a background task for removing exported taxonomy file
+        background_tasks.add_task(file_cleanup, file)
+        return url
+
+    except GithubBranchExistsError:
+        raise HTTPException(status_code=500, detail="The Github branch already exists!")
+
+    except GithubUploadError:
+        raise HTTPException(status_code=500, detail="Github upload error!")
+
 # Post methods
+
+@app.post("/{taxonomy_name}/{branch}/import")
+async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
+    """
+    Get taxonomy from Product Opener GitHub repository 
+    """
+    incomingData = await request.json()
+    description = incomingData["description"]
+
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    if (not taxonomy.is_valid_branch_name()):
+        raise HTTPException(status_code=500, detail="Enter a valid branch name!")
+    if (taxonomy.does_project_exist()):
+        raise HTTPException(status_code=500, detail="Project already exists!")
+    if (not taxonomy.is_branch_unique()):
+        raise HTTPException(status_code=500, detail="Branch name should be unique!")
+
+    result = taxonomy.import_from_github(description)
+    return result
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
 async def createNode(request: Request, branch: str, taxonomy_name: str):
