@@ -25,6 +25,6 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
     pip3 install --upgrade -r /code/requirements.txt
 
 USER off:off
-COPY --chown=off:off ./editor /code/editor
+COPY --chown=off:off backend/editor /code/editor
 
 CMD ["uvicorn", "editor.api:app", "--host", "0.0.0.0", "--port", "80"]
