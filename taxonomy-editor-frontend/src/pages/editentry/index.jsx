@@ -1,6 +1,6 @@
 import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -8,38 +8,41 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import AccumulateAllComponents from "./AccumulateAllComponents";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { API_URL } from "../../constants";
+import { createBaseURL } from "./createURL";
+import { greyHexCode } from "../../constants";
 
-const EditEntry = () => {
-    const { id } = useParams();
-    const url = API_URL+'nodes';
+const EditEntry = ({setDisplayedPages}) => {
+    const { taxonomyName, branchName, id } = useParams();
+    const urlPrefix = `${taxonomyName}/${branchName}/`;
+    const baseUrl = createBaseURL(taxonomyName, branchName);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-    const navigate = useNavigate();
 
-    // Handler function for button clicks
-    const handleClick = (event) => {
-        event.preventDefault();
-        navigate('/entry');
-    }
+    // Set url prefix for navbar component
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([
+                { url: urlPrefix+"entry", translationKey: "Nodes" },
+                { url: urlPrefix+"search", translationKey: "Search" }
+            ])
+        }, [urlPrefix, setDisplayedPages]
+    );
 
     // Helper functions for Dialog component
-    function handleCloseDeleteDialog() { setOpenDeleteDialog(false); }
-    function handleOpenDeleteDialog() { setOpenDeleteDialog(true); }
-    function handleOpenSuccessDialog() { setOpenSuccessDialog(true); }
+    const handleCloseDeleteDialog = () => { setOpenDeleteDialog(false); }
+    const handleOpenDeleteDialog = () => { setOpenDeleteDialog(true); }
+    const handleOpenSuccessDialog = () => { setOpenSuccessDialog(true); }
     
-    function handleDeleteNode() {
+    const handleDeleteNode = () => {
         const data = {"id" : id}
-        fetch(url, {
+        fetch(baseUrl+'nodes', {
             method : 'DELETE',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
             handleCloseDeleteDialog();
             handleOpenSuccessDialog();
-        }).catch((errorMessage) => {
-            console.log(errorMessage);
-        })
+        }).catch(() => {})
     }
 
     return (
@@ -50,13 +53,13 @@ const EditEntry = () => {
                     <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
                         You are now editing "{id}"
                     </Typography>
-                    <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenDeleteDialog}>
+                    <IconButton sx={{ml: 1, color: greyHexCode}} onClick={handleOpenDeleteDialog}>
                         <DeleteOutlineIcon />
                     </IconButton>
                 </Stack>
             </Box>
             {/* Renders node info based on id */}
-            <AccumulateAllComponents id={id} />
+            <AccumulateAllComponents id={id} taxonomyName={taxonomyName} branchName={branchName} />
             {/* Dialog box for confirmation of deletion of node */}
             <Dialog
                 open={openDeleteDialog}
@@ -91,7 +94,11 @@ const EditEntry = () => {
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={handleClick} autoFocus>
+                <Button 
+                    component={Link} 
+                    to={`${urlPrefix}/entry`}
+                    autoFocus
+                >
                     Continue
                 </Button>
                 </DialogActions>

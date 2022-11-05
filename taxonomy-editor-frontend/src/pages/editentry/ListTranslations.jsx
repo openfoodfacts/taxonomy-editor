@@ -22,11 +22,11 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     const [isValidLanguageCode, setisValidLanguageCode] = useState(false); // Used for validating a new LC
 
     // Helper functions for Dialog component
-    function handleClose() { setOpen(false); }
-    function handleOpen() { setOpen(true); }
+    const handleClose = () => { setOpen(false); }
+    const handleOpen = () => { setOpen(true); }
 
     // Used for addition of a translation language
-    function handleAddTranslation(key) {
+    const handleAddTranslation = (key) => {
         const newRenderedTranslations = [...renderedTranslations, {'languageCode' : key, 'tags' : []}]
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
@@ -43,7 +43,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }
 
     // Used for deleting a translation language
-    function handleDeleteTranslation(key) {
+    const handleDeleteTranslation = (key) => {
         const newRenderedTranslations = renderedTranslations.filter(obj => !(key === obj.languageCode))
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
@@ -109,7 +109,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }, [nodeObject]);
 
     // Helper function used for changing state
-    function changeData(key, index, value) {
+    const changeData = (key, index, value) => {
         let updatedTags = [] // Stores all the tags of a language code
 
         if (key === nodeObject['main_language']) {
@@ -158,7 +158,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }
 
     // Helper function for adding a translation for a LC
-    function handleAdd(key) {
+    const handleAdd = (key) => {
         let tagsToBeInserted = [];
         const newUUID = Math.random().toString();
         // State of "MainLangRenderedTranslations" is updated according to format used
@@ -191,7 +191,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         })
     }
 
-    function handleDelete(key, index) {
+    const handleDelete = (key, index) => {
         let tagsToBeInserted = []
         // State of "MainLangRenderedTranslations" is updated according to format used
         if (key === nodeObject.main_language) {
