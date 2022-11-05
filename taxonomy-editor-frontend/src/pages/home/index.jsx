@@ -2,10 +2,20 @@ import Button from '@mui/material/Button';
 import {Link as MuiLink} from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 import { Link } from "react-router-dom";
+import { useEffect } from 'react';
 
-const Home = () => {
+const Home = ({setDisplayedPages}) => {
+
+    // Hide pages in navbar component at home    
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([])
+        }, [setDisplayedPages]
+    );
+
     return (
         <Container component="main" maxWidth="md">
             <Box
@@ -31,16 +41,25 @@ const Home = () => {
                 src={require('../../assets/classification.png')} 
                 alt="Classification Logo" 
             />
-            <Typography sx={{mt: 4, mb: 4}} variant="h2">
+            <Typography sx={{mt: 4, mb: 6}} variant="h2">
                 Taxonomy Editor
             </Typography>
-            <Button 
-                variant="contained" 
-                component={Link}
-                to="/entry"
-                sx={{textDecoration: 'none', mb: 2, backgroundColor: '#0064c8'}}>
-                Start Editing!
-            </Button>
+            <Stack direction="row" alignItems="center">
+                <Button 
+                    variant="contained" 
+                    component={Link}
+                    to="startproject"
+                    sx={{textDecoration: 'none', mb: 2, mr: 4}}>
+                    Create new project
+                </Button>
+                <Button 
+                    variant="contained" 
+                    component={Link}
+                    to="gotoproject"
+                    sx={{textDecoration: 'none', mb: 2}}>
+                    Open existing project
+                </Button>
+            </Stack>
             </Box>
             <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 8, mb: 4 }}>
               {'Copyright © '}

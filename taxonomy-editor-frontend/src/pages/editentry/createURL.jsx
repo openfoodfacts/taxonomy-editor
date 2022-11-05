@@ -17,10 +17,18 @@ export function getIdType(id) {
 }
 
 /**
+ * Creating base URL for server requests
+ */
+export function createBaseURL(taxonomyName, branchName) {
+    return `${API_URL}${taxonomyName}/${branchName}/`
+}
+
+/**
  * Finding ID-specific URL for server requests
 */
-export function createURL(id) {
-    let url = API_URL;
+export function createURL(taxonomyName, branchName, id) {
+
+    let url = createBaseURL(taxonomyName, branchName);
 
     // ID's can look like: __header__, __footer__, synomym:0, stopword:0
     // For an entry, id looks like en:yogurts

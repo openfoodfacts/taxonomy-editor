@@ -16,12 +16,8 @@ import logo from "../assets/logosmall.jpg";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const displayedPages = [
-  { url: "entry", translationKey: "Nodes" },
-  { url: "search", translationKey: "Search" }
-];
+const ResponsiveAppBar = ({displayedPages}) => {
 
-const ResponsiveAppBar = () => {
   const { t } = useTranslation();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
@@ -142,6 +138,8 @@ const ResponsiveAppBar = () => {
               to="/"
               sx={{
                 mr: 2,
+                display: "flex",
+                alignSelf : 'center',
                 fontFamily: "Plus Jakarta Sans",
                 fontWeight: 1000,
                 letterSpacing: ".1rem",
