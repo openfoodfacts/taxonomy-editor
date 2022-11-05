@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const ListEntryParents = ({url}) => {
+const ListEntryParents = ({url, urlPrefix}) => {
     const [relations, setRelations] = useState(null);
     const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
     
@@ -25,7 +25,7 @@ const ListEntryParents = ({url}) => {
             {/* Renders parents or children of the node */}
             {relations && relations.map(relation => (
                 <Box key={relation}>
-                    <Link to={`/entry/${relation}`} style={{color: '#0064c8', display: 'inline-block'}}>
+                    <Link to={`${urlPrefix}/entry/${relation}`} style={{color: '#0064c8', display: 'inline-block'}}>
                         <Typography sx={{ml: 8, mb: 1}} variant='h6'>
                             {relation}
                         </Typography>

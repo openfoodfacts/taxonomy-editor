@@ -21,6 +21,11 @@ jobs:
       #----------------------------------------------
       - name: Check out repository
         uses: actions/checkout@v3
+      - name: build docker
+        run: |
+          export USER_UID=$(id -u)
+          export USER_GID=$(id -g)
+          DOCKER_BUILDKIT=1 docker-compose build
       - name: Set up python
         uses: actions/setup-python@v4
         with:

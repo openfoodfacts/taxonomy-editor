@@ -14,10 +14,11 @@ import { createURL, getIdType } from "./createURL";
  * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
  * If node is "header/footer": Comments are rendered  
 */ 
-const AccumulateAllComponents = ({ id }) => {
+const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
     // Finding URL to send requests
-    const url = createURL(id);
+    const url = createURL(taxonomyName, branchName, id);
+    const urlPrefix = `/${taxonomyName}/${branchName}`;
     const isEntry = getIdType(id) === 'entry';
 
     const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
@@ -72,7 +73,7 @@ const AccumulateAllComponents = ({ id }) => {
         })
         const allUrlsAndData = [[url, dataToBeSent]]
         if (isEntry) {
-            allUrlsAndData.push([url+'children/', updateChildren])
+            allUrlsAndData.push([url+'children', updateChildren])
         }
         Promise.all(allUrlsAndData.map(([url, dataToBeSent]) => {
             return fetch(url, {
@@ -80,7 +81,7 @@ const AccumulateAllComponents = ({ id }) => {
                 headers: {"Content-Type" : "application/json"},
                 body: JSON.stringify(dataToBeSent)
             })
-        })).then(() => {
+        })).then((response) => {
             setOpen(true);
         }).catch(() => {})
     }
@@ -90,8 +91,8 @@ const AccumulateAllComponents = ({ id }) => {
             { isEntry ? 
                 <Box>
                     { !!nodeObject &&
-                        <>  <ListEntryParents url={url+'parents'} />
-                            <ListEntryChildren url={url+'children'} setUpdateNodeChildren={setUpdateChildren} />
+                        <>  <ListEntryParents url={url+'parents'} urlPrefix={urlPrefix} />
+                            <ListEntryChildren url={url+'children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
                             <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :

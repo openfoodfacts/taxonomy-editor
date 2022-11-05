@@ -1,8 +1,7 @@
-import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
+import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, FormControl, InputLabel } from "@mui/material";
 import useFetch from "../../components/useFetch";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { API_URL } from "../../constants";
+import { Link, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -17,10 +16,16 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
+import { createBaseURL } from "../editentry/createURL";
+import { toTitleCase } from "../editentry/interConvertNames"
+import { greyHexCode } from "../../constants";
 
-const Entry = () => {
-    const title = "Test";
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}nodes`);
+const Entry = ({setDisplayedPages}) => {
+    const { taxonomyName, branchName } = useParams();
+    const title = toTitleCase(taxonomyName);
+    const baseUrl = createBaseURL(taxonomyName, branchName);
+    const urlPrefix = `${taxonomyName}/${branchName}/`;
+    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseUrl}rootnodes`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
@@ -29,25 +34,33 @@ const Entry = () => {
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
+    // Set url prefix for navbar component
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([
+                { url: urlPrefix+"entry", translationKey: "Nodes" },
+                { url: urlPrefix+"search", translationKey: "Search" }
+            ])
+        }, [urlPrefix, setDisplayedPages]
+    );
+
     // Helper functions for Dialog component
-    function handleCloseAddDialog() { setOpenAddDialog(false); }
-    function handleOpenAddDialog() { setOpenAddDialog(true); }
-    function handleOpenSuccessSnackbar() { setOpenSuccessSnackbar(true); }
-    function handleCloseSuccessSnackbar() { setOpenSuccessSnackbar(false); }
+    const handleCloseAddDialog = () => { setOpenAddDialog(false); }
+    const handleOpenAddDialog = () => { setOpenAddDialog(true); }
+    const handleOpenSuccessSnackbar = () => { setOpenSuccessSnackbar(true); }
+    const handleCloseSuccessSnackbar = () => { setOpenSuccessSnackbar(false); }
     
-    function handleAddNode() {
+    const handleAddNode = () => {
         const newNodeID = newLanguageCode + ':' + newNode // Reconstructing node ID
         const data = {"id": newNodeID, "main_language": newLanguageCode};
-        fetch(API_URL+'nodes', {
+        fetch(baseUrl+'nodes', {
             method : 'POST',
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify(data)
         }).then(() => {
             handleCloseAddDialog();
             handleOpenSuccessSnackbar();
-        }).catch((errorMessage) => {
-            // Do nothing
-        })
+        }).catch(() => {})
     }
     if (isError) {
         return (
@@ -65,14 +78,42 @@ const Entry = () => {
     }
     return (
         <Box>
-            <Typography sx={{mb: 1, mt:2, ml: 2}} variant="h4">
-                List of nodes in {title} Taxonomy:
+            <Typography sx={{mb: 2, mt:2, ml: 2}} variant="h4">
+                List of current root nodes
             </Typography>
+            <TableContainer sx={{ml: 2, width: 375}}>
+                <Table style={{border: "solid", borderWidth: 1.5}}>
+                    <TableHead>
+                        <TableCell align="left">
+                            <Typography variant="h6">
+                                Taxonony Name
+                            </Typography>
+                        </TableCell>
+                        <TableCell align="left">
+                            <Typography variant="h6">
+                                Branch Name
+                            </Typography>
+                        </TableCell>
+                    </TableHead>
+                    <TableBody>
+                        <TableCell align="left" component="td" scope="row">
+                            <Typography variant="body1">
+                                {title}                                
+                            </Typography>
+                        </TableCell>
+                        <TableCell align="left" component="td" scope="row">
+                            <Typography variant="body1">
+                                {branchName}
+                            </Typography>
+                        </TableCell>
+                    </TableBody>
+                </Table>
+            </TableContainer>
             <Typography variant="h6" sx={{mt: 2, ml: 2, mb: 1}}>
-                Number of nodes in taxonomy: {nodes.length}
+                Number of root nodes in taxonomy: {nodes.length}
             </Typography>
             {/* Table for listing all nodes in taxonomy */}
-            <TableContainer sx={{ml: 2, width: 375}} component={Paper}>
+            <TableContainer sx={{ml: 2, width: 375}}>
                 <Table>
                     <TableHead>
                     <TableRow>
@@ -82,7 +123,7 @@ const Entry = () => {
                                 Nodes
                             </Typography>
                             </TableCell>
-                            <IconButton sx={{ml: 1, color: "#808080"}} onClick={handleOpenAddDialog}>
+                            <IconButton sx={{ml: 1, color: greyHexCode}} onClick={handleOpenAddDialog}>
                                 <AddBoxIcon />
                             </IconButton>
                         </Stack>
@@ -106,7 +147,7 @@ const Entry = () => {
                                 <TableCell align="left" component="td" scope="row">
                                     <IconButton 
                                         component={Link}
-                                        to={`/entry/${node[0].id}`}
+                                        to={`${node[0].id}`}
                                         aria-label="edit">
                                         <EditIcon color="primary"/>
                                     </IconButton>

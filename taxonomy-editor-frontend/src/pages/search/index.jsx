@@ -3,10 +3,25 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
-const SearchNode = () => {
+const SearchNode = ({setDisplayedPages}) => {
+    const { taxonomyName, branchName } = useParams();
+    const urlPrefix = `${taxonomyName}/${branchName}/`;
     const [searchStringState, setSearchStringState] = useState("");
     const [queryFetchString, setQueryFetchString] = useState("");
+
+    // Set url prefix for navbar component
+    useEffect(
+      function addUrlPrefixToNavbar() {
+          setDisplayedPages([
+              { url: urlPrefix+"entry", translationKey: "Nodes" },
+              { url: urlPrefix+"search", translationKey: "Search" }
+          ])
+      }, [urlPrefix, setDisplayedPages]
+    );
+    
     return (
       <Box>
           <Grid
@@ -50,7 +65,7 @@ const SearchNode = () => {
                   value={searchStringState} />
               </form>
           </Grid>
-        {queryFetchString !== "" && <SearchResults query={queryFetchString}/>}
+        {queryFetchString !== "" && <SearchResults query={queryFetchString} taxonomyName={taxonomyName} branchName={branchName} />}
       </Box>
     );
 }

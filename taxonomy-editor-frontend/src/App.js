@@ -1,10 +1,13 @@
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import Entry from "./pages/allentries";
 import EditEntry from "./pages/editentry";
+import GotoProject from "./pages/gotoproject";
 import Home from './pages/home';
 import SearchNode from "./pages/search";
+import StartProject from "./pages/startproject";
 
 const theme = createTheme({
   typography: {
@@ -17,17 +20,20 @@ const theme = createTheme({
 });
 
 function App() {
+  const [displayedPages, setDisplayedPages] = useState([]);
   return (
     <ThemeProvider theme={theme}>
     <CssBaseline />
     <Router>
-        <ResponsiveAppBar />
-        <div className="App">
+        <ResponsiveAppBar displayedPages={displayedPages}/>
+        <div>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/entry" element={<Entry />} />
-            <Route path="/entry/:id" element={<EditEntry />} />
-            <Route path="/search" element={<SearchNode />} />
+            <Route path="/" element={<Home setDisplayedPages={setDisplayedPages} />} />
+            <Route path="/startproject" element={<StartProject />} />
+            <Route path="/gotoproject" element={<GotoProject />} />
+            <Route path=":taxonomyName/:branchName/entry" element={<Entry setDisplayedPages={setDisplayedPages} />} />
+            <Route path=":taxonomyName/:branchName/entry/:id" element={<EditEntry setDisplayedPages={setDisplayedPages} />} />
+            <Route path=":taxonomyName/:branchName/search" element={<SearchNode setDisplayedPages={setDisplayedPages} />} />
           </Routes>
         </div>
     </Router>
