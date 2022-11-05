@@ -4,6 +4,7 @@ import { getIdType } from "./createURL";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
+import { greyHexCode } from "../../constants";
 
 /** 
  * Parent component used for rendering info on a stopword, synonym, header or footer

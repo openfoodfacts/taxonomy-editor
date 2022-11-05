@@ -23,12 +23,12 @@ const StartProject = () => {
             body: JSON.stringify(dataToBeSent)
         }).then(async (response) => {
             const responseBody = await response.json();
-            if (!response.ok) {
-                throw Error(responseBody.detail)
+            if (!response.ok && responseBody.detail) {
+                throw new Error(responseBody.detail)
             }
             navigate(`/${taxonomyName}/${branchName}/entry`)
         }).catch((detail) => {
-            setErrorMessage(detail.message); setLoading(false);
+            setErrorMessage("Unable to import"); setLoading(false);
         })
     }
     const handleClose = () => {setErrorMessage(null);}

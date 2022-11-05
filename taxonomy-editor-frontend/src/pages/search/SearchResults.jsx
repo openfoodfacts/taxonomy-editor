@@ -18,6 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
+import { greyHexCode } from "../../constants";
 
 const SearchResults = ({query, taxonomyName, branchName}) => {
     const baseUrl = createBaseURL(taxonomyName, branchName);

@@ -17,7 +17,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Select from '@mui/material/Select';
 import ISO6391 from 'iso-639-1';
 import { createBaseURL } from "../editentry/createURL";
-import { toTitleCase } from "../../components/interConvertNames"
+import { toTitleCase } from "../editentry/interConvertNames"
+import { greyHexCode } from "../../constants";
 
 const Entry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName } = useParams();
@@ -41,6 +42,16 @@ const Entry = ({setDisplayedPages}) => {
                 { url: urlPrefix+"entry", translationKey: "Nodes" },
                 { url: urlPrefix+"search", translationKey: "Search" },
                 { url: urlPrefix+"export", translationKey: "Export" }
+            ])
+        }, [urlPrefix, setDisplayedPages]
+    );
+
+    // Set url prefix for navbar component
+    useEffect(
+        function addUrlPrefixToNavbar() {
+            setDisplayedPages([
+                { url: urlPrefix+"entry", translationKey: "Nodes" },
+                { url: urlPrefix+"search", translationKey: "Search" }
             ])
         }, [urlPrefix, setDisplayedPages]
     );

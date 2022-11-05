@@ -17,6 +17,7 @@ function taxonomyApiUrlFromUi(location) {
 }
 export const API_URL = taxonomyApiUrlFromUi(window.location);
 export const ENTER_KEYCODE = 13;
+export const greyHexCode = "#808080";
 
 // List of all taxonomies in Open Food Facts
 // https://wiki.openfoodfacts.org/Global_taxonomies#Overview

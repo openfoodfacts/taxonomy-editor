@@ -9,6 +9,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AccumulateAllComponents from "./AccumulateAllComponents";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { createBaseURL } from "./createURL";
+import { greyHexCode } from "../../constants";
 
 const EditEntry = ({setDisplayedPages}) => {
     const { taxonomyName, branchName, id } = useParams();
@@ -16,7 +17,6 @@ const EditEntry = ({setDisplayedPages}) => {
     const baseUrl = createBaseURL(taxonomyName, branchName);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-    const greyHexCode = "#808080";
 
     // Set url prefix for navbar component
     useEffect(

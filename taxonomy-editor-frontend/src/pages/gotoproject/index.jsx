@@ -22,7 +22,8 @@ const GotoProject = () => {
                     'id' : Math.random().toString(),    // Used as Material Table component key
                     'projectName' : projectNode['id'],
                     'taxonomyName' : toTitleCase(projectNode['taxonomy_name']),
-                    'branchName' : projectNode['branch_name']
+                    'branchName' : projectNode['branch_name'],
+                    'description' : projectNode['description'],
                 })
             })
         }
@@ -52,7 +53,8 @@ const GotoProject = () => {
                     columns={[
                         { title: 'Project', field: 'projectName' },
                         { title: 'Taxonomy', field: 'taxonomyName' },
-                        { title: 'Branch', field: 'branchName' }
+                        { title: 'Branch', field: 'branchName' },
+                        { title: 'Description', field: 'description', width: '15vw' }
                     ]}
                     options={{
                         actionsColumnIndex: -1, addRowPosition: "last",
