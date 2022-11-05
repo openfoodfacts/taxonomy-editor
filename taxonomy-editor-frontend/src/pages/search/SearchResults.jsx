@@ -31,7 +31,6 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
     const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
-    const greyHexCode = "#808080";
 
     // Helper functions for Dialog component
     const handleCloseAddDialog = () => { setOpenAddDialog(false); }

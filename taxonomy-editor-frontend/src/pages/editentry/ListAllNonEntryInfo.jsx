@@ -20,7 +20,6 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     const [languageCode, setLanguageCode] = useState('');
     // Storing tags that need to be rendered for editing
     const [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([])
-    const greyHexCode = "#808080";
 
     useEffect(() => {
         const tagsExtracted = []
