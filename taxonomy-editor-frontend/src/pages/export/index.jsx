@@ -37,14 +37,13 @@ const ExportTaxonomy = ({setDisplayedPages}) => {
         }).then((response) => {
             return response.blob();
         }).then((blob) => {
-            // Download taxonomy
+            // Download taxonomy without opening in browser
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = taxonomyName + '.txt'
-            document.body.appendChild(a);
-            a.click(); a.remove();
-
+            a.download = taxonomyName + '.txt' // Setting filename
+            a.click(); a.remove();  // Virtual click for download
+            URL.revokeObjectURL(url);
         }).catch(() => {
             setErrorMessage("Download failed!");
         }).finally(() => {
