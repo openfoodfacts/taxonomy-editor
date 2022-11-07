@@ -51,7 +51,8 @@ services:
   taxonomy-backend:
     image: taxonomy-editor/taxonomy_backend:dev
     build:
-      context: backend
+      context: .
+      dockerfile: backend/Dockerfile
       # align user id
       args:
         USER_UID: ${USER_UID:-1000}
