@@ -1,25 +1,38 @@
+import os
+import sys
+
 from neo4j import GraphDatabase
+
+from .normalizer import normalizing
 
 
 class WriteTaxonomy:
     """Write the taxonomy of the neo4j database into a file"""
 
-    def __init__(self, uri="bolt://localhost:7687"):
-        self.driver = GraphDatabase.driver(uri)
-        # Doesn't create error even if there is no active database
-        self.session = self.driver.session()
+    def __init__(self, session):
+        self.session = session
 
     def normalized_filename(self, filename):
         """add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
-    def get_all_nodes(self):
+    def get_project_name(self, taxonomy_name, branch_name):
+        """Create a project name for given branch and taxonomy"""
+        return "p_" + taxonomy_name + "_" + branch_name
+
+    def create_multi_label(self, taxonomy_name, branch_name):
+        """Create a combined label with taxonomy name and branch name"""
+        project_name = self.get_project_name(taxonomy_name, branch_name)
+        return project_name + ":" + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
+
+    def get_all_nodes(self, multi_label):
         """query the database and yield each node with its parents,
         this function use the relationships between nodes"""
-        query = """
+        query = f"""
             MATCH path = ShortestPath(
-                (h:TEXT{id:"__header__"})-[:is_before*]->(f:TEXT{id:"__footer__"})
+                (h:{multi_label}:TEXT)-[:is_before*]->(f:{multi_label}:TEXT)
             )
+            WHERE h.id="__header__" AND f.id="__footer__"
             UNWIND nodes(path) AS n
             RETURN n , [(n)-[:is_child_of]->(m) | m ]
         """
@@ -71,9 +84,9 @@ class WriteTaxonomy:
             parent_id = parent["tags_" + lc][0]
             yield "<" + lc + ":" + parent_id
 
-    def iter_lines(self):
+    def iter_lines(self, multi_label):
         previous_block_id = ""
-        for node, parents in self.get_all_nodes():
+        for node, parents in self.get_all_nodes(multi_label):
             node = dict(node)
             has_content = node["id"] not in ["__header__", "__footer__"]
             # eventually add a blank line but in specific case
@@ -118,14 +131,24 @@ class WriteTaxonomy:
             for line in lines:
                 file.write(line + "\n")
 
-    def __call__(self, filename):
-        lines = self.iter_lines()
+    def __call__(self, filename, branch_name, taxonomy_name):
+        filename = self.normalized_filename(filename)
+        branch_name = normalizing(branch_name, char="_")
+        multi_label = self.create_multi_label(taxonomy_name, branch_name)
+        lines = self.iter_lines(multi_label)
         self.rewrite_file(filename, lines)
 
 
 if __name__ == "__main__":
-    import sys
-
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
-    write = WriteTaxonomy()
-    write(filename)
+    branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
+    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
+
+    # Initialize neo4j
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    driver = GraphDatabase.driver(uri)
+    session = driver.session()
+
+    # Pass session variable to unparser object
+    write = WriteTaxonomy(session)
+    write(filename, branch_name, taxonomy_name)

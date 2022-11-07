@@ -2,301 +2,518 @@
 Database helper functions for API
 """
 import re
-from .graph_db import get_current_transaction   # Neo4J transactions helper
-from .normalizer import normalizing             # Normalizing tags
+import tempfile
 
-def get_label(id):
-    """
-    Helper function for getting the label for a given id
-    """
-    if (id.startswith('stopword')): return 'STOPWORDS'
-    elif (id.startswith('synonym')): return 'SYNONYMS'
-    elif (id.startswith('__header__') or id.startswith('__footer__')): return 'TEXT'
-    else: return 'ENTRY'
+import urllib.request                                                           # Sending requests
+from .github_functions import GithubOperations                                  # Github functions
 
-def create_node(label, entry, main_language_code):
-    """
-    Helper function used for creating a node with given id and label
-    """
-    #Normalising new Node ID
+from .exceptions import TaxnonomyImportError
+from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError            
+from .exceptions import GithubUploadError, GithubBranchExistsError              # Custom exceptions
 
-    normalised_entry = normalizing(entry, main_language_code)
-     
-    query = [f"""CREATE (n:{label})\n"""]
-    params = {"id": normalised_entry}
+from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
+from .graph_db import TransactionCtx                                            # Neo4J transactions context manager
 
-    # Build all basic keys of a node
-    if (label == "ENTRY"):
-        canonical_tag = normalised_entry.split(":", 1)[1]
-        query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
-        params["main_language_code"] = main_language_code
-    else:
-        canonical_tag = ""
+from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
+from openfoodfacts_taxonomy_parser import unparser                              # Unparser for taxonomies
+from openfoodfacts_taxonomy_parser import normalizer                            # Normalizing tags
 
-    query.append(f""" SET n.id = $id """)
-    query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
-    query.append(f""" SET n.preceding_lines = [] """)
+class TaxonomyGraph:
 
-    params["canonical_tag"] = canonical_tag
-    result = get_current_transaction().run(" ".join(query), params)
-    return result
-
-def add_node_to_end(label, entry):
-    """
-    Helper function which adds an existing node to end of taxonomy
-    """
-    # Delete relationship between current last node and __footer__
-    query = f"""
-       MATCH (last_node)-[r:is_before]->(footer:TEXT) WHERE footer.id = "__footer__" DELETE r 
-       RETURN last_node
-    """
-    result = get_current_transaction().run(query)
-    end_node = result.data()[0]['last_node']
-    end_node_label = get_label(end_node['id']) # Get current last node ID
-
-    # Rebuild relationships by inserting incoming node at the end
-    query = []
-    query = f"""
-        MATCH (new_node:{label}) WHERE new_node.id = $id
-        MATCH (last_node:{end_node_label}) WHERE last_node.id = $endnodeid
-        MATCH (footer:TEXT) WHERE footer.id = "__footer__"
-        CREATE (last_node)-[:is_before]->(new_node)
-        CREATE (new_node)-[:is_before]->(footer)
-    """
-    result = get_current_transaction().run(query, {"id": entry, "endnodeid": end_node['id']})
-
-def add_node_to_beginning(label, entry):
-    """
-    Helper function which adds an existing node to beginning of taxonomy
-    """
-    # Delete relationship between current first node and __header__
-    query = f"""
-        MATCH (header:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
-        RETURN first_node
-    """
-    result = get_current_transaction().run(query)
-    start_node = result.data()[0]['first_node']
-    start_node_label = get_label(start_node['id']) # Get current first node ID
-
-    # Rebuild relationships by inserting incoming node at the beginning
-    query= f"""
-        MATCH (new_node:{label}) WHERE new_node.id = $id
-        MATCH (first_node:{start_node_label}) WHERE first_node.id = $startnodeid
-        MATCH (header:TEXT) WHERE header.id = "__header__"
-        CREATE (new_node)-[:is_before]->(first_node)
-        CREATE (header)-[:is_before]->(new_node)
-    """
-    result = get_current_transaction().run(query, {"id": entry, "startnodeid": start_node['id']})
-
-def delete_node(label, entry):
-    """
-    Helper function used for deleting a node with given id and label
-    """
-    # Finding node to be deleted using node ID
-    query = f"""
-        // Find node to be deleted using node ID
-        MATCH (deleted_node:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
-        MATCH (previous_node)-[:is_before]->(deleted_node)
-        // Remove node
-        DETACH DELETE (deleted_node)
-        // Rebuild relationships after deletion
-        CREATE (previous_node)-[:is_before]->(next_node)
-    """
-    result = get_current_transaction().run(query, {"id": entry})
-    return result
-
-def get_all_nodes(label):
-    """
-    Helper function used for getting all nodes with/without given label
-    """
-    qualifier = f":{label}" if label else ""
-    query = f"""
-        MATCH (n{qualifier}) RETURN n
-    """
-    result = get_current_transaction().run(query)
-    return result
-
-def get_nodes(label, entry):
-    """
-    Helper function used for getting the node with given id and label
-    """
-    query = f"""
-        MATCH (n:{label}) WHERE n.id = $id 
-        RETURN n
-    """
-    result = get_current_transaction().run(query, {"id": entry})
-    return result
-
-def get_parents(entry):
-    """
-    Helper function used for getting node parents with given id
-    """
-    query = f"""
-        MATCH (child_node:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
-        RETURN parent.id
-    """
-    result = get_current_transaction().run(query, {"id": entry})
-    return result
-
-def get_children(entry):
-    """
-    Helper function used for getting node children with given id
-    """
-    query = f"""
-        MATCH (child)-[r:is_child_of]->(parent_node:ENTRY) WHERE parent_node.id = $id 
-        RETURN child.id
-    """
-    result = get_current_transaction().run(query, {"id": entry})
-    return result
-
-def update_nodes(label, entry, new_node_keys):
-    """
-    Helper function used for updation of node with given id and label
-    """
-    # Sanity check keys
-    for key in new_node_keys.keys():
-        if not re.match(r"^\w+$", key) or key == "id":
-            raise ValueError("Invalid key: %s", key)
+    """Class for database operations"""
     
-    # Get current node information and deleted keys
-    curr_node = get_nodes(label, entry).data()[0]['n']
-    curr_node_keys = list(curr_node.keys())
-    deleted_keys = (set(curr_node_keys) ^ set(new_node_keys))
+    def __init__(self, branch_name, taxonomy_name):
+        self.taxonomy_name = taxonomy_name
+        self.branch_name = branch_name
+        self.project_name = 'p_' + taxonomy_name + '_' + branch_name
+        
+    def get_label(self, id):
+        """
+        Helper function for getting the label for a given id
+        """
+        if (id.startswith('stopword')): return 'STOPWORDS'
+        elif (id.startswith('synonym')): return 'SYNONYMS'
+        elif (id.startswith('__header__') or id.startswith('__footer__')): return 'TEXT'
+        else: return 'ENTRY'
 
-    # Check for keys having null/empty values
-    for key in curr_node_keys:
-        if (curr_node[key] == []) or (curr_node[key] == None):
-            deleted_keys.add(key)
+    def create_node(self, label, entry, main_language_code):
+        """
+        Helper function used for creating a node with given id and label
+        """
+        # Normalizing new Node ID
+        normalised_entry = normalizer.normalizing(entry, main_language_code)
 
-    # Build query
-    query = [f"""MATCH (n:{label}) WHERE n.id = $id """]
+        query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
+        params = {"id": normalised_entry}
 
-    # Delete keys removed by user
-    for key in deleted_keys:
-        if key == "id": # Doesn't require to be deleted
-            continue
-        query.append(f"""\nREMOVE n.{key}\n""")
-
-    # Adding normalized tags ids corresponding to entry tags
-    normalised_new_node_key = {}
-    for keys in new_node_keys.keys():
-        if keys.startswith("tags_") and not keys.endswith("_str"):
-            if "_ids_" not in keys:
-                keys_language_code = keys.split('_', 1)[1]
-                normalised_value = []
-                for values in new_node_keys[keys]:
-                    normalised_value.append(normalizing(values, keys_language_code))
-                normalised_new_node_key[keys] = normalised_value
-                normalised_new_node_key["tags_ids_"+keys_language_code] = normalised_value
-            else:
-                pass   # we generate tags_ids, and ignore the one sent
+        # Build all basic keys of a node
+        if (label == "ENTRY"):
+            canonical_tag = normalised_entry.split(":", 1)[1]
+            query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
+            params["main_language_code"] = main_language_code
         else:
-            # No need to normalise
-            normalised_new_node_key[keys] = new_node_keys[keys]
+            canonical_tag = ""
 
-    # Update keys
-    for key in normalised_new_node_key.keys():
-        query.append(f"""\nSET n.{key} = ${key}\n""")
+        query.append(f""" SET n.id = $id """)
+        query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
+        query.append(f""" SET n.preceding_lines = [] """)
+        query.apppend(f""" RETURN n """)
 
-    query.append(f"""RETURN n""")
+        params["canonical_tag"] = canonical_tag
+        result = get_current_transaction().run(" ".join(query), params)
+        return result
 
-    params = dict(normalised_new_node_key, id=entry)
-    result = get_current_transaction().run(" ".join(query), params)
-    return result
-
-def update_node_children(entry, new_children_ids):
-    """
-    Helper function used for updation of node children with given id 
-    """
-    # Parse node ids from Neo4j Record object
-    current_children = [record["child.id"] for record in list(get_children(entry))]
-    deleted_children = set(current_children) - set(new_children_ids)
-    added_children = set(new_children_ids) - set(current_children)
-
-    # Delete relationships
-    for child in deleted_children:
-        query = f""" 
-            MATCH (deleted_child:ENTRY)-[rel:is_child_of]->(parent:ENTRY) 
-            WHERE parent.id = $id AND deleted_child.id = $child
-            DELETE rel
+    def parse_taxonomy(self, filename):
         """
-        get_current_transaction().run(query, {"id": entry, "child": child})
-
-    # Create non-existing nodes
-    query = """MATCH (child:ENTRY) WHERE child.id in $ids RETURN child.id"""
-    existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
-    to_create = added_children - set(existing_ids)
-
-    # Normalising new children node ID
-    created_child_ids = []
-    for child in to_create:
-        main_language_code = child.split(":", 1)[0]
-        created_node = create_node("ENTRY", child, main_language_code)
-        created_child_ids.append(created_node.id)
-        
-        # TODO: We would prefer to add the node just after its parent entry
-        add_node_to_end("ENTRY", child)
-
-    # Stores result of last query executed
-    result = []
-    for child in created_child_ids:
-        # Create new relationships if it doesn't exist
-        query = f"""
-            MATCH (parent:ENTRY), (new_child:ENTRY) WHERE parent.id = $id AND new_child.id = $child
-            MERGE (new_child)-[r:is_child_of]->(parent)
+        Helper function to call the Open Food Facts Python Taxonomy Parser
         """
-        result = get_current_transaction().run(query, {"id": entry, "child": child})
+        # Close current transaction to use the session variable in parser
+        get_current_transaction().commit()
+
+        # Create parser object and pass current session to it
+        parser_object = parser.Parser(get_current_session())
+        try:
+            # Parse taxonomy with given file name and branch name
+            parser_object(filename, self.branch_name, self.taxonomy_name)
+            return True
+        except:
+            raise TaxonomyParsingError()
+
+    def import_from_github(self, description):
+        """
+        Helper function to import a taxonomy from GitHub
+        """
+        base_url = "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/main/taxonomies/"
+        filename = self.taxonomy_name + '.txt'
+        base_url += filename
+        try:
+            with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+
+                # File to save the downloaded taxonomy
+                filepath = f"{tmpdir}/{filename}"
+
+                # Downloads and creates taxonomy file in current working directory
+                urllib.request.urlretrieve(base_url, filepath)
+
+                status = self.parse_taxonomy(filepath) # Parse the taxonomy
+
+                with TransactionCtx():
+                    self.create_project(description) # Creates a "project node" in neo4j
+                    
+                return status
+        except:
+            raise TaxnonomyImportError()
     
-    return result
-
-def full_text_search(text):
-    """
-    Helper function used for searching a taxonomy
-    """
-    # Escape special characters
-    normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
-    normalized_id_text = normalizing(text)
-
-    text_query_exact = "*" + normalized_text + '*'
-    text_query_fuzzy = normalized_text + "~"
-    text_id_query_fuzzy = normalized_id_text + "~"
-    text_id_query_exact = "*" + normalized_id_text + "*"
-    params = {
-        "text_query_fuzzy" : text_query_fuzzy,
-        "text_query_exact" : text_query_exact,
-        "text_id_query_fuzzy" : text_id_query_fuzzy,
-        "text_id_query_exact" : text_id_query_exact 
-    }
-
-    # Fuzzy search and wildcard (*) search on two indexes
-    # Fuzzy search has more priority, since it matches more close strings
-    # IDs are given slightly lower priority than tags in fuzzy search
-    query = """
-        CALL {
-                CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_fuzzy)
-                yield node, score as score_
-                where score_ > 0
-                return node, score_ * 3 as score
-            UNION
-                CALL db.index.fulltext.queryNodes("nodeSearchTags", $text_query_fuzzy)
-                yield node, score as score_
-                where score_ > 0
-                return node, score_ * 5 as score
-            UNION
-                CALL db.index.fulltext.queryNodes("nodeSearchIds", $text_id_query_exact)
-                yield node, score as score_
-                where score_ > 0
-                return node, score_ as score
-            UNION
-                CALL db.index.fulltext.queryNodes("nodeSearchTags", $text_query_exact)
-                yield node, score as score_
-                where score_ > 0
-                return node, score_ as score 
-        }
-        with node.id as node, score
-        RETURN node, sum(score) as score
+    def dump_taxonomy(self):
+        """
+        Helper function to create the txt file of a taxonomy
+        """
+        # Create unparser object and pass current session to it
+        unparser_object = unparser.WriteTaxonomy(get_current_session())
+        # Creates a unique file for dumping the taxonomy
+        filename = self.project_name + '.txt'
+        try:
+            # Parse taxonomy with given file name and branch name
+            unparser_object(filename, self.branch_name, self.taxonomy_name)
+            return filename
+        except Exception:
+            raise TaxonomyUnparsingError()
         
-        ORDER BY score DESC
-    """
-    result = [record["node"] for record in get_current_transaction().run(query, params)]
-    return result
+    def file_export(self):
+        """Export a taxonomy for download"""
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        filepath = self.dump_taxonomy()
+        return filepath
+    
+    def github_export(self):
+        """Export a taxonomy to Github"""
+        # Close current transaction to use the session variable in unparser
+        get_current_transaction().commit()
+
+        filepath = self.dump_taxonomy()
+        # Create a new transaction context
+        with TransactionCtx():
+            result = self.export_to_github(filepath)
+            self.close_project()
+        return result
+    
+    def export_to_github(self, filename):
+        """
+        Helper function to export a taxonomy to GitHub
+        """
+        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
+        result = get_current_transaction().run(query, {"project_name": self.project_name})
+        description = result.data()[0]['n.description']
+
+        github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+        try:
+            github_object.checkout_branch()
+        except:
+            raise GithubBranchExistsError()
+        try:
+            github_object.update_file(filename)
+            pr_object = github_object.create_pr(description)
+            return (pr_object.html_url, filename)
+        except:
+            raise GithubUploadError()
+
+    def does_project_exist(self):
+        """
+        Helper function to check the existence of a project
+        """
+        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n"""
+        result = get_current_transaction().run(query, {"project_name" : self.project_name})
+        if (result.data() == []):
+            return False
+        else:
+            return True
+    
+    def is_branch_unique(self):
+        """
+        Helper function to check uniqueness of GitHub branch
+        """
+        query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
+        result = get_current_transaction().run(query, {"branch_name" : self.branch_name})
+
+        github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+        current_branches = github_object.list_all_branches()
+
+        if ((result.data() == []) and (self.branch_name not in current_branches)):
+            return True
+        else:
+            return False
+    
+    def is_valid_branch_name(self):
+        """
+        Helper function to check if a branch name is valid
+        """
+        return normalizer.normalizing(self.branch_name) == self.branch_name
+    
+    def create_project(self, description):
+        """
+        Helper function to create a node with label "PROJECT"
+        """
+        query = """
+            CREATE (n:PROJECT) 
+            SET n.id = $project_name
+            SET n.taxonomy_name = $taxonomy_name
+            SET n.branch_name = $branch_name
+            SET n.description = $description
+            SET n.status = $status
+            SET n.created_at = datetime() 
+        """
+        params = {
+            'project_name' : self.project_name,
+            'taxonomy_name' : self.taxonomy_name,
+            'branch_name' : self.branch_name,
+            'description' : description,
+            'status' : "OPEN"
+        }
+        get_current_transaction().run(query, params)
+    
+    def close_project(self):
+        """
+        Helper function to close a Taxonomy Editor project and updates project status as "CLOSED"
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.id = $project_name
+            SET n.status = $status
+        """
+        params = {
+            'project_name' : self.project_name,
+            'status' : "CLOSED"
+        }
+        get_current_transaction().run(query, params)
+
+    def list_existing_projects(self):
+        """
+        Helper function for listing all existing projects created in Taxonomy Editor
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.status = "OPEN" RETURN n 
+            ORDER BY n.created_at
+        """
+        result = get_current_transaction().run(query)
+        return result
+
+    def add_node_to_end(self, label, entry):
+        """
+        Helper function which adds an existing node to end of taxonomy
+        """
+        # Delete relationship between current last node and __footer__
+        query = f"""
+        MATCH (last_node)-[r:is_before]->(footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__" DELETE r 
+        RETURN last_node
+        """
+        result = get_current_transaction().run(query)
+        end_node = result.data()[0]['last_node']
+        end_node_label = self.get_label(end_node['id']) # Get current last node ID
+
+        # Rebuild relationships by inserting incoming node at the end
+        query = []
+        query = f"""
+            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
+            MATCH (last_node:{self.project_name}:{end_node_label}) WHERE last_node.id = $endnodeid
+            MATCH (footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__"
+            CREATE (last_node)-[:is_before]->(new_node)
+            CREATE (new_node)-[:is_before]->(footer)
+        """
+        result = get_current_transaction().run(query, {"id": entry, "endnodeid": end_node['id']})
+
+    def add_node_to_beginning(self, label, entry):
+        """
+        Helper function which adds an existing node to beginning of taxonomy
+        """
+        # Delete relationship between current first node and __header__
+        query = f"""
+            MATCH (header:{self.project_name}:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
+            RETURN first_node
+        """
+        result = get_current_transaction().run(query)
+        start_node = result.data()[0]['first_node']
+        start_node_label = self.get_label(start_node['id']) # Get current first node ID
+
+        # Rebuild relationships by inserting incoming node at the beginning
+        query= f"""
+            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
+            MATCH (first_node:{self.project_name}:{start_node_label}) WHERE first_node.id = $startnodeid
+            MATCH (header:{self.project_name}:TEXT) WHERE header.id = "__header__"
+            CREATE (new_node)-[:is_before]->(first_node)
+            CREATE (header)-[:is_before]->(new_node)
+        """
+        result = get_current_transaction().run(query, {"id": entry, "startnodeid": start_node['id']})
+
+    def delete_node(self, label, entry):
+        """
+        Helper function used for deleting a node with given id and label
+        """
+        # Finding node to be deleted using node ID
+        query = f"""
+            // Find node to be deleted using node ID
+            MATCH (deleted_node:{self.project_name}:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
+            MATCH (previous_node)-[:is_before]->(deleted_node)
+            // Remove node
+            DETACH DELETE (deleted_node)
+            // Rebuild relationships after deletion
+            CREATE (previous_node)-[:is_before]->(next_node)
+        """
+        result = get_current_transaction().run(query, {"id": entry})
+        return result
+
+    def get_all_nodes(self, label):
+        """
+        Helper function used for getting all nodes with/without given label
+        """
+        qualifier = f":{label}" if label else ""
+        query = f"""
+            MATCH (n:{self.project_name}{qualifier}) RETURN n
+        """
+        result = get_current_transaction().run(query)
+        return result
+    
+    def get_all_root_nodes(self):
+        """
+        Helper function used for getting all root nodes in a taxonomy
+        """
+        query = f"""
+            MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+        """
+        result = get_current_transaction().run(query)
+        return result
+
+    def get_nodes(self, label, entry):
+        """
+        Helper function used for getting the node with given id and label
+        """
+        query = f"""
+            MATCH (n:{self.project_name}:{label}) WHERE n.id = $id 
+            RETURN n
+        """
+        result = get_current_transaction().run(query, {"id": entry})
+        return result
+
+    def get_parents(self, entry):
+        """
+        Helper function used for getting node parents with given id
+        """
+        query = f"""
+            MATCH (child_node:{self.project_name}:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
+            RETURN parent.id
+        """
+        result = get_current_transaction().run(query, {"id": entry})
+        return result
+
+    def get_children(self, entry):
+        """
+        Helper function used for getting node children with given id
+        """
+        query = f"""
+            MATCH (child)-[r:is_child_of]->(parent_node:{self.project_name}:ENTRY) WHERE parent_node.id = $id 
+            RETURN child.id
+        """
+        result = get_current_transaction().run(query, {"id": entry})
+        return result
+
+    def update_nodes(self, label, entry, new_node_keys):
+        """
+        Helper function used for updation of node with given id and label
+        """
+        # Sanity check keys
+        for key in new_node_keys.keys():
+            if not re.match(r"^\w+$", key) or key == "id":
+                raise ValueError("Invalid key: %s", key)
+        
+        # Get current node information and deleted keys
+        curr_node = self.get_nodes(label, entry).data()[0]['n']
+        curr_node_keys = list(curr_node.keys())
+        deleted_keys = (set(curr_node_keys) ^ set(new_node_keys))
+
+        # Check for keys having null/empty values
+        for key in curr_node_keys:
+            if (curr_node[key] == []) or (curr_node[key] == None):
+                deleted_keys.add(key)
+
+        # Build query
+        query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
+
+        # Delete keys removed by user
+        for key in deleted_keys:
+            if key == "id": # Doesn't require to be deleted
+                continue
+            query.append(f"""\nREMOVE n.{key}\n""")
+
+        # Adding normalized tags ids corresponding to entry tags
+        normalised_new_node_keys = {}
+        for keys in new_node_keys.keys():
+            if keys.startswith("tags_") and not keys.endswith("_str"):
+                if "_ids_" not in keys:
+                    keys_language_code = keys.split('_', 1)[1]
+                    normalised_value = []
+                    for values in new_node_keys[keys]:
+                        normalised_value.append(normalizer.normalizing(values, keys_language_code))
+                    normalised_new_node_keys[keys] = normalised_value
+                    normalised_new_node_keys["tags_ids_"+keys_language_code] = normalised_value
+                else:
+                    pass # We generate tags_ids, and ignore the one sent
+            else:
+                # No need to normalise
+                normalised_new_node_keys[keys] = new_node_keys[keys] 
+
+        # Update keys
+        for key in normalised_new_node_keys.keys():
+            query.append(f"""\nSET n.{key} = ${key}\n""")
+
+        query.append(f"""RETURN n""")
+
+        params = dict(normalised_new_node_keys, id=entry)
+        result = get_current_transaction().run(" ".join(query), params)
+        return result
+
+    def update_node_children(self, entry, new_children_ids):
+        """
+        Helper function used for updation of node children with given id 
+        """
+        # Parse node ids from Neo4j Record object
+        current_children = [record["child.id"] for record in list(self.get_children(entry))]
+        deleted_children = set(current_children) - set(new_children_ids)
+        added_children = set(new_children_ids) - set(current_children)
+
+        # Delete relationships
+        for child in deleted_children:
+            query = f""" 
+                MATCH (deleted_child:{self.project_name}:ENTRY)-[rel:is_child_of]->(parent:{self.project_name}:ENTRY) 
+                WHERE parent.id = $id AND deleted_child.id = $child
+                DELETE rel
+            """
+            get_current_transaction().run(query, {"id": entry, "child": child})
+
+        # Create non-existing nodes
+        query = f"""MATCH (child:{self.project_name}:ENTRY) WHERE child.id in $ids RETURN child.id"""
+        existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
+        to_create = added_children - set(existing_ids)
+
+        # Normalising new children node ID
+        created_child_ids = []
+
+        for child in to_create:
+            main_language_code = child.split(":", 1)[0]
+            created_node = self.create_node("ENTRY", child, main_language_code)
+            created_node_id = created_node.data()[0]['n']['id']
+            created_child_ids.append(created_node_id)
+            
+            # TODO: We would prefer to add the node just after its parent entry
+            self.add_node_to_end("ENTRY", child)
+
+        # Stores result of last query executed
+        result = []
+        for child in created_child_ids:
+            # Create new relationships if it doesn't exist
+            query = f"""
+                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY) 
+                WHERE parent.id = $id AND new_child.id = $child
+                MERGE (new_child)-[r:is_child_of]->(parent)
+            """
+            result = get_current_transaction().run(query, {"id": entry, "child": child})
+        
+        return result
+
+    def full_text_search(self, text):
+        """
+        Helper function used for searching a taxonomy
+        """
+        # Escape special characters
+        normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
+        normalized_id_text = normalizer.normalizing(text)
+
+        id_index = self.project_name+'_SearchIds'
+        tags_index = self.project_name+'_SearchTags'
+
+        text_query_exact = "*" + normalized_text + '*'
+        text_query_fuzzy = normalized_text + "~"
+        text_id_query_fuzzy = normalized_id_text + "~"
+        text_id_query_exact = "*" + normalized_id_text + "*"
+        params = {
+            "id_index" : id_index,
+            "tags_index" : tags_index,
+            "text_query_fuzzy" : text_query_fuzzy,
+            "text_query_exact" : text_query_exact,
+            "text_id_query_fuzzy" : text_id_query_fuzzy,
+            "text_id_query_exact" : text_id_query_exact
+        }
+
+        # Fuzzy search and wildcard (*) search on two indexes
+        # Fuzzy search has more priority, since it matches more close strings
+        # IDs are given slightly lower priority than tags in fuzzy search
+        query = """
+            CALL {
+                    CALL db.index.fulltext.queryNodes($id_index, $text_id_query_fuzzy)
+                    yield node, score as score_
+                    where score_ > 0
+                    return node, score_ * 3 as score
+                UNION
+                    CALL db.index.fulltext.queryNodes($tags_index, $text_query_fuzzy)
+                    yield node, score as score_
+                    where score_ > 0
+                    return node, score_ * 5 as score
+                UNION
+                    CALL db.index.fulltext.queryNodes($id_index, $text_id_query_exact)
+                    yield node, score as score_
+                    where score_ > 0
+                    return node, score_ as score
+                UNION
+                    CALL db.index.fulltext.queryNodes($tags_index, $text_query_exact)
+                    yield node, score as score_
+                    where score_ > 0
+                    return node, score_ as score 
+            }
+            with node.id as node, score
+            RETURN node, sum(score) as score
+            
+            ORDER BY score DESC
+        """
+        result = [record["node"] for record in get_current_transaction().run(query, params)]
+        return result

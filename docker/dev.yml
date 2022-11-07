@@ -3,6 +3,14 @@ version: "3.7"
 services:
   # in dev we want to use watch assets and recompile on the fly
   # also we want to build at start time in case some files changed, as we want to avoid recreating volumes
+  taxonomy_api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      # in development mode, mount code directory dynamically
+      - ./backend/editor:/code/editor
+      - ./parser:/parser
   taxonomy_node:
     image: taxonomy-editor/taxonomy_node:dev
     build:
@@ -43,7 +51,8 @@ services:
   taxonomy-backend:
     image: taxonomy-editor/taxonomy_backend:dev
     build:
-      context: backend
+      context: .
+      dockerfile: backend/Dockerfile
       # align user id
       args:
         USER_UID: ${USER_UID:-1000}

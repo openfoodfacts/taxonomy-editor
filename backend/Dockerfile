@@ -14,12 +14,17 @@ RUN groupadd -g $USER_GID off && \
     mkdir -p /home/off && \ 
     chown off:off -R /code /home/off
 
-COPY ./requirements.txt /code/requirements.txt
+COPY backend/requirements.txt /code/requirements.txt
+COPY backend/editor /code/editor
+COPY parser  /parser
+
 RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
+# this is purely cosmetic
+RUN     ln -s /parser/openfoodfacts_taxonomy_parser /code/openfoodfacts_taxonomy_parser
 RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
     pip3 install --upgrade -r /code/requirements.txt
 
 USER off:off
-COPY --chown=off:off ./editor /code/editor
+COPY --chown=off:off ./backend/editor /code/editor
 
 CMD ["uvicorn", "editor.api:app", "--host", "0.0.0.0", "--port", "80"]
