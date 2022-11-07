@@ -23,7 +23,8 @@ const EditEntry = ({setDisplayedPages}) => {
         function addUrlPrefixToNavbar() {
             setDisplayedPages([
                 { url: urlPrefix+"entry", translationKey: "Nodes" },
-                { url: urlPrefix+"search", translationKey: "Search" }
+                { url: urlPrefix+"search", translationKey: "Search" },
+                { url: urlPrefix+"export", translationKey: "Export" }
             ])
         }, [urlPrefix, setDisplayedPages]
     );

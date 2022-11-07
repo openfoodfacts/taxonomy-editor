@@ -10,7 +10,7 @@ export function toTitleCase(taxonomyName) {
 }
 
 /**
- * Changes given taxonomy name to snake case
+ * Changes taxonomy name to snake case
  */
 export function toSnakeCase(taxonomyName) {
     return taxonomyName

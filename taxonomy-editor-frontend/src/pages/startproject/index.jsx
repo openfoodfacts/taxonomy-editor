@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
-import { toSnakeCase } from "../editentry/interConvertNames";
+import { toSnakeCase } from "../../components/interConvertNames";
 
 const StartProject = () => {
     const [branchName, setBranchName] = useState("")
