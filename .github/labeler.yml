@@ -1,5 +1,83 @@
 # Add labels to any any pull request with changes to the specified paths
-
+# for reference, see https://github.com/actions/labeler
 
 github:
 - .github/**/*
+
+documentation:
+- CONTRIBUTING.md
+- LICENSE
+- README.md
+- backend/README.md
+- doc/how-to-guides/develop-with-neo4j.md
+- doc/how-to-guides/docker-compose-setup.md
+- doc/introduction/setup-dev.md
+- doc/references/taxonomy-parser.md
+- doc/assets/.empty
+- doc/**/*
+
+docker:
+- backend/Dockerfile
+- taxonomy-editor-frontend/Dockerfile
+- docker-compose.yml
+- docker/dev.yml
+
+backend:
+- backend/editor/__init__.py
+- backend/editor/api.py
+- backend/editor/entries.py
+- backend/editor/exceptions.py
+- backend/editor/graph_db.py
+- backend/editor/models.py
+- backend/editor/normalizer.py
+- backend/editor/settings.py
+- backend/requirements.txt
+- backend/sample/load.py
+- backend/sample/schema.json
+- backend/sample/test-neo4j.json
+- backend/sample/test.json
+- backend/sample/test.txt
+- backend/**/*
+
+frontend:
+- taxonomy-editor-frontend/**/*
+
+dependencies:
+- backend/requirements.txt
+- parser/requirements-dev.txt
+- parser/requirements-test.txt
+- parser/requirements.txt
+- taxonomy-editor-frontend/package.json
+
+api:
+- backend/editor/api.py
+
+nginx:
+- conf/nginx.conf
+
+neo4j:
+- neo4j/**/*
+  
+parser:
+- parser/Makefile
+- parser/openfoodfacts_taxonomy_parser/__init__.py
+- parser/openfoodfacts_taxonomy_parser/exception.py
+- parser/openfoodfacts_taxonomy_parser/parser.py
+- parser/openfoodfacts_taxonomy_parser/unparser.py
+- parser/pyproject.toml
+- parser/requirements-dev.txt
+- parser/requirements-test.txt
+- parser/requirements.txt
+- parser/setup.cfg
+- parser/tests/__init__.py
+- parser/tests/conftest.py
+- parser/tests/data/test.txt
+- parser/tests/integration/__init__.py
+- parser/**/*
+
+tests:
+- parser/tests/__init__.py
+- parser/tests/conftest.py
+- parser/tests/data/test.txt
+- parser/tests/integration/__init__.py
+- parser/tests/**/*

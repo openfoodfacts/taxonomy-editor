@@ -16,3 +16,5 @@ uvicorn==0.18.2
 uvloop==0.16.0
 watchfiles==0.16.0
 websockets==10.3
+PyGithub==1.56
+-e ../parser/
