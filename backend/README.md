@@ -1,27 +1,20 @@
-# Dev Environment Setup Guide
-This guide will allow you to rapidly build a ready-to-use developement environment for the Taxonomy Editor API running in Docker.
+# Taxonomy Editor API
 
-## Prerequisites
-Docker is the easiest way to install the Taxonomy Editor API, play with it, and even modify the code.
+This is the main Python API used by the React frontend, to interface with the Neo4J database.
 
-Docker provides an isolated environment, very close to a Virtual Machine. This environment contains everything required to launch the API. There is no need to install any modules separately.
+## Requirements
+- [FastAPI](https://github.com/tiangolo/fastapi)
+- [openfoodfacts_taxonomy_parser](../parser/openfoodfacts_taxonomy_parser/)
+- [Neo4J Python Driver](https://github.com/neo4j/neo4j-python-driver)
+- [PyGithub](https://github.com/PyGithub/PyGithub)
 
-**Installation steps:**
-- [Install Docker CE](https://docs.docker.com/install/#supported-platforms)
-> If you run e.g. Debian, don't forget to add your user to the `docker` group!
-- [Install Docker Compose](https://docs.docker.com/compose/install/)
-- [Enable command-line completion](https://docs.docker.com/compose/completion/)
+## Setup Dev Environment
 
-
-## Setup with docker-compose
-
-Go to root directory.
-
-Launch `docker-compose up`
+See [this guide](../doc/introduction/setup-dev.md) for more information.
 
 ## Check it!
 
-You should be able to check it in your Docker container's URL, for example: http://127.0.0.1/ or http://192.168.99.100/ (or equivalent, using your Docker host)
+After following the steps in the guide, the API should be available at the URL `http://api.taxonomy.localhost:8091`.
 
 You will see the following:
 ```
