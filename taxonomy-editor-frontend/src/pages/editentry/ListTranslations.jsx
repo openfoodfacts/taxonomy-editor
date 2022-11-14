@@ -1,4 +1,4 @@
-import { Typography, TextField, Stack, Button, IconButton, Box } from "@mui/material";
+import { Typography, TextField, Stack, Button, IconButton, Box, Autocomplete } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -322,22 +322,22 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 <DialogContentText>
                     Enter the two letter language code for the language to be added.
                 </DialogContentText>
-                <TextField
-                    autoFocus
-                    margin="dense"
-                    onKeyPress={(e) => { (e.keyCode === ENTER_KEYCODE) && isValidLanguageCode && handleAddTranslation(newLanguageCode, e) }} 
-                    onChange={(e) => { 
-                        setNewLanguageCode(e.target.value);
-                        const validateBool = ISO6391.validate(e.target.value);
-                        const ifDuplicateBool = renderedTranslations.some(el => (el.languageCode === e.target.value)) || 
-                                                nodeObject.main_language === e.target.value
-                        if (validateBool && !ifDuplicateBool) {setisValidLanguageCode(true)}
+                <Autocomplete
+                    sx={{mt: 2}}
+                    options={ISO6391.getAllNames()}
+                    onChange={(e,language) => {
+                        if (!language) language = '';
+                        setNewLanguageCode(ISO6391.getCode(language));
+                        const isValidLanguage = ISO6391.validate(ISO6391.getCode(language))
+                        const isDuplicateLanguage = renderedTranslations.some(el => (el.languageCode === ISO6391.getCode(language))) || 
+                                                nodeObject.main_language === ISO6391.getCode(language)
+                        if (isValidLanguage && !isDuplicateLanguage) {setisValidLanguageCode(true)}
                         else {setisValidLanguageCode(false)}
                     }}
-                    helperText={!isValidLanguageCode ? "Enter a correct language code!" : ""}
-                    error={!isValidLanguageCode}
-                    fullWidth
-                    variant="standard"
+                    renderInput={(params) => 
+                        <TextField
+                            error={!isValidLanguageCode} {...params} label="Languages" 
+                        />}
                 />
                 </DialogContent>
                 <DialogActions>
