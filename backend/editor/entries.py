@@ -40,17 +40,20 @@ class TaxonomyGraph:
         """
         Helper function used for creating a node with given id and label
         """
-        # Normalizing new Node ID
-        normalised_entry = normalizer.normalizing(entry, main_language_code)
-
+        params = {"id": entry}
         query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
-        params = {"id": normalised_entry}
 
         # Build all basic keys of a node
         if (label == "ENTRY"):
-            canonical_tag = normalised_entry.split(":", 1)[1]
-            query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
+            # Normalizing new canonical tag
+            language_code, canonical_tag = entry.split(":", 1)
+            normalised_canonical_tag = normalizer.normalizing(canonical_tag, main_language_code)
+            
+            # Reconstructing and updation of node ID
+            params["id"] = language_code + ':' + normalised_canonical_tag
             params["main_language_code"] = main_language_code
+
+            query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
         else:
             canonical_tag = ""
 
