@@ -1,4 +1,4 @@
-import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, FormControl, InputLabel } from "@mui/material";
+import { Typography, Snackbar, Alert, Box, TextField, Stack, Button, IconButton, FormControl, InputLabel, Autocomplete } from "@mui/material";
 import useFetch from "../../components/useFetch";
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -30,7 +30,7 @@ const Entry = ({setDisplayedPages}) => {
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
     const [newNode, setnewNode] = useState(null); // Used for storing canonical tag
-    const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
+    const isValidLanguageCode = ISO6391.validate(newLanguageCode) // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
@@ -181,16 +181,14 @@ const Entry = ({setDisplayedPages}) => {
                 </Stack>
                 <Stack direction="row" alignItems="center" sx={{m: 2}}>
                     <Typography>Main Language</Typography>
-                    <TextField
-                        onChange={(e) => { 
-                            setNewLanguageCode(e.target.value);
-                            setIsValidLanguageCode(ISO6391.validate(e.target.value));
+                    <Autocomplete
+                        options={ISO6391.getAllNames()}
+                        onChange={(e,language) => {
+                            if (!language) language = '';
+                            setNewLanguageCode(ISO6391.getCode(language));
                         }}
-                        label="Language Code"
-                        error={!isValidLanguageCode}
+                        renderInput={(params) => <TextField error={!isValidLanguageCode} {...params} label="Languages" />}
                         sx={{width : 150, ml: 5}}
-                        size="small"
-                        variant="outlined"
                     />
                 </Stack>
                 {

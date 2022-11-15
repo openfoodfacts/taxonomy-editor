@@ -1,4 +1,4 @@
-import { Typography, Snackbar, Alert, Box, TextField, Grid, Stack, Button, IconButton, Paper, FormControl, InputLabel } from "@mui/material";
+import { Typography, Snackbar, Alert, Box, TextField, Grid, Stack, Button, IconButton, Paper, FormControl, InputLabel, Autocomplete } from "@mui/material";
 import useFetch from "../../components/useFetch";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -26,9 +26,9 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
     const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseUrl}search?query=${encodeURI(query)}`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
-    const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
+    const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new Language Code
+    const isValidLanguageCode = ISO6391.validate(newLanguageCode) // Used for validating a new LC
     const [newNode, setnewNode] = useState(null); // Used for storing canonical tag
-    const [isValidLanguageCode, setIsValidLanguageCode] = useState(false); // Used for validating a new LC
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
@@ -164,16 +164,14 @@ const SearchResults = ({query, taxonomyName, branchName}) => {
                     </Stack>
                     <Stack direction="row" alignItems="center" sx={{m: 2}}>
                         <Typography>Main Language</Typography>
-                        <TextField
-                            onChange={(e) => { 
-                                setNewLanguageCode(e.target.value);
-                                setIsValidLanguageCode(ISO6391.validate(e.target.value));
+                        <Autocomplete
+                            options={ISO6391.getAllNames()}
+                            onChange={(e,language) => {
+                                if (!language) language = '';
+                                setNewLanguageCode(ISO6391.getCode(language));
                             }}
-                            label="Language Code"
-                            error={!isValidLanguageCode}
+                            renderInput={(params) => <TextField error={!isValidLanguageCode} {...params} label="Languages" />}
                             sx={{width : 150, ml: 5}}
-                            size="small"
-                            variant="outlined"
                         />
                     </Stack>
                     {
