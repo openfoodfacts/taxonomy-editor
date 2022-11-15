@@ -57,11 +57,11 @@ class TaxonomyGraph:
         query.append(f""" SET n.id = $id """)
         query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
         query.append(f""" SET n.preceding_lines = [] """)
-        query.apppend(f""" RETURN n """)
+        query.append(f""" RETURN n.id """)
 
         params["canonical_tag"] = canonical_tag
         result = get_current_transaction().run(" ".join(query), params)
-        return result
+        return result.data()[0]['n.id']
 
     def parse_taxonomy(self, filename):
         """
@@ -441,12 +441,11 @@ class TaxonomyGraph:
 
         for child in to_create:
             main_language_code = child.split(":", 1)[0]
-            created_node = self.create_node("ENTRY", child, main_language_code)
-            created_node_id = created_node.data()[0]['n']['id']
+            created_node_id = self.create_node("ENTRY", child, main_language_code)
             created_child_ids.append(created_node_id)
             
             # TODO: We would prefer to add the node just after its parent entry
-            self.add_node_to_end("ENTRY", child)
+            self.add_node_to_end("ENTRY", created_node_id)
 
         # Stores result of last query executed
         result = []
