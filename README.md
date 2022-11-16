@@ -1,19 +1,31 @@
 # Taxonomy Editor
-Taxonomies are at the 🧡 of Open Food Facts data structure. This project provides an user-friendly editor for editing taxonomies easily.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./doc/assets/off-logo-horizontal-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./doc/assets/off-logo-horizontal-light.svg">
+  <img height="80" src="./doc/assets/off-logo-horizontal-light.svg">
+</picture>
+
+<br> </br>
+![License](https://img.shields.io/github/license/openfoodfacts/taxonomy-editor?style=for-the-badge&color=green)
+![Github Issues](https://img.shields.io/github/issues/openfoodfacts/taxonomy-editor?style=for-the-badge&color=critical)
 ![Github Repo Size](https://img.shields.io/github/repo-size/openfoodfacts/taxonomy-editor?style=for-the-badge&color=aqua)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
 
+Taxonomies are at the 🧡 of Open Food Facts data structure. This project provides an user-friendly editor for editing taxonomies easily.
 
 Please visit the [doc folder](./doc) for more documentation about the Taxonomy Editor.
 > This documentation tries to follow as much as possible the documentation system from [Diataxis](https://diataxis.fr/).
 
-## Contributing
+## Getting Started
 
-- <b>To develop:</b> [Setup a dev environment](./doc/introduction/setup-dev.md)
-- <b>To translate:</b> use [Crowdin](https://crowdin.com/project/openfoodfacts), project Open Food Facts.
-- report issues, feature requests etc.
-
-
+- Join us on Slack at https://openfoodfacts.slack.com/ in the channel `#taxonomy-editor`.
+- Developer documentation:
+  - [Setup a dev environment](./doc/introduction/setup-dev.md)
+  - [Docker Compose Setup](./doc/how-to-guides/docker-compose-setup.md)
+  - [Contributing Guidelines](./CONTRIBUTING.md)
+- Translate: Use [Crowdin](https://crowdin.com/project/openfoodfacts), project Open Food Facts.
+- Visit [this link](https://github.com/openfoodfacts/taxonomy-editor/issues) to report issues, give feature requests etc.
 
 ## Links
 
@@ -33,8 +45,6 @@ Please visit the [doc folder](./doc) for more documentation about the Taxonomy E
 <img width="500" src="https://user-images.githubusercontent.com/25586296/194070779-da4684d3-26ea-4fd9-8916-0e8c4fdea0c9.png" />
 
 </details>
-
-<br>
 
 ## Contributors
 
