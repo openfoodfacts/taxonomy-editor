@@ -301,12 +301,12 @@ async def createNode(request: Request, branch: str, taxonomy_name: str):
     if (main_language == None):
         raise HTTPException(status_code=400, detail="Invalid main language code")
 
-    taxonomy.create_node(taxonomy.get_label(id), id, main_language)
+    normalized_id = taxonomy.create_node(taxonomy.get_label(id), id, main_language)
     if (taxonomy.get_label(id) == "ENTRY"):
-        taxonomy.add_node_to_end(taxonomy.get_label(id), id)
+        taxonomy.add_node_to_end(taxonomy.get_label(normalized_id), normalized_id)
     else:
-        taxonomy.add_node_to_beginning(taxonomy.get_label(id), id)
-
+        taxonomy.add_node_to_beginning(taxonomy.get_label(normalized_id), normalized_id)
+    
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
 async def editEntry(request: Request, branch: str, taxonomy_name: str, entry: str):
     """

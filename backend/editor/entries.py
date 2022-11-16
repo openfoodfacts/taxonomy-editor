@@ -40,28 +40,31 @@ class TaxonomyGraph:
         """
         Helper function used for creating a node with given id and label
         """
-        # Normalizing new Node ID
-        normalised_entry = normalizer.normalizing(entry, main_language_code)
-
+        params = {"id": entry}
         query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
-        params = {"id": normalised_entry}
 
         # Build all basic keys of a node
         if (label == "ENTRY"):
-            canonical_tag = normalised_entry.split(":", 1)[1]
-            query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
+            # Normalizing new canonical tag
+            language_code, canonical_tag = entry.split(":", 1)
+            normalised_canonical_tag = normalizer.normalizing(canonical_tag, main_language_code)
+            
+            # Reconstructing and updation of node ID
+            params["id"] = language_code + ':' + normalised_canonical_tag
             params["main_language_code"] = main_language_code
+
+            query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
         else:
             canonical_tag = ""
 
         query.append(f""" SET n.id = $id """)
         query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
         query.append(f""" SET n.preceding_lines = [] """)
-        query.apppend(f""" RETURN n """)
+        query.append(f""" RETURN n.id """)
 
         params["canonical_tag"] = canonical_tag
         result = get_current_transaction().run(" ".join(query), params)
-        return result
+        return result.data()[0]['n.id']
 
     def parse_taxonomy(self, filename):
         """
@@ -441,12 +444,11 @@ class TaxonomyGraph:
 
         for child in to_create:
             main_language_code = child.split(":", 1)[0]
-            created_node = self.create_node("ENTRY", child, main_language_code)
-            created_node_id = created_node.data()[0]['n']['id']
+            created_node_id = self.create_node("ENTRY", child, main_language_code)
             created_child_ids.append(created_node_id)
             
             # TODO: We would prefer to add the node just after its parent entry
-            self.add_node_to_end("ENTRY", child)
+            self.add_node_to_end("ENTRY", created_node_id)
 
         # Stores result of last query executed
         result = []
