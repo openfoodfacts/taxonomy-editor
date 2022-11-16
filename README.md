@@ -1,13 +1,12 @@
 # Taxonomy Editor
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://static.openfoodfacts.org/images/logos/off-logo-horizontal-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://static.openfoodfacts.org/images/logos/off-logo-horizontal-light.svg">
-  <img height="80" src="https://static.openfoodfacts.org/images/logos/off-logo-horizontal-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="./doc/assets/off-logo-horizontal-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./doc/assets/off-logo-horizontal-light.svg">
+  <img height="80" src="./doc/assets/off-logo-horizontal-light.svg">
 </picture>
 
-<br />
-
+<br> </br>
 ![License](https://img.shields.io/github/license/openfoodfacts/taxonomy-editor?style=for-the-badge&color=green)
 ![Github Issues](https://img.shields.io/github/issues/openfoodfacts/taxonomy-editor?style=for-the-badge&color=critical)
 ![Github Repo Size](https://img.shields.io/github/repo-size/openfoodfacts/taxonomy-editor?style=for-the-badge&color=aqua)
