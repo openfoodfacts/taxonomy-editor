@@ -45,6 +45,15 @@ Notably, if you use a `uid` which is not 1000, you should personalize the `USER_
 
 A smarter way to customize things, is to use [direnv](https://direnv.net/) with a `.envrc` file, or to simply have a script to source (see [the `.` command](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Builtins.html#Bourne-Shell-Builtins)) to load environment variables (they have priority above `.env`).
 
+### Creating Pull Requests with the Taxonomy Editor
+The [settings.py](https://github.com/openfoodfacts/taxonomy-editor/blob/main/backend/editor/settings.py) file present in the `backend` directory must be updated in order to use the feature. If you'd like to see it in action in development mode, do the following steps:
+
+- Make sure a fork of Taxonomy Editor is created in your Github account.
+- Update the `access_token` variable in `settings.py` with your [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+- Update the `repo_owner` variable in `settings.py` with your Github account username.
+
+That's it! Now, you'll be able to view any created PR's in your fork of Taxonomy Editor.
+
 ### Importing some test data
 
 ```bash
