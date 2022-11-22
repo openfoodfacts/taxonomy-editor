@@ -431,7 +431,7 @@ class Parser:
                 # Choose all error lines for inserting into node
                 if line.startswith("ERROR:") or line.startswith("WARNING:"):
                     all_parsing_errors.append(line)
-        query = f"""
+        query = """
             CREATE (n:ERRORS)
             SET n.id = $project_name
             SET n.branch_name = $branch_name
