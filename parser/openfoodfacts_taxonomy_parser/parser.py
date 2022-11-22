@@ -20,6 +20,10 @@ class Parser:
 
     def __init__(self, session):
         self.session = session
+        logging.basicConfig(
+            handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8", mode="w")],
+            level=logging.INFO,
+        )
 
     def create_headernode(self, header, multi_label):
         """Create the node for the header"""
@@ -418,6 +422,31 @@ class Parser:
             FOR (n:{project_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 
+    def create_parsing_errors_node(self, taxonomy_name, branch_name):
+        """Create node to list parsing errors"""
+        all_parsing_errors = []
+        with open("parser.log", "r") as log_file:
+            for line in log_file:
+                line = line.strip()
+                # Choose all error lines for inserting into node
+                if line.startswith("ERROR:") or line.startswith("WARNING:"):
+                    all_parsing_errors.append(line)
+        query = f"""
+            CREATE (n:ERRORS)
+            SET n.id = $project_name
+            SET n.branch_name = $branch_name
+            SET n.taxonomy_name = $taxonomy_name
+            SET n.created_at = datetime()
+            SET n.errors = $error_list
+        """
+        params = {
+            "project_name": self.get_project_name(taxonomy_name, branch_name),
+            "branch_name": branch_name,
+            "taxonomy_name": taxonomy_name,
+            "error_list": all_parsing_errors,
+        }
+        self.session.run(query, params)
+
     def __call__(self, filename, branch_name, taxonomy_name):
         """Process the file"""
         filename = self.normalized_filename(filename)
@@ -427,13 +456,11 @@ class Parser:
         self.create_child_link(multi_label)
         self.create_previous_link(multi_label)
         self.create_fulltext_index(taxonomy_name, branch_name)
+        self.create_parsing_errors_node(taxonomy_name, branch_name)
         # self.delete_used_properties()
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO
-    )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
