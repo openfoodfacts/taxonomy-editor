@@ -14,10 +14,11 @@ def ellipsis(text, max=20):
     """Cut a text adding eventual ellipsis if we do not display it fully"""
     return text[:max] + ("..." if len(text) > max else "")
 
+
 class ParserConsoleLogger:
     def __init__(self):
-        self.parsing_warnings = [] # Stores all warning logs
-        self.parsing_errors = [] # Stores all error logs
+        self.parsing_warnings = []  # Stores all warning logs
+        self.parsing_errors = []  # Stores all error logs
 
         logging.basicConfig(
             handlers=[logging.StreamHandler()],
@@ -32,11 +33,12 @@ class ParserConsoleLogger:
         """Stores all parsing warning logs"""
         self.parsing_warnings.append(msg)
         logging.warning(msg)
-    
+
     def error(self, msg):
         """Stores all parsing error logs"""
         self.parsing_errors.append(msg)
         logging.error(msg)
+
 
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
@@ -419,7 +421,9 @@ class Parser:
             """
             result = self.session.run(query, parent_id=parent_id, child_id=child_id)
             if not result.value():
-                self.parser_logger.warning(f"parent not found for child {child_id} with parent {parent_id}")
+                self.parser_logger.warning(
+                    f"parent not found for child {child_id} with parent {parent_id}"
+                )
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -457,7 +461,7 @@ class Parser:
             "project_name": self.get_project_name(taxonomy_name, branch_name),
             "branch_name": branch_name,
             "taxonomy_name": taxonomy_name,
-            "warnings_list": self.parser_logger.parsing_warnings, 
+            "warnings_list": self.parser_logger.parsing_warnings,
             "errors_list": self.parser_logger.parsing_errors,
         }
         self.session.run(query, params)
