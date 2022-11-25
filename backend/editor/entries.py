@@ -471,6 +471,10 @@ class TaxonomyGraph:
         normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
         normalized_id_text = normalizer.normalizing(text)
 
+        # If normalized text is empty, no searches are found
+        if (normalized_text.strip() == ""):
+            return []
+
         id_index = self.project_name+'_SearchIds'
         tags_index = self.project_name+'_SearchTags'
 

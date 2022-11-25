@@ -14,16 +14,36 @@ def ellipsis(text, max=20):
     """Cut a text adding eventual ellipsis if we do not display it fully"""
     return text[:max] + ("..." if len(text) > max else "")
 
+class ParserConsoleLogger:
+    def __init__(self):
+        self.parsing_warnings = [] # Stores all warning logs
+        self.parsing_errors = [] # Stores all error logs
+
+        logging.basicConfig(
+            handlers=[logging.StreamHandler()],
+            level=logging.INFO,
+        )
+
+    def info(self, msg):
+        """Stores all parsing info logs"""
+        logging.info(msg)
+
+    def warning(self, msg):
+        """Stores all parsing warning logs"""
+        self.parsing_warnings.append(msg)
+        logging.warning(msg)
+    
+    def error(self, msg):
+        """Stores all parsing error logs"""
+        self.parsing_errors.append(msg)
+        logging.error(msg)
 
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
 
     def __init__(self, session):
         self.session = session
-        logging.basicConfig(
-            handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8", mode="w")],
-            level=logging.INFO,
-        )
+        self.parser_logger = ParserConsoleLogger()
 
     def create_headernode(self, header, multi_label):
         """Create the node for the header"""
@@ -236,7 +256,7 @@ class Parser:
                     msg = f"Entry with same id {data['id']} already created, "
                     msg += f"duplicate id in file at line {data['src_position']}. "
                     msg += "Node creation cancelled"
-                    logging.error(msg)
+                    self.parser_logger.error(msg)
                 else:
                     data = self.remove_separating_line(data)
                     yield data  # another function will use this dictionary to create a node
@@ -260,7 +280,7 @@ class Parser:
                     try:
                         lc, value = self.get_lc_value(line[10:])
                     except ValueError:
-                        logging.error(
+                        self.parser_logger.error(
                             "Missing language code at line %d ? '%s'",
                             line_number + 1,
                             ellipsis(line),
@@ -279,7 +299,7 @@ class Parser:
                     try:
                         lc, value = self.get_lc_value(line)
                     except ValueError:
-                        logging.error(
+                        self.parser_logger.error(
                             "Missing language code at line %d ? '%s'",
                             line_number + 1,
                             ellipsis(line),
@@ -317,7 +337,7 @@ class Parser:
                     try:
                         property_name, lc, property_value = line.split(":", 2)
                     except ValueError:
-                        logging.error(
+                        self.parser_logger.error(
                             "Reading error at line %d, unexpected format: '%s'",
                             line_number + 1,
                             ellipsis(line),
@@ -329,7 +349,7 @@ class Parser:
                         if not (
                             correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
-                            logging.error(
+                            self.parser_logger.error(
                                 "Reading error at line %d, unexpected format: '%s'",
                                 line_number + 1,
                                 ellipsis(line),
@@ -344,14 +364,14 @@ class Parser:
 
     def create_nodes(self, filename, multi_label):
         """Adding nodes to database"""
-        logging.info("Creating nodes")
+        self.parser_logger.info("Creating nodes")
         harvested_data = self.harvest(filename)
         self.create_headernode(next(harvested_data), multi_label)
         for entry in harvested_data:
             self.create_node(entry, multi_label)
 
     def create_previous_link(self, multi_label):
-        logging.info("Creating 'is_before' links")
+        self.parser_logger.info("Creating 'is_before' links")
         query = f"MATCH(n:{multi_label}) WHERE exists(n.is_before) return n.id, n.is_before"
         results = self.session.run(query)
         for result in results:
@@ -367,14 +387,14 @@ class Parser:
             results = self.session.run(query, id=id, id_previous=id_previous)
             relation = results.values()
             if len(relation) > 1:
-                logging.error(
+                self.parser_logger.error(
                     "2 or more 'is_before' links created for ids %s and %s, "
                     "one of the ids isn't unique",
                     id,
                     id_previous,
                 )
             elif not relation[0]:
-                logging.error("link not created between %s and %s", id, id_previous)
+                self.parser_logger.error("link not created between %s and %s", id, id_previous)
 
     def parent_search(self, multi_label):
         """Get the parent and the child to link"""
@@ -388,7 +408,7 @@ class Parser:
 
     def create_child_link(self, multi_label):
         """Create the relations between nodes"""
-        logging.info("Creating 'is_child_of' links")
+        self.parser_logger.info("Creating 'is_child_of' links")
         for parent, child_id in self.parent_search(multi_label):
             lc, parent_id = parent.split(":")
             query = f""" MATCH (p:{multi_label}:ENTRY) WHERE $parent_id IN p.tags_ids_""" + lc
@@ -399,7 +419,7 @@ class Parser:
             """
             result = self.session.run(query, parent_id=parent_id, child_id=child_id)
             if not result.value():
-                logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
+                self.parser_logger.warning(f"parent not found for child {child_id} with parent {parent_id}")
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -424,26 +444,21 @@ class Parser:
 
     def create_parsing_errors_node(self, taxonomy_name, branch_name):
         """Create node to list parsing errors"""
-        all_parsing_errors = []
-        with open("parser.log", "r") as log_file:
-            for line in log_file:
-                line = line.strip()
-                # Choose all error lines for inserting into node
-                if line.startswith("ERROR:") or line.startswith("WARNING:"):
-                    all_parsing_errors.append(line)
         query = """
             CREATE (n:ERRORS)
             SET n.id = $project_name
             SET n.branch_name = $branch_name
             SET n.taxonomy_name = $taxonomy_name
             SET n.created_at = datetime()
-            SET n.errors = $error_list
+            SET n.warnings = $warnings_list
+            SET n.errors = $errors_list
         """
         params = {
             "project_name": self.get_project_name(taxonomy_name, branch_name),
             "branch_name": branch_name,
             "taxonomy_name": taxonomy_name,
-            "error_list": all_parsing_errors,
+            "warnings_list": self.parser_logger.parsing_warnings, 
+            "errors_list": self.parser_logger.parsing_errors,
         }
         self.session.run(query, params)
 
