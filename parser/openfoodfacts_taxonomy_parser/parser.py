@@ -20,11 +20,6 @@ class ParserConsoleLogger:
         self.parsing_warnings = []  # Stores all warning logs
         self.parsing_errors = []  # Stores all error logs
 
-        logging.basicConfig(
-            handlers=[logging.StreamHandler()],
-            level=logging.INFO,
-        )
-
     def info(self, msg):
         """Stores all parsing info logs"""
         logging.info(msg)
@@ -480,6 +475,11 @@ class Parser:
 
 
 if __name__ == "__main__":
+    # Setup logs
+    logging.basicConfig(
+        handlers=[logging.StreamHandler()],
+        level=logging.INFO,
+    )
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]

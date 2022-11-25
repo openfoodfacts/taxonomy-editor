@@ -5,6 +5,7 @@ Taxonomy Editor Backend API
 #----------------------------------------------------------------------------#
 from datetime import datetime
 import os
+import logging
 
 # FastAPI
 from fastapi import FastAPI, status, Response, Request, HTTPException, BackgroundTasks
@@ -21,6 +22,12 @@ from .models import Header, Footer
 from . import graph_db
 from .entries import TaxonomyGraph
 #----------------------------------------------------------------------------#
+
+# Setup logs
+logging.basicConfig(
+    handlers=[logging.StreamHandler()],
+    level=logging.INFO,
+)
 
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
 
