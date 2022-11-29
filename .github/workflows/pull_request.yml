@@ -38,3 +38,16 @@ jobs:
         run: |
           cd parser
           make checks
+
+  # taxonomy editor quality
+  taxonomy-editor-checks:
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Make checks
+        run: |
+          make checks

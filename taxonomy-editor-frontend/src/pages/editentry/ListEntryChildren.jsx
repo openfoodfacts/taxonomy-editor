@@ -21,7 +21,8 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
     const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
     const isValidLanguageCode = ISO6391.validate(newLanguageCode); // Used for validating a new LC
 
-    const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+    /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+    const { data: incomingData, isPending, isError, __isSuccess, errorMessage } = useFetch(url);
     
     useEffect(() => {
         if (incomingData) {

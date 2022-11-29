@@ -9,7 +9,8 @@ import { useEffect } from "react";
 import { toSnakeCase, toTitleCase } from "../../components/interConvertNames";
 
 const GotoProject = () => {
-    const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(`${API_URL}projects`);
+    /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+    const { data: incomingData, isPending, isError, __isSuccess, errorMessage } = useFetch(`${API_URL}projects`);
     const [projectData, setProjectData] = useState([]);
     const navigate = useNavigate();
 

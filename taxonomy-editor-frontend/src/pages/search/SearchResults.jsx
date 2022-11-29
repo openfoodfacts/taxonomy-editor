@@ -23,7 +23,8 @@ import { greyHexCode } from "../../constants";
 const SearchResults = ({query, taxonomyName, branchName}) => {
     const baseUrl = createBaseURL(taxonomyName, branchName);
     const urlPrefix = `/${taxonomyName}/${branchName}`
-    const { data: nodeIds, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseUrl}search?query=${encodeURI(query)}`);
+    /* eslint no-unused-vars: ["error", { varsIgnorePattern: "__" }] */
+    const { data: nodeIds, isPending, isError, __isSuccess, errorMessage } = useFetch(`${baseUrl}search?query=${encodeURI(query)}`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new Language Code

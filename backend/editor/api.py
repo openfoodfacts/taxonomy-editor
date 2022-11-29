@@ -1,27 +1,29 @@
 """
 Taxonomy Editor Backend API
 """
-# Required imports
-#----------------------------------------------------------------------------#
-from datetime import datetime
-import os
 import logging
+import os
+
+# Required imports
+# ----------------------------------------------------------------------------#
+from datetime import datetime
 
 # FastAPI
-from fastapi import FastAPI, status, Response, Request, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+
+# DB helper imports
+from . import graph_db
+from .entries import TaxonomyGraph
 
 # Custom exceptions
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models import Header, Footer
+from .models import Footer, Header
 
-# DB helper imports
-from . import graph_db
-from .entries import TaxonomyGraph
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 
 # Setup logs
 logging.basicConfig(
@@ -36,17 +38,18 @@ app.add_middleware(
     CORSMiddleware,
     # FastAPI doc related to allow_origin (to avoid CORS issues):
     # "It's also possible to declare the list as "*" (a "wildcard") to say that all are allowed.
-    # But that will only allow certain types of communication, excluding everything that involves 
+    # But that will only allow certain types of communication, excluding everything that involves
     # credentials: Cookies, Authorization headers like those used with Bearer Tokens, etc.
     # So, for everything to work correctly, it's better to specify explicitly the allowed origins."
     # => Workaround: use allow_origin_regex
     # Source: https://github.com/tiangolo/fastapi/issues/133#issuecomment-646985050
-    allow_origin_regex='https?://.*',
+    allow_origin_regex="https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
 
 @app.on_event("startup")
 async def startup():
@@ -55,6 +58,7 @@ async def startup():
     """
     graph_db.initialize_db()
 
+
 @app.on_event("shutdown")
 async def shutdown():
     """
@@ -62,13 +66,16 @@ async def shutdown():
     """
     graph_db.shutdown_db()
 
+
 @app.middleware("http")
 async def initialize_neo4j_transactions(request: Request, call_next):
     with graph_db.TransactionCtx():
         response = await call_next(request)
     return response
 
+
 # Helper methods
+
 
 def check_single(id):
     """
@@ -78,21 +85,25 @@ def check_single(id):
         raise HTTPException(status_code=404, detail="Entry not found")
     elif len(id) > 1:
         raise HTTPException(status_code=500, detail="Multiple entries found")
-    
+
+
 def file_cleanup(filepath):
     """
     Helper function to delete a taxonomy file from local storage
     """
     try:
         os.remove(filepath)
-    except:
+    except Exception:
         raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
 
+
 # Get methods
+
 
 @app.get("/", status_code=status.HTTP_200_OK)
 async def hello():
     return {"message": "Hello user! Tip: open /docs or /redoc for documentation"}
+
 
 @app.get("/ping")
 async def pong(response: Response):
@@ -101,6 +112,7 @@ async def pong(response: Response):
     """
     pong = datetime.now()
     return {"ping": "pong @ %s" % pong}
+
 
 @app.get("/projects")
 async def listAllProjects(response: Response):
@@ -112,6 +124,7 @@ async def listAllProjects(response: Response):
     result = list(taxonony.list_existing_projects())
     return result
 
+
 @app.get("/{taxonomy_name}/{branch}/nodes")
 async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
     """
@@ -121,6 +134,7 @@ async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
     result = taxonomy.get_all_nodes("")
     allNodes = list(result)
     return allNodes
+
 
 @app.get("/{taxonomy_name}/{branch}/rootnodes")
 async def findAllRootNodes(response: Response, branch: str, taxonomy_name: str):
@@ -132,6 +146,7 @@ async def findAllRootNodes(response: Response, branch: str, taxonomy_name: str):
     allRootNodes = list(result)
     return allRootNodes
 
+
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}")
 async def findOneEntry(response: Response, branch: str, taxonomy_name: str, entry: str):
     """
@@ -142,8 +157,9 @@ async def findOneEntry(response: Response, branch: str, taxonomy_name: str, entr
     oneEntry = list(result)
 
     check_single(oneEntry)
-    
+
     return oneEntry[0]
+
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/parents")
 async def findOneEntryParents(response: Response, branch: str, taxonomy_name: str, entry: str):
@@ -153,8 +169,9 @@ async def findOneEntryParents(response: Response, branch: str, taxonomy_name: st
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_parents(entry)
     oneEntryParents = list(result)
-    
+
     return oneEntryParents
+
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/children")
 async def findOneEntryChildren(response: Response, branch: str, taxonomy_name: str, entry: str):
@@ -164,8 +181,9 @@ async def findOneEntryChildren(response: Response, branch: str, taxonomy_name: s
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_children(entry)
     oneEntryChildren = list(result)
-    
+
     return oneEntryChildren
+
 
 @app.get("/{taxonomy_name}/{branch}/entry")
 async def findAllEntries(response: Response, branch: str, taxonomy_name: str):
@@ -176,6 +194,7 @@ async def findAllEntries(response: Response, branch: str, taxonomy_name: str):
     result = taxonomy.get_all_nodes("ENTRY")
     allEntries = list(result)
     return allEntries
+
 
 @app.get("/{taxonomy_name}/{branch}/synonym/{synonym}")
 async def findOneSynonym(response: Response, branch: str, taxonomy_name: str, synonym: str):
@@ -190,6 +209,7 @@ async def findOneSynonym(response: Response, branch: str, taxonomy_name: str, sy
 
     return oneSynonym[0]
 
+
 @app.get("/{taxonomy_name}/{branch}/synonym")
 async def findAllSynonyms(response: Response, branch: str, taxonomy_name: str):
     """
@@ -200,6 +220,7 @@ async def findAllSynonyms(response: Response, branch: str, taxonomy_name: str):
     allSyononyms = list(result)
     return allSyononyms
 
+
 @app.get("/{taxonomy_name}/{branch}/stopword/{stopword}")
 async def findOneStopword(response: Response, branch: str, taxonomy_name: str, stopword: str):
     """
@@ -208,10 +229,11 @@ async def findOneStopword(response: Response, branch: str, taxonomy_name: str, s
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_nodes("STOPWORDS", stopword)
     oneStopword = list(result)
-    
+
     check_single(oneStopword)
 
     return oneStopword[0]
+
 
 @app.get("/{taxonomy_name}/{branch}/stopword")
 async def findAllStopwords(response: Response, branch: str, taxonomy_name: str):
@@ -223,6 +245,7 @@ async def findAllStopwords(response: Response, branch: str, taxonomy_name: str):
     allStopwords = list(result)
     return allStopwords
 
+
 @app.get("/{taxonomy_name}/{branch}/header")
 async def findHeader(response: Response, branch: str, taxonomy_name: str):
     """
@@ -232,6 +255,7 @@ async def findHeader(response: Response, branch: str, taxonomy_name: str):
     result = taxonomy.get_nodes("TEXT", "__header__")
     header = list(result)
     return header[0]
+
 
 @app.get("/{taxonomy_name}/{branch}/footer")
 async def findFooter(response: Response, branch: str, taxonomy_name: str):
@@ -243,14 +267,21 @@ async def findFooter(response: Response, branch: str, taxonomy_name: str):
     footer = list(result)
     return footer[0]
 
+
 @app.get("/{taxonomy_name}/{branch}/search")
 async def searchNode(response: Response, branch: str, taxonomy_name: str, query: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.full_text_search(query)
     return result
 
+
 @app.get("/{taxonomy_name}/{branch}/downloadexport")
-async def exportToTextFile(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
+async def exportToTextFile(
+    response: Response,
+    branch: str,
+    taxonomy_name: str,
+    background_tasks: BackgroundTasks,
+):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     file = taxonomy.file_export()
 
@@ -258,8 +289,14 @@ async def exportToTextFile(response: Response, branch: str, taxonomy_name: str, 
     background_tasks.add_task(file_cleanup, file)
     return FileResponse(file)
 
+
 @app.get("/{taxonomy_name}/{branch}/githubexport")
-async def exportToGithub(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
+async def exportToGithub(
+    response: Response,
+    branch: str,
+    taxonomy_name: str,
+    background_tasks: BackgroundTasks,
+):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
         url, file = taxonomy.github_export()
@@ -273,26 +310,29 @@ async def exportToGithub(response: Response, branch: str, taxonomy_name: str, ba
     except GithubUploadError:
         raise HTTPException(status_code=500, detail="Github upload error!")
 
+
 # Post methods
+
 
 @app.post("/{taxonomy_name}/{branch}/import")
 async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
     """
-    Get taxonomy from Product Opener GitHub repository 
+    Get taxonomy from Product Opener GitHub repository
     """
     incomingData = await request.json()
     description = incomingData["description"]
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    if (not taxonomy.is_valid_branch_name()):
+    if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=500, detail="Enter a valid branch name!")
-    if (taxonomy.does_project_exist()):
+    if taxonomy.does_project_exist():
         raise HTTPException(status_code=500, detail="Project already exists!")
-    if (not taxonomy.is_branch_unique()):
+    if not taxonomy.is_branch_unique():
         raise HTTPException(status_code=500, detail="Branch name should be unique!")
 
     result = taxonomy.import_from_github(description)
     return result
+
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
 async def createNode(request: Request, branch: str, taxonomy_name: str):
@@ -303,17 +343,18 @@ async def createNode(request: Request, branch: str, taxonomy_name: str):
     incomingData = await request.json()
     id = incomingData["id"]
     main_language = incomingData["main_language"]
-    if (id == None):
+    if id is None:
         raise HTTPException(status_code=400, detail="Invalid id")
-    if (main_language == None):
+    if main_language is None:
         raise HTTPException(status_code=400, detail="Invalid main language code")
 
     normalized_id = taxonomy.create_node(taxonomy.get_label(id), id, main_language)
-    if (taxonomy.get_label(id) == "ENTRY"):
+    if taxonomy.get_label(id) == "ENTRY":
         taxonomy.add_node_to_end(taxonomy.get_label(normalized_id), normalized_id)
     else:
         taxonomy.add_node_to_beginning(taxonomy.get_label(normalized_id), normalized_id)
-    
+
+
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
 async def editEntry(request: Request, branch: str, taxonomy_name: str, entry: str):
     """
@@ -326,6 +367,7 @@ async def editEntry(request: Request, branch: str, taxonomy_name: str, entry: st
     result = taxonomy.update_nodes("ENTRY", entry, incomingData)
     updatedEntry = list(result)
     return updatedEntry
+
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")
 async def editEntryChildren(request: Request, branch: str, taxonomy_name: str, entry: str):
@@ -340,6 +382,7 @@ async def editEntryChildren(request: Request, branch: str, taxonomy_name: str, e
     updatedChildren = list(result)
     return updatedChildren
 
+
 @app.post("/{taxonomy_name}/{branch}/synonym/{synonym}")
 async def editSynonyms(request: Request, branch: str, taxonomy_name: str, synonym: str):
     """
@@ -352,6 +395,7 @@ async def editSynonyms(request: Request, branch: str, taxonomy_name: str, synony
     result = taxonomy.update_nodes("SYNONYMS", synonym, incomingData)
     updatedSynonym = list(result)
     return updatedSynonym
+
 
 @app.post("/{taxonomy_name}/{branch}/stopword/{stopword}")
 async def editStopwords(request: Request, branch: str, taxonomy_name: str, stopword: str):
@@ -366,6 +410,7 @@ async def editStopwords(request: Request, branch: str, taxonomy_name: str, stopw
     updatedStopword = list(result)
     return updatedStopword
 
+
 @app.post("/{taxonomy_name}/{branch}/header")
 async def editHeader(incomingData: Header, branch: str, taxonomy_name: str):
     """
@@ -376,6 +421,7 @@ async def editHeader(incomingData: Header, branch: str, taxonomy_name: str):
     result = taxonomy.update_nodes("TEXT", "__header__", convertedData)
     updatedHeader = list(result)
     return updatedHeader
+
 
 @app.post("/{taxonomy_name}/{branch}/footer")
 async def editFooter(incomingData: Footer, branch: str, taxonomy_name: str):
@@ -388,7 +434,9 @@ async def editFooter(incomingData: Footer, branch: str, taxonomy_name: str):
     updatedFooter = list(result)
     return updatedFooter
 
+
 # Delete methods
+
 
 @app.delete("/{taxonomy_name}/{branch}/nodes")
 async def deleteNode(request: Request, branch: str, taxonomy_name: str):

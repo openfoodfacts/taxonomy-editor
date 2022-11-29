@@ -12,10 +12,14 @@ services:
       args:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
+        REQUIREMENTS_FILE: requirements-dev.txt
     volumes:
       # in development mode, mount code directory dynamically
       - ./backend/editor:/code/editor
       - ./parser:/parser
+      # for linting / checks purpose
+      - ./backend/pyproject.toml:/code/pyproject.toml
+      - ./backend/setup.cfg:/code/setup.cfg
   taxonomy_node:
     image: taxonomy-editor/taxonomy_node:dev
     build:

@@ -25,7 +25,8 @@ const Entry = ({setDisplayedPages}) => {
     const title = toTitleCase(taxonomyName);
     const baseUrl = createBaseURL(taxonomyName, branchName);
     const urlPrefix = `${taxonomyName}/${branchName}/`;
-    const { data: nodes, isPending, isError, isSuccess, errorMessage } = useFetch(`${baseUrl}rootnodes`);
+    /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+    const { data: nodes, isPending, isError, __isSuccess, errorMessage } = useFetch(`${baseUrl}rootnodes`);
 
     const [nodeType, setNodeType] = useState('entry'); // Used for storing node type
     const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
