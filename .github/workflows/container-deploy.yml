@@ -44,26 +44,36 @@ jobs:
         # domain name
         echo "TAXONOMY_EDITOR_DOMAIN=taxonomy.openfoodfacts.org" >> $GITHUB_ENV
 
-    - name: Wait for container build workflow
+    - name: Wait for frontend container build workflow
       uses: tomchv/wait-my-workflow@v1.1.0
-      id: wait-build
+      id: wait-build-frontend
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        checkName: build
+        checkName: build (taxonomy_frontend)
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        intervalSeconds: 10
+        timeoutSeconds: 600 # 10m
+
+    - name: Wait for api container build workflow
+      uses: tomchv/wait-my-workflow@v1.1.0
+      id: wait-build-api
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        checkName: build (taxonomy_api)
         ref: ${{ github.event.pull_request.head.sha || github.sha }}
         intervalSeconds: 10
         timeoutSeconds: 600 # 10m
 
     - name: Do something if build isn't launched
-      if: steps.wait-build.outputs.conclusion == 'does not exist'
+      if: steps.wait-build-frontend.outputs.conclusion == 'does not exist' || steps.wait-build-api.outputs.conclusion == 'does not exist'
       run: echo job does not exist && true
 
     - name: Do something if build fail
-      if: steps.wait-build.outputs.conclusion == 'failure'
+      if: steps.wait-build-frontend.outputs.conclusion == 'failure' || steps.wait-build-api.outputs.conclusion == 'failure'
       run: echo fail && false # fail if build fail
 
     - name: Do something if build timeout
-      if: steps.wait-build.outputs.conclusion == 'timed_out'
+      if: steps.wait-build-frontend.outputs.conclusion == 'timed_out' || steps.wait-build-api.outputs.conclusion == 'timed_out'
       run: echo Timeout && false # fail if build time out
 
     - name: Checkout git repository
