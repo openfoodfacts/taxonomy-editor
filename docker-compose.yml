@@ -23,12 +23,12 @@ services:
     command: neo4j
   taxonomy_api:
     restart: ${RESTART_POLICY:-no}
-    image: off-taxonomy-editor-api:${DOCKER_TAG}
+    image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_api:${DOCKER_TAG}
     environment:
       NEO4J_URI: "bolt://neo4j:7687"
   taxonomy_frontend:
     # this is the nginx frontend serving react static version or redirecting queries
-    image: ghcr.io/openfoodfacts/taxonomy-editor/frontend:${TAG}
+    image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_frontend:${DOCKER_TAG}
     depends_on:
       - taxonomy_api
     environment:
@@ -38,7 +38,7 @@ services:
       # Nginx, we use templates dir to be able to use environment vars
       - ./conf/nginx.conf:/etc/nginx/templates/default.conf.template
     ports:
-      - ${TAXONOMY_EDITOR_EXPOSE}${TAXONOMY_EDITOR_PORT}:80
+      - ${TAXONOMY_EDITOR_EXPOSE:-127.0.0.1:8091}:80
 
 volumes:
   neo4j-data:
