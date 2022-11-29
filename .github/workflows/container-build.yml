@@ -22,13 +22,13 @@ jobs:
         fetch-depth: 1
 
     - name: Set various env variables for frontend
-      if: env.image_name == 'taxonomy_frontend'
+      if: matrix.image_name == 'taxonomy_frontend'
       run: |
         echo "build_context=taxonomy-editor-frontend" >> $GITHUB_ENV
         echo "build_file=Dockerfile" >> $GITHUB_ENV
 
     - name: Set various env variables for api
-      if: env.image_name == 'taxonomy_api'
+      if: matrix.image_name == 'taxonomy_api'
       run: |
         # context is . for we need the parser directory
         echo "build_context=." >> $GITHUB_ENV
