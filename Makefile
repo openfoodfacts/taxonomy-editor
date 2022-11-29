@@ -9,6 +9,9 @@ ifneq (,$(wildcard ./${ENV_FILE}))
     export
 endif
 
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+
 DOCKER_COMPOSE=docker-compose --env-file=${ENV_FILE}
 DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy docker-compose --env-file=${ENV_FILE}
 
