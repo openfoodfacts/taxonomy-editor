@@ -138,7 +138,7 @@ jobs:
         script_stop: false
         script: |
           cd ${{ matrix.env }}
-          docker volume create <VOLUME_NAME>
+          make create_external_volumes
 
     - name: Start services
       uses: appleboy/ssh-action@master
