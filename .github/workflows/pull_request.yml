@@ -2,8 +2,6 @@ name: taxonomy-editor code quality checks and unit tests
 
 on:
   pull_request:
-    paths:
-      - 'parser/**'
 
 jobs:
   # Parser quality
