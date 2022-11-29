@@ -25,7 +25,7 @@ jobs:
       if: matrix.image_name == 'taxonomy_frontend'
       run: |
         echo "build_context=taxonomy-editor-frontend" >> $GITHUB_ENV
-        echo "build_file=Dockerfile" >> $GITHUB_ENV
+        echo "build_file=taxonomy-editor-frontend/Dockerfile" >> $GITHUB_ENV
 
     - name: Set various env variables for api
       if: matrix.image_name == 'taxonomy_api'
