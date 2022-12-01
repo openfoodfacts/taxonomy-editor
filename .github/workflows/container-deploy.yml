@@ -31,6 +31,8 @@ jobs:
         echo "TAXONOMY_EDITOR_EXPOSE=8052" >> $GITHUB_ENV
         # domain name
         echo "TAXONOMY_EDITOR_DOMAIN=taxonomy.openfoodfacts.net" >> $GITHUB_ENV
+        # in staging we open PRs on a test repository
+        echo "REPO_URI=openfoodfacts-bot/openfoodfacts-server" >> $GITHUB_ENV
 
     - name: Set various variable for production deployment
       if: matrix.env == 'taxonomy-editor-org'
@@ -43,6 +45,8 @@ jobs:
         echo "TAXONOMY_EDITOR_EXPOSE=8052" >> $GITHUB_ENV
         # domain name
         echo "TAXONOMY_EDITOR_DOMAIN=taxonomy.openfoodfacts.org" >> $GITHUB_ENV
+        # in prod we open PRs on the real repository
+        echo "REPO_URI=openfoodfacts/openfoodfacts-server" >> $GITHUB_ENV
 
     - name: Wait for frontend container build workflow
       uses: tomchv/wait-my-workflow@v1.1.0
@@ -135,6 +139,10 @@ jobs:
           echo "TAXONOMY_EDITOR_DOMAIN=${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env
           # should be blank in production
           echo "PUBLIC_TAXONOMY_EDITOR_PORT=" >> .env
+          # the PAT is environment dependant
+          # and must have write access to PRs on the target repo (see REPO_URI)
+          echo "GITHUB_PAT=${{ secrets.OFF_SERVER_GITHUB_PAT }}" >> .env
+          echo "REPO_URI=${{ env.REPO_URI }}" >> .env
 
     - name: Create external Docker volumes
       uses: appleboy/ssh-action@master

@@ -166,14 +166,14 @@ class TaxonomyGraph:
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         try:
             github_object.checkout_branch()
-        except Exception:
-            raise GithubBranchExistsError()
+        except Exception as e:
+            raise GithubBranchExistsError() from e
         try:
             github_object.update_file(filename)
             pr_object = github_object.create_pr(description)
             return (pr_object.html_url, filename)
-        except Exception:
-            raise GithubUploadError()
+        except Exception as e:
+            raise GithubUploadError() from e
 
     def does_project_exist(self):
         """

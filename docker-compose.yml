@@ -26,6 +26,9 @@ services:
     image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_api:${DOCKER_TAG}
     environment:
       NEO4J_URI: "bolt://neo4j:7687"
+      # taken from .env
+      GITHUB_PAT:
+      REPO_URI:
   taxonomy_frontend:
     # this is the nginx frontend serving react static version or redirecting queries
     image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_frontend:${DOCKER_TAG}

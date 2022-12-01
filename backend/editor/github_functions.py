@@ -5,7 +5,7 @@ from textwrap import dedent
 
 from github import Github
 
-from .settings import access_token, repo_owner  # Github settings
+from . import settings
 
 
 class GithubOperations:
@@ -21,8 +21,8 @@ class GithubOperations:
         """
         Initalize connection to Github with an access token
         """
-        github_driver = Github(access_token)
-        repo = github_driver.get_repo(f"{repo_owner}/openfoodfacts-server")
+        github_driver = Github(settings.access_token)
+        repo = github_driver.get_repo(settings.repo_uri)
         return repo
 
     def list_all_branches(self):
