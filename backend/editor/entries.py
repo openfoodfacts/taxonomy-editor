@@ -205,7 +205,7 @@ class TaxonomyGraph:
         """
         Helper function to check if a branch name is valid
         """
-        return normalizer.normalizing(self.branch_name) == self.branch_name
+        return normalizer.normalizing(self.branch_name, char="_") == self.branch_name
 
     def create_project(self, description):
         """
