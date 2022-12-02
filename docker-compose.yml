@@ -35,8 +35,11 @@ services:
     depends_on:
       - taxonomy_api
     environment:
-      - TAXONOMY_EDITOR_DOMAIN
-      - PUBLIC_TAXONOMY_EDITOR_PORT
+      # enabling prod config and disabling dev one
+      PROD_UI_SUFFIX: ""
+      DEV_UI_SUFFIX: "-dev"
+      TAXONOMY_EDITOR_DOMAIN:
+      PUBLIC_TAXONOMY_EDITOR_PORT:
     volumes:
       # Nginx, we use templates dir to be able to use environment vars
       - ./conf/nginx.conf:/etc/nginx/templates/default.conf.template
