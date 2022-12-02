@@ -29,6 +29,8 @@ services:
       # taken from .env
       GITHUB_PAT:
       REPO_URI:
+      # make proxy headers be taken into account
+      FORWARDED_ALLOW_IPS: "*"
   taxonomy_frontend:
     # this is the nginx frontend serving react static version or redirecting queries
     image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_frontend:${DOCKER_TAG}
@@ -40,6 +42,7 @@ services:
       DEV_UI_SUFFIX: "-dev"
       TAXONOMY_EDITOR_DOMAIN:
       PUBLIC_TAXONOMY_EDITOR_PORT:
+      API_SCHEME:
     volumes:
       # Nginx, we use templates dir to be able to use environment vars
       - ./conf/nginx.conf:/etc/nginx/templates/default.conf.template

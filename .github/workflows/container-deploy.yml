@@ -139,6 +139,8 @@ jobs:
           echo "TAXONOMY_EDITOR_DOMAIN=${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env
           # should be blank in production
           echo "PUBLIC_TAXONOMY_EDITOR_PORT=" >> .env
+          # we use https
+          echo "API_SCHEME=https" >> .env
           # the PAT is environment dependant
           # and must have write access to PRs on the target repo (see REPO_URI)
           echo "GITHUB_PAT=${{ secrets.OFF_SERVER_GITHUB_PAT }}" >> .env
