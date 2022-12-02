@@ -41,6 +41,7 @@ services:
     command: ["npm", "start"]
     volumes:
       # dynamic mount
+      - ./taxonomy-editor-frontend/build:/opt/taxonomy-editor/build
       - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
       - ./taxonomy-editor-frontend/src:/opt/taxonomy-editor/src
   taxonomy_frontend:
@@ -56,5 +57,5 @@ services:
       PROD_UI_SUFFIX: "-static"
       DEV_UI_SUFFIX: ""
     volumes:
-      # mount public folder dynamically
-      - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
+      # mount build folder dynamically
+      - ./taxonomy-editor-frontend/build:/opt/taxonomy-editor/build
