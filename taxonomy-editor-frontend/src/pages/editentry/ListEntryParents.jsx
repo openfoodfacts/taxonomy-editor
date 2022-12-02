@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 
 const ListEntryParents = ({url, urlPrefix}) => {
     const [relations, setRelations] = useState(null);
-    const { data: incomingData, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+    /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+    const { data: incomingData, isPending, isError, __isSuccess, errorMessage } = useFetch(url);
     
     useEffect(() => {
         setRelations(incomingData)

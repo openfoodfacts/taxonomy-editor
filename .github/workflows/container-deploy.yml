@@ -1,0 +1,221 @@
+name: Docker Compose Deployment CI
+
+on:
+  push:
+    branches:
+    - main
+    - deploy-*
+    tags:
+      - v*.*.*
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env:
+          # name of envs
+          # This is also the name of the directory for the application
+          - ${{ startsWith(github.ref, 'refs/tags/v') && 'taxonomy-editor-org' || 'taxonomy-editor-net' }}
+    environment: ${{ matrix.env }}
+    concurrency: ${{ matrix.env }}
+    steps:
+    - name: Set various variable for staging deployment
+      if: matrix.env == 'taxonomy-editor-net'
+      run: |
+        # deploy target
+        echo "SSH_HOST=10.1.0.200" >> $GITHUB_ENV
+        echo "SSH_PROXY_HOST=ovh1.openfoodfacts.org" >> $GITHUB_ENV
+        echo "SSH_USERNAME=off" >> $GITHUB_ENV
+        # expose port
+        echo "TAXONOMY_EDITOR_EXPOSE=8052" >> $GITHUB_ENV
+        # domain name
+        echo "TAXONOMY_EDITOR_DOMAIN=taxonomy.openfoodfacts.net" >> $GITHUB_ENV
+        # in staging we open PRs on a test repository
+        echo "REPO_URI=openfoodfacts-bot/openfoodfacts-server" >> $GITHUB_ENV
+
+    - name: Set various variable for production deployment
+      if: matrix.env == 'taxonomy-editor-org'
+      run: |
+        # deploy target
+        echo "SSH_HOST=10.1.0.201" >> $GITHUB_ENV
+        echo "SSH_PROXY_HOST=ovh1.openfoodfacts.org" >> $GITHUB_ENV
+        echo "SSH_USERNAME=off" >> $GITHUB_ENV
+        # expose port
+        echo "TAXONOMY_EDITOR_EXPOSE=8052" >> $GITHUB_ENV
+        # domain name
+        echo "TAXONOMY_EDITOR_DOMAIN=taxonomy.openfoodfacts.org" >> $GITHUB_ENV
+        # in prod we open PRs on the real repository
+        echo "REPO_URI=openfoodfacts/openfoodfacts-server" >> $GITHUB_ENV
+
+    - name: Wait for frontend container build workflow
+      uses: tomchv/wait-my-workflow@v1.1.0
+      id: wait-build-frontend
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        checkName: build (taxonomy_frontend)
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        intervalSeconds: 10
+        timeoutSeconds: 600 # 10m
+
+    - name: Wait for api container build workflow
+      uses: tomchv/wait-my-workflow@v1.1.0
+      id: wait-build-api
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        checkName: build (taxonomy_api)
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        intervalSeconds: 10
+        timeoutSeconds: 600 # 10m
+
+    - name: Do something if build isn't launched
+      if: steps.wait-build-frontend.outputs.conclusion == 'does not exist' || steps.wait-build-api.outputs.conclusion == 'does not exist'
+      run: echo job does not exist && true
+
+    - name: Do something if build fail
+      if: steps.wait-build-frontend.outputs.conclusion == 'failure' || steps.wait-build-api.outputs.conclusion == 'failure'
+      run: echo fail && false # fail if build fail
+
+    - name: Do something if build timeout
+      if: steps.wait-build-frontend.outputs.conclusion == 'timed_out' || steps.wait-build-api.outputs.conclusion == 'timed_out'
+      run: echo Timeout && false # fail if build time out
+
+    - name: Checkout git repository
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.SSH_HOST }}
+        username: ${{ env.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        proxy_host: ${{ env.SSH_PROXY_HOST }}
+        proxy_username: ${{ env.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script_stop: false
+        script: |
+          set -o errexit
+          # Clone Git repository if not already there
+          if [ ! -d '${{ matrix.env }}' ]
+          then
+            git clone --depth 1 https://github.com/${{ github.repository }} ${{ matrix.env }} --no-single-branch 2>&1
+          fi
+
+          # Go to repository directory
+          cd ${{ matrix.env }}
+
+          # Fetch newest commits (in case it wasn't freshly cloned)
+          git fetch --depth 1
+
+          # Checkout current commit SHA
+          git checkout -qf ${{ github.sha }}
+
+    - name: Set environment variables
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.SSH_HOST }}
+        username: ${{ env.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        proxy_host: ${{ env.SSH_PROXY_HOST }}
+        proxy_username: ${{ env.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script_stop: false
+        script: |
+          # fail on error
+          set -o errexit
+          # Go to repository directory
+          cd ${{ matrix.env }}
+
+          # new env
+          rm .env
+          touch .env
+          # Set Docker Compose variables
+          echo "DOCKER_CLIENT_TIMEOUT=120" >> .env
+          echo "COMPOSE_HTTP_TIMEOUT=120" >> .env
+          echo "COMPOSE_PROJECT_NAME=${{ matrix.env }}" >> .env
+          echo "COMPOSE_PATH_SEPARATOR=;" >> .env
+          echo "COMPOSE_FILE=docker-compose.yml;docker/prod.yml" >> .env
+          echo "DOCKER_TAG=sha-${{ github.sha }}" >> .env
+
+          # App environment variables
+          echo "TAXONOMY_EDITOR_EXPOSE=${{ env.TAXONOMY_EDITOR_EXPOSE }}" >> .env
+          echo "TAXONOMY_EDITOR_DOMAIN=${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env
+          # should be blank in production
+          echo "PUBLIC_TAXONOMY_EDITOR_PORT=" >> .env
+          # the PAT is environment dependant
+          # and must have write access to PRs on the target repo (see REPO_URI)
+          echo "GITHUB_PAT=${{ secrets.OFF_SERVER_GITHUB_PAT }}" >> .env
+          echo "REPO_URI=${{ env.REPO_URI }}" >> .env
+
+    - name: Create external Docker volumes
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.SSH_HOST }}
+        username: ${{ env.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        proxy_host: ${{ env.SSH_PROXY_HOST }}
+        proxy_username: ${{ env.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script_stop: false
+        script: |
+          cd ${{ matrix.env }}
+          make create_external_volumes
+
+    - name: Start services
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.SSH_HOST }}
+        username: ${{ env.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        proxy_host: ${{ env.SSH_PROXY_HOST }}
+        proxy_username: ${{ env.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script_stop: false
+        script: |
+          cd ${{ matrix.env }}
+          docker-compose up -d --remove-orphans 2>&1
+
+    - name: Check services are up
+      uses: appleboy/ssh-action@master
+      if: ${{ always() }}
+      id: livecheck
+      with:
+        host: ${{ env.SSH_HOST }}
+        username: ${{ env.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        proxy_host: ${{ env.SSH_PROXY_HOST }}
+        proxy_username: ${{ env.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script_stop: false
+        script: |
+          cd ${{ matrix.env }}
+          exit_code=0
+          for service in `docker-compose config  --service | tr '\n' ' '`; do
+            if [ -z `docker-compose ps -q $service` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ${{ env.compose_args }} ps -q $service)` ]; then
+              echo "$service: DOWN"
+              exit_code=1
+            else
+              echo "$service: UP"
+            fi
+          done;
+          exit $exit_code;
+
+    - name: Cleanup obsolete Docker objects
+      uses: appleboy/ssh-action@master
+      if: ${{ always() }}
+      with:
+        host: ${{ env.SSH_HOST }}
+        username: ${{ env.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        proxy_host: ${{ env.SSH_PROXY_HOST }}
+        proxy_username: ${{ env.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script_stop: false
+        script: |
+          cd ${{ matrix.env }}
+          docker system prune -af
+
+    - uses: frankie567/grafana-annotation-action@v1.0.2
+      if: ${{ always() }}
+      with:
+        apiHost: https://grafana.openfoodfacts.org
+        apiToken: ${{ secrets.GRAFANA_API_TOKEN }}
+        text: <a href="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}">Deployment ${{ steps.livecheck.outcome }} on ${{ matrix.env }}</a>
+        tags: type:deployment,origin:github,status:${{ steps.livecheck.outcome }},repo:${{ github.repository }},sha:${{ github.sha }},app:taxonomy-editor,env:${{ matrix.env }}

@@ -2,23 +2,25 @@
 # Base user uid / gid keep 1000 on prod, align with your user on dev
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG REQUIREMENTS_FILE=requirements.txt
 
-FROM python:3.8
+FROM python:3.9
 
 ARG USER_UID
 ARG USER_GID
+ARG REQUIREMENTS_FILE
 
 WORKDIR /code
 RUN groupadd -g $USER_GID off && \
-    useradd -u $USER_UID -g off -m off && \ 
-    mkdir -p /home/off && \ 
+    useradd -u $USER_UID -g off -m off && \
+    mkdir -p /home/off && \
     chown off:off -R /code /home/off
 
-COPY backend/requirements.txt /code/requirements.txt
+COPY backend/requirements*.txt /code/
 COPY backend/editor /code/editor
 COPY parser  /parser
 
-RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip3 install --no-cache-dir --upgrade -r /code/$REQUIREMENTS_FILE
 # this is purely cosmetic
 RUN     ln -s /parser/openfoodfacts_taxonomy_parser /code/openfoodfacts_taxonomy_parser
 RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \

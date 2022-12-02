@@ -21,7 +21,8 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     const urlPrefix = `/${taxonomyName}/${branchName}`;
     const isEntry = getIdType(id) === 'entry';
 
-    const { data: node, isPending, isError, isSuccess, errorMessage } = useFetch(url);
+    /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+    const { data: node, isPending, isError, __isSuccess, errorMessage } = useFetch(url);
     const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
@@ -56,14 +57,14 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     if (isPending) {
         return (<Typography sx={{ml: 4}} variant='h5'>Loading..</Typography>)
     }
-    
+
     // Helper functions for Dialog component 
     const handleClose = () => {setOpen(false)};
 
     // Function handling updation of node
     const handleSubmit = () => {
         if (!nodeObject) return
-        const {id, ...data} = nodeObject // ID not allowed in POST
+        const {__id, ...data} = nodeObject // ID not allowed in POST
         const dataToBeSent = {};
         // Remove UUIDs from data
         Object.keys(data).forEach((key) => {
@@ -81,7 +82,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 headers: {"Content-Type" : "application/json"},
                 body: JSON.stringify(dataToBeSent)
             })
-        })).then((response) => {
+        })).then(() => {
             setOpen(true);
         }).catch(() => {})
     }

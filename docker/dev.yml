@@ -12,10 +12,14 @@ services:
       args:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
+        REQUIREMENTS_FILE: requirements-dev.txt
     volumes:
       # in development mode, mount code directory dynamically
       - ./backend/editor:/code/editor
       - ./parser:/parser
+      # for linting / checks purpose
+      - ./backend/pyproject.toml:/code/pyproject.toml
+      - ./backend/setup.cfg:/code/setup.cfg
   taxonomy_node:
     image: taxonomy-editor/taxonomy_node:dev
     build:
@@ -37,6 +41,7 @@ services:
     command: ["npm", "start"]
     volumes:
       # dynamic mount
+      - ./taxonomy-editor-frontend/build:/opt/taxonomy-editor/build
       - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
       - ./taxonomy-editor-frontend/src:/opt/taxonomy-editor/src
   taxonomy_frontend:
@@ -48,8 +53,9 @@ services:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
     environment:
-      # disabling prod ui config
+      # disabling prod ui config and enabling node one
       PROD_UI_SUFFIX: "-static"
+      DEV_UI_SUFFIX: ""
     volumes:
-      # mount public folder dynamically
-      - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
+      # mount build folder dynamically
+      - ./taxonomy-editor-frontend/build:/opt/taxonomy-editor/build

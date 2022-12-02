@@ -8,10 +8,9 @@ import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
-import { ENTER_KEYCODE } from "../../constants";
 
 /**
- * Sub-component for rendering translation of an "entry"  
+ * Sub-component for rendering translation of an "entry"
 */
 const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
@@ -31,7 +30,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
         const uuidKey = key + '_uuid' // Format for the uuid
-        
+
         // Make changes to the parent NodeObject
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};

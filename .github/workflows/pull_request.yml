@@ -2,8 +2,6 @@ name: taxonomy-editor code quality checks and unit tests
 
 on:
   pull_request:
-    paths:
-      - 'parser/**'
 
 jobs:
   # Parser quality
@@ -37,4 +35,19 @@ jobs:
       - name: Make checks
         run: |
           cd parser
+          make checks
+
+  # taxonomy editor quality
+  taxonomy-editor-checks:
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Make checks
+        run: |
+          export USER_UID=$(id -u)
+          export USER_GID=$(id -g)
           make checks

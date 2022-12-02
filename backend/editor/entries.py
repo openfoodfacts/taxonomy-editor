@@ -3,38 +3,46 @@ Database helper functions for API
 """
 import re
 import tempfile
+import urllib.request  # Sending requests
 
-import urllib.request                                                           # Sending requests
-from .github_functions import GithubOperations                                  # Github functions
+from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
+from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
+from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 
-from .exceptions import TaxnonomyImportError
-from .exceptions import TaxonomyParsingError, TaxonomyUnparsingError            
-from .exceptions import GithubUploadError, GithubBranchExistsError              # Custom exceptions
+from .exceptions import GithubBranchExistsError  # Custom exceptions
+from .exceptions import (
+    GithubUploadError,
+    TaxnonomyImportError,
+    TaxonomyParsingError,
+    TaxonomyUnparsingError,
+)
+from .github_functions import GithubOperations  # Github functions
+from .graph_db import TransactionCtx  # Neo4J transactions context manager
+from .graph_db import get_current_session  # Neo4J transactions helper
+from .graph_db import get_current_transaction
 
-from .graph_db import get_current_transaction, get_current_session              # Neo4J transactions helper
-from .graph_db import TransactionCtx                                            # Neo4J transactions context manager
-
-from openfoodfacts_taxonomy_parser import parser                                # Parser for taxonomies
-from openfoodfacts_taxonomy_parser import unparser                              # Unparser for taxonomies
-from openfoodfacts_taxonomy_parser import normalizer                            # Normalizing tags
 
 class TaxonomyGraph:
 
     """Class for database operations"""
-    
+
     def __init__(self, branch_name, taxonomy_name):
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
-        self.project_name = 'p_' + taxonomy_name + '_' + branch_name
-        
+        self.project_name = "p_" + taxonomy_name + "_" + branch_name
+
     def get_label(self, id):
         """
         Helper function for getting the label for a given id
         """
-        if (id.startswith('stopword')): return 'STOPWORDS'
-        elif (id.startswith('synonym')): return 'SYNONYMS'
-        elif (id.startswith('__header__') or id.startswith('__footer__')): return 'TEXT'
-        else: return 'ENTRY'
+        if id.startswith("stopword"):
+            return "STOPWORDS"
+        elif id.startswith("synonym"):
+            return "SYNONYMS"
+        elif id.startswith("__header__") or id.startswith("__footer__"):
+            return "TEXT"
+        else:
+            return "ENTRY"
 
     def create_node(self, label, entry, main_language_code):
         """
@@ -44,27 +52,29 @@ class TaxonomyGraph:
         query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
 
         # Build all basic keys of a node
-        if (label == "ENTRY"):
+        if label == "ENTRY":
             # Normalizing new canonical tag
             language_code, canonical_tag = entry.split(":", 1)
             normalised_canonical_tag = normalizer.normalizing(canonical_tag, main_language_code)
-            
+
             # Reconstructing and updation of node ID
-            params["id"] = language_code + ':' + normalised_canonical_tag
+            params["id"] = language_code + ":" + normalised_canonical_tag
             params["main_language_code"] = main_language_code
 
-            query.append(f""" SET n.main_language = $main_language_code """) # Required for only an entry
+            query.append(
+                """ SET n.main_language = $main_language_code """
+            )  # Required for only an entry
         else:
             canonical_tag = ""
 
-        query.append(f""" SET n.id = $id """)
+        query.append(""" SET n.id = $id """)
         query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
-        query.append(f""" SET n.preceding_lines = [] """)
-        query.append(f""" RETURN n.id """)
+        query.append(""" SET n.preceding_lines = [] """)
+        query.append(""" RETURN n.id """)
 
         params["canonical_tag"] = canonical_tag
         result = get_current_transaction().run(" ".join(query), params)
-        return result.data()[0]['n.id']
+        return result.data()[0]["n.id"]
 
     def parse_taxonomy(self, filename):
         """
@@ -79,15 +89,18 @@ class TaxonomyGraph:
             # Parse taxonomy with given file name and branch name
             parser_object(filename, self.branch_name, self.taxonomy_name)
             return True
-        except:
+        except Exception:
             raise TaxonomyParsingError()
 
     def import_from_github(self, description):
         """
         Helper function to import a taxonomy from GitHub
         """
-        base_url = "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/main/taxonomies/"
-        filename = self.taxonomy_name + '.txt'
+        base_url = (
+            "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
+            "/main/taxonomies/"
+        )
+        filename = self.taxonomy_name + ".txt"
         base_url += filename
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
@@ -98,15 +111,15 @@ class TaxonomyGraph:
                 # Downloads and creates taxonomy file in current working directory
                 urllib.request.urlretrieve(base_url, filepath)
 
-                status = self.parse_taxonomy(filepath) # Parse the taxonomy
+                status = self.parse_taxonomy(filepath)  # Parse the taxonomy
 
                 with TransactionCtx():
-                    self.create_project(description) # Creates a "project node" in neo4j
-                    
+                    self.create_project(description)  # Creates a "project node" in neo4j
+
                 return status
-        except:
+        except Exception:
             raise TaxnonomyImportError()
-    
+
     def dump_taxonomy(self):
         """
         Helper function to create the txt file of a taxonomy
@@ -114,14 +127,14 @@ class TaxonomyGraph:
         # Create unparser object and pass current session to it
         unparser_object = unparser.WriteTaxonomy(get_current_session())
         # Creates a unique file for dumping the taxonomy
-        filename = self.project_name + '.txt'
+        filename = self.project_name + ".txt"
         try:
             # Parse taxonomy with given file name and branch name
             unparser_object(filename, self.branch_name, self.taxonomy_name)
             return filename
         except Exception:
             raise TaxonomyUnparsingError()
-        
+
     def file_export(self):
         """Export a taxonomy for download"""
         # Close current transaction to use the session variable in unparser
@@ -129,7 +142,7 @@ class TaxonomyGraph:
 
         filepath = self.dump_taxonomy()
         return filepath
-    
+
     def github_export(self):
         """Export a taxonomy to Github"""
         # Close current transaction to use the session variable in unparser
@@ -141,81 +154,81 @@ class TaxonomyGraph:
             result = self.export_to_github(filepath)
             self.close_project()
         return result
-    
+
     def export_to_github(self, filename):
         """
         Helper function to export a taxonomy to GitHub
         """
         query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
         result = get_current_transaction().run(query, {"project_name": self.project_name})
-        description = result.data()[0]['n.description']
+        description = result.data()[0]["n.description"]
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         try:
             github_object.checkout_branch()
-        except:
-            raise GithubBranchExistsError()
+        except Exception as e:
+            raise GithubBranchExistsError() from e
         try:
             github_object.update_file(filename)
             pr_object = github_object.create_pr(description)
             return (pr_object.html_url, filename)
-        except:
-            raise GithubUploadError()
+        except Exception as e:
+            raise GithubUploadError() from e
 
     def does_project_exist(self):
         """
         Helper function to check the existence of a project
         """
         query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n"""
-        result = get_current_transaction().run(query, {"project_name" : self.project_name})
-        if (result.data() == []):
+        result = get_current_transaction().run(query, {"project_name": self.project_name})
+        if result.data() == []:
             return False
         else:
             return True
-    
+
     def is_branch_unique(self):
         """
         Helper function to check uniqueness of GitHub branch
         """
         query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
-        result = get_current_transaction().run(query, {"branch_name" : self.branch_name})
+        result = get_current_transaction().run(query, {"branch_name": self.branch_name})
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         current_branches = github_object.list_all_branches()
 
-        if ((result.data() == []) and (self.branch_name not in current_branches)):
+        if (result.data() == []) and (self.branch_name not in current_branches):
             return True
         else:
             return False
-    
+
     def is_valid_branch_name(self):
         """
         Helper function to check if a branch name is valid
         """
-        return normalizer.normalizing(self.branch_name, char='_') == self.branch_name
-    
+        return normalizer.normalizing(self.branch_name, char="_") == self.branch_name
+
     def create_project(self, description):
         """
         Helper function to create a node with label "PROJECT"
         """
         query = """
-            CREATE (n:PROJECT) 
+            CREATE (n:PROJECT)
             SET n.id = $project_name
             SET n.taxonomy_name = $taxonomy_name
             SET n.branch_name = $branch_name
             SET n.description = $description
             SET n.status = $status
-            SET n.created_at = datetime() 
+            SET n.created_at = datetime()
         """
         params = {
-            'project_name' : self.project_name,
-            'taxonomy_name' : self.taxonomy_name,
-            'branch_name' : self.branch_name,
-            'description' : description,
-            'status' : "OPEN"
+            "project_name": self.project_name,
+            "taxonomy_name": self.taxonomy_name,
+            "branch_name": self.branch_name,
+            "description": description,
+            "status": "OPEN",
         }
         get_current_transaction().run(query, params)
-    
+
     def close_project(self):
         """
         Helper function to close a Taxonomy Editor project and updates project status as "CLOSED"
@@ -225,10 +238,7 @@ class TaxonomyGraph:
             WHERE n.id = $project_name
             SET n.status = $status
         """
-        params = {
-            'project_name' : self.project_name,
-            'status' : "CLOSED"
-        }
+        params = {"project_name": self.project_name, "status": "CLOSED"}
         get_current_transaction().run(query, params)
 
     def list_existing_projects(self):
@@ -237,7 +247,7 @@ class TaxonomyGraph:
         """
         query = """
             MATCH (n:PROJECT)
-            WHERE n.status = "OPEN" RETURN n 
+            WHERE n.status = "OPEN" RETURN n
             ORDER BY n.created_at
         """
         result = get_current_transaction().run(query)
@@ -249,12 +259,13 @@ class TaxonomyGraph:
         """
         # Delete relationship between current last node and __footer__
         query = f"""
-        MATCH (last_node)-[r:is_before]->(footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__" DELETE r 
+        MATCH (last_node)-[r:is_before]->(footer:{self.project_name}:TEXT)
+            WHERE footer.id = "__footer__" DELETE r
         RETURN last_node
         """
         result = get_current_transaction().run(query)
-        end_node = result.data()[0]['last_node']
-        end_node_label = self.get_label(end_node['id']) # Get current last node ID
+        end_node = result.data()[0]["last_node"]
+        end_node_label = self.get_label(end_node["id"])  # Get current last node ID
 
         # Rebuild relationships by inserting incoming node at the end
         query = []
@@ -265,7 +276,7 @@ class TaxonomyGraph:
             CREATE (last_node)-[:is_before]->(new_node)
             CREATE (new_node)-[:is_before]->(footer)
         """
-        result = get_current_transaction().run(query, {"id": entry, "endnodeid": end_node['id']})
+        result = get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
 
     def add_node_to_beginning(self, label, entry):
         """
@@ -273,22 +284,26 @@ class TaxonomyGraph:
         """
         # Delete relationship between current first node and __header__
         query = f"""
-            MATCH (header:{self.project_name}:TEXT)-[r:is_before]->(first_node) WHERE header.id = "__header__" DELETE r
+            MATCH (header:{self.project_name}:TEXT)-[r:is_before]->(first_node)
+                WHERE header.id = "__header__" DELETE r
             RETURN first_node
         """
         result = get_current_transaction().run(query)
-        start_node = result.data()[0]['first_node']
-        start_node_label = self.get_label(start_node['id']) # Get current first node ID
+        start_node = result.data()[0]["first_node"]
+        start_node_label = self.get_label(start_node["id"])  # Get current first node ID
 
         # Rebuild relationships by inserting incoming node at the beginning
-        query= f"""
+        query = f"""
             MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
-            MATCH (first_node:{self.project_name}:{start_node_label}) WHERE first_node.id = $startnodeid
+            MATCH (first_node:{self.project_name}:{start_node_label})
+                WHERE first_node.id = $startnodeid
             MATCH (header:{self.project_name}:TEXT) WHERE header.id = "__header__"
             CREATE (new_node)-[:is_before]->(first_node)
             CREATE (header)-[:is_before]->(new_node)
         """
-        result = get_current_transaction().run(query, {"id": entry, "startnodeid": start_node['id']})
+        result = get_current_transaction().run(
+            query, {"id": entry, "startnodeid": start_node["id"]}
+        )
 
     def delete_node(self, label, entry):
         """
@@ -297,7 +312,8 @@ class TaxonomyGraph:
         # Finding node to be deleted using node ID
         query = f"""
             // Find node to be deleted using node ID
-            MATCH (deleted_node:{self.project_name}:{label})-[:is_before]->(next_node) WHERE deleted_node.id = $id
+            MATCH (deleted_node:{self.project_name}:{label})-[:is_before]->(next_node)
+                WHERE deleted_node.id = $id
             MATCH (previous_node)-[:is_before]->(deleted_node)
             // Remove node
             DETACH DELETE (deleted_node)
@@ -317,7 +333,7 @@ class TaxonomyGraph:
         """
         result = get_current_transaction().run(query)
         return result
-    
+
     def get_all_root_nodes(self):
         """
         Helper function used for getting all root nodes in a taxonomy
@@ -333,7 +349,7 @@ class TaxonomyGraph:
         Helper function used for getting the node with given id and label
         """
         query = f"""
-            MATCH (n:{self.project_name}:{label}) WHERE n.id = $id 
+            MATCH (n:{self.project_name}:{label}) WHERE n.id = $id
             RETURN n
         """
         result = get_current_transaction().run(query, {"id": entry})
@@ -344,7 +360,8 @@ class TaxonomyGraph:
         Helper function used for getting node parents with given id
         """
         query = f"""
-            MATCH (child_node:{self.project_name}:ENTRY)-[r:is_child_of]->(parent) WHERE child_node.id = $id 
+            MATCH (child_node:{self.project_name}:ENTRY)-[r:is_child_of]->(parent)
+                WHERE child_node.id = $id
             RETURN parent.id
         """
         result = get_current_transaction().run(query, {"id": entry})
@@ -355,7 +372,8 @@ class TaxonomyGraph:
         Helper function used for getting node children with given id
         """
         query = f"""
-            MATCH (child)-[r:is_child_of]->(parent_node:{self.project_name}:ENTRY) WHERE parent_node.id = $id 
+            MATCH (child)-[r:is_child_of]->(parent_node:{self.project_name}:ENTRY)
+                WHERE parent_node.id = $id
             RETURN child.id
         """
         result = get_current_transaction().run(query, {"id": entry})
@@ -369,15 +387,15 @@ class TaxonomyGraph:
         for key in new_node_keys.keys():
             if not re.match(r"^\w+$", key) or key == "id":
                 raise ValueError("Invalid key: %s", key)
-        
+
         # Get current node information and deleted keys
-        curr_node = self.get_nodes(label, entry).data()[0]['n']
+        curr_node = self.get_nodes(label, entry).data()[0]["n"]
         curr_node_keys = list(curr_node.keys())
-        deleted_keys = (set(curr_node_keys) ^ set(new_node_keys))
+        deleted_keys = set(curr_node_keys) ^ set(new_node_keys)
 
         # Check for keys having null/empty values
         for key in curr_node_keys:
-            if (curr_node[key] == []) or (curr_node[key] == None):
+            if (curr_node[key] == []) or (curr_node[key] is None):
                 deleted_keys.add(key)
 
         # Build query
@@ -385,7 +403,7 @@ class TaxonomyGraph:
 
         # Delete keys removed by user
         for key in deleted_keys:
-            if key == "id": # Doesn't require to be deleted
+            if key == "id":  # Doesn't require to be deleted
                 continue
             query.append(f"""\nREMOVE n.{key}\n""")
 
@@ -394,23 +412,23 @@ class TaxonomyGraph:
         for keys in new_node_keys.keys():
             if keys.startswith("tags_") and not keys.endswith("_str"):
                 if "_ids_" not in keys:
-                    keys_language_code = keys.split('_', 1)[1]
+                    keys_language_code = keys.split("_", 1)[1]
                     normalised_value = []
                     for values in new_node_keys[keys]:
                         normalised_value.append(normalizer.normalizing(values, keys_language_code))
                     normalised_new_node_keys[keys] = normalised_value
-                    normalised_new_node_keys["tags_ids_"+keys_language_code] = normalised_value
+                    normalised_new_node_keys["tags_ids_" + keys_language_code] = normalised_value
                 else:
-                    pass # We generate tags_ids, and ignore the one sent
+                    pass  # We generate tags_ids, and ignore the one sent
             else:
                 # No need to normalise
-                normalised_new_node_keys[keys] = new_node_keys[keys] 
+                normalised_new_node_keys[keys] = new_node_keys[keys]
 
         # Update keys
         for key in normalised_new_node_keys.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
 
-        query.append(f"""RETURN n""")
+        query.append("""RETURN n""")
 
         params = dict(normalised_new_node_keys, id=entry)
         result = get_current_transaction().run(" ".join(query), params)
@@ -418,7 +436,7 @@ class TaxonomyGraph:
 
     def update_node_children(self, entry, new_children_ids):
         """
-        Helper function used for updation of node children with given id 
+        Helper function used for updation of node children with given id
         """
         # Parse node ids from Neo4j Record object
         current_children = [record["child.id"] for record in list(self.get_children(entry))]
@@ -427,16 +445,25 @@ class TaxonomyGraph:
 
         # Delete relationships
         for child in deleted_children:
-            query = f""" 
-                MATCH (deleted_child:{self.project_name}:ENTRY)-[rel:is_child_of]->(parent:{self.project_name}:ENTRY) 
+            query = f"""
+                MATCH
+                    (deleted_child:{self.project_name}:ENTRY)
+                    -[rel:is_child_of]->
+                    (parent:{self.project_name}:ENTRY)
                 WHERE parent.id = $id AND deleted_child.id = $child
                 DELETE rel
             """
             get_current_transaction().run(query, {"id": entry, "child": child})
 
         # Create non-existing nodes
-        query = f"""MATCH (child:{self.project_name}:ENTRY) WHERE child.id in $ids RETURN child.id"""
-        existing_ids = [record['child.id'] for record in get_current_transaction().run(query, ids=list(added_children))]
+        query = f"""
+            MATCH (child:{self.project_name}:ENTRY)
+                WHERE child.id in $ids RETURN child.id
+        """
+        existing_ids = [
+            record["child.id"]
+            for record in get_current_transaction().run(query, ids=list(added_children))
+        ]
         to_create = added_children - set(existing_ids)
 
         # Normalising new children node ID
@@ -446,7 +473,7 @@ class TaxonomyGraph:
             main_language_code = child.split(":", 1)[0]
             created_node_id = self.create_node("ENTRY", child, main_language_code)
             created_child_ids.append(created_node_id)
-            
+
             # TODO: We would prefer to add the node just after its parent entry
             self.add_node_to_end("ENTRY", created_node_id)
 
@@ -455,12 +482,12 @@ class TaxonomyGraph:
         for child in created_child_ids:
             # Create new relationships if it doesn't exist
             query = f"""
-                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY) 
+                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
                 WHERE parent.id = $id AND new_child.id = $child
                 MERGE (new_child)-[r:is_child_of]->(parent)
             """
             result = get_current_transaction().run(query, {"id": entry, "child": child})
-        
+
         return result
 
     def full_text_search(self, text):
@@ -472,23 +499,23 @@ class TaxonomyGraph:
         normalized_id_text = normalizer.normalizing(text)
 
         # If normalized text is empty, no searches are found
-        if (normalized_text.strip() == ""):
+        if normalized_text.strip() == "":
             return []
 
-        id_index = self.project_name+'_SearchIds'
-        tags_index = self.project_name+'_SearchTags'
+        id_index = self.project_name + "_SearchIds"
+        tags_index = self.project_name + "_SearchTags"
 
-        text_query_exact = "*" + normalized_text + '*'
+        text_query_exact = "*" + normalized_text + "*"
         text_query_fuzzy = normalized_text + "~"
         text_id_query_fuzzy = normalized_id_text + "~"
         text_id_query_exact = "*" + normalized_id_text + "*"
         params = {
-            "id_index" : id_index,
-            "tags_index" : tags_index,
-            "text_query_fuzzy" : text_query_fuzzy,
-            "text_query_exact" : text_query_exact,
-            "text_id_query_fuzzy" : text_id_query_fuzzy,
-            "text_id_query_exact" : text_id_query_exact
+            "id_index": id_index,
+            "tags_index": tags_index,
+            "text_query_fuzzy": text_query_fuzzy,
+            "text_query_exact": text_query_exact,
+            "text_id_query_fuzzy": text_id_query_fuzzy,
+            "text_id_query_exact": text_id_query_exact,
         }
 
         # Fuzzy search and wildcard (*) search on two indexes
@@ -514,11 +541,11 @@ class TaxonomyGraph:
                     CALL db.index.fulltext.queryNodes($tags_index, $text_query_exact)
                     yield node, score as score_
                     where score_ > 0
-                    return node, score_ as score 
+                    return node, score_ as score
             }
             with node.id as node, score
             RETURN node, sum(score) as score
-            
+
             ORDER BY score DESC
         """
         result = [record["node"] for record in get_current_transaction().run(query, params)]

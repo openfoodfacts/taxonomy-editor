@@ -3,6 +3,7 @@
 ARG USER_UID=1000
 ARG USER_GID=1000
 
+
 # builder is the node service, only used to build project in prod
 FROM node:lts as builder
 ARG USER_UID
@@ -32,6 +33,7 @@ ENV PATH /opt/taxonomy-editor/node_modules/.bin:$PATH
 COPY --chown=node:node src /opt/taxonomy-editor/src
 COPY --chown=node:node public /opt/taxonomy-editor/public
 # build for production
+# no need of a public url, we are at the root
 RUN npm run build
 
 # ngixn
@@ -41,4 +43,4 @@ ARG USER_UID
 ARG USER_GID
 RUN usermod -u $USER_UID www-data && \
     groupmod --gid $USER_GID www-data
-COPY --from=builder /opt/taxonomy-editor/public/ /opt/taxonomy-editor/public/
+COPY --from=builder /opt/taxonomy-editor/build/ /opt/taxonomy-editor/build/

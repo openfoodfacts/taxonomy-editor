@@ -2,18 +2,20 @@
 Neo4J Transactions manager for DB operations
 """
 import contextlib
-import contextvars                                                          # Used for creation of context vars
+import contextvars  # Used for creation of context vars
 
-from neo4j import GraphDatabase                                             # Interface with Neo4J
-from . import settings                                                      # Neo4J settings
+from neo4j import GraphDatabase  # Interface with Neo4J
 
-from .exceptions import SessionMissingError, TransactionMissingError        # Custom exceptions
+from . import settings  # Neo4J settings
+from .exceptions import SessionMissingError  # Custom exceptions
+from .exceptions import TransactionMissingError
 
-txn = contextvars.ContextVar('txn')
+txn = contextvars.ContextVar("txn")
 txn.set(None)
 
-session = contextvars.ContextVar('session')
+session = contextvars.ContextVar("session")
 session.set(None)
+
 
 @contextlib.contextmanager
 def TransactionCtx():
@@ -30,6 +32,7 @@ def TransactionCtx():
     txn.set(None)
     session.set(None)
 
+
 def initialize_db():
     """
     Initialize Neo4J database
@@ -38,18 +41,20 @@ def initialize_db():
     uri = settings.uri
     driver = GraphDatabase.driver(uri)
 
+
 def shutdown_db():
     """
     Close session and driver of Neo4J database
     """
     driver.close()
 
+
 def get_current_transaction():
     """
     Fetches transaction variable in current context to perform DB operations
     """
     curr_txn = txn.get()
-    if (curr_txn == None):
+    if curr_txn is None:
         raise TransactionMissingError()
     return curr_txn
 
@@ -59,6 +64,6 @@ def get_current_session():
     Fetches session variable in current context to perform DB operations
     """
     curr_session = session.get()
-    if (curr_session == None):
+    if curr_session is None:
         raise SessionMissingError()
     return curr_session
