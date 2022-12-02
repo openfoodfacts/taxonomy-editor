@@ -53,9 +53,8 @@ services:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
     environment:
-      # disabling prod ui config and enabling node one
-      PROD_UI_SUFFIX: "-static"
-      DEV_UI_SUFFIX: ""
-    volumes:
-      # mount build folder dynamically
-      - ./taxonomy-editor-frontend/build:/opt/taxonomy-editor/build
+      # by default, disabling prod ui config and enabling node one
+      # you can change this settings to try the prod configuration,
+      # by setting PROD_UI_SUFFIX to "" and DEV_UI_SUFFIX to "-dev"
+      PROD_UI_SUFFIX: "${PROD_UI_SUFFIX--static}"
+      DEV_UI_SUFFIX: "${DEV_UI_SUFFIX-}"
