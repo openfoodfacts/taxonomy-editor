@@ -103,7 +103,7 @@ async def pong(response: Response):
     return {"ping": "pong @ %s" % pong}
 
 @app.get("/projects")
-async def listAllProjects(response: Response):
+async def list_all_projects(response: Response):
     """
     List all open projects created in the Taxonomy Editor
     """
@@ -113,118 +113,118 @@ async def listAllProjects(response: Response):
     return result
 
 @app.get("/{taxonomy_name}/{branch}/nodes")
-async def findAllNodes(response: Response, branch: str, taxonomy_name: str):
+async def find_all_nodes(response: Response, branch: str, taxonomy_name: str):
     """
     Get all nodes within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_all_nodes("")
-    allNodes = list(result)
-    return allNodes
+    all_nodes = list(result)
+    return all_nodes
 
 @app.get("/{taxonomy_name}/{branch}/rootnodes")
-async def findAllRootNodes(response: Response, branch: str, taxonomy_name: str):
+async def find_all_root_nodes(response: Response, branch: str, taxonomy_name: str):
     """
     Get all root nodes within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_all_root_nodes()
-    allRootNodes = list(result)
-    return allRootNodes
+    all_root_nodes = list(result)
+    return all_root_nodes
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}")
-async def findOneEntry(response: Response, branch: str, taxonomy_name: str, entry: str):
+async def find_one_entry(response: Response, branch: str, taxonomy_name: str, entry: str):
     """
     Get entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_nodes("ENTRY", entry)
-    oneEntry = list(result)
+    one_entry = list(result)
 
-    check_single(oneEntry)
+    check_single(one_entry)
     
-    return oneEntry[0]
+    return one_entry[0]
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/parents")
-async def findOneEntryParents(response: Response, branch: str, taxonomy_name: str, entry: str):
+async def find_one_entry_parents(response: Response, branch: str, taxonomy_name: str, entry: str):
     """
     Get parents for a entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_parents(entry)
-    oneEntryParents = list(result)
+    one_entry_parents = list(result)
     
-    return oneEntryParents
+    return one_entry_parents
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/children")
-async def findOneEntryChildren(response: Response, branch: str, taxonomy_name: str, entry: str):
+async def find_one_entry_children(response: Response, branch: str, taxonomy_name: str, entry: str):
     """
     Get children for a entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_children(entry)
-    oneEntryChildren = list(result)
+    one_entry_children = list(result)
     
-    return oneEntryChildren
+    return one_entry_children
 
 @app.get("/{taxonomy_name}/{branch}/entry")
-async def findAllEntries(response: Response, branch: str, taxonomy_name: str):
+async def find_all_entries(response: Response, branch: str, taxonomy_name: str):
     """
     Get all entries within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_all_nodes("ENTRY")
-    allEntries = list(result)
-    return allEntries
+    all_entries = list(result)
+    return all_entries
 
 @app.get("/{taxonomy_name}/{branch}/synonym/{synonym}")
-async def findOneSynonym(response: Response, branch: str, taxonomy_name: str, synonym: str):
+async def find_one_synonym(response: Response, branch: str, taxonomy_name: str, synonym: str):
     """
     Get synonym corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_nodes("SYNONYMS", synonym)
-    oneSynonym = list(result)
+    one_synonym = list(result)
 
-    check_single(oneSynonym)
+    check_single(one_synonym)
 
-    return oneSynonym[0]
+    return one_synonym[0]
 
 @app.get("/{taxonomy_name}/{branch}/synonym")
-async def findAllSynonyms(response: Response, branch: str, taxonomy_name: str):
+async def find_all_synonyms(response: Response, branch: str, taxonomy_name: str):
     """
     Get all synonyms within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_all_nodes("SYNONYMS")
-    allSyononyms = list(result)
-    return allSyononyms
+    all_synonyms = list(result)
+    return all_synonyms
 
 @app.get("/{taxonomy_name}/{branch}/stopword/{stopword}")
-async def findOneStopword(response: Response, branch: str, taxonomy_name: str, stopword: str):
+async def find_one_stopword(response: Response, branch: str, taxonomy_name: str, stopword: str):
     """
     Get stopword corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_nodes("STOPWORDS", stopword)
-    oneStopword = list(result)
+    one_stopword = list(result)
     
-    check_single(oneStopword)
+    check_single(one_stopword)
 
-    return oneStopword[0]
+    return one_stopword[0]
 
 @app.get("/{taxonomy_name}/{branch}/stopword")
-async def findAllStopwords(response: Response, branch: str, taxonomy_name: str):
+async def find_all_stopwords(response: Response, branch: str, taxonomy_name: str):
     """
     Get all stopwords within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.get_all_nodes("STOPWORDS")
-    allStopwords = list(result)
-    return allStopwords
+    all_stopwords = list(result)
+    return all_stopwords
 
 @app.get("/{taxonomy_name}/{branch}/header")
-async def findHeader(response: Response, branch: str, taxonomy_name: str):
+async def find_header(response: Response, branch: str, taxonomy_name: str):
     """
     Get __header__ within taxonomy
     """
@@ -234,7 +234,7 @@ async def findHeader(response: Response, branch: str, taxonomy_name: str):
     return header[0]
 
 @app.get("/{taxonomy_name}/{branch}/footer")
-async def findFooter(response: Response, branch: str, taxonomy_name: str):
+async def find_footer(response: Response, branch: str, taxonomy_name: str):
     """
     Get __footer__ within taxonomy
     """
@@ -244,13 +244,13 @@ async def findFooter(response: Response, branch: str, taxonomy_name: str):
     return footer[0]
 
 @app.get("/{taxonomy_name}/{branch}/search")
-async def searchNode(response: Response, branch: str, taxonomy_name: str, query: str):
+async def search_node(response: Response, branch: str, taxonomy_name: str, query: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = taxonomy.full_text_search(query)
     return result
 
 @app.get("/{taxonomy_name}/{branch}/downloadexport")
-async def exportToTextFile(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
+async def export_to_text_file(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     file = taxonomy.file_export()
 
@@ -259,7 +259,7 @@ async def exportToTextFile(response: Response, branch: str, taxonomy_name: str, 
     return FileResponse(file)
 
 @app.get("/{taxonomy_name}/{branch}/githubexport")
-async def exportToGithub(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
+async def export_to_github(response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
         url, file = taxonomy.github_export()
@@ -276,12 +276,12 @@ async def exportToGithub(response: Response, branch: str, taxonomy_name: str, ba
 # Post methods
 
 @app.post("/{taxonomy_name}/{branch}/import")
-async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
+async def import_from_github(request: Request, branch: str, taxonomy_name: str):
     """
     Get taxonomy from Product Opener GitHub repository 
     """
-    incomingData = await request.json()
-    description = incomingData["description"]
+    incoming_data = await request.json()
+    description = incoming_data["description"]
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if (not taxonomy.is_valid_branch_name()):
@@ -295,14 +295,14 @@ async def importFromGithub(request: Request, branch: str, taxonomy_name: str):
     return result
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
-async def createNode(request: Request, branch: str, taxonomy_name: str):
+async def create_node(request: Request, branch: str, taxonomy_name: str):
     """
     Creating a new node in a taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incomingData = await request.json()
-    id = incomingData["id"]
-    main_language = incomingData["main_language"]
+    incoming_data = await request.json()
+    id = incoming_data["id"]
+    main_language = incoming_data["main_language"]
     if (id == None):
         raise HTTPException(status_code=400, detail="Invalid id")
     if (main_language == None):
@@ -315,87 +315,87 @@ async def createNode(request: Request, branch: str, taxonomy_name: str):
         taxonomy.add_node_to_beginning(taxonomy.get_label(normalized_id), normalized_id)
     
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
-async def editEntry(request: Request, branch: str, taxonomy_name: str, entry: str):
+async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: str):
     """
     Editing an entry in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
     URL will be of format '/entry/<id>'
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incomingData = await request.json()
-    result = taxonomy.update_nodes("ENTRY", entry, incomingData)
-    updatedEntry = list(result)
-    return updatedEntry
+    incoming_data = await request.json()
+    result = taxonomy.update_nodes("ENTRY", entry, incoming_data)
+    updated_entry = list(result)
+    return updated_entry
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")
-async def editEntryChildren(request: Request, branch: str, taxonomy_name: str, entry: str):
+async def edit_entry_children(request: Request, branch: str, taxonomy_name: str, entry: str):
     """
     Editing an entry's children in a taxonomy.
     New children can be added, old children can be removed.
     URL will be of format '/entry/<id>/children'
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incomingData = await request.json()
-    result = taxonomy.update_node_children(entry, incomingData)
-    updatedChildren = list(result)
-    return updatedChildren
+    incoming_data = await request.json()
+    result = taxonomy.update_node_children(entry, incoming_data)
+    updated_children = list(result)
+    return updated_children
 
 @app.post("/{taxonomy_name}/{branch}/synonym/{synonym}")
-async def editSynonyms(request: Request, branch: str, taxonomy_name: str, synonym: str):
+async def edit_synonyms(request: Request, branch: str, taxonomy_name: str, synonym: str):
     """
     Editing a synonym in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
     URL will be of format '/synonym/<id>'
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incomingData = await request.json()
-    result = taxonomy.update_nodes("SYNONYMS", synonym, incomingData)
-    updatedSynonym = list(result)
-    return updatedSynonym
+    incoming_data = await request.json()
+    result = taxonomy.update_nodes("SYNONYMS", synonym, incoming_data)
+    updated_synonym = list(result)
+    return updated_synonym
 
 @app.post("/{taxonomy_name}/{branch}/stopword/{stopword}")
-async def editStopwords(request: Request, branch: str, taxonomy_name: str, stopword: str):
+async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stopword: str):
     """
     Editing a stopword in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
     URL will be of format '/stopword/<id>'
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incomingData = await request.json()
-    result = taxonomy.update_nodes("STOPWORDS", stopword, incomingData)
-    updatedStopword = list(result)
-    return updatedStopword
+    incoming_data = await request.json()
+    result = taxonomy.update_nodes("STOPWORDS", stopword, incoming_data)
+    updated_stopword = list(result)
+    return updated_stopword
 
 @app.post("/{taxonomy_name}/{branch}/header")
-async def editHeader(incomingData: Header, branch: str, taxonomy_name: str):
+async def edit_header(incoming_data: Header, branch: str, taxonomy_name: str):
     """
     Editing the __header__ in a taxonomy.
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    convertedData = incomingData.dict()
+    convertedData = incoming_data.dict()
     result = taxonomy.update_nodes("TEXT", "__header__", convertedData)
-    updatedHeader = list(result)
-    return updatedHeader
+    updated_header = list(result)
+    return updated_header
 
 @app.post("/{taxonomy_name}/{branch}/footer")
-async def editFooter(incomingData: Footer, branch: str, taxonomy_name: str):
+async def edit_footer(incoming_data: Footer, branch: str, taxonomy_name: str):
     """
     Editing the __footer__ in a taxonomy.
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    convertedData = incomingData.dict()
+    convertedData = incoming_data.dict()
     result = taxonomy.update_nodes("TEXT", "__footer__", convertedData)
-    updatedFooter = list(result)
-    return updatedFooter
+    updated_footer = list(result)
+    return updated_footer
 
 # Delete methods
 
 @app.delete("/{taxonomy_name}/{branch}/nodes")
-async def deleteNode(request: Request, branch: str, taxonomy_name: str):
+async def delete_node(request: Request, branch: str, taxonomy_name: str):
     """
     Deleting given node from a taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incomingData = await request.json()
-    id = incomingData["id"]
+    incoming_data = await request.json()
+    id = incoming_data["id"]
     taxonomy.delete_node(taxonomy.get_label(id), id)
