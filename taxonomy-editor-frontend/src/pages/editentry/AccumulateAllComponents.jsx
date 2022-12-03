@@ -64,7 +64,9 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     // Function handling updation of node
     const handleSubmit = () => {
         if (!nodeObject) return
-        const {__id, ...data} = nodeObject // ID not allowed in POST
+        const data = Object.assign({}, nodeObject);
+        delete data['id'] // ID not allowed in POST
+        
         const dataToBeSent = {};
         // Remove UUIDs from data
         Object.keys(data).forEach((key) => {
@@ -74,7 +76,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         })
         const allUrlsAndData = [[url, dataToBeSent]]
         if (isEntry) {
-            allUrlsAndData.push([url+'children', updateChildren])
+            allUrlsAndData.push([url+'/children', updateChildren])
         }
         Promise.all(allUrlsAndData.map(([url, dataToBeSent]) => {
             return fetch(url, {
@@ -92,8 +94,8 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
             { isEntry ? 
                 <Box>
                     { !!nodeObject &&
-                        <>  <ListEntryParents url={url+'parents'} urlPrefix={urlPrefix} />
-                            <ListEntryChildren url={url+'children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
+                        <>  <ListEntryParents url={url+'/parents'} urlPrefix={urlPrefix} />
+                            <ListEntryChildren url={url+'/children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
                             <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :
