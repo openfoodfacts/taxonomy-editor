@@ -69,7 +69,7 @@ jobs:
         timeoutSeconds: 600 # 10m
 
     - name: Do something if build isn't launched
-      if: steps.wait-build-frontend.outputs.conclusion == 'does not exist' || steps.wait-build-api.outputs.conclusion == 'does not exist'
+      if: steps.wait-build-frontend.outputs.conclusion == 'not found' || steps.wait-build-api.outputs.conclusion == 'not found'
       run: echo job does not exist && true
 
     - name: Do something if build fail

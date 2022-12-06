@@ -3,7 +3,7 @@ name: Docker Image Build CI
 on:
   push:
     branches:
-    - $default-branch
+    - main
     - deploy-*
     tags:
     - v*.*.*
