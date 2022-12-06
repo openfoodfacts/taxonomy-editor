@@ -33,11 +33,11 @@ export function createURL(taxonomyName, branchName, id) {
     // ID's can look like: __header__, __footer__, synomym:0, stopword:0
     // For an entry, id looks like en:yogurts
 
-    if (getIdType(id) === 'Header') { url += 'header/' }
-    else if (getIdType(id) === 'Footer') { url += 'footer/' }
-    else if (getIdType(id) === 'Synonyms') { url += `synonym/${id}/` }
-    else if (getIdType(id) === 'Stopwords') { url += `stopword/${id}/` }
-    else { url += `entry/${id}/` }
+    if (getIdType(id) === 'Header') { url += 'header' }
+    else if (getIdType(id) === 'Footer') { url += 'footer' }
+    else if (getIdType(id) === 'Synonyms') { url += `synonym/${id}` }
+    else if (getIdType(id) === 'Stopwords') { url += `stopword/${id}` }
+    else { url += `entry/${id}` }
 
     return url
 }
