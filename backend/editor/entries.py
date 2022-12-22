@@ -240,10 +240,11 @@ class TaxonomyGraph:
         """
         params = {"project_name": self.project_name, "status": "CLOSED"}
         get_current_transaction().run(query, params)
-    
+
     def reopen_project(self):
         """
-        Helper function to reopen a closed Taxonomy Editor project and updates project status as "OPEN"
+        Helper function to reopen a closed Taxonomy Editor project.
+        Updates project status as "OPEN"
         """
         query = """
             MATCH (n:PROJECT)
@@ -264,7 +265,7 @@ class TaxonomyGraph:
         """
         result = get_current_transaction().run(query)
         return result
-    
+
     def list_all_closed_projects(self):
         """
         Helper function for listing all closed projects created in Taxonomy Editor
