@@ -114,14 +114,25 @@ async def pong(response: Response):
     return {"ping": "pong @ %s" % pong}
 
 
-@app.get("/projects")
-async def list_all_projects(response: Response):
+@app.get("/open-projects")
+async def list_all_open_projects(response: Response):
     """
     List all open projects created in the Taxonomy Editor
     """
-    # Listing all projects doesn't require a taoxnomy name or branch name
+    # Listing all projects doesn't require a taxonomy name or branch name
     taxonony = TaxonomyGraph("", "")
-    result = list(taxonony.list_existing_projects())
+    result = list(taxonony.list_all_open_projects())
+    return result
+
+
+@app.get("/closed-projects")
+async def list_all_closed_projects(response: Response):
+    """
+    List all closed projects created in the Taxonomy Editor
+    """
+    # Listing all projects doesn't require a taxonomy name or branch name
+    taxonony = TaxonomyGraph("", "")
+    result = list(taxonony.list_all_closed_projects())
     return result
 
 

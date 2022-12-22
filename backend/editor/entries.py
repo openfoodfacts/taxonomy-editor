@@ -240,14 +240,38 @@ class TaxonomyGraph:
         """
         params = {"project_name": self.project_name, "status": "CLOSED"}
         get_current_transaction().run(query, params)
+    
+    def reopen_project(self):
+        """
+        Helper function to reopen a closed Taxonomy Editor project and updates project status as "OPEN"
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.id = $project_name
+            SET n.status = $status
+        """
+        params = {"project_name": self.project_name, "status": "OPEN"}
+        get_current_transaction().run(query, params)
 
-    def list_existing_projects(self):
+    def list_all_open_projects(self):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
         """
         query = """
             MATCH (n:PROJECT)
             WHERE n.status = "OPEN" RETURN n
+            ORDER BY n.created_at
+        """
+        result = get_current_transaction().run(query)
+        return result
+    
+    def list_all_closed_projects(self):
+        """
+        Helper function for listing all closed projects created in Taxonomy Editor
+        """
+        query = """
+            MATCH (n:PROJECT)
+            WHERE n.status = "CLOSED" RETURN n
             ORDER BY n.created_at
         """
         result = get_current_transaction().run(query)
