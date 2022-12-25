@@ -12,6 +12,7 @@ from datetime import datetime
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
 # DB helper imports
 from . import graph_db
@@ -95,6 +96,72 @@ def file_cleanup(filepath):
         os.remove(filepath)
     except Exception:
         raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
+
+
+# Response models for FastAPI
+
+
+class ImportFromGithubParameters(BaseModel):
+    branch: str
+    taxonomy_name: str
+
+
+class ImportFromGithubResponse(BaseModel):
+    status: str
+
+
+class CreateNodeParameters(BaseModel):
+    branch: str
+    taxonomy_name: str
+
+
+class EditEntryParameters(BaseModel):
+    branch: str
+    taxonomy_name: str
+    entry: str
+
+
+class EditEntryResponse(BaseModel):
+    result = []
+
+
+class EditChildrenParameters(BaseModel):
+    branch: str
+    taxonomy_name: str
+    entry: str
+
+
+class EditChildrenResponse(BaseModel):
+    result = []
+
+
+class EditSynonymsParameters(BaseModel):
+    branch: str
+    taxonomy_name: str
+    entry: str
+
+
+class EditSynonymResponse(BaseModel):
+    result = []
+
+
+class EditHeadersParameters(BaseModel):
+    branch: str
+    taxonomy_name: str
+
+
+class EditHeadersResponse(BaseModel):
+    result: []
+
+
+class EditFootersParameters(BaseModel):
+    incoming_data: Footer
+    branch: str
+    taxonomy_name: str
+
+
+class EditFootersResponse(BaseModel):
+    result: []
 
 
 # Get methods
@@ -309,7 +376,13 @@ async def export_to_github(
 
 
 @app.post("/{taxonomy_name}/{branch}/import")
-async def import_from_github(request: Request, branch: str, taxonomy_name: str):
+async def import_from_github(
+    request: Request,
+    branch: str,
+    taxonomy_name: str,
+    parameters: ImportFromGithubParameters,
+    response_model=ImportFromGithubResponse,
+):
     """
     Get taxonomy from Product Opener GitHub repository
     """
@@ -329,7 +402,9 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
 
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
-async def create_node(request: Request, branch: str, taxonomy_name: str):
+async def create_node(
+    request: Request, branch: str, taxonomy_name: str, parameters: CreateNodeParameters
+):
     """
     Creating a new node in a taxonomy
     """
@@ -350,43 +425,54 @@ async def create_node(request: Request, branch: str, taxonomy_name: str):
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
-async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: str):
+async def edit_entry(
+    request: Request, parameters: EditChildrenParameters, response_model=EditChildrenResponse
+):
     """
     Editing an entry in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
     URL will be of format '/entry/<id>'
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_nodes("ENTRY", entry, incoming_data)
+    result = taxonomy.update_nodes("ENTRY", parameters.entry, incoming_data)
     updated_entry = list(result)
     return updated_entry
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")
-async def edit_entry_children(request: Request, branch: str, taxonomy_name: str, entry: str):
+async def edit_entry_children(
+    request: Request,
+    branch: str,
+    taxonomy_name: str,
+    entry: str,
+    parameters: EditChildrenParameters,
+    response_model=EditChildrenResponse,
+):
     """
     Editing an entry's children in a taxonomy.
     New children can be added, old children can be removed.
     URL will be of format '/entry/<id>/children'
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_node_children(entry, incoming_data)
+    result = taxonomy.update_node_children(parameters.entry, incoming_data)
     updated_children = list(result)
     return updated_children
 
 
 @app.post("/{taxonomy_name}/{branch}/synonym/{synonym}")
-async def edit_synonyms(request: Request, branch: str, taxonomy_name: str, synonym: str):
+async def edit_synonyms(
+    request: Request, parameters: EditSynonymsParameters, response_model=EditSynonymResponse
+):
     """
     Editing a synonym in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
     URL will be of format '/synonym/<id>'
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_nodes("SYNONYMS", synonym, incoming_data)
+    result = taxonomy.update_nodes("SYNONYMS", parameters.synonym, incoming_data)
     updated_synonym = list(result)
     return updated_synonym
 
@@ -406,11 +492,13 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
 
 
 @app.post("/{taxonomy_name}/{branch}/header")
-async def edit_header(incoming_data: Header, branch: str, taxonomy_name: str):
+async def edit_header(
+    incoming_data: Header, parameters: EditHeadersParameters, respnse_model: EditHeadersResponse
+):
     """
     Editing the __header__ in a taxonomy.
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     convertedData = incoming_data.dict()
     result = taxonomy.update_nodes("TEXT", "__header__", convertedData)
     updated_header = list(result)
@@ -418,12 +506,12 @@ async def edit_header(incoming_data: Header, branch: str, taxonomy_name: str):
 
 
 @app.post("/{taxonomy_name}/{branch}/footer")
-async def edit_footer(incoming_data: Footer, branch: str, taxonomy_name: str):
+async def edit_footer(parameters: EditFootersParameters, response_model: EditFootersResponse):
     """
     Editing the __footer__ in a taxonomy.
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    convertedData = incoming_data.dict()
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
+    convertedData = parameters.incoming_data.dict()
     result = taxonomy.update_nodes("TEXT", "__footer__", convertedData)
     updated_footer = list(result)
     return updated_footer
