@@ -12,7 +12,6 @@ from datetime import datetime
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
 
 # DB helper imports
 from . import graph_db
@@ -22,7 +21,21 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models import Footer, Header
+from .models import (
+    CreateNodeParameters,
+    EditChildrenParameters,
+    EditChildrenResponse,
+    EditEntryParameters,
+    EditEntryResponse,
+    EditFooterParameters,
+    EditFooterResponse,
+    EditHeaderParameters,
+    EditHeaderResponse,
+    EditSynonymParameters,
+    EditSynonymResponse,
+    ImportFromGithubParameters,
+    ImportFromGithubResponse,
+)
 
 # ----------------------------------------------------------------------------#
 
@@ -96,77 +109,6 @@ def file_cleanup(filepath):
         os.remove(filepath)
     except Exception:
         raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
-
-
-# Response models for FastAPI
-
-
-class ImportFromGithubParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
-
-
-class ImportFromGithubResponse(BaseModel):
-    status: str
-
-
-class CreateNodeParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
-
-
-class EditEntryParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
-    entry: str
-
-
-class EditEntryResponse(BaseModel):
-    result = []
-
-
-class EditChildrenParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
-    entry: str
-
-
-class EditChildrenResponse(BaseModel):
-    result = []
-
-
-class EditSynonymParameters(BaseModel):
-
-    branch: str
-    taxonomy_name: str
-    entry: str
-
-
-class EditSynonymResponse(BaseModel):
-    result = []
-
-
-class EditHeaderParameters(BaseModel):
-    incoming_data: Header
-    branch: str
-    taxonomy_name: str
-
-
-
-class EditHeaderResponse(BaseModel):
-
-    result: []
-
-
-class EditFooterParameters(BaseModel):
-
-    incoming_data: Footer
-    branch: str
-    taxonomy_name: str
-
-
-class EditFootersResponse(BaseModel):
-    result: []
 
 
 # Get methods
@@ -407,13 +349,11 @@ async def import_from_github(
 
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
-async def create_node(
-    request: Request, branch: str, taxonomy_name: str, parameters: CreateNodeParameters
-):
+async def create_node(request: Request, parameters: CreateNodeParameters):
     """
     Creating a new node in a taxonomy
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     incoming_data = await request.json()
     id = incoming_data["id"]
     main_language = incoming_data["main_language"]
@@ -431,7 +371,7 @@ async def create_node(
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
 async def edit_entry(
-    request: Request, parameters: EditChildrenParameters, response_model=EditChildrenResponse
+    request: Request, parameters: EditEntryParameters, response_model=EditEntryResponse
 ):
     """
     Editing an entry in a taxonomy.
@@ -448,9 +388,6 @@ async def edit_entry(
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")
 async def edit_entry_children(
     request: Request,
-    branch: str,
-    taxonomy_name: str,
-    entry: str,
     parameters: EditChildrenParameters,
     response_model=EditChildrenResponse,
 ):
@@ -468,7 +405,7 @@ async def edit_entry_children(
 
 @app.post("/{taxonomy_name}/{branch}/synonym/{synonym}")
 async def edit_synonyms(
-    request: Request, parameters: EditSynonymsParameters, response_model=EditSynonymResponse
+    request: Request, parameters: EditSynonymParameters, response_model=EditSynonymResponse
 ):
     """
     Editing a synonym in a taxonomy.
@@ -497,10 +434,7 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
 
 
 @app.post("/{taxonomy_name}/{branch}/header")
-async def edit_header(
-    parameters: EditHeadersParameters, respnse_model: EditHeadersResponse
-
-):
+async def edit_header(parameters: EditHeaderParameters, response_model: EditHeaderResponse):
     """
     Editing the __header__ in a taxonomy.
     """
@@ -513,7 +447,7 @@ async def edit_header(
 
 
 @app.post("/{taxonomy_name}/{branch}/footer")
-async def edit_footer(parameters: EditFootersParameters, response_model: EditFootersResponse):
+async def edit_footer(parameters: EditFooterParameters, response_model: EditFooterResponse):
     """
     Editing the __footer__ in a taxonomy.
     """
