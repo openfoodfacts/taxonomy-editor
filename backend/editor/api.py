@@ -158,7 +158,8 @@ class EditHeaderResponse(BaseModel):
     result: []
 
 
-class EditFootersParameters(BaseModel):
+class EditFooterParameters(BaseModel):
+
     incoming_data: Footer
     branch: str
     taxonomy_name: str
