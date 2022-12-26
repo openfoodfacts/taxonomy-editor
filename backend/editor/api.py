@@ -135,7 +135,8 @@ class EditChildrenResponse(BaseModel):
     result = []
 
 
-class EditSynonymsParameters(BaseModel):
+class EditSynonymParameters(BaseModel):
+
     branch: str
     taxonomy_name: str
     entry: str
