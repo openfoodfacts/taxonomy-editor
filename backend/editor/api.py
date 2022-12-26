@@ -505,7 +505,8 @@ async def edit_header(
     Editing the __header__ in a taxonomy.
     """
     taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
-    convertedData = incoming_data.dict()
+    convertedData = parameters.incoming_data.dict()
+
     result = taxonomy.update_nodes("TEXT", "__header__", convertedData)
     updated_header = list(result)
     return updated_header
