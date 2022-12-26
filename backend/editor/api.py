@@ -153,7 +153,8 @@ class EditHeaderParameters(BaseModel):
 
 
 
-class EditHeadersResponse(BaseModel):
+class EditHeaderResponse(BaseModel):
+
     result: []
 
 
