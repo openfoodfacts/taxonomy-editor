@@ -498,7 +498,8 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
 
 @app.post("/{taxonomy_name}/{branch}/header")
 async def edit_header(
-    incoming_data: Header, parameters: EditHeadersParameters, respnse_model: EditHeadersResponse
+    parameters: EditHeadersParameters, respnse_model: EditHeadersResponse
+
 ):
     """
     Editing the __header__ in a taxonomy.
