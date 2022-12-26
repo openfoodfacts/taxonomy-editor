@@ -146,9 +146,11 @@ class EditSynonymResponse(BaseModel):
     result = []
 
 
-class EditHeadersParameters(BaseModel):
+class EditHeaderParameters(BaseModel):
+    incoming_data: Header
     branch: str
     taxonomy_name: str
+
 
 
 class EditHeadersResponse(BaseModel):
