@@ -124,6 +124,7 @@ async def list_all_projects(response: Response, status: str):
     result = list(taxonony.list_projects(status))
     return result
 
+
 @app.get("{taxonomy_name}/{branch}/set-project-status")
 async def set_project_status(response: Response, branch: str, taxonomy_name: str, status: str):
     """
