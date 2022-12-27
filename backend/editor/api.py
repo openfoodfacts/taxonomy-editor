@@ -5,7 +5,7 @@ import logging
 import os
 
 # Required imports
-# ----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------------#
 from datetime import datetime
 
 # FastAPI
@@ -23,7 +23,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 # Data model imports
 from .models import Footer, Header
 
-# ----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------------#
 
 # Setup logs
 logging.basicConfig(
@@ -114,25 +114,14 @@ async def pong(response: Response):
     return {"ping": "pong @ %s" % pong}
 
 
-@app.get("/open-projects")
-async def list_all_open_projects(response: Response):
+@app.get("/projects")
+async def list_all_projects(response: Response, status: str):
     """
-    List all open projects created in the Taxonomy Editor
-    """
-    # Listing all projects doesn't require a taxonomy name or branch name
-    taxonony = TaxonomyGraph("", "")
-    result = list(taxonony.list_all_open_projects())
-    return result
-
-
-@app.get("/closed-projects")
-async def list_all_closed_projects(response: Response):
-    """
-    List all closed projects created in the Taxonomy Editor
+    List projects created in the Taxonomy Editor with a status filter
     """
     # Listing all projects doesn't require a taxonomy name or branch name
     taxonony = TaxonomyGraph("", "")
-    result = list(taxonony.list_all_closed_projects())
+    result = list(taxonony.list_projects(status))
     return result
 
 

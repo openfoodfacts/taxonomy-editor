@@ -1,1 +1,0 @@
-# keep this file to have the folder in git to avoid permissions problem (if docker-compose creates the build directory, it will be owned by root
