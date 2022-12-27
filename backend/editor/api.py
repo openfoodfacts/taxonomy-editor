@@ -124,6 +124,15 @@ async def list_all_projects(response: Response, status: str):
     result = list(taxonony.list_projects(status))
     return result
 
+@app.get("{taxonomy_name}/{branch}/set-project-status")
+async def set_project_status(response: Response, branch: str, taxonomy_name: str, status: str):
+    """
+    Set the status of a Taxonomy Editor project
+    """
+    taxonony = TaxonomyGraph(branch, taxonomy_name)
+    result = taxonony.set_project_status(status)
+    return result
+
 
 @app.get("/{taxonomy_name}/{branch}/nodes")
 async def find_all_nodes(response: Response, branch: str, taxonomy_name: str):
