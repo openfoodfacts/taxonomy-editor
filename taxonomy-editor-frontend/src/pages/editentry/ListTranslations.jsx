@@ -7,6 +7,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ISO6391 from 'iso-639-1';
 
 /**
@@ -19,6 +21,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     const [openDialog, setOpen] = useState(false); // Used for Dialog component
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
     const [isValidLanguageCode, setisValidLanguageCode] = useState(false); // Used for validating a new LC
+    const [shownTranslationLanguages, setShownTranslationLanguages] = useState([]); // Used for storing LC's that are to be shown
 
     // Helper functions for Dialog component
     const handleClose = () => { setOpen(false); }
@@ -27,6 +30,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     // Used for addition of a translation language
     const handleAddTranslation = (key) => {
         const newRenderedTranslations = [...renderedTranslations, {'languageCode' : key, 'tags' : []}]
+        handleToggleTranslationVisibility(key)
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
         const uuidKey = key + '_uuid' // Format for the uuid
@@ -58,9 +62,18 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         setOpen(false);
     }
 
+    const handleToggleTranslationVisibility = (key) => {
+        const newShownTranslationLanguages = shownTranslationLanguages.includes(key) ? shownTranslationLanguages.filter(obj => !(key === obj)) : [...shownTranslationLanguages, key]
+        setShownTranslationLanguages(newShownTranslationLanguages);
+        localStorage.setItem('shownTranslationLanguages', JSON.stringify(newShownTranslationLanguages));
+    }
+
     // Changes the translations to be rendered
     // Dependent on changes occuring in "nodeObject"
     useEffect(() => {
+        // get shown translation languages from local storage
+        const shownTranslationLanguages = JSON.parse(localStorage.getItem('shownTranslationLanguages')) || [];
+        setShownTranslationLanguages(shownTranslationLanguages);
 
         // Main langauge tags are considered separately, since they have to be rendered first
         const mainLangTags = []
@@ -287,6 +300,9 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                 <IconButton onClick={() => handleDeleteTranslation(lang)}>
                                     <DeleteOutlineIcon />
                                 </IconButton>
+                                <IconButton onClick={() => handleToggleTranslationVisibility(lang)}>
+                                    {shownTranslationLanguages.includes(lang) ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                                </IconButton>
                             </Stack>
                             {/* Render all related tags */}
                             {
@@ -294,6 +310,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                     const index = tagObj['index']
                                     const tag = tagObj['tag']
                                     return (
+                                        shownTranslationLanguages.includes(lang) &&
                                         <Stack key={index} sx={{ml: 2}} direction="row" alignItems="center">
                                             <TextField 
                                                 size="small" 
