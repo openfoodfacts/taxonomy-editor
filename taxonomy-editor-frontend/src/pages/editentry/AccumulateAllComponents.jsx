@@ -26,6 +26,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
+    const [shownTranslationLanguages, setShownTranslationLanguages] = useState([]); // Used for storing LC's that are to be shown
 
     // Setting state of node after fetch
     useEffect(() => {
@@ -47,6 +48,12 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         }
         setNodeObject(duplicateNode);
     }, [node])
+
+    useEffect(() => {
+          // get shown translation languages from local storage
+          const shownTranslationLanguages = JSON.parse(localStorage.getItem('shownTranslationLanguages')) || [];
+          setShownTranslationLanguages(shownTranslationLanguages);
+    }, [])
 
     // Displaying error messages if any
     if (isError) {
@@ -87,6 +94,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         })).then(() => {
             setOpen(true);
         }).catch(() => {})
+        localStorage.setItem('shownTranslationLanguages', JSON.stringify(shownTranslationLanguages))
     }
     return ( 
         <Box>
@@ -96,7 +104,12 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                     { !!nodeObject &&
                         <>  <ListEntryParents url={url+'/parents'} urlPrefix={urlPrefix} />
                             <ListEntryChildren url={url+'/children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
-                            <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
+                            <ListTranslations
+                                nodeObject = {nodeObject}
+                                setNodeObject = {setNodeObject}
+                                shownTranslationLanguages = {shownTranslationLanguages}
+                                setShownTranslationLanguages = {setShownTranslationLanguages}
+                            /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :
                 <>  <ListAllNonEntryInfo nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
