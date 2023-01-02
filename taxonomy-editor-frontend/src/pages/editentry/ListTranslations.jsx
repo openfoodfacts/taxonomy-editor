@@ -74,7 +74,6 @@ const ListTranslations = ({ nodeObject, setNodeObject, shownTranslationLanguages
     // Changes the translations to be rendered
     // Dependent on changes occuring in "nodeObject"
     useEffect(() => {
-        console.log(shownTranslationLanguages)
         // Main langauge tags are considered separately, since they have to be rendered first
         const mainLangTags = []
         const otherLangTags = []
@@ -364,7 +363,6 @@ const ListTranslations = ({ nodeObject, setNodeObject, shownTranslationLanguages
                         if (isValidLanguage  && !isDuplicateLanguage) {setLanguageAction("add")}
                         else if (isValidLanguage && !isAlreadyShown && isDuplicateLanguage) {setLanguageAction("show")}
                         else {setLanguageAction("invalid")}
-                        console.log(isValidLanguage, isAlreadyShown, isDuplicateLanguage, language)
                     }}
                     renderInput={(params) =>
                         <TextField
