@@ -254,6 +254,8 @@ class TaxonomyGraph:
             ORDER BY n.created_at
         """
         result = get_current_transaction().run(query)
+        # pack errors count in result
+        result = [dict(node, errors_count=num_errors) for node, num_errors in result]
         return result
 
     def add_node_to_end(self, label, entry):
