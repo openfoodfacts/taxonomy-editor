@@ -52,7 +52,8 @@ This documentation tries to follow as much as possible the documentation system 
 <img width="500" src="https://user-images.githubusercontent.com/25586296/194070779-da4684d3-26ea-4fd9-8916-0e8c4fdea0c9.png" />
 </details>
 
-<h2> Weekly meetings </h2>
+<details><summary><h2> Weekly meetings </h2></summary>
+
 - We e-meet Tuesdays at 17:00 Paris Time (16:00 London Time, 21:30 IST, 08:00 AM PT)
 - ![Google Meet](https://img.shields.io/badge/Google%20Meet-00897B?logo=google-meet&logoColor=white) Video call link: https://meet.google.com/xin-bwzm-xvj
 - Join by phone: https://tel.meet/nnw-qswu-hza?pin=2111028061202
@@ -61,6 +62,8 @@ This documentation tries to follow as much as possible the documentation system 
 - The meeting will handle Agenda items first, and if time permits, collaborative bug triage.
 - We strive to timebox the core of the meeting (decision making) to 30 minutes, with an optional free discussion/live debugging afterwards.
 - We take comprehensive notes in the Weekly Agenda of agenda item discussions and of decisions taken.
+
+</details>
 
 ## User interface
 -  [![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?logo=figma&logoColor=white) Mockups on the current design and future plans to discuss](https://www.figma.com/file/7QxD2pOnVntjDPqbHHPGHv/Taxonomy-Editor?t=4YadI2GgSAXcPnlo-0)
