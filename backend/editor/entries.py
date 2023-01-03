@@ -246,7 +246,7 @@ class TaxonomyGraph:
         Helper function for listing all existing projects created in Taxonomy Editor
         includes number of nodes with label ERROR for each project
         """
-        query = f"""
+        query = """
             MATCH (n:PROJECT)
             OPTIONAL MATCH (error_node:ERRORS {{branch_name: n.branch_name, id: n.id}})
             WHERE n.status = "OPEN"
@@ -351,10 +351,14 @@ class TaxonomyGraph:
         """
         Helper function used for getting parsing errors in the current project
         """
-        # During parsing of a taxonomy, all the parsing errors are stored in a separate node with the label "ERRORS"
+        # During parsing of a taxonomy, all the parsing errors
+        # are stored in a separate node with the label "ERRORS"
         # This function returns all the parsing errors
         query = f"""
-            MATCH (error_node:ERRORS {{branch_name: "{self.branch_name}", id: "{self.project_name}"}})
+            MATCH (
+                error_node:ERRORS
+                {{branch_name: "{self.branch_name}", id: "{self.project_name}"}}
+            )
             RETURN error_node
         """
         result = get_current_transaction().run(query).data()[0]["error_node"]
