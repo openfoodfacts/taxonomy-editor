@@ -119,6 +119,9 @@ async def list_all_projects(response: Response, status: str):
     """
     List projects created in the Taxonomy Editor with a status filter
     """
+    if status not in ["OPEN", "CLOSED", "ALL"]:
+        raise HTTPException(status_code=400, detail="Invalid status filter")
+    
     # Listing all projects doesn't require a taxonomy name or branch name
     taxonony = TaxonomyGraph("", "")
     result = list(taxonony.list_projects(status))
