@@ -244,10 +244,13 @@ class TaxonomyGraph:
     def list_existing_projects(self):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
+        includes number of nodes with label ERROR for each project
         """
-        query = """
+        query = f"""
             MATCH (n:PROJECT)
-            WHERE n.status = "OPEN" RETURN n
+            OPTIONAL MATCH (error_node:ERRORS {{branch_name: n.branch_name, id: n.id}})
+            WHERE n.status = "OPEN"
+            RETURN n, size(error_node.errors) AS error_count
             ORDER BY n.created_at
         """
         result = get_current_transaction().run(query)
@@ -342,6 +345,19 @@ class TaxonomyGraph:
             MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
         """
         result = get_current_transaction().run(query)
+        return result
+
+    def get_parsing_errors(self):
+        """
+        Helper function used for getting parsing errors in the current project
+        """
+        # During parsing of a taxonomy, all the parsing errors are stored in a separate node with the label "ERRORS"
+        # This function returns all the parsing errors
+        query = f"""
+            MATCH (error_node:ERRORS {{branch_name: "{self.branch_name}", id: "{self.project_name}"}})
+            RETURN error_node
+        """
+        result = get_current_transaction().run(query).data()[0]["error_node"]
         return result
 
     def get_nodes(self, label, entry):

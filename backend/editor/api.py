@@ -267,6 +267,14 @@ async def find_footer(response: Response, branch: str, taxonomy_name: str):
     footer = list(result)
     return footer[0]
 
+@app.get("/{taxonomy_name}/{branch}/parsing_errors")
+async def find_all_errors(request: Request, branch: str, taxonomy_name: str):
+    """
+    Get all errors within taxonomy
+    """
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = taxonomy.get_parsing_errors()
+    return result
 
 @app.get("/{taxonomy_name}/{branch}/search")
 async def search_node(response: Response, branch: str, taxonomy_name: str, query: str):
