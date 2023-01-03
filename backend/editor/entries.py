@@ -241,25 +241,21 @@ class TaxonomyGraph:
         params = {"project_name": self.project_name, "status": status}
         get_current_transaction().run(query, params)
 
-    def list_projects(self, status="ALL"):
+    def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
         """
         query = ["""MATCH (n:PROJECT)\n"""]
-        if status == "OPEN":
-            # List only the open projects
-            query.append("""WHERE n.status = "OPEN"\n""")
-        elif status == "CLOSED":
-            # List only the closed projects
-            query.append("""WHERE n.status = "CLOSED"\n""")
-        elif status == "ALL":
-            # List all the projects, irrespective of their status
-            pass
+        params = {}
+        if status != None:
+            # List only projects matching status
+            query.append("""WHERE n.status = $status\n""")
+            params["status"] = status
 
         query.append("""RETURN n\n""")
         query.append("""ORDER BY n.created_at\n""")  # Sort by creation date
 
-        result = get_current_transaction().run("".join(query))
+        result = get_current_transaction().run("".join(query), params)
         return result
 
     def add_node_to_end(self, label, entry):

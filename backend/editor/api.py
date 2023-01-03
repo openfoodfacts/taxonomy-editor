@@ -7,6 +7,8 @@ import os
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
+from enum import Enum
+from typing import Optional
 
 # FastAPI
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
@@ -97,6 +99,16 @@ def file_cleanup(filepath):
         raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
 
 
+class StatusFilter(str, Enum):
+    """
+    Enum for project status filter
+    """
+
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+    ALL = "ALL"
+
+
 # Get methods
 
 
@@ -115,11 +127,12 @@ async def pong(response: Response):
 
 
 @app.get("/projects")
-async def list_all_projects(response: Response, status: str):
+async def list_all_projects(response: Response, status: Optional[StatusFilter] = None):
     """
     List projects created in the Taxonomy Editor with a status filter
     """
-    if status not in ["OPEN", "CLOSED", "ALL"]:
+    # Check if status filter is valid
+    if status not in ["OPEN", "CLOSED", None]:
         raise HTTPException(status_code=400, detail="Invalid status filter")
 
     # Listing all projects doesn't require a taxonomy name or branch name
@@ -129,10 +142,16 @@ async def list_all_projects(response: Response, status: str):
 
 
 @app.get("{taxonomy_name}/{branch}/set-project-status")
-async def set_project_status(response: Response, branch: str, taxonomy_name: str, status: str):
+async def set_project_status(
+    response: Response, branch: str, taxonomy_name: str, status: Optional[StatusFilter] = None
+):
     """
     Set the status of a Taxonomy Editor project
     """
+    # Check if status filter is valid
+    if status not in ["OPEN", "CLOSED", None]:
+        raise HTTPException(status_code=400, detail="Invalid status filter")
+
     taxonony = TaxonomyGraph(branch, taxonomy_name)
     result = taxonony.set_project_status(status)
     return result
