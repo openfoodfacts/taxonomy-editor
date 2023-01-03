@@ -13,13 +13,14 @@ import ISO6391 from 'iso-639-1';
 /**
  * Sub-component for rendering translation of an "entry"
 */
-const ListTranslations = ({ nodeObject, setNodeObject, shownTranslationLanguages, setShownTranslationLanguages }) => {
+const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
     const [openDialog, setOpen] = useState(false); // Used for Dialog component
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
     const [languageAction, setLanguageAction] = useState('invalid'); // Used for storing state of action to be performed on LC (add/show/invalid)
+    const [shownTranslationLanguages, setShownTranslationLanguages] = useState([]); // Used for storing LC's that are to be shown
     const [languageOptions, setLanguageOptions] = useState([]); // Used for storing all possible LC's
 
     // Helper functions for Dialog component
@@ -68,6 +69,7 @@ const ListTranslations = ({ nodeObject, setNodeObject, shownTranslationLanguages
     const handleToggleTranslationVisibility = (key) => {
         const newShownTranslationLanguages = shownTranslationLanguages.includes(key) ? shownTranslationLanguages.filter(obj => !(key === obj)) : [...shownTranslationLanguages, key]
         setShownTranslationLanguages(newShownTranslationLanguages);
+        localStorage.setItem('shownTranslationLanguages', JSON.stringify(newShownTranslationLanguages))
         setOpen(false);
     }
 
@@ -132,6 +134,12 @@ const ListTranslations = ({ nodeObject, setNodeObject, shownTranslationLanguages
         setMainLangRenderedTranslations(mainLangTags);
         setRenderedTranslations(otherLangTags);
     }, [nodeObject, shownTranslationLanguages]);
+
+    useEffect(() => {
+        // get shown translation languages from local storage
+        const shownTranslationLanguages = JSON.parse(localStorage.getItem('shownTranslationLanguages')) || [];
+        setShownTranslationLanguages(shownTranslationLanguages);
+    }, [])
 
     // Helper function used for changing state
     const changeData = (key, index, value) => {
