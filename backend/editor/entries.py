@@ -247,7 +247,7 @@ class TaxonomyGraph:
         """
         query = ["""MATCH (n:PROJECT)\n"""]
         params = {}
-        if status != None:
+        if status is not None:
             # List only projects matching status
             query.append("""WHERE n.status = $status\n""")
             params["status"] = status
