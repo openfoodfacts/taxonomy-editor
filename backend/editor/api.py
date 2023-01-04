@@ -5,13 +5,17 @@ import logging
 import os
 
 # Required imports
-# ----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------------#
 from datetime import datetime
+from enum import Enum
+from typing import Optional
 
 # FastAPI
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 # DB helper imports
 from . import graph_db
@@ -23,7 +27,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 # Data model imports
 from .models import Footer, Header
 
-# ----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------------#
 
 # Setup logs
 logging.basicConfig(
@@ -97,6 +101,31 @@ def file_cleanup(filepath):
         raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
 
 
+class StatusFilter(str, Enum):
+    """
+    Enum for project status filter
+    """
+
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    reformatted_errors = []
+    for pydantic_error in exc.errors():
+        # Add custom message for status filter
+        if pydantic_error["loc"] == ("query", "status"):
+            pydantic_error[
+                "msg"
+            ] = "Status filter must be one of: OPEN, CLOSED or should be omitted"
+        reformatted_errors.append(pydantic_error)
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=jsonable_encoder({"detail": "Invalid request", "errors": reformatted_errors}),
+    )
+
+
 # Get methods
 
 
@@ -115,13 +144,25 @@ async def pong(response: Response):
 
 
 @app.get("/projects")
-async def list_all_projects(response: Response):
+async def list_all_projects(response: Response, status: Optional[StatusFilter] = None):
     """
-    List all open projects created in the Taxonomy Editor
+    List projects created in the Taxonomy Editor with a status filter
     """
-    # Listing all projects doesn't require a taoxnomy name or branch name
+    # Listing all projects doesn't require a taxonomy name or branch name
     taxonony = TaxonomyGraph("", "")
-    result = list(taxonony.list_existing_projects())
+    result = list(taxonony.list_projects(status))
+    return result
+
+
+@app.get("{taxonomy_name}/{branch}/set-project-status")
+async def set_project_status(
+    response: Response, branch: str, taxonomy_name: str, status: Optional[StatusFilter] = None
+):
+    """
+    Set the status of a Taxonomy Editor project
+    """
+    taxonony = TaxonomyGraph(branch, taxonomy_name)
+    result = taxonony.set_project_status(status)
     return result
 
 

@@ -152,7 +152,7 @@ class TaxonomyGraph:
         # Create a new transaction context
         with TransactionCtx():
             result = self.export_to_github(filepath)
-            self.close_project()
+            self.set_project_status(status="CLOSED")
         return result
 
     def export_to_github(self, filename):
@@ -229,31 +229,37 @@ class TaxonomyGraph:
         }
         get_current_transaction().run(query, params)
 
-    def close_project(self):
+    def set_project_status(self, status):
         """
-        Helper function to close a Taxonomy Editor project and updates project status as "CLOSED"
+        Helper function to update a Taxonomy Editor project status
         """
         query = """
             MATCH (n:PROJECT)
             WHERE n.id = $project_name
             SET n.status = $status
         """
-        params = {"project_name": self.project_name, "status": "CLOSED"}
+        params = {"project_name": self.project_name, "status": status}
         get_current_transaction().run(query, params)
 
-    def list_existing_projects(self):
+    def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
         includes number of nodes with label ERROR for each project
         """
-        query = """
-            MATCH (n:PROJECT)
-            OPTIONAL MATCH (error_node:ERRORS {{branch_name: n.branch_name, id: n.id}})
-            WHERE n.status = "OPEN"
-            RETURN n, size(error_node.errors) AS error_count
-            ORDER BY n.created_at
-        """
-        result = get_current_transaction().run(query)
+        query = [
+            "MATCH (n:PROJECT)",
+            "OPTIONAL MATCH (error_node:ERRORS {{branch_name: n.branch_name, id: n.id}})",
+        ]
+        params = {}
+        if status is not None:
+            # List only projects matching status
+            query.append("WHERE n.status = $status")
+            params["status"] = status
+        query.extend([
+            "RETURN n, size(error_node.errors) AS error_count",
+            "ORDER BY n.created_at",
+        ])
+        result = get_current_transaction().run("\n".join(query), params)
         # pack errors count in result
         result = [dict(node, errors_count=num_errors) for node, num_errors in result]
         return result

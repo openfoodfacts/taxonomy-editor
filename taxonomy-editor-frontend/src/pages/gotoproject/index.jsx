@@ -10,7 +10,7 @@ import { toSnakeCase, toTitleCase } from "../../components/interConvertNames";
 
 const GotoProject = () => {
     /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
-    const { data: incomingData, isPending, isError, __isSuccess, errorMessage } = useFetch(`${API_URL}projects`);
+    const { data: incomingData, isPending, isError, __isSuccess, errorMessage } = useFetch(`${API_URL}projects?status=OPEN`);
     const [projectData, setProjectData] = useState([]);
     const navigate = useNavigate();
 
