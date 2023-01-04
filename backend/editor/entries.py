@@ -152,7 +152,7 @@ class TaxonomyGraph:
         # Create a new transaction context
         with TransactionCtx():
             result = self.export_to_github(filepath)
-            self.close_project()
+            self.set_project_status(status="CLOSED")
         return result
 
     def export_to_github(self, filename):
@@ -229,28 +229,33 @@ class TaxonomyGraph:
         }
         get_current_transaction().run(query, params)
 
-    def close_project(self):
+    def set_project_status(self, status):
         """
-        Helper function to close a Taxonomy Editor project and updates project status as "CLOSED"
+        Helper function to update a Taxonomy Editor project status
         """
         query = """
             MATCH (n:PROJECT)
             WHERE n.id = $project_name
             SET n.status = $status
         """
-        params = {"project_name": self.project_name, "status": "CLOSED"}
+        params = {"project_name": self.project_name, "status": status}
         get_current_transaction().run(query, params)
 
-    def list_existing_projects(self):
+    def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
         """
-        query = """
-            MATCH (n:PROJECT)
-            WHERE n.status = "OPEN" RETURN n
-            ORDER BY n.created_at
-        """
-        result = get_current_transaction().run(query)
+        query = ["""MATCH (n:PROJECT)\n"""]
+        params = {}
+        if status is not None:
+            # List only projects matching status
+            query.append("""WHERE n.status = $status\n""")
+            params["status"] = status
+
+        query.append("""RETURN n\n""")
+        query.append("""ORDER BY n.created_at\n""")  # Sort by creation date
+
+        result = get_current_transaction().run("".join(query), params)
         return result
 
     def add_node_to_end(self, label, entry):
