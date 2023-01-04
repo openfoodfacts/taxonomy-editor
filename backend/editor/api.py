@@ -12,8 +12,10 @@ from typing import Optional
 
 # FastAPI
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 # DB helper imports
 from . import graph_db
@@ -106,7 +108,22 @@ class StatusFilter(str, Enum):
 
     OPEN = "OPEN"
     CLOSED = "CLOSED"
-    ALL = "ALL"
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    reformatted_errors = []
+    for pydantic_error in exc.errors():
+        # Add custom message for status filter
+        if pydantic_error["loc"] == ("query", "status"):
+            pydantic_error[
+                "msg"
+            ] = "Status filter must be one of: OPEN, CLOSED or should be omitted"
+        reformatted_errors.append(pydantic_error)
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=jsonable_encoder({"detail": "Invalid request", "errors": reformatted_errors}),
+    )
 
 
 # Get methods
@@ -131,10 +148,6 @@ async def list_all_projects(response: Response, status: Optional[StatusFilter] =
     """
     List projects created in the Taxonomy Editor with a status filter
     """
-    # Check if status filter is valid
-    if status not in ["OPEN", "CLOSED", None]:
-        raise HTTPException(status_code=400, detail="Invalid status filter")
-
     # Listing all projects doesn't require a taxonomy name or branch name
     taxonony = TaxonomyGraph("", "")
     result = list(taxonony.list_projects(status))
@@ -148,10 +161,6 @@ async def set_project_status(
     """
     Set the status of a Taxonomy Editor project
     """
-    # Check if status filter is valid
-    if status not in ["OPEN", "CLOSED", None]:
-        raise HTTPException(status_code=400, detail="Invalid status filter")
-
     taxonony = TaxonomyGraph(branch, taxonomy_name)
     result = taxonony.set_project_status(status)
     return result
