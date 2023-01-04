@@ -248,20 +248,22 @@ class TaxonomyGraph:
         """
         query = [
             "MATCH (n:PROJECT)",
-            "OPTIONAL MATCH (error_node:ERRORS {{branch_name: n.branch_name, id: n.id}})",
+            "OPTIONAL MATCH (error_node:ERRORS {branch_name: n.branch_name, id: n.id})",
         ]
         params = {}
         if status is not None:
             # List only projects matching status
             query.append("WHERE n.status = $status")
             params["status"] = status
-        query.extend([
-            "RETURN n, size(error_node.errors) AS error_count",
-            "ORDER BY n.created_at",
-        ])
+        query.extend(
+            [
+                "RETURN n, size(error_node.errors) AS error_count",
+                "ORDER BY n.created_at",
+            ]
+        )
         result = get_current_transaction().run("\n".join(query), params)
         # pack errors count in result
-        result = [dict(node, errors_count=num_errors) for node, num_errors in result]
+        result = [[dict(node, errors_count=num_errors)] for node, num_errors in result]
         return result
 
     def add_node_to_end(self, label, entry):
