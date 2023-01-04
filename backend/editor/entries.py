@@ -244,18 +244,26 @@ class TaxonomyGraph:
     def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
+        includes number of nodes with label ERROR for each project
         """
-        query = ["""MATCH (n:PROJECT)\n"""]
+        query = [
+            "MATCH (n:PROJECT)",
+            "OPTIONAL MATCH (error_node:ERRORS {branch_name: n.branch_name, id: n.id})",
+        ]
         params = {}
         if status is not None:
             # List only projects matching status
-            query.append("""WHERE n.status = $status\n""")
+            query.append("WHERE n.status = $status")
             params["status"] = status
-
-        query.append("""RETURN n\n""")
-        query.append("""ORDER BY n.created_at\n""")  # Sort by creation date
-
-        result = get_current_transaction().run("".join(query), params)
+        query.extend(
+            [
+                "RETURN n, size(error_node.errors) AS error_count",
+                "ORDER BY n.created_at",
+            ]
+        )
+        result = get_current_transaction().run("\n".join(query), params)
+        # pack errors count in result
+        result = [[dict(node, errors_count=num_errors)] for node, num_errors in result]
         return result
 
     def add_node_to_end(self, label, entry):
@@ -347,6 +355,23 @@ class TaxonomyGraph:
             MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
         """
         result = get_current_transaction().run(query)
+        return result
+
+    def get_parsing_errors(self):
+        """
+        Helper function used for getting parsing errors in the current project
+        """
+        # During parsing of a taxonomy, all the parsing errors
+        # are stored in a separate node with the label "ERRORS"
+        # This function returns all the parsing errors
+        query = f"""
+            MATCH (
+                error_node:ERRORS
+                {{branch_name: "{self.branch_name}", id: "{self.project_name}"}}
+            )
+            RETURN error_node
+        """
+        result = get_current_transaction().run(query).data()[0]["error_node"]
         return result
 
     def get_nodes(self, label, entry):
