@@ -14,7 +14,7 @@ import { ENTER_KEYCODE } from "../../constants";
 import { greyHexCode } from "../../constants";
 
 
-const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
+const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren, setChangesMade }) => {
     const [relations, setRelations] = useState(null);
     const [newChild, setNewChild] = useState(null);
     const [newLanguageCode, setNewLanguageCode] = useState(null);
@@ -49,6 +49,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
             return duplicateData
         });
         setOpenDialog(false);
+        setChangesMade(true);
     }
 
     const handleDeleteChild = (index) => {
@@ -57,6 +58,7 @@ const ListEntryChildren = ({url, urlPrefix, setUpdateNodeChildren}) => {
         // Updated tags assigned for later use
         const tagsToBeInserted = newRelations.map(el => (el.child))
         setUpdateNodeChildren(tagsToBeInserted);
+        setChangesMade(true);
     }
 
     // Check error in fetch

@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, Snackbar, Typography, Fab } from "@mui/material";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import ListEntryParents from "./ListEntryParents";
@@ -7,6 +7,7 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getIdType } from "./createURL";
+import SaveIcon from '@mui/icons-material/Save';
 
 /**
  * Component used for rendering node information
@@ -24,6 +25,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
     const { data: node, isPending, isError, __isSuccess, errorMessage } = useFetch(url);
     const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
+    const [changesMade, setChangesMade] = useState(false); // Used to show and hide save FAB
     const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
     const [open, setOpen] = useState(false); // Used for Dialog component
 
@@ -86,6 +88,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
             })
         })).then(() => {
             setOpen(true);
+            setChangesMade(false);
         }).catch(() => {})
     }
     return ( 
@@ -95,19 +98,34 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 <Box>
                     { !!nodeObject &&
                         <>  <ListEntryParents url={url+'/parents'} urlPrefix={urlPrefix} />
-                            <ListEntryChildren url={url+'/children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
-                            <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
-                            <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
+                            <ListEntryChildren 
+                                url={url+'/children'} 
+                                urlPrefix={urlPrefix}
+                                setUpdateNodeChildren={setUpdateChildren} 
+                                setChangesMade={setChangesMade}
+                            />
+                            <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} setChangesMade={setChangesMade} />
+                            <ListAllEntryProperties 
+                                nodeObject={nodeObject} 
+                                setNodeObject={setNodeObject} 
+                                setChangesMade={setChangesMade}     
+                            /> 
+                        </> }
                 </Box> :
                 <>  <ListAllNonEntryInfo nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>
             }
             {/* Button for submitting edits */}
-            <Button
-                variant="contained"
-                onClick={handleSubmit}
-                sx={{ml: 4, mt:2, width: 130, mb: 2}}>
-                    Submit
-            </Button>
+            { changesMade &&
+                <Fab 
+                    variant="extended"
+                    onClick={handleSubmit}
+                    color="primary" 
+                    sx={{position: 'fixed', bottom: 16, left: 16}}
+                >
+                    <SaveIcon sx={{ mr: 1 }} />
+                    Save Changes
+                </Fab>
+            }
             {/* Snackbar for acknowledgment of update */}
             <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'right'}} open={open} autoHideDuration={3000} onClose={handleClose}>
                 <Alert elevation={6} variant="filled" onClose={handleClose} severity="success">

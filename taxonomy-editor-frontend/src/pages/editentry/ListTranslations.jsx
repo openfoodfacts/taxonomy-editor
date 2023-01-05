@@ -12,7 +12,7 @@ import ISO6391 from 'iso-639-1';
 /**
  * Sub-component for rendering translation of an "entry"
 */
-const ListTranslations = ({ nodeObject, setNodeObject }) => {
+const ListTranslations = ({ nodeObject, setNodeObject, setChangesMade }) => {
 
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
@@ -39,6 +39,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             return newNodeObject
         })
         setOpen(false);
+        setChangesMade(true);
     }
 
     // Used for deleting a translation language
@@ -56,6 +57,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             return newNodeObject
         })
         setOpen(false);
+        setChangesMade(true);
     }
 
     // Changes the translations to be rendered
@@ -154,6 +156,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             newNodeObject[key] = tagsToBeInserted;
             return newNodeObject 
         })
+        setChangesMade(true);
     }
 
     // Helper function for adding a translation for a LC
@@ -188,6 +191,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             newNodeObject['tags_'+key+'_uuid'].push(newUUID);
             return newNodeObject
         })
+        setChangesMade(true);
     }
 
     const handleDelete = (key, index) => {
@@ -226,6 +230,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             newNodeObject['tags_'+key+'_uuid'] = newNodeObject['tags_'+key+'_uuid'].filter(currIndex => !(currIndex === index)) 
             return newNodeObject
         })
+        setChangesMade(true);
     }
 
     return (

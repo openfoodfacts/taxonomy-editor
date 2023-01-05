@@ -2,7 +2,7 @@ import { Box, Grid, Paper, TextField, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from '@material-table/core';
 import { useEffect, useState } from "react";
 
-const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
+const ListAllEntryProperties = ({ nodeObject, setNodeObject, setChangesMade }) => {
     const [data, setData] = useState([]);
 
     // Changes the properties to be rendered
@@ -38,6 +38,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
         const newNodeObject = {...nodeObject};
         newNodeObject['preceding_lines'] = value;
         setNodeObject(newNodeObject);
+        setChangesMade(true);
     }
 
     // Helper function used for changing properties of node
@@ -47,6 +48,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             newNodeObject["prop_"+key] = value;
             return newNodeObject 
         })
+        setChangesMade(true);
     }
 
     // Helper function used for deleting properties of node
@@ -56,6 +58,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             const {[toRemove]: _, ...newNodeObject} = prevState;
             return newNodeObject
         })
+        setChangesMade(true);
     }
     
     return (
