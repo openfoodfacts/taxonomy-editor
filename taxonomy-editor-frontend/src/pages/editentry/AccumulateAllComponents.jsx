@@ -96,7 +96,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                     { !!nodeObject &&
                         <>  <ListEntryParents url={url+'/parents'} urlPrefix={urlPrefix} />
                             <ListEntryChildren url={url+'/children'} urlPrefix={urlPrefix} setUpdateNodeChildren={setUpdateChildren} />
-                            <ListTranslations nodeObject = {nodeObject} setNodeObject = {setNodeObject} /> 
+                            <ListTranslations nodeObject={nodeObject} setNodeObject={setNodeObject} /> 
                             <ListAllEntryProperties nodeObject={nodeObject} setNodeObject={setNodeObject} /> </> }
                 </Box> :
                 <>  <ListAllNonEntryInfo nodeObject={nodeObject} id={id} setNodeObject={setNodeObject} /> </>

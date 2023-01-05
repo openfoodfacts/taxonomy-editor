@@ -21,7 +21,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
     const [languageAction, setLanguageAction] = useState('invalid'); // Used for storing state of action to be performed on LC (add/show/invalid)
     const [shownTranslationLanguages, setShownTranslationLanguages] = useState([]); // Used for storing LC's that are to be shown
-    const [languageOptions, setLanguageOptions] = useState([]); // Used for storing all possible LC's
+    const [addedLanguageCodes, setAddedLanguageCodes] = useState([]); // Used for storing LC's that are added to the nodeObject
 
     // Helper functions for Dialog component
     const handleClose = () => { setOpen(false); }
@@ -119,18 +119,8 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             }
         })
 
-        const languageOptions = []
-        // All language options for add dropdown (already added languages have a 👁 icon)
-        ISO6391.getAllCodes().forEach((languageCode) => {
-            if (addedLanguageCodes.includes(languageCode)) {
-                languageOptions.push(ISO6391.getName(languageCode) + "👁️")
-            }
-            else {
-                languageOptions.push(ISO6391.getName(languageCode))
-            }
-        })
         // Set states
-        setLanguageOptions(languageOptions)
+        setAddedLanguageCodes(addedLanguageCodes);
         setMainLangRenderedTranslations(mainLangTags);
         setRenderedTranslations(otherLangTags);
     }, [nodeObject, shownTranslationLanguages]);
@@ -359,7 +349,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 </DialogContentText>
                 <Autocomplete
                     sx={{mt: 2}}
-                    options={languageOptions}
+                    options={ISO6391.getAllNames()}
                     onChange={(e,language) => {
                         if (!language) language = '';
                         if (language.includes('👁️')) language = language.slice(0,-3) // exclude the eye emoji for validation
@@ -371,6 +361,16 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                         if (isValidLanguage  && !isDuplicateLanguage) {setLanguageAction("add")}
                         else if (isValidLanguage && !isAlreadyShown && isDuplicateLanguage) {setLanguageAction("show")}
                         else {setLanguageAction("invalid")}
+                    }}
+                    renderOption={(props, option) => {
+                        const languageCode = ISO6391.getCode(option)
+                        const isAlreadyShown = addedLanguageCodes.includes(languageCode)
+                        // set color of text to green if the language is already shown
+                        return (
+                            <span {...props} style={{ color: isAlreadyShown ? 'green' : 'black' }}>
+                                {option}
+                            </span>
+                        )
                     }}
                     renderInput={(params) =>
                         <TextField
