@@ -1,3 +1,8 @@
+ifeq ($(findstring cmd.exe,$(SHELL)),cmd.exe)
+    $(error "We do not suppport using cmd.exe on Windows, please run in a 'git bash' console")
+endif
+
+# use bash everywhere !
 SHELL := /bin/bash
 ENV_FILE ?= .env
 
