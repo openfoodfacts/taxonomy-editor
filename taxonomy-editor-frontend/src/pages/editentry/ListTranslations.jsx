@@ -339,7 +339,13 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 } )
             }
             {/* Button to add language to the list of shown languages or show the language if it already exists */}
-            <Button sx={{mt: 2}} onClick={handleOpen}>Add/Show More Languages ({renderedTranslations.length - shownTranslationLanguages.length} Hidden)</Button>
+            <Button sx={{mt: 2}} onClick={handleOpen}>
+                Add/Show More Languages 
+                ({
+                    addedLanguageCodes.length - 
+                    addedLanguageCodes.filter(element => new Set(shownTranslationLanguages).has(element)).length
+                } Hidden)
+            </Button>
             {/* Dialog box for adding languages to the list of shown languages */}
             <Dialog open={openDialog} onClose={handleClose}>
                 <DialogTitle>Add or Show another language</DialogTitle>
@@ -352,7 +358,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                     options={ISO6391.getAllNames()}
                     onChange={(e,language) => {
                         if (!language) language = '';
-                        if (language.includes('👁️')) language = language.slice(0,-3) // exclude the eye emoji for validation
                         setNewLanguageCode(ISO6391.getCode(language));
                         const isValidLanguage = ISO6391.validate(ISO6391.getCode(language))
                         const isAlreadyShown = shownTranslationLanguages.includes(ISO6391.getCode(language))
