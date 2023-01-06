@@ -69,8 +69,10 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     const handleToggleTranslationVisibility = (key) => {
         const newShownTranslationLanguages = shownTranslationLanguages.includes(key) ? shownTranslationLanguages.filter(obj => !(key === obj)) : [...shownTranslationLanguages, key]
         setShownTranslationLanguages(newShownTranslationLanguages);
+        newShownTranslationLanguages.sort()
         localStorage.setItem('shownTranslationLanguages', JSON.stringify(newShownTranslationLanguages))
         setOpen(false);
+        setLanguageAction('invalid')
     }
 
     // Changes the translations to be rendered
@@ -116,6 +118,14 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                         otherLangTags.push(tobeInsertedObj);
                     }
                 }
+            }
+        })
+
+        // add shownTranslationLanguages as a tag to otherLangTags
+        shownTranslationLanguages.forEach((languageCode) => {
+            if (!addedLanguageCodes.includes(languageCode)) {
+                otherLangTags.push({'languageCode' : languageCode, 'tags' : []})
+                addedLanguageCodes.push(languageCode)
             }
         })
 
@@ -182,6 +192,10 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     // Helper function for adding a translation for a LC
     const handleAdd = (key) => {
+        // if key does not exist in nodeObject, add it by addTranslation
+        if (!Object.keys(nodeObject).includes('tags_' + key)) {
+            handleAddTranslation(key);
+        }
         let tagsToBeInserted = [];
         const newUUID = Math.random().toString();
         // State of "MainLangRenderedTranslations" is updated according to format used
@@ -373,7 +387,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                         // set color of text to green if the language is already shown
                         return (
                             <span {...props} style={{ color: isAlreadyShown ? 'green' : 'black' }}>
-                                {option}
+                                {isAlreadyShown ? <b>{option}</b> : option}
                             </span>
                         )
                     }}
