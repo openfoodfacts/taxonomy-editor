@@ -31,6 +31,7 @@ const GotoProject = () => {
           taxonomyName: toTitleCase(projectNode["taxonomy_name"]),
           branchName: projectNode["branch_name"],
           description: projectNode["description"],
+          errors_count: projectNode["errors_count"],
         });
       });
     }
@@ -65,7 +66,22 @@ const GotoProject = () => {
             { title: "Project", field: "projectName" },
             { title: "Taxonomy", field: "taxonomyName" },
             { title: "Branch", field: "branchName" },
-            { title: "Description", field: "description", width: "15vw" },
+            { title: "Description", field: "description", width: "10vw" },
+            {
+              title: "Errors",
+              field: "errors_count",
+              render: (rowData) => {
+                return (
+                  <Typography
+                    color={rowData["errors_count"] > 0 ? "error" : "success"}
+                  >
+                    {rowData["errors_count"] > 0
+                      ? rowData["errors_count"] + " errors"
+                      : "✅"}
+                  </Typography>
+                );
+              },
+            },
           ]}
           options={{
             actionsColumnIndex: -1,
