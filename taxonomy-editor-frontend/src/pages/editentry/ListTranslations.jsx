@@ -17,15 +17,16 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
-    const [openDialog, setOpen] = useState(false); // Used for Dialog component
+    const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
     const [languageAction, setLanguageAction] = useState('invalid'); // Used for storing state of action to be performed on LC (add/show/invalid)
     const [shownTranslationLanguages, setShownTranslationLanguages] = useState([]); // Used for storing LC's that are to be shown
     const [addedLanguageCodes, setAddedLanguageCodes] = useState([]); // Used for storing LC's that are added to the nodeObject
+    const translationVisibilityPreferenceKey = "shownTranslationLanguages" // Used for storing LC's that are to be shown in localStorage
 
     // Helper functions for Dialog component
-    const handleClose = () => { setOpen(false); }
-    const handleOpen = () => { setOpen(true); }
+    const handleClose = () => { setOpenDialog(false); }
+    const handleOpen = () => { setOpenDialog(true); }
 
     // Used for addition of a translation language
     const handleAddTranslation = (key) => {
@@ -45,7 +46,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             newNodeObject[uuidKey] = [Math.random().toString()];
             return newNodeObject
         })
-        setOpen(false);
+        setOpenDialog(false);
     }
 
     // Used for deleting a translation language
@@ -62,16 +63,15 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             delete newNodeObject[uuidKey];
             return newNodeObject
         })
-        setOpen(false);
+        setOpenDialog(false);
     }
 
     // Used for toggling visibility of a translation language
     const handleToggleTranslationVisibility = (key) => {
         const newShownTranslationLanguages = shownTranslationLanguages.includes(key) ? shownTranslationLanguages.filter(obj => !(key === obj)) : [...shownTranslationLanguages, key]
         setShownTranslationLanguages(newShownTranslationLanguages);
-        newShownTranslationLanguages.sort()
-        localStorage.setItem('shownTranslationLanguages', JSON.stringify(newShownTranslationLanguages))
-        setOpen(false);
+        localStorage.setItem(translationVisibilityPreferenceKey, JSON.stringify(newShownTranslationLanguages))
+        setOpenDialog(false);
         setLanguageAction('invalid')
     }
 
@@ -137,8 +137,12 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     useEffect(() => {
         // get shown translation languages from local storage
-        const shownTranslationLanguages = JSON.parse(localStorage.getItem('shownTranslationLanguages')) || [];
-        setShownTranslationLanguages(shownTranslationLanguages);
+        try{
+            const shownTranslationLanguages = JSON.parse(localStorage.getItem(translationVisibilityPreferenceKey)) || []; 
+            setShownTranslationLanguages(shownTranslationLanguages);
+        } catch (e) {
+            console.log(e)
+        }
     }, [])
 
     // Helper function used for changing state
@@ -357,7 +361,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 Add/Show More Languages 
                 ({
                     addedLanguageCodes.length - 
-                    addedLanguageCodes.filter(element => new Set(shownTranslationLanguages).has(element)).length
+                    addedLanguageCodes.filter(languageCodeItem => shownTranslationLanguages.includes(languageCodeItem)).length
                 } Hidden)
             </Button>
             {/* Dialog box for adding languages to the list of shown languages */}
@@ -383,11 +387,11 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                     }}
                     renderOption={(props, option) => {
                         const languageCode = ISO6391.getCode(option)
-                        const isAlreadyShown = addedLanguageCodes.includes(languageCode)
+                        const presentInObjectNode = addedLanguageCodes.includes(languageCode)
                         // set color of text to green if the language is already shown
                         return (
-                            <span {...props} style={{ color: isAlreadyShown ? 'green' : 'black' }}>
-                                {isAlreadyShown ? <b>{option}</b> : option}
+                            <span {...props} style={{ color: presentInObjectNode ? 'green' : 'black' }}>
+                                {presentInObjectNode ? <b>{option}</b> : option}
                             </span>
                         )
                     }}
