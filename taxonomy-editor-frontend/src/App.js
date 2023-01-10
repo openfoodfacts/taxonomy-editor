@@ -51,6 +51,10 @@ function App() {
               path=":taxonomyName/:branchName/search"
               element={<SearchNode setDisplayedPages={setDisplayedPages} />}
             />
+            <Route
+              path=":taxonomyName/:branchName/errors"
+              element={<div>Errors</div>}
+            />
           </Routes>
         </div>
       </Router>

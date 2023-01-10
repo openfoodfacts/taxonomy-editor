@@ -35,6 +35,7 @@ const ExportTaxonomy = ({ setDisplayedPages }) => {
     setDisplayedPages([
       { url: urlPrefix + "entry", translationKey: "Nodes" },
       { url: urlPrefix + "search", translationKey: "Search" },
+      { url: urlPrefix + "errors", translationKey: "Errors" },
       { url: urlPrefix + "export", translationKey: "Export" },
     ]);
   }, [urlPrefix, setDisplayedPages]);
