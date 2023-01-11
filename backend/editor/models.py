@@ -20,10 +20,15 @@ class Footer(Marginal):
 
 # Models for FastAPI
 
+class CommonParameters:
+    branch = "branch"
+    taxonomy_name = "taxonomy_name"
+
+parameters = CommonParameters()
 
 class ImportFromGithubParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
+    parameters.parameters.branch: str
+    parameters.parameters.taxonomy_name: str
 
 
 class ImportFromGithubResponse(BaseModel):
@@ -31,13 +36,13 @@ class ImportFromGithubResponse(BaseModel):
 
 
 class CreateNodeParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
+    parameters.parameters.branch: str
+    parameters.parameters.taxonomy_name: str
 
 
 class EditEntryParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
+    parameters.branch: str
+    parameters.taxonomy_name: str
     entry: str
 
 
@@ -46,8 +51,8 @@ class EditEntryResponse(BaseModel):
 
 
 class EditChildrenParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
+    parameters.branch: str
+    parameters.taxonomy_name: str
     entry: str
 
 
@@ -56,8 +61,8 @@ class EditChildrenResponse(BaseModel):
 
 
 class EditSynonymParameters(BaseModel):
-    branch: str
-    taxonomy_name: str
+    parameters.branch: str
+    parameters.taxonomy_name: str
     entry: str
 
 
@@ -67,8 +72,8 @@ class EditSynonymResponse(BaseModel):
 
 class EditHeaderParameters(BaseModel):
     incoming_data: Header
-    branch: str
-    taxonomy_name: str
+    parameters.branch: str
+    parameters.taxonomy_name: str
 
 
 class EditHeaderResponse(BaseModel):
@@ -77,8 +82,8 @@ class EditHeaderResponse(BaseModel):
 
 class EditFooterParameters(BaseModel):
     incoming_data: Footer
-    branch: str
-    taxonomy_name: str
+    parameters.branch: str
+    parameters.taxonomy_name: str
 
 
 class EditFooterResponse(BaseModel):
