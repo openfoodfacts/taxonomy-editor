@@ -20,11 +20,14 @@ class Footer(Marginal):
 
 # Models for FastAPI
 
+
 class CommonParameters:
     branch = "branch"
     taxonomy_name = "taxonomy_name"
 
+
 parameters = CommonParameters()
+
 
 class ImportFromGithubParameters(BaseModel):
     parameters.parameters.branch: str
