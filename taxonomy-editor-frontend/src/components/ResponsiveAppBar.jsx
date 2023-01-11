@@ -11,13 +11,12 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
-import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from "@mui/icons-material/Settings";
 import logo from "../assets/logosmall.jpg";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const ResponsiveAppBar = ({displayedPages}) => {
-
+const ResponsiveAppBar = ({ displayedPages }) => {
   const { t } = useTranslation();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
@@ -30,7 +29,7 @@ const ResponsiveAppBar = ({displayedPages}) => {
   };
 
   return (
-    <AppBar position="sticky" sx={{background: '#ff8714'}} >
+    <AppBar position="sticky" sx={{ background: "#ff8714" }}>
       <Container maxWidth={null}>
         <Toolbar disableGutters>
           {/* Mobile content */}
@@ -108,64 +107,71 @@ const ResponsiveAppBar = ({displayedPages}) => {
               display: { xs: "none", md: "flex" },
               flexDirection: "row",
               alignItems: "center",
-              width: '100%',
-              justifyContent: 'space-between'
+              width: "100%",
+              justifyContent: "space-between",
             }}
           >
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              flexDirection: "row",
-              alignItems: "baseline",
-            }}
-          >
-            <MuiLink
-              sx={{ mr: 2, display: "flex", alignSelf: 'center' }}
-              href="https://world.openfoodfacts.org/"
-              target="_blank"
-            >
-              <img
-                src={logo}
-                width="50px"
-                height="50px"
-                alt="OpenFoodFacts logo"
-              />
-            </MuiLink>
-            <Typography
-              variant="h6"
-              noWrap
-              component={Link}
-              to="/"
+            <Box
               sx={{
-                mr: 2,
-                display: "flex",
-                alignSelf : 'center',
-                fontFamily: "Plus Jakarta Sans",
-                fontWeight: 1000,
-                letterSpacing: ".1rem",
-                color: "inherit",
-                textDecoration: "none",
+                display: { xs: "none", md: "flex" },
+                flexDirection: "row",
+                alignItems: "baseline",
               }}
             >
-              Taxonomy Editor
-            </Typography>
-
-            {displayedPages.map((page) =>
-            page.url ? (
-                <Button
-                color="inherit"
-                key={page.url}
-                onClick={handleCloseNavMenu}
-                sx={{ fontFamily: "Plus Jakarta Sans", my: 2, textTransform: "none" }}
+              <MuiLink
+                sx={{ mr: 2, display: "flex", alignSelf: "center" }}
+                href="https://world.openfoodfacts.org/"
+                target="_blank"
+              >
+                <img
+                  src={logo}
+                  width="50px"
+                  height="50px"
+                  alt="OpenFoodFacts logo"
+                />
+              </MuiLink>
+              <Typography
+                variant="h6"
+                noWrap
                 component={Link}
-                to={`/${page.url}`}
-                >
-                {page.url === 'settings' ? <SettingsIcon /> : t(page.translationKey)}
-                </Button>
-            ) : null
-            )}
+                to="/"
+                sx={{
+                  mr: 2,
+                  display: "flex",
+                  alignSelf: "center",
+                  fontFamily: "Plus Jakarta Sans",
+                  fontWeight: 1000,
+                  letterSpacing: ".1rem",
+                  color: "inherit",
+                  textDecoration: "none",
+                }}
+              >
+                Taxonomy Editor
+              </Typography>
 
-          </Box>
+              {displayedPages.map((page) =>
+                page.url ? (
+                  <Button
+                    color="inherit"
+                    key={page.url}
+                    onClick={handleCloseNavMenu}
+                    sx={{
+                      fontFamily: "Plus Jakarta Sans",
+                      my: 2,
+                      textTransform: "none",
+                    }}
+                    component={Link}
+                    to={`/${page.url}`}
+                  >
+                    {page.url === "settings" ? (
+                      <SettingsIcon />
+                    ) : (
+                      t(page.translationKey)
+                    )}
+                  </Button>
+                ) : null
+              )}
+            </Box>
           </Box>
         </Toolbar>
       </Container>

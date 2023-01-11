@@ -3,10 +3,12 @@
 This is the main user interface developed in React, which works in conjunction with the Taxonomy Editor API.
 
 ## Requirements
+
 - [Node](https://nodejs.org/en/)
 - [npm](https://www.npmjs.com/)
 
 ## Libraries
+
 - [React](https://reactjs.org/)
 - [Material-UI](https://mui.com/)
 - [iso-639-1](https://www.npmjs.com/package/iso-639-1)
