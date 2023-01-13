@@ -6,6 +6,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ISO6391 from 'iso-639-1';
 
@@ -19,6 +21,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     const [openDialog, setOpen] = useState(false); // Used for Dialog component
     const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
     const [isValidLanguageCode, setisValidLanguageCode] = useState(false); // Used for validating a new LC
+    const [expandedLanguages, setExpandedLanguages] = useState([])
 
     // Helper functions for Dialog component
     const handleClose = () => { setOpen(false); }
@@ -57,6 +60,15 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         })
         setOpen(false);
     }
+
+    const handleToggleExpand = (newLanguageCode) => {
+        if (expandedLanguages.includes(newLanguageCode)) {
+           setExpandedLanguages(prev => prev.filter(languageCodeItem => languageCodeItem !== newLanguageCode))
+        } else {
+           const newExpandedLanguages = [...expandedLanguages, newLanguageCode]
+           setExpandedLanguages(newExpandedLanguages)
+        }
+     }
 
     // Changes the translations to be rendered
     // Dependent on changes occuring in "nodeObject"
@@ -287,6 +299,9 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                 <IconButton onClick={() => handleDeleteTranslation(lang)}>
                                     <DeleteOutlineIcon />
                                 </IconButton>
+                                <IconButton onClick={() => handleToggleExpand(lang)}>
+                                    { expandedLanguages.includes(lang) ? <VisibilityIcon /> : <VisibilityOffIcon /> }
+                                </IconButton>
                             </Stack>
                             {/* Render all related tags */}
                             {
@@ -294,6 +309,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                     const index = tagObj['index']
                                     const tag = tagObj['tag']
                                     return (
+                                        expandedLanguages.includes(lang) &&
                                         <Stack key={index} sx={{ml: 2}} direction="row" alignItems="center">
                                             <TextField 
                                                 size="small" 
