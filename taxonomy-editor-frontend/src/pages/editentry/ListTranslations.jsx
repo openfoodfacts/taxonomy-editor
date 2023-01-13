@@ -46,16 +46,14 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     // Used for deleting a translation language
     const handleDeleteTranslation = (key) => {
-        const newRenderedTranslations = renderedTranslations.filter(obj => !(key === obj.languageCode))
-        setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
         const uuidKey = key + '_uuid' // Format for the uuid
         
         // Make changes to the parent NodeObject
         setNodeObject(prevState => {
             const newNodeObject = {...prevState};
-            delete newNodeObject[key];
-            delete newNodeObject[uuidKey];
+            newNodeObject[key] = [];
+            newNodeObject[uuidKey] = [];
             return newNodeObject
         })
         setOpen(false);
@@ -170,6 +168,9 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
     // Helper function for adding a translation for a LC
     const handleAdd = (key) => {
+        if (!expandedLanguages.includes(key)) {
+            handleToggleExpand(key)
+        }
         let tagsToBeInserted = [];
         const newUUID = Math.random().toString();
         // State of "MainLangRenderedTranslations" is updated according to format used
@@ -305,6 +306,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                             </Stack>
                             {/* Render all related tags */}
                             {
+                                tagValue.length > 0 ?
                                 tagValue.map((tagObj) => {
                                     const index = tagObj['index']
                                     const tag = tagObj['tag']
@@ -324,7 +326,10 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                             </IconButton>
                                         </Stack>
                                     )
-                                })
+                                }) :
+                                <Button sx={{ml: 2}} onClick={() => handleAdd(lang)}>
+                                    Add a Translation
+                                </Button>
                             }
                         </Box>
                     )
