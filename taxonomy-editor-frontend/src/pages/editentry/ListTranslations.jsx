@@ -1,13 +1,16 @@
-import { Typography, TextField, Stack, Button, IconButton, Box, Autocomplete } from "@mui/material";
+import { Typography, TextField, Stack, Button, IconButton, Box, Autocomplete, OutlinedInput, InputLabel, MenuItem, FormControl, Select } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useEffect, useState } from "react";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ISO6391 from 'iso-639-1';
+
+const translationVisibilityPreferenceKey = 'shownTranslationLanguages';
 
 /**
  * Sub-component for rendering translation of an "entry"
@@ -17,32 +20,62 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     const [renderedTranslations, setRenderedTranslations] = useState([]) // Stores state of all tags
     const [mainLangRenderedTranslations, setMainLangRenderedTranslations] = useState([]) // Stores state of main language's tags
     const [openDialog, setOpen] = useState(false); // Used for Dialog component
-    const [newLanguageCode, setNewLanguageCode] = useState(''); // Used for storing new LC from Dialog
-    const [isValidLanguageCode, setisValidLanguageCode] = useState(false); // Used for validating a new LC
+    const [addedLanguageCodes, setAddedLanguageCodes] = useState([]); // Used for storing LC's that are added
+    const [shownTranslationLanguages, setShownTranslationLanguages] = useState([]); // Used for storing LC's that are to be shown
+    const [newLanguageCodes, setNewLanguageCodes] = useState([]); // Used for storing LC's that are to be added to the list of shown LC's 
 
     // Helper functions for Dialog component
     const handleClose = () => { setOpen(false); }
     const handleOpen = () => { setOpen(true); }
 
     // Used for addition of a translation language
-    const handleAddTranslation = (key) => {
-        const newRenderedTranslations = [...renderedTranslations, {'languageCode' : key, 'tags' : []}]
-        setRenderedTranslations(newRenderedTranslations);
-        key = 'tags_' + key; // LC must have a prefix "tags_"
-        const uuidKey = key + '_uuid' // Format for the uuid
+    // If language is shown in user preferences, but not present in objectNode
+    // then add it to objectNode, but don't toggle it's visibility
+    const handleAddLanguages = (languagesToAdd, toggleVisibility) => {
+        if (toggleVisibility) {
+            toggleLanguagesVisibility(languagesToAdd);
+        }
+        languagesToAdd.forEach((key) => {
+            const newRenderedTranslations = [...renderedTranslations, {'languageCode' : key, 'tags' : []}]
+            setRenderedTranslations(newRenderedTranslations);
+            key = 'tags_' + key; // LC must have a prefix "tags_"
+            const uuidKey = key + '_uuid' // Format for the uuid
 
-        // Make changes to the parent NodeObject
-        setNodeObject(prevState => {
-            const newNodeObject = {...prevState};
-            newNodeObject[key] = [];
-            newNodeObject[uuidKey] = [Math.random().toString()];
-            return newNodeObject
+            // Make changes to the parent NodeObject
+            setNodeObject(prevState => {
+                const newNodeObject = {...prevState};
+                newNodeObject[key] = [];
+                newNodeObject[uuidKey] = [Math.random().toString()];
+                return newNodeObject
+            })
         })
         setOpen(false);
     }
 
+    const toggleLanguagesVisibility = (languageCodes) => {
+        let newShownTranslationLanguages = shownTranslationLanguages;
+        languageCodes.forEach((key) => {
+            if (newShownTranslationLanguages.includes(key)) {
+                newShownTranslationLanguages = newShownTranslationLanguages.filter(obj => (key !== obj))
+            } else {
+                newShownTranslationLanguages = [...newShownTranslationLanguages, key]
+            }
+        })
+        setShownTranslationLanguages(newShownTranslationLanguages);
+        localStorage.setItem(translationVisibilityPreferenceKey, JSON.stringify(newShownTranslationLanguages));
+    }
+
+    const handleLanguagesChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setNewLanguageCodes(
+          typeof value === 'string' ? value.split(',') : value,
+        );
+    };
+
     // Used for deleting a translation language
-    const handleDeleteTranslation = (key) => {
+    const handleDeleteLanguage = (key) => {
         const newRenderedTranslations = renderedTranslations.filter(obj => !(key === obj.languageCode))
         setRenderedTranslations(newRenderedTranslations);
         key = 'tags_' + key; // LC must have a prefix "tags_"
@@ -61,10 +94,11 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     // Changes the translations to be rendered
     // Dependent on changes occuring in "nodeObject"
     useEffect(() => {
-
         // Main langauge tags are considered separately, since they have to be rendered first
         const mainLangTags = []
         const otherLangTags = []
+        // all language codes in the nodeObject
+        const allLanguageCodes = []
         Object.keys(nodeObject).forEach((key) => {
         
             // Get all tags and its corresponding language code
@@ -88,6 +122,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                     else {
                         // Slice the language code
                         const languageCode = key.split('_').slice(1,-1)[0]
+                        allLanguageCodes.push(languageCode)
                         // General format for storing tags for different lc's
                         const tobeInsertedObj = {'languageCode' : languageCode, 'tags' : []}
                         const tagsKey = key.split('_').slice(0,-1).join('_')
@@ -102,10 +137,36 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                 }
             }
         })
+
+        allLanguageCodes.push(nodeObject.main_language);
         // Set states
         setMainLangRenderedTranslations(mainLangTags);
         setRenderedTranslations(otherLangTags);
-    }, [nodeObject]);
+        setAddedLanguageCodes(allLanguageCodes);
+    }, [nodeObject, shownTranslationLanguages]);
+
+    useEffect(() => {
+        try {
+            const shownTranslationLanguages = JSON.parse(localStorage.getItem(translationVisibilityPreferenceKey)) || [];
+            setShownTranslationLanguages(shownTranslationLanguages);
+            shownTranslationLanguages.forEach((key) => {
+                // if the language is not already added, add it
+                Object.keys(nodeObject).forEach((nodeKey) => {
+                    if (nodeKey.startsWith('tags') && !nodeKey.includes('ids') && !nodeKey.includes('str')) {
+                        if (nodeKey.endsWith('uuid')) {
+                            const languageCode = nodeKey.split('_').slice(1,-1)[0]
+                            if (languageCode === key) {
+                                const newRenderedTranslations = [...renderedTranslations, {'languageCode' : key, 'tags' : []}]
+                                setRenderedTranslations(newRenderedTranslations);
+                            }
+                        }
+                    }
+                })
+            })
+        } catch (e) {
+            console.log(e);
+        }
+    }, [])
 
     // Helper function used for changing state
     const changeData = (key, index, value) => {
@@ -281,19 +342,27 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                 <Typography variant="h6">
                                     {ISO6391.getName(lang)}
                                 </Typography>
-                                <IconButton sx={{ml: 1}} onClick={() => handleAdd(lang)}>
-                                    <AddBoxIcon />
-                                </IconButton>
-                                <IconButton onClick={() => handleDeleteTranslation(lang)}>
+                                {
+                                    tagValue.length > 0 &&
+                                    <IconButton sx={{ml: 1}} onClick={() => handleAdd(lang)}>
+                                        <AddBoxIcon />
+                                    </IconButton>
+                                }
+                                <IconButton onClick={() => handleDeleteLanguage(lang)}>
                                     <DeleteOutlineIcon />
+                                </IconButton>
+                                <IconButton onClick={() => toggleLanguagesVisibility([lang])}>
+                                    {shownTranslationLanguages.includes(lang) ? <VisibilityIcon /> : <VisibilityOffIcon />}
                                 </IconButton>
                             </Stack>
                             {/* Render all related tags */}
                             {
+                                tagValue.length > 0 ?
                                 tagValue.map((tagObj) => {
                                     const index = tagObj['index']
                                     const tag = tagObj['tag']
                                     return (
+                                        shownTranslationLanguages.includes(lang) &&
                                         <Stack key={index} sx={{ml: 2}} direction="row" alignItems="center">
                                             <TextField 
                                                 size="small" 
@@ -308,7 +377,11 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                                             </IconButton>
                                         </Stack>
                                     )
-                                })
+                                }) :
+                                // add a translation text button
+                                <Button sx={{ml: 2}} onClick={() => handleAdd(lang)}>
+                                    Add a translation
+                                </Button>
                             }
                         </Box>
                     )
@@ -318,32 +391,33 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             <Dialog open={openDialog} onClose={handleClose}>
                 <DialogTitle>Add a language</DialogTitle>
                 <DialogContent>
-                <DialogContentText>
-                    Enter the two letter language code for the language to be added.
-                </DialogContentText>
-                <Autocomplete
-                    sx={{mt: 2}}
-                    options={ISO6391.getAllNames()}
-                    onChange={(e,language) => {
-                        if (!language) language = '';
-                        setNewLanguageCode(ISO6391.getCode(language));
-                        const isValidLanguage = ISO6391.validate(ISO6391.getCode(language))
-                        const isDuplicateLanguage = renderedTranslations.some(el => (el.languageCode === ISO6391.getCode(language))) || 
-                                                nodeObject.main_language === ISO6391.getCode(language)
-                        if (isValidLanguage && !isDuplicateLanguage) {setisValidLanguageCode(true)}
-                        else {setisValidLanguageCode(false)}
-                    }}
-                    renderInput={(params) => 
-                        <TextField
-                            error={!isValidLanguageCode} {...params} label="Languages" 
-                        />}
-                />
+                <FormControl sx={{ m: 1, width: 500 }}>
+                    <InputLabel id="language-select-label">Language</InputLabel>
+                    <Select
+                        labelId="language-select-label"
+                        id="language-select"
+                        multiple
+                        value={newLanguageCodes}
+                        onChange={handleLanguagesChange}
+                        input={<OutlinedInput label="Languages" />}
+                    >
+                        {ISO6391.getAllCodes().filter((code) => {
+                            return !addedLanguageCodes.includes(code) && code !== nodeObject.main_language
+                        }).map((code) => {
+                            return (
+                                <MenuItem key={code} value={code}>
+                                    {ISO6391.getName(code)}
+                                </MenuItem>
+                            )
+                        })}
+                    </Select>
+                </FormControl>
                 </DialogContent>
                 <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>
                 <Button 
-                    disabled={!isValidLanguageCode}
-                    onClick={() => {handleAddTranslation(newLanguageCode)}}>
+                    disabled={!newLanguageCodes}
+                    onClick={() => {handleAddLanguages(newLanguageCodes, true)}}>
                         Add
                 </Button>
                 </DialogActions>
