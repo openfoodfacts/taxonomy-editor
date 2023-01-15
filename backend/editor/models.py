@@ -20,6 +20,9 @@ class Footer(Marginal):
 
 # Models for FastAPI
 
+class Entry:
+    result: []
+
 
 class CommonParameters:
     branch = "branch"
@@ -50,7 +53,7 @@ class EditEntryParameters(BaseModel):
 
 
 class EditEntryResponse(BaseModel):
-    result = []
+    result : list[Entry] = Query(default=[]) 
 
 
 class EditChildrenParameters(BaseModel):
