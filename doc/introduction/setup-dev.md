@@ -1,5 +1,8 @@
 # Setup a dev environment
 
+- [frontend doc](../../taxonomy-editor-frontend/README.md)
+- [backend doc](../../backend/README.md)
+
 ## Using Docker
 
 Docker is the easiest way to install the Taxonomy Editor, play with it, and even modify the code.
