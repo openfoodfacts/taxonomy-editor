@@ -17,6 +17,14 @@ This is the main user interface developed in React, which works in conjunction w
 
 See [this guide](../doc/introduction/setup-dev.md) for more information.
 
+For frontend code formatting, we added [Prettier and Husky](https://prettier.io/docs/en/precommit.html), these tools will format your files on every commit. In case you want to use them you need to locally install the frontend dependencies and have [node and npm](https://nodejs.org/es/) in you computer. 
+
+
+```bash
+cd taxonomy-editor-frontend
+npm i
+```
+
 ## Check it!
 
 The frontend should be available at the URL `http://ui.taxonomy.localhost:8091`.
