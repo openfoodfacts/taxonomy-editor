@@ -48,7 +48,9 @@ class EditEntryParameters(CommonParameters):
 
 
 class EditEntryResponse(BaseModel):
-    result: list[Entry] = Query(default=[])
+    result: list[Entry] = Query(
+        default=[], title="Result of edited entry", description="Returns a list of Entry objects"
+    )
 
 
 class EditChildrenParameters(CommonParameters):
