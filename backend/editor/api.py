@@ -35,6 +35,8 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+log = logging.getLogger(__name__)
+
 app = FastAPI(title="Open Food Facts Taxonomy Editor API")
 
 # Allow anyone to call the API from their own apps
@@ -73,9 +75,9 @@ async def shutdown():
 
 @app.middleware("http")
 async def initialize_neo4j_transactions(request: Request, call_next):
-    with graph_db.TransactionCtx():
+    async with graph_db.TransactionCtx():
         response = await call_next(request)
-    return response
+        return response
 
 
 # Helper methods
@@ -97,8 +99,8 @@ def file_cleanup(filepath):
     """
     try:
         os.remove(filepath)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion") from e
 
 
 class StatusFilter(str, Enum):
@@ -149,8 +151,8 @@ async def list_all_projects(response: Response, status: Optional[StatusFilter] =
     List projects created in the Taxonomy Editor with a status filter
     """
     # Listing all projects doesn't require a taxonomy name or branch name
-    taxonony = TaxonomyGraph("", "")
-    result = list(taxonony.list_projects(status))
+    taxonomy = TaxonomyGraph("", "")
+    result = taxonomy.list_projects(status)
     return result
 
 
@@ -161,8 +163,8 @@ async def set_project_status(
     """
     Set the status of a Taxonomy Editor project
     """
-    taxonony = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonony.set_project_status(status)
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = await taxonomy.set_project_status(status)
     return result
 
 
@@ -172,8 +174,7 @@ async def find_all_nodes(response: Response, branch: str, taxonomy_name: str):
     Get all nodes within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_all_nodes("")
-    all_nodes = list(result)
+    all_nodes = await taxonomy.get_all_nodes("")
     return all_nodes
 
 
@@ -183,8 +184,7 @@ async def find_all_root_nodes(response: Response, branch: str, taxonomy_name: st
     Get all root nodes within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_all_root_nodes()
-    all_root_nodes = list(result)
+    all_root_nodes = await taxonomy.get_all_root_nodes()
     return all_root_nodes
 
 
@@ -194,8 +194,7 @@ async def find_one_entry(response: Response, branch: str, taxonomy_name: str, en
     Get entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_nodes("ENTRY", entry)
-    one_entry = list(result)
+    one_entry = await taxonomy.get_nodes("ENTRY", entry)
 
     check_single(one_entry)
 
@@ -208,8 +207,7 @@ async def find_one_entry_parents(response: Response, branch: str, taxonomy_name:
     Get parents for a entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_parents(entry)
-    one_entry_parents = list(result)
+    one_entry_parents = await taxonomy.get_parents(entry)
 
     return one_entry_parents
 
@@ -220,8 +218,7 @@ async def find_one_entry_children(response: Response, branch: str, taxonomy_name
     Get children for a entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_children(entry)
-    one_entry_children = list(result)
+    one_entry_children = await taxonomy.get_children(entry)
 
     return one_entry_children
 
@@ -232,8 +229,7 @@ async def find_all_entries(response: Response, branch: str, taxonomy_name: str):
     Get all entries within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_all_nodes("ENTRY")
-    all_entries = list(result)
+    all_entries = await taxonomy.get_all_nodes("ENTRY")
     return all_entries
 
 
@@ -243,8 +239,7 @@ async def find_one_synonym(response: Response, branch: str, taxonomy_name: str, 
     Get synonym corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_nodes("SYNONYMS", synonym)
-    one_synonym = list(result)
+    one_synonym = await taxonomy.get_nodes("SYNONYMS", synonym)
 
     check_single(one_synonym)
 
@@ -257,8 +252,7 @@ async def find_all_synonyms(response: Response, branch: str, taxonomy_name: str)
     Get all synonyms within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_all_nodes("SYNONYMS")
-    all_synonyms = list(result)
+    all_synonyms = await taxonomy.get_all_nodes("SYNONYMS")
     return all_synonyms
 
 
@@ -268,8 +262,7 @@ async def find_one_stopword(response: Response, branch: str, taxonomy_name: str,
     Get stopword corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_nodes("STOPWORDS", stopword)
-    one_stopword = list(result)
+    one_stopword = await taxonomy.get_nodes("STOPWORDS", stopword)
 
     check_single(one_stopword)
 
@@ -282,8 +275,7 @@ async def find_all_stopwords(response: Response, branch: str, taxonomy_name: str
     Get all stopwords within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_all_nodes("STOPWORDS")
-    all_stopwords = list(result)
+    all_stopwords = await taxonomy.get_all_nodes("STOPWORDS")
     return all_stopwords
 
 
@@ -293,8 +285,7 @@ async def find_header(response: Response, branch: str, taxonomy_name: str):
     Get __header__ within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_nodes("TEXT", "__header__")
-    header = list(result)
+    header = await taxonomy.get_nodes("TEXT", "__header__")
     return header[0]
 
 
@@ -304,8 +295,7 @@ async def find_footer(response: Response, branch: str, taxonomy_name: str):
     Get __footer__ within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_nodes("TEXT", "__footer__")
-    footer = list(result)
+    footer = await taxonomy.get_nodes("TEXT", "__footer__")
     return footer[0]
 
 
@@ -315,14 +305,14 @@ async def find_all_errors(request: Request, branch: str, taxonomy_name: str):
     Get all errors within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.get_parsing_errors()
+    result = await taxonomy.get_parsing_errors()
     return result
 
 
 @app.get("/{taxonomy_name}/{branch}/search")
 async def search_node(response: Response, branch: str, taxonomy_name: str, query: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = taxonomy.full_text_search(query)
+    result = await taxonomy.full_text_search(query)
     return result
 
 
@@ -331,7 +321,7 @@ async def export_to_text_file(
     response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks
 ):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    file = taxonomy.file_export()
+    file = await taxonomy.file_export()
 
     # Add a background task for removing exported taxonomy file
     background_tasks.add_task(file_cleanup, file)
@@ -344,7 +334,7 @@ async def export_to_github(
 ):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
-        url, file = taxonomy.github_export()
+        url, file = await taxonomy.github_export()
         # Add a background task for removing exported taxonomy file
         background_tasks.add_task(file_cleanup, file)
         return url
@@ -370,12 +360,12 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=500, detail="Enter a valid branch name!")
-    if taxonomy.does_project_exist():
+    if await taxonomy.does_project_exist():
         raise HTTPException(status_code=500, detail="Project already exists!")
-    if not taxonomy.is_branch_unique():
+    if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=500, detail="Branch name should be unique!")
 
-    result = taxonomy.import_from_github(description)
+    result = await taxonomy.import_from_github(description)
     return result
 
 
@@ -393,11 +383,12 @@ async def create_node(request: Request, branch: str, taxonomy_name: str):
     if main_language is None:
         raise HTTPException(status_code=400, detail="Invalid main language code")
 
-    normalized_id = taxonomy.create_node(taxonomy.get_label(id), id, main_language)
-    if taxonomy.get_label(id) == "ENTRY":
-        taxonomy.add_node_to_end(taxonomy.get_label(normalized_id), normalized_id)
+    label = taxonomy.get_label(id)
+    normalized_id = await taxonomy.create_node(label, id, main_language)
+    if label == "ENTRY":
+        await taxonomy.add_node_to_end(label, normalized_id)
     else:
-        taxonomy.add_node_to_beginning(taxonomy.get_label(normalized_id), normalized_id)
+        await taxonomy.add_node_to_beginning(label, normalized_id)
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
@@ -409,8 +400,10 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_nodes("ENTRY", entry, incoming_data)
-    updated_entry = list(result)
+    log.info("start entry update")
+    updated_entry = await taxonomy.update_nodes("ENTRY", entry, incoming_data)
+    log.info("end entry update")
+    log.info(f"return {updated_entry}")
     return updated_entry
 
 
@@ -423,8 +416,10 @@ async def edit_entry_children(request: Request, branch: str, taxonomy_name: str,
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_node_children(entry, incoming_data)
-    updated_children = list(result)
+    log.info("start children update")
+    updated_children = await taxonomy.update_node_children(entry, incoming_data)
+    log.info("end children update")
+    log.info(f"return children {updated_children}")
     return updated_children
 
 
@@ -437,8 +432,7 @@ async def edit_synonyms(request: Request, branch: str, taxonomy_name: str, synon
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_nodes("SYNONYMS", synonym, incoming_data)
-    updated_synonym = list(result)
+    updated_synonym = await taxonomy.update_nodes("SYNONYMS", synonym, incoming_data)
     return updated_synonym
 
 
@@ -451,8 +445,7 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    result = taxonomy.update_nodes("STOPWORDS", stopword, incoming_data)
-    updated_stopword = list(result)
+    updated_stopword = await taxonomy.update_nodes("STOPWORDS", stopword, incoming_data)
     return updated_stopword
 
 
@@ -463,8 +456,7 @@ async def edit_header(incoming_data: Header, branch: str, taxonomy_name: str):
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     convertedData = incoming_data.dict()
-    result = taxonomy.update_nodes("TEXT", "__header__", convertedData)
-    updated_header = list(result)
+    updated_header = await taxonomy.update_nodes("TEXT", "__header__", convertedData)
     return updated_header
 
 
@@ -475,8 +467,7 @@ async def edit_footer(incoming_data: Footer, branch: str, taxonomy_name: str):
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     convertedData = incoming_data.dict()
-    result = taxonomy.update_nodes("TEXT", "__footer__", convertedData)
-    updated_footer = list(result)
+    updated_footer = await taxonomy.update_nodes("TEXT", "__footer__", convertedData)
     return updated_footer
 
 
@@ -491,4 +482,4 @@ async def delete_node(request: Request, branch: str, taxonomy_name: str):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
     id = incoming_data["id"]
-    taxonomy.delete_node(taxonomy.get_label(id), id)
+    await taxonomy.delete_node(taxonomy.get_label(id), id)
