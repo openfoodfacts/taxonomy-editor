@@ -20,19 +20,19 @@ class ParserConsoleLogger:
         self.parsing_warnings = []  # Stores all warning logs
         self.parsing_errors = []  # Stores all error logs
 
-    def info(self, msg):
+    def info(self, msg, *args, **kwargs):
         """Stores all parsing info logs"""
-        logging.info(msg)
+        logging.info(msg, *args, **kwargs)
 
-    def warning(self, msg):
+    def warning(self, msg, *args, **kwargs):
         """Stores all parsing warning logs"""
-        self.parsing_warnings.append(msg)
-        logging.warning(msg)
+        self.parsing_warnings.append(msg % args)
+        logging.warning(msg, *args, **kwargs)
 
-    def error(self, msg):
+    def error(self, msg, *args, **kwargs):
         """Stores all parsing error logs"""
-        self.parsing_errors.append(msg)
-        logging.error(msg)
+        self.parsing_errors.append(msg % args)
+        logging.error(msg, *args, **kwargs)
 
 
 class Parser:
@@ -81,7 +81,7 @@ class Parser:
                 entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
-        self.session.run(query, data, is_before=self.is_before)
+        self.session.run(query, data)
 
     def normalized_filename(self, filename):
         """Add the .txt extension if it is missing in the filename"""
@@ -148,7 +148,7 @@ class Parser:
             new_line.append(self.remove_stopwords(lc, normalizing(word, lc)))
         return lc, new_line
 
-    def new_node_data(self):
+    def new_node_data(self, is_before):
         """To create an empty dictionary that will be used to create node"""
         data = {
             "id": "",
@@ -156,6 +156,7 @@ class Parser:
             "preceding_lines": [],
             "parent_tag": [],
             "src_position": None,
+            "is_before": is_before,
         }
         return data
 
@@ -205,20 +206,21 @@ class Parser:
         To remove the one separating line that is always there,
         between synonyms part and stopwords part and before each entry
         """
+        is_before = data["is_before"]
         # first, check if there is at least one preceding line
         if data["preceding_lines"] and not data["preceding_lines"][0]:
             if data["id"].startswith("synonyms"):
                 # it's a synonyms block,
                 # if the previous block is a stopwords block,
                 # there is at least one separating line
-                if "stopwords" in self.is_before:
+                if "stopwords" in is_before:
                     data["preceding_lines"].pop(0)
 
             elif data["id"].startswith("stopwords"):
                 # it's a stopwords block,
                 # if the previous block is a synonyms block,
                 # there is at least one separating line
-                if "synonyms" in self.is_before:
+                if "synonyms" in is_before:
                     data["preceding_lines"].pop(0)
 
             else:
@@ -227,7 +229,8 @@ class Parser:
         return data
 
     def harvest(self, filename):
-        """Transform data from file to dictionary"""
+        """Transform data from file to dictionary
+        """
         saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
@@ -242,24 +245,25 @@ class Parser:
         # header
         header, next_line = self.header_harvest(filename)
         yield header
-        self.is_before = "__header__"
 
         # the other entries
-        data = self.new_node_data()
+        data = self.new_node_data(is_before="__header__")
+        data["is_before"] = "__header__"
         for line_number, line in self.file_iter(filename, next_line):
             # yield data if block ended
             if self.entry_end(line, data):
                 if data["id"] in saved_nodes:
-                    msg = f"Entry with same id {data['id']} already created, "
-                    msg += f"duplicate id in file at line {data['src_position']}. "
-                    msg += "Node creation cancelled"
-                    self.parser_logger.error(msg)
+                    msg = (
+                        "Entry with same id %s already created, "
+                         "duplicate id in file at line %s. "
+                         "Node creation cancelled."
+                    )
+                    self.parser_logger.error(msg, data['id'], data['src_position'])
                 else:
                     data = self.remove_separating_line(data)
                     yield data  # another function will use this dictionary to create a node
-                    self.is_before = data["id"]
                     saved_nodes.append(data["id"])
-                data = self.new_node_data()
+                data = self.new_node_data(is_before=data["id"])
 
             # harvest the line
             if not (line) or line[0] == "#":
@@ -369,7 +373,7 @@ class Parser:
 
     def create_previous_link(self, multi_label):
         self.parser_logger.info("Creating 'is_before' links")
-        query = f"MATCH(n:{multi_label}) WHERE exists(n.is_before) return n.id, n.is_before"
+        query = f"MATCH(n:{multi_label}) WHERE n.is_before IS NOT NULL return n.id, n.is_before"
         results = self.session.run(query)
         for result in results:
             id = result["n.id"]
@@ -443,8 +447,9 @@ class Parser:
 
     def create_parsing_errors_node(self, taxonomy_name, branch_name):
         """Create node to list parsing errors"""
-        query = """
-            CREATE (n:ERRORS)
+        multi_label = self.create_multi_label(taxonomy_name, branch_name)
+        query = f"""
+            CREATE (n:n:{multi_label}:ERRORS)
             SET n.id = $project_name
             SET n.branch_name = $branch_name
             SET n.taxonomy_name = $taxonomy_name
