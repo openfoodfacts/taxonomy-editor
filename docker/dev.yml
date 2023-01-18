@@ -20,6 +20,9 @@ services:
       # for linting / checks purpose
       - ./backend/pyproject.toml:/code/pyproject.toml
       - ./backend/setup.cfg:/code/setup.cfg
+    # uvicorn with live reload
+    command: ["uvicorn", "editor.api:app", "--host", "0.0.0.0", "--port", "80", "--reload", "--reload-dir", "/parser", "--reload-dir", "/code/editor"]
+
   taxonomy_node:
     image: taxonomy-editor/taxonomy_node:dev
     build:
