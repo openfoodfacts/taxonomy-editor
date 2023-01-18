@@ -5,18 +5,8 @@ import {
   Button,
   IconButton,
   Box,
-  OutlinedInput,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  ListItemText,
-  Select,
-  Checkbox,
 } from "@mui/material";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
+import LanguageSelectionDialog from "../../components/LanguageSelectionDialog";
 import { useEffect, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -33,7 +23,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     useState([]); // Stores state of main language's tags
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Used for Dialog component
   const [selectedShownLanguages, setSelectedShownLanguages] = useState([]); // Used for storing LCs that are shown in the interface
-  const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([]); // Used for storing LCs that are selected in the checkbox (temporary state)
 
   const [expandedLanguages, setExpandedLanguages] = useState([]);
   // Helper functions for Dialog component
@@ -79,16 +68,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     setIsDialogOpen(false);
   };
 
-  const handleLanguageCheckToggle = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setNewShownLanguageCodes(
-      typeof value === "string" ? value.split(",") : value
-    );
-  };
-
-  const handleLanguagesChange = (event) => {
+  const handleLanguagesChange = (newShownLanguageCodes) => {
     const addedLanguageCodes = newShownLanguageCodes.filter(
       (langCode) => !selectedShownLanguages.includes(langCode)
     );
@@ -161,7 +141,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
     allLanguageCodes.push(nodeObject["main_language"]);
     // both newlanguagecodes and selectedshownlanguages are same by default and on every change.
-    setNewShownLanguageCodes(allLanguageCodes);
     setSelectedShownLanguages(allLanguageCodes);
     // Set states
     setMainLangRenderedTranslations(mainLangTags);
@@ -441,46 +420,13 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       })}
 
       {/* Dialog box for adding translations */}
-      <Dialog open={isDialogOpen} onClose={handleClose}>
-        <DialogTitle>Select shown languages</DialogTitle>
-        <DialogContent>
-          <FormControl sx={{ m: 1, width: 500 }}>
-            <InputLabel id="multiple-lang-checkbox-label">Languages</InputLabel>
-            <Select
-              labelId="multiple-lang-checkbox-label"
-              id="multiple-lang-checkbox"
-              multiple
-              value={newShownLanguageCodes}
-              onChange={handleLanguageCheckToggle}
-              input={<OutlinedInput label="Languages" />}
-              renderValue={(selected) =>
-                selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
-              }
-            >
-              {ISO6391.getAllCodes().map(
-                (langCode) =>
-                  langCode !== nodeObject.main_language && (
-                    <MenuItem key={langCode} value={langCode}>
-                      <Checkbox
-                        checked={newShownLanguageCodes.indexOf(langCode) > -1}
-                      />
-                      <ListItemText primary={ISO6391.getName(langCode)} />
-                    </MenuItem>
-                  )
-              )}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button
-            disabled={selectedShownLanguages.length === 0}
-            onClick={handleLanguagesChange}
-          >
-            Show Languages
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <LanguageSelectionDialog
+        isDialogOpen={isDialogOpen}
+        handleClose={handleClose}
+        mainLanguage={nodeObject.main_language}
+        handleLanguagesChange={handleLanguagesChange}
+        selectedShownLanguages={selectedShownLanguages}
+      />
     </Box>
   );
 };
