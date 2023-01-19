@@ -449,7 +449,7 @@ class Parser:
         """Create node to list parsing errors"""
         multi_label = self.create_multi_label(taxonomy_name, branch_name)
         query = f"""
-            CREATE (n:n:{multi_label}:ERRORS)
+            CREATE (n:{multi_label}:ERRORS)
             SET n.id = $project_name
             SET n.branch_name = $branch_name
             SET n.taxonomy_name = $taxonomy_name

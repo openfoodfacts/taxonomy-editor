@@ -152,7 +152,7 @@ async def list_all_projects(response: Response, status: Optional[StatusFilter] =
     """
     # Listing all projects doesn't require a taxonomy name or branch name
     taxonomy = TaxonomyGraph("", "")
-    result = taxonomy.list_projects(status)
+    result = await taxonomy.list_projects(status)
     return result
 
 
@@ -400,10 +400,7 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    log.info("start entry update")
     updated_entry = await taxonomy.update_nodes("ENTRY", entry, incoming_data)
-    log.info("end entry update")
-    log.info(f"return {updated_entry}")
     return updated_entry
 
 
@@ -416,10 +413,7 @@ async def edit_entry_children(request: Request, branch: str, taxonomy_name: str,
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    log.info("start children update")
     updated_children = await taxonomy.update_node_children(entry, incoming_data)
-    log.info("end children update")
-    log.info(f"return children {updated_children}")
     return updated_children
 
 

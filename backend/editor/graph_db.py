@@ -20,11 +20,6 @@ txn.set(None)
 session = contextvars.ContextVar("session")
 session.set(None)
 
-test = contextvars.ContextVar("test")
-test.set(None)
-
-i = 0
-
 
 @contextlib.asynccontextmanager
 async def TransactionCtx():
@@ -32,15 +27,13 @@ async def TransactionCtx():
     Transaction context will set global transaction "txn" for the code in context.
     Transactions are automatically rollback if an exception occurs within the context.
     """
-    global txn, session, test, i
-    ival = i = i + 1
+    global txn, session
     try:
         async with driver.session() as _session:
             txn_manager = await _session.begin_transaction()
             async with txn_manager as _txn:
                 txn.set(_txn)
                 session.set(_session)
-                test.set(ival)
                 yield txn, session
     finally:
         txn.set(None)

@@ -265,16 +265,13 @@ class TaxonomyGraph:
             params["status"] = status
         query.extend(
             [
-                "RETURN n, size(error_node.errors) AS error_count",
+                "WITH n, size(error_node.errors) AS errors_count",
+                "RETURN n{.*, errors_count: errors_count}",
                 "ORDER BY n.created_at",
             ]
         )
         result = await get_current_transaction().run("\n".join(query), params)
-        # pack errors count in result
-        result = [
-            [dict(node, errors_count=num_errors)] for node, num_errors in await result.value()
-        ]
-        return result
+        return await async_list(result)
 
     async def add_node_to_end(self, label, entry):
         """
@@ -517,14 +514,17 @@ class TaxonomyGraph:
 
         # Stores result of last query executed
         result = []
-        for child in created_child_ids:
+        children_ids = created_child_ids + existing_ids
+        for child_id in children_ids:
             # Create new relationships if it doesn't exist
             query = f"""
                 MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
-                WHERE parent.id = $id AND new_child.id = $child
+                WHERE parent.id = $id AND new_child.id = $child_id
                 MERGE (new_child)-[r:is_child_of]->(parent)
             """
-            _result = await get_current_transaction().run(query, {"id": entry, "child": child})
+            _result = await get_current_transaction().run(
+                query, {"id": entry, "child_id": child_id}
+            )
             result = list(await _result.value())
 
         return result
