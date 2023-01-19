@@ -9,36 +9,28 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Dialog,
   Button,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ISO6391 from "iso-639-1";
 
 const LanguageSelectionDialog = ({
-  isDialogOpen,
   handleClose,
   mainLanguage,
-  handleLanguagesChange,
-  selectedShownLanguages,
+  handleDialogConfirm,
+  shownLanguages,
 }) => {
-  const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([]); // Used for storing LCs that are selected in the checkbox (temporary state)
-
-  useEffect(() => {
-    setNewShownLanguageCodes(selectedShownLanguages);
-  }, [selectedShownLanguages]);
+  const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([
+    ...shownLanguages,
+  ]); // Used for storing LCs that are selected in the checkbox (temporary state)
 
   const handleLanguageCheckToggle = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setNewShownLanguageCodes(
-      typeof value === "string" ? value.split(",") : value
-    );
+    const newLanguageCodes = event.target.value;
+    setNewShownLanguageCodes(newLanguageCodes);
   };
 
   return (
-    <Dialog open={isDialogOpen} onClose={handleClose}>
+    <>
       <DialogTitle>Select shown languages</DialogTitle>
       <DialogContent>
         <FormControl sx={{ m: 1, width: 500 }}>
@@ -72,12 +64,12 @@ const LanguageSelectionDialog = ({
         <Button onClick={handleClose}>Cancel</Button>
         <Button
           disabled={setNewShownLanguageCodes.length === 0}
-          onClick={() => handleLanguagesChange(newShownLanguageCodes)}
+          onClick={() => handleDialogConfirm(newShownLanguageCodes)}
         >
-          Show Languages
+          Done
         </Button>
       </DialogActions>
-    </Dialog>
+    </>
   );
 };
 

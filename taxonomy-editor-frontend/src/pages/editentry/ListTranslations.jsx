@@ -5,8 +5,9 @@ import {
   Button,
   IconButton,
   Box,
+  Dialog,
 } from "@mui/material";
-import LanguageSelectionDialog from "../../components/LanguageSelectionDialog";
+import LanguageSelectionDialog from "./LanguageSelectionDialog";
 import { useEffect, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -22,7 +23,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   const [mainLangRenderedTranslations, setMainLangRenderedTranslations] =
     useState([]); // Stores state of main language's tags
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Used for Dialog component
-  const [selectedShownLanguages, setSelectedShownLanguages] = useState([]); // Used for storing LCs that are shown in the interface
+  const [shownLanguages, setShownLanguages] = useState([]); // Used for storing LCs that are shown in the interface
 
   const [expandedLanguages, setExpandedLanguages] = useState([]);
   // Helper functions for Dialog component
@@ -50,7 +51,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       newNodeObject[uuidKey] = [Math.random().toString()];
       return newNodeObject;
     });
-    setIsDialogOpen(false);
   };
 
   // Used for deleting a translation language
@@ -65,17 +65,17 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       newNodeObject[uuidKey] = [];
       return newNodeObject;
     });
-    setIsDialogOpen(false);
   };
 
-  const handleLanguagesChange = (newShownLanguageCodes) => {
-    const addedLanguageCodes = newShownLanguageCodes.filter(
-      (langCode) => !selectedShownLanguages.includes(langCode)
-    );
-    addedLanguageCodes.forEach((langCode) => {
-      handleAddTranslation(langCode);
+  const handleDialogConfirm = (newShownLanguageCodes) => {
+    newShownLanguageCodes.forEach((languageCode) => {
+      if (
+        !renderedTranslations.some((item) => item.languageCode === languageCode)
+      ) {
+        handleAddTranslation(languageCode);
+      }
     });
-    setSelectedShownLanguages(newShownLanguageCodes);
+    setShownLanguages(newShownLanguageCodes);
     setIsDialogOpen(false);
   };
 
@@ -89,6 +89,11 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       setExpandedLanguages(newExpandedLanguages);
     }
   };
+
+  useEffect(() => {
+    console.log("renderedTranslations", renderedTranslations);
+    console.log("shownLanguages", shownLanguages);
+  }, [renderedTranslations, shownLanguages]);
 
   // Changes the translations to be rendered
   // Dependent on changes occuring in "nodeObject"
@@ -139,9 +144,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         }
       }
     });
-    allLanguageCodes.push(nodeObject["main_language"]);
-    // both newlanguagecodes and selectedshownlanguages are same by default and on every change.
-    setSelectedShownLanguages(allLanguageCodes);
+    setShownLanguages(allLanguageCodes);
     // Set states
     setMainLangRenderedTranslations(mainLangTags);
     // sort othelangtags alphabetically
@@ -354,7 +357,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
       {/* All other languages */}
       {renderedTranslations.map((allTagsObj) => {
-        if (selectedShownLanguages.includes(allTagsObj["languageCode"])) {
+        if (shownLanguages.includes(allTagsObj["languageCode"])) {
           const lang = allTagsObj["languageCode"];
           const tagValue = allTagsObj["tags"];
           return (
@@ -420,13 +423,14 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       })}
 
       {/* Dialog box for adding translations */}
-      <LanguageSelectionDialog
-        isDialogOpen={isDialogOpen}
-        handleClose={handleClose}
-        mainLanguage={nodeObject.main_language}
-        handleLanguagesChange={handleLanguagesChange}
-        selectedShownLanguages={selectedShownLanguages}
-      />
+      <Dialog open={isDialogOpen} onClose={handleClose}>
+        <LanguageSelectionDialog
+          handleClose={handleClose}
+          mainLanguage={nodeObject.main_language}
+          handleDialogConfirm={handleDialogConfirm}
+          shownLanguages={shownLanguages}
+        />
+      </Dialog>
     </Box>
   );
 };
