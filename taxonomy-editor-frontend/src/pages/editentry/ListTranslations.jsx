@@ -77,6 +77,10 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       }
     });
     setShownLanguages(newShownLanguageCodes);
+    localStorage.setItem(
+      "shownLanguages",
+      JSON.stringify(newShownLanguageCodes)
+    );
     setIsDialogOpen(false);
   };
 
@@ -140,7 +144,26 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         }
       }
     });
-    setShownLanguages(allLanguageCodes);
+    // get shown languages from local storage if it exists else use all languages
+    try {
+      const shownLanguages = JSON.parse(localStorage.getItem("shownLanguages"));
+      if (shownLanguages) {
+        setShownLanguages(shownLanguages);
+        shownLanguages.forEach((languageCode) => {
+          if (
+            !otherLangTags.some((item) => item.languageCode === languageCode)
+          ) {
+            handleAddTranslation(languageCode);
+          }
+        });
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    // If shown languages is empty, set it to all languages
+    if (shownLanguages.length === 0) {
+      setShownLanguages(allLanguageCodes);
+    }
     // Set states
     setMainLangRenderedTranslations(mainLangTags);
     // sort othelangtags alphabetically
