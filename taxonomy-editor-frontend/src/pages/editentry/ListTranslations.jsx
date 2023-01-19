@@ -10,6 +10,7 @@ import {
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
 import { useEffect, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
+import CreateIcon from "@mui/icons-material/Create";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -89,11 +90,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       setExpandedLanguages(newExpandedLanguages);
     }
   };
-
-  useEffect(() => {
-    console.log("renderedTranslations", renderedTranslations);
-    console.log("shownLanguages", shownLanguages);
-  }, [renderedTranslations, shownLanguages]);
 
   // Changes the translations to be rendered
   // Dependent on changes occuring in "nodeObject"
@@ -304,7 +300,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
           Translations
         </Typography>
         <IconButton sx={{ mt: 3.5, ml: 1 }} onClick={handleOpen}>
-          <AddBoxIcon />
+          <CreateIcon />
         </IconButton>
       </Stack>
 
