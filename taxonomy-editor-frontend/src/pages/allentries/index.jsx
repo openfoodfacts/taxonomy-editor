@@ -32,8 +32,6 @@ import { createBaseURL } from "../editentry/createURL";
 import { toTitleCase } from "../../components/interConvertNames";
 import { greyHexCode } from "../../constants";
 
-import TsTestComponent from "./TsTestComponent";
-
 const Entry = ({ setDisplayedPages }) => {
   const { taxonomyName, branchName } = useParams();
   const title = toTitleCase(taxonomyName);
@@ -111,7 +109,6 @@ const Entry = ({ setDisplayedPages }) => {
   }
   return (
     <Box>
-      <TsTestComponent />
       <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
         Root Nodes:
       </Typography>
