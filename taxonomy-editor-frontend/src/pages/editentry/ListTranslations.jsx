@@ -15,6 +15,8 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
 
+const SHOWN_LANGUAGES_KEY = "shownLanguages";
+
 /**
  * Sub-component for rendering translation of an "entry"
  */
@@ -75,7 +77,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
     setShownLanguages(newShownLanguageCodes);
     localStorage.setItem(
-      "shownLanguages",
+      SHOWN_LANGUAGES_KEY,
       JSON.stringify(newShownLanguageCodes)
     );
     setIsDialogOpen(false);
@@ -160,13 +162,25 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   useEffect(() => {
     // get shown languages from local storage if it exists else use all languages
     try {
-      const lsShownLanguages = JSON.parse(
-        localStorage.getItem("shownLanguages")
+      let localStorageShownLanguages = JSON.parse(
+        localStorage.getItem(SHOWN_LANGUAGES_KEY)
       );
-      if (lsShownLanguages) {
+      // validate that shown languages is an array of strings and filter all items that are valid language codes
+      if (
+        Array.isArray(localStorageShownLanguages) &&
+        localStorageShownLanguages.every((item) => typeof item === "string")
+      ) {
+        localStorageShownLanguages = localStorageShownLanguages.filter((item) =>
+          ISO6391.validate(item)
+        );
+      } else {
+        localStorageShownLanguages = [];
+      }
+
+      if (localStorageShownLanguages) {
         // if shown languages is not empty, use it
-        setShownLanguages(lsShownLanguages);
-        lsShownLanguages.forEach((languageCode) => {
+        setShownLanguages(localStorageShownLanguages);
+        localStorageShownLanguages.forEach((languageCode) => {
           handleAddTranslation(languageCode);
         });
       } else {
