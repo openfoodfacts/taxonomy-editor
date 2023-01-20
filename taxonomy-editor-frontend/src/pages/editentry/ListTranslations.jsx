@@ -160,7 +160,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   }, [nodeObject]);
 
   useEffect(() => {
-    // get shown languages from local storage if it exists else use all languages
+    // get shown languages from local storage if it exists else use main language
     try {
       let localStorageShownLanguages = JSON.parse(
         localStorage.getItem(SHOWN_LANGUAGES_KEY)
@@ -183,9 +183,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         localStorageShownLanguages.forEach((languageCode) => {
           handleAddTranslation(languageCode);
         });
-      } else {
-        // if shown languages is empty, use all languages
-        setShownLanguages(["en"]);
       }
     } catch (e) {
       // shown languages is an empty list, when we can't parse the local storage
