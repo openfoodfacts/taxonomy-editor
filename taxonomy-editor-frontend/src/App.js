@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import Entry from "./pages/allentries";
 import EditEntry from "./pages/editentry";
+import Errors from "./pages/errors";
 import ExportTaxonomy from "./pages/export";
 import GotoProject from "./pages/gotoproject";
 import Home from "./pages/home";
@@ -53,7 +54,7 @@ function App() {
             />
             <Route
               path=":taxonomyName/:branchName/errors"
-              element={<div>Errors</div>}
+              element={<Errors setDisplayedPages={setDisplayedPages} />}
             />
           </Routes>
         </div>
