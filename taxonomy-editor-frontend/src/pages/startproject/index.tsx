@@ -35,22 +35,22 @@ const StartProject = () => {
     setLoading(true);
     const dataToBeSent = { description: description };
 
-    fetch(baseUrl + "import", {
+    fetch(`${baseUrl}import`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dataToBeSent),
     })
       .then(async (response) => {
         const responseBody = await response.json();
-        if (!response.ok && responseBody.detail) {
-          throw new Error(responseBody.detail);
+        if (!response.ok) {
+          throw new Error(responseBody?.detail ?? "Unable to import");
         }
         navigate(`/${taxonomyName}/${branchName}/entry`);
       })
-      .catch((detail) => {
+      .catch(() => {
         setErrorMessage("Unable to import");
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   const handleCloseErrorSnackbar = () => {
