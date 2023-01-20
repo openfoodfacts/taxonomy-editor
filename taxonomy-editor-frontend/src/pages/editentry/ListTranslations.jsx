@@ -37,14 +37,13 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
   // Used for addition of a translation language
   const handleAddTranslation = (key) => {
-    const newRenderedTranslations = [
-      ...renderedTranslations,
-      { languageCode: key, tags: [] },
-    ];
-    setRenderedTranslations(newRenderedTranslations);
     key = "tags_" + key; // LC must have a prefix "tags_"
     const uuidKey = key + "_uuid"; // Format for the uuid
 
+    if (nodeObject[key]) {
+      // If the key already exists, do nothing
+      return;
+    }
     // Make changes to the parent NodeObject
     setNodeObject((prevState) => {
       const newNodeObject = { ...prevState };
@@ -70,11 +69,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
   const handleDialogConfirm = (newShownLanguageCodes) => {
     newShownLanguageCodes.forEach((languageCode) => {
-      if (
-        !renderedTranslations.some((item) => item.languageCode === languageCode)
-      ) {
-        handleAddTranslation(languageCode);
-      }
+      handleAddTranslation(languageCode);
     });
     setShownLanguages(newShownLanguageCodes);
     localStorage.setItem(
@@ -146,23 +141,22 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
     // get shown languages from local storage if it exists else use all languages
     try {
-      const shownLanguages = JSON.parse(localStorage.getItem("shownLanguages"));
-      if (shownLanguages) {
-        setShownLanguages(shownLanguages);
-        shownLanguages.forEach((languageCode) => {
-          if (
-            !otherLangTags.some((item) => item.languageCode === languageCode)
-          ) {
-            handleAddTranslation(languageCode);
-          }
+      const lsShownLanguages = JSON.parse(
+        localStorage.getItem("shownLanguages")
+      );
+      if (lsShownLanguages) {
+        // if shown languages is not empty, use it
+        setShownLanguages(lsShownLanguages);
+        lsShownLanguages.forEach((languageCode) => {
+          handleAddTranslation(languageCode);
         });
+      } else {
+        // if shown languages is empty, use all languages
+        setShownLanguages(allLanguageCodes);
       }
     } catch (e) {
+      // shown languages is an empty list, when we can't parse the local storage
       console.log(e);
-    }
-    // If shown languages is empty, set it to all languages
-    if (shownLanguages.length === 0) {
-      setShownLanguages(allLanguageCodes);
     }
     // Set states
     setMainLangRenderedTranslations(mainLangTags);
