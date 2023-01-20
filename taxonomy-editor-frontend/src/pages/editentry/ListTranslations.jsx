@@ -8,13 +8,14 @@ import {
   Dialog,
 } from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
-import CreateIcon from "@mui/icons-material/Create";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
+
+const SHOWN_LANGUAGES_KEY = "shownLanguages";
 
 /**
  * Sub-component for rendering translation of an "entry"
@@ -36,23 +37,25 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   };
 
   // Used for addition of a translation language
-  const handleAddTranslation = (key) => {
-    const newRenderedTranslations = [
-      ...renderedTranslations,
-      { languageCode: key, tags: [] },
-    ];
-    setRenderedTranslations(newRenderedTranslations);
-    key = "tags_" + key; // LC must have a prefix "tags_"
-    const uuidKey = key + "_uuid"; // Format for the uuid
+  const handleAddTranslation = useCallback(
+    (key) => {
+      key = "tags_" + key; // LC must have a prefix "tags_"
+      const uuidKey = key + "_uuid"; // Format for the uuid
 
-    // Make changes to the parent NodeObject
-    setNodeObject((prevState) => {
-      const newNodeObject = { ...prevState };
-      newNodeObject[key] = [];
-      newNodeObject[uuidKey] = [Math.random().toString()];
-      return newNodeObject;
-    });
-  };
+      if (nodeObject[key]) {
+        // If the key already exists, do nothing
+        return;
+      }
+      // Make changes to the parent NodeObject
+      setNodeObject((prevState) => {
+        const newNodeObject = { ...prevState };
+        newNodeObject[key] = [];
+        newNodeObject[uuidKey] = [Math.random().toString()];
+        return newNodeObject;
+      });
+    },
+    [nodeObject, setNodeObject]
+  );
 
   // Used for deleting a translation language
   const handleDeleteTranslation = (key) => {
@@ -70,13 +73,13 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
   const handleDialogConfirm = (newShownLanguageCodes) => {
     newShownLanguageCodes.forEach((languageCode) => {
-      if (
-        !renderedTranslations.some((item) => item.languageCode === languageCode)
-      ) {
-        handleAddTranslation(languageCode);
-      }
+      handleAddTranslation(languageCode);
     });
     setShownLanguages(newShownLanguageCodes);
+    localStorage.setItem(
+      SHOWN_LANGUAGES_KEY,
+      JSON.stringify(newShownLanguageCodes)
+    );
     setIsDialogOpen(false);
   };
 
@@ -140,7 +143,6 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         }
       }
     });
-    setShownLanguages(allLanguageCodes);
     // Set states
     setMainLangRenderedTranslations(mainLangTags);
     // sort othelangtags alphabetically
@@ -156,6 +158,37 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
     setRenderedTranslations(otherLangTags);
   }, [nodeObject]);
+
+  useEffect(() => {
+    // get shown languages from local storage if it exists else use main language
+    try {
+      let localStorageShownLanguages = JSON.parse(
+        localStorage.getItem(SHOWN_LANGUAGES_KEY)
+      );
+      // validate that shown languages is an array of strings and filter all items that are valid language codes
+      if (
+        Array.isArray(localStorageShownLanguages) &&
+        localStorageShownLanguages.every((item) => typeof item === "string")
+      ) {
+        localStorageShownLanguages = localStorageShownLanguages.filter((item) =>
+          ISO6391.validate(item)
+        );
+      } else {
+        localStorageShownLanguages = [];
+      }
+
+      if (localStorageShownLanguages) {
+        // if shown languages is not empty, use it
+        setShownLanguages(localStorageShownLanguages);
+        localStorageShownLanguages.forEach((languageCode) => {
+          handleAddTranslation(languageCode);
+        });
+      }
+    } catch (e) {
+      // shown languages is an empty list, when we can't parse the local storage
+      console.log(e);
+    }
+  }, [handleAddTranslation]);
 
   // Helper function used for changing state
   const changeData = (key, index, value) => {
@@ -299,9 +332,9 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         <Typography sx={{ mt: 4, mb: 1 }} variant="h5">
           Translations
         </Typography>
-        <IconButton sx={{ mt: 3.5, ml: 1 }} onClick={handleOpen}>
-          <CreateIcon />
-        </IconButton>
+        <Button sx={{ mt: 3.5, ml: 1 }} onClick={handleOpen}>
+          {"(" + shownLanguages.length + " languages shown)"}
+        </Button>
       </Stack>
 
       {/* Main Language */}
