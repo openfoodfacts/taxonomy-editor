@@ -18,7 +18,7 @@ import {
 
 import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
-import { toSnakeCase } from "../../components/interConvertNames";
+import { toSnakeCase } from "../../utils";
 
 const StartProject = () => {
   const [branchName, setBranchName] = useState("");
