@@ -69,6 +69,8 @@ frontend_quality:
 	@echo "🍜 Quality checks JS"
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -c src/
 	${DOCKER_COMPOSE} run --rm -e CI=true taxonomy_node npm run build
+# restore the .empty file (if possible)
+	git checkout taxonomy-editor-frontend/build/.empty || true
 
 
 
