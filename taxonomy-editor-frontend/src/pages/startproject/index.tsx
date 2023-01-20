@@ -1,33 +1,40 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   Typography,
   Box,
   Grid,
   TextField,
-  Stack,
-  Autocomplete,
   Snackbar,
   Alert,
   CircularProgress,
   Button,
+  InputLabel,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
 import { toSnakeCase } from "../../components/interConvertNames";
 
 const StartProject = () => {
   const [branchName, setBranchName] = useState("");
-  const [taxonomyName, setTaxonomyName] = useState(null);
+  const [taxonomyName, setTaxonomyName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = () => {
-    const baseUrl = createBaseURL(taxonomyName, branchName);
+    if (!taxonomyName || !branchName) return;
+
+    const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
     const dataToBeSent = { description: description };
+
     fetch(baseUrl + "import", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,18 +52,11 @@ const StartProject = () => {
         setLoading(false);
       });
   };
-  const handleClose = () => {
-    setErrorMessage(null);
+
+  const handleCloseErrorSnackbar = () => {
+    setErrorMessage("");
   };
-  const LoadingButton = (props) => {
-    const { onClick, loading, text, sx } = props;
-    return (
-      <Button variant="contained" sx={sx} onClick={onClick} disabled={loading}>
-        {loading && <CircularProgress size={24} />}
-        {!loading && text}
-      </Button>
-    );
-  };
+
   return (
     <Box>
       <Grid
@@ -68,41 +68,43 @@ const StartProject = () => {
         <Typography sx={{ mt: 4 }} variant="h3">
           Start a project
         </Typography>
-        <Stack sx={{ mt: 4, mb: 4 }} direction="row" alignItems="center">
-          <Typography sx={{ mr: 4 }} variant="h5">
-            Taxonomy Name
-          </Typography>
-          <Autocomplete
-            sx={{ width: 265 }}
-            options={TAXONOMY_NAMES}
-            onChange={(e, selectedTaxonomy) => {
-              if (selectedTaxonomy)
-                setTaxonomyName(toSnakeCase(selectedTaxonomy));
-              else setTaxonomyName(null);
-            }}
-            renderInput={(params) => <TextField {...params} />}
-          ></Autocomplete>
-        </Stack>
-        <Stack direction="row" alignItems="center">
-          <Typography sx={{ mr: 8 }} variant="h5">
-            Branch Name
-          </Typography>
+        <div>
+          <FormControl fullWidth sx={{ width: 265, mt: 4 }}>
+            <InputLabel id="taxonomy-name-label">Taxonomy</InputLabel>
+            <Select
+              labelId="taxonomy-name-label"
+              id="taxonomy-name"
+              value={taxonomyName}
+              label="Taxonomy"
+              onChange={(event) =>
+                setTaxonomyName(event.target.value as string)
+              }
+            >
+              {TAXONOMY_NAMES.map((taxonomyItem) => (
+                <MenuItem value={taxonomyItem} key={taxonomyItem}>
+                  {taxonomyItem}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+
+        <div>
           <TextField
             size="small"
-            sx={{ width: 265 }}
+            sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
               setBranchName(event.target.value);
             }}
             value={branchName}
             variant="outlined"
+            label="Branch Name"
           />
-        </Stack>
-        <Stack sx={{ mt: 4 }} direction="row" alignItems="center">
-          <Typography sx={{ mr: 10 }} variant="h5">
-            Description
-          </Typography>
+        </div>
+
+        <div>
           <TextField
-            sx={{ width: 265 }}
+            sx={{ width: 265, mt: 2 }}
             minRows={4}
             multiline
             onChange={(event) => {
@@ -110,27 +112,29 @@ const StartProject = () => {
             }}
             value={description}
             variant="outlined"
+            label="Description"
           />
-        </Stack>
-        {/* Button for submitting edits */}
-        <LoadingButton
-          loading={loading}
-          disabled={!branchName || !taxonomyName}
+        </div>
+
+        <Button
+          variant="contained"
+          sx={{ mt: 3 }}
           onClick={handleSubmit}
-          sx={{ mt: 4, width: 130 }}
-          text="Submit"
-        ></LoadingButton>
+          disabled={!branchName || !taxonomyName || loading}
+        >
+          {!!loading ? <CircularProgress size={24} /> : "Submit"}
+        </Button>
       </Grid>
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={!!errorMessage}
         autoHideDuration={3000}
-        onClose={handleClose}
+        onClose={handleCloseErrorSnackbar}
       >
         <Alert
           elevation={6}
           variant="filled"
-          onClose={handleClose}
+          onClose={handleCloseErrorSnackbar}
           severity="error"
         >
           {errorMessage}
