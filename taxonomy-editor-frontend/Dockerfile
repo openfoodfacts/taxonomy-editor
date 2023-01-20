@@ -32,6 +32,8 @@ ENV PATH /opt/taxonomy-editor/node_modules/.bin:$PATH
 # copy files
 COPY --chown=node:node src /opt/taxonomy-editor/src
 COPY --chown=node:node public /opt/taxonomy-editor/public
+COPY --chown=node:node tsconfig.json /opt/taxonomy-editor/tsconfig.json
+COPY --chown=node:node webpack.config.js /opt/taxonomy-editor/webpack.config.js
 # build for production
 # no need of a public url, we are at the root
 RUN npm run build
