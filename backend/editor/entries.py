@@ -352,7 +352,11 @@ class TaxonomyGraph:
         Helper function used for getting all root nodes in a taxonomy
         """
         query = f"""
-            MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+            MATCH (n:{self.project_name})
+            WHERE NOT (n)-[:is_child_of]->()
+            AND NOT (n: STOPWORDS)
+            AND NOT (n: SYNONYMS)
+            RETURN n
         """
         result = get_current_transaction().run(query)
         return result
