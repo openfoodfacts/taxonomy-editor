@@ -127,6 +127,15 @@ class TaxonomyGraph:
         except Exception as e:
             raise TaxnonomyImportError() from e
 
+    async def upload_taxonomy(self, filepath, description):
+        """
+        Helper function to upload a taxonomy file and create a project node
+        """
+        status = await self.parse_taxonomy(filepath)
+        async with TransactionCtx():
+            await self.create_project(description)
+        return status
+
     def dump_taxonomy(self):
         """
         Helper function to create the txt file of a taxonomy
