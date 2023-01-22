@@ -76,9 +76,7 @@ const StartProject = () => {
               id="taxonomy-name"
               value={taxonomyName}
               label="Taxonomy"
-              onChange={(event) =>
-                setTaxonomyName(event.target.value as string)
-              }
+              onChange={(event) => setTaxonomyName(event.target.value)}
             >
               {TAXONOMY_NAMES.map((taxonomyItem) => (
                 <MenuItem value={taxonomyItem} key={taxonomyItem}>
@@ -122,7 +120,13 @@ const StartProject = () => {
           onClick={handleSubmit}
           disabled={!branchName || !taxonomyName || loading}
         >
-          {!!loading ? <CircularProgress size={24} /> : "Submit"}
+          {loading ? (
+            <>
+              <CircularProgress size={24} /> Importing Taxonomy...
+            </>
+          ) : (
+            "Submit"
+          )}
         </Button>
       </Grid>
       <Snackbar
