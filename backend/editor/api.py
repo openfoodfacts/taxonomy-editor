@@ -13,7 +13,16 @@ import tempfile
 from typing import Optional
 
 # FastAPI
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status, UploadFile, Form
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    HTTPException,
+    Request,
+    Response,
+    status,
+    UploadFile,
+    Form
+)
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
