@@ -177,7 +177,7 @@ async def find_all_nodes(response: Response, branch: str, taxonomy_name: str):
     return all_nodes
 
 
-@app.get("/{taxonomy_name}/{branch}/rootnodes")
+@app.get("/{taxonomy_name}/{branch}/rootentries")
 async def find_all_root_nodes(response: Response, branch: str, taxonomy_name: str):
     """
     Get all root nodes within taxonomy
