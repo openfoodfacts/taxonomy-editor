@@ -1,4 +1,4 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../../components/useFetch";
@@ -71,14 +71,17 @@ const GotoProject = () => {
               title: "Errors",
               field: "errors_count",
               render: (rowData) => {
-                return (
-                  <Typography
-                    color={rowData["errors_count"] > 0 ? "error" : "success"}
+                return rowData["errors_count"] > 0 ? (
+                  <MuiLink
+                    color="error"
+                    href={`/${toSnakeCase(rowData["taxonomyName"])}/${
+                      rowData["branchName"]
+                    }/errors`}
                   >
-                    {rowData["errors_count"] > 0
-                      ? rowData["errors_count"] + " errors"
-                      : "✅"}
-                  </Typography>
+                    {rowData["errors_count"] + " errors"}
+                  </MuiLink>
+                ) : (
+                  <Typography color="success">✅</Typography>
                 );
               },
             },
