@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+
 import {
   Box,
   Grid,
@@ -15,13 +18,11 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DownloadIcon from "@mui/icons-material/Download";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import { useParams } from "react-router-dom";
-import { createBaseURL } from "../editentry/createURL";
-import { useState, useEffect } from "react";
 
-const ExportTaxonomy = ({ setDisplayedPages }) => {
+import { createBaseURL } from "../editentry/createURL";
+
+const ExportTaxonomy = ({ addNavLinks }) => {
   const { taxonomyName, branchName } = useParams();
-  const urlPrefix = `${taxonomyName}/${branchName}/`;
   const baseURL = createBaseURL(taxonomyName, branchName);
 
   const [loadingForDownload, setLoadingForDownload] = useState(false);
@@ -30,15 +31,14 @@ const ExportTaxonomy = ({ setDisplayedPages }) => {
   const [pullRequestURL, setPullRequestURL] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // Set url prefix for navbar component
-  useEffect(() => {
-    setDisplayedPages([
-      { url: urlPrefix + "entry", translationKey: "Nodes" },
-      { url: urlPrefix + "search", translationKey: "Search" },
-      { url: urlPrefix + "errors", translationKey: "Errors" },
-      { url: urlPrefix + "export", translationKey: "Export" },
-    ]);
-  }, [urlPrefix, setDisplayedPages]);
+  useEffect(
+    function defineMainNavLinks() {
+      if (!branchName || !taxonomyName) return;
+
+      addNavLinks({ branchName, taxonomyName });
+    },
+    [taxonomyName, branchName, addNavLinks]
+  );
 
   const handleDownload = () => {
     setLoadingForDownload(true);

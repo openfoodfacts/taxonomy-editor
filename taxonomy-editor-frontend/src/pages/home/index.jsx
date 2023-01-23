@@ -1,19 +1,19 @@
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
+
 import Button from "@mui/material/Button";
 import { Link as MuiLink } from "@mui/material";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
 
-const Home = ({ setDisplayedPages }) => {
-  // Hide pages in navbar component at home
+const Home = ({ resetNavLinks }) => {
   useEffect(
-    function addUrlPrefixToNavbar() {
-      setDisplayedPages([]);
+    function cleanMainNavLinks() {
+      resetNavLinks();
     },
-    [setDisplayedPages]
+    [resetNavLinks]
   );
 
   return (

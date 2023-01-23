@@ -1,20 +1,19 @@
-import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useFetch from "../../components/useFetch";
-import { API_URL } from "../../constants";
+
+import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
 import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
-import { useEffect } from "react";
+
+import useFetch from "../../components/useFetch";
+import { API_URL } from "../../constants";
 import { toSnakeCase, toTitleCase } from "../../utils";
 
-const GotoProject = () => {
-  /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+const GotoProject = ({ resetNavLinks }) => {
   const {
     data: incomingData,
     isPending,
     isError,
-    __isSuccess,
     errorMessage,
   } = useFetch(`${API_URL}projects?status=OPEN`);
   const [projectData, setProjectData] = useState([]);
@@ -37,6 +36,13 @@ const GotoProject = () => {
     }
     setProjectData(renderedProjects);
   }, [incomingData]);
+
+  useEffect(
+    function cleanMainNavLinks() {
+      resetNavLinks();
+    },
+    [resetNavLinks]
+  );
 
   // Check error in fetch
   if (isError) {

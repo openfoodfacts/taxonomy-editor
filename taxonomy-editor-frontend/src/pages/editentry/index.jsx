@@ -1,34 +1,32 @@
-import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+
+import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import AccumulateAllComponents from "./AccumulateAllComponents";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AccumulateAllComponents from "./AccumulateAllComponents";
+
 import { createBaseURL } from "./createURL";
 import { greyHexCode } from "../../constants";
 
-const EditEntry = ({ setDisplayedPages }) => {
+const EditEntry = ({ addNavLinks }) => {
   const { taxonomyName, branchName, id } = useParams();
   const urlPrefix = `${taxonomyName}/${branchName}/`;
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
-  // Set url prefix for navbar component
   useEffect(
-    function addUrlPrefixToNavbar() {
-      setDisplayedPages([
-        { url: urlPrefix + "entry", translationKey: "Nodes" },
-        { url: urlPrefix + "search", translationKey: "Search" },
-        { url: urlPrefix + "errors", translationKey: "Errors" },
-        { url: urlPrefix + "export", translationKey: "Export" },
-      ]);
+    function defineMainNavLinks() {
+      if (!branchName || !taxonomyName) return;
+
+      addNavLinks({ branchName, taxonomyName });
     },
-    [urlPrefix, setDisplayedPages]
+    [taxonomyName, branchName, addNavLinks]
   );
 
   // Helper functions for Dialog component
