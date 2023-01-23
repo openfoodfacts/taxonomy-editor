@@ -44,7 +44,7 @@ const Entry = ({ setDisplayedPages }) => {
     isError,
     __isSuccess,
     errorMessage,
-  } = useFetch(`${baseUrl}rootnodes`);
+  } = useFetch(`${baseUrl}rootentries`);
 
   const [nodeType, setNodeType] = useState("entry"); // Used for storing node type
   const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code

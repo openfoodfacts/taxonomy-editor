@@ -357,7 +357,9 @@ class TaxonomyGraph:
         Helper function used for getting all root nodes in a taxonomy
         """
         query = f"""
-            MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+            MATCH (n:{self.project_name}:ENTRY)
+            WHERE NOT (n)-[:is_child_of]->()
+            RETURN n
         """
         result = await get_current_transaction().run(query)
         return await async_list(result)
