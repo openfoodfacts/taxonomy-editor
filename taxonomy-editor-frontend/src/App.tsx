@@ -55,37 +55,33 @@ function App() {
       <CssBaseline />
       <Router>
         <ResponsiveAppBar displayedPages={navLinks} />
-        <div>
-          <Routes>
-            <Route path="/" element={<Home resetNavLinks={resetNavLinks} />} />
-            <Route
-              path="startproject"
-              element={<StartProject resetNavLinks={resetNavLinks} />}
-            />
-            <Route
-              path="gotoproject"
-              element={<GotoProject resetNavLinks={resetNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/export"
-              element={
-                <ExportTaxonomy addNavLinks={addTaxonomyBranchNavLinks} />
-              }
-            />
-            <Route
-              path=":taxonomyName/:branchName/entry"
-              element={<Entry addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/entry/:id"
-              element={<EditEntry addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/search"
-              element={<SearchNode addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<Home resetNavLinks={resetNavLinks} />} />
+          <Route
+            path="startproject"
+            element={<StartProject resetNavLinks={resetNavLinks} />}
+          />
+          <Route
+            path="gotoproject"
+            element={<GotoProject resetNavLinks={resetNavLinks} />}
+          />
+          <Route
+            path=":taxonomyName/:branchName/export"
+            element={<ExportTaxonomy addNavLinks={addTaxonomyBranchNavLinks} />}
+          />
+          <Route
+            path=":taxonomyName/:branchName/entry"
+            element={<Entry addNavLinks={addTaxonomyBranchNavLinks} />}
+          />
+          <Route
+            path=":taxonomyName/:branchName/entry/:id"
+            element={<EditEntry addNavLinks={addTaxonomyBranchNavLinks} />}
+          />
+          <Route
+            path=":taxonomyName/:branchName/search"
+            element={<SearchNode addNavLinks={addTaxonomyBranchNavLinks} />}
+          />
+        </Routes>
       </Router>
     </ThemeProvider>
   );
