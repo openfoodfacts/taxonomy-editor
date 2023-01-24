@@ -3,25 +3,25 @@ Taxonomy Editor Backend API
 """
 import logging
 import os
+import shutil
+import tempfile
 
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
 from enum import Enum
-import shutil
-import tempfile
 from typing import Optional
 
 # FastAPI
 from fastapi import (
     BackgroundTasks,
     FastAPI,
+    Form,
     HTTPException,
     Request,
     Response,
-    status,
     UploadFile,
-    Form
+    status,
 )
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -380,18 +380,15 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
     return result
 
 
-@app.post("/{branch}/upload")
+@app.post("/{taxonomy_name}/{branch}/upload")
 async def upload_taxonomy(
-    request: Request,
-    branch: str,
-    file: UploadFile,
-    description: str = Form(...)
+    branch: str, taxonomy_name: str, file: UploadFile, description: str = Form(...)
 ):
     """
     Upload taxonomy file to be parsed
     """
     # use the file name as the taxonomy name
-    taxonomy = TaxonomyGraph(branch, file.filename.split(".")[0])
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=500, detail="Enter a valid branch name!")
     if await taxonomy.does_project_exist():
