@@ -6,7 +6,7 @@ import { API_URL } from "../../constants";
 import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
 import { useEffect } from "react";
-import { toSnakeCase, toTitleCase } from "../../components/interConvertNames";
+import { toSnakeCase, toTitleCase } from "../../utils";
 
 const GotoProject = () => {
   /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */

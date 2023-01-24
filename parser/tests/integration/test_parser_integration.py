@@ -1,4 +1,6 @@
+import logging
 import pathlib
+import textwrap
 
 import pytest
 
@@ -164,3 +166,48 @@ def test_calling(neo4j):
     for pair in created_pairs:
         assert pair in expected_pairs
     session.close()
+
+
+def test_error_log(neo4j, tmp_path, caplog):
+    # error entries with same id
+    session = neo4j.session()
+    test_parser = parser.Parser(session)
+
+    taxonomy_txt = textwrap.dedent("""
+    # a fake taxonomy
+    stopwords:fr: aux,au,de,le,du,la,a,et
+
+    # meat
+    en:meat
+
+    <en:meat
+    en:fake-meat
+
+    # duplicate
+    en:fake-meat
+    """)
+    taxonomy_path = tmp_path / "test.txt"
+    taxonomy_path.open("w").write(taxonomy_txt)
+
+    # parse
+    with caplog.at_level(logging.ERROR):
+        test_parser(str(taxonomy_path), "branch", "test")
+
+    # only the 2 nodes imported, not the duplicate
+    query = "MATCH (n:p_test_branch:t_test:b_branch:ENTRY) RETURN COUNT(*)"
+    result = session.run(query)
+    number_of_nodes = result.value()[0]
+    assert number_of_nodes == 2
+    # error logged
+    assert "Entry with same id en:fake-meat already created" in caplog.text
+    assert "duplicate id in file at line 12" in caplog.text
+    assert "Node creation cancelled." in caplog.text
+    # and present on project
+    query = "MATCH (n:ERRORS) WHERE n.id = 'p_test_branch' RETURN n"
+    results = session.run(query).value()
+    node = results[0]
+    assert len(node["errors"]) == 1
+    error = node["errors"][0]
+    assert "Entry with same id en:fake-meat already created" in error
+    assert "duplicate id in file at line 12" in error
+    assert "Node creation cancelled." in error

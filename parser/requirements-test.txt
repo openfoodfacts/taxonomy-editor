@@ -1,6 +1,6 @@
 attrs==22.1.0
 iniconfig==1.1.1
-neo4j==4.4.5
+neo4j==5.4.0
 packaging==21.3
 pluggy==1.0.0
 py==1.11.0

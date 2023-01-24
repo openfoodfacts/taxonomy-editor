@@ -17,9 +17,15 @@ from .exceptions import (
     TaxonomyUnparsingError,
 )
 from .github_functions import GithubOperations  # Github functions
-from .graph_db import TransactionCtx  # Neo4J transactions context manager
-from .graph_db import get_current_session  # Neo4J transactions helper
-from .graph_db import get_current_transaction
+from .graph_db import (  # Neo4J transactions context managers
+    SyncTransactionCtx,
+    TransactionCtx,
+    get_current_transaction,
+)
+
+
+async def async_list(async_iterable):
+    return [i async for i in async_iterable]
 
 
 class TaxonomyGraph:
@@ -44,7 +50,7 @@ class TaxonomyGraph:
         else:
             return "ENTRY"
 
-    def create_node(self, label, entry, main_language_code):
+    async def create_node(self, label, entry, main_language_code):
         """
         Helper function used for creating a node with given id and label
         """
@@ -73,26 +79,27 @@ class TaxonomyGraph:
         query.append(""" RETURN n.id """)
 
         params["canonical_tag"] = canonical_tag
-        result = get_current_transaction().run(" ".join(query), params)
-        return result.data()[0]["n.id"]
+        result = await get_current_transaction().run(" ".join(query), params)
+        return (await result.data())[0]["n.id"]
 
-    def parse_taxonomy(self, filename):
+    async def parse_taxonomy(self, filename):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
         # Close current transaction to use the session variable in parser
-        get_current_transaction().commit()
+        await get_current_transaction().commit()
 
-        # Create parser object and pass current session to it
-        parser_object = parser.Parser(get_current_session())
-        try:
-            # Parse taxonomy with given file name and branch name
-            parser_object(filename, self.branch_name, self.taxonomy_name)
-            return True
-        except Exception:
-            raise TaxonomyParsingError()
+        with SyncTransactionCtx() as session:
+            # Create parser object and pass current session to it
+            parser_object = parser.Parser(session)
+            try:
+                # Parse taxonomy with given file name and branch name
+                parser_object(filename, self.branch_name, self.taxonomy_name)
+                return True
+            except Exception as e:
+                raise TaxonomyParsingError() from e
 
-    def import_from_github(self, description):
+    async def import_from_github(self, description):
         """
         Helper function to import a taxonomy from GitHub
         """
@@ -111,57 +118,58 @@ class TaxonomyGraph:
                 # Downloads and creates taxonomy file in current working directory
                 urllib.request.urlretrieve(base_url, filepath)
 
-                status = self.parse_taxonomy(filepath)  # Parse the taxonomy
+                status = await self.parse_taxonomy(filepath)  # Parse the taxonomy
 
-                with TransactionCtx():
-                    self.create_project(description)  # Creates a "project node" in neo4j
+            async with TransactionCtx():
+                await self.create_project(description)  # Creates a "project node" in neo4j
 
-                return status
-        except Exception:
-            raise TaxnonomyImportError()
+            return status
+        except Exception as e:
+            raise TaxnonomyImportError() from e
 
     def dump_taxonomy(self):
         """
         Helper function to create the txt file of a taxonomy
         """
-        # Create unparser object and pass current session to it
-        unparser_object = unparser.WriteTaxonomy(get_current_session())
-        # Creates a unique file for dumping the taxonomy
-        filename = self.project_name + ".txt"
-        try:
-            # Parse taxonomy with given file name and branch name
-            unparser_object(filename, self.branch_name, self.taxonomy_name)
-            return filename
-        except Exception:
-            raise TaxonomyUnparsingError()
+        # Create unparser object and pass a sync session to it
+        with SyncTransactionCtx() as session:
+            unparser_object = unparser.WriteTaxonomy(session)
+            # Creates a unique file for dumping the taxonomy
+            filename = self.project_name + ".txt"
+            try:
+                # Parse taxonomy with given file name and branch name
+                unparser_object(filename, self.branch_name, self.taxonomy_name)
+                return filename
+            except Exception as e:
+                raise TaxonomyUnparsingError() from e
 
-    def file_export(self):
+    async def file_export(self):
         """Export a taxonomy for download"""
         # Close current transaction to use the session variable in unparser
-        get_current_transaction().commit()
+        await get_current_transaction().commit()
 
         filepath = self.dump_taxonomy()
         return filepath
 
-    def github_export(self):
+    async def github_export(self):
         """Export a taxonomy to Github"""
         # Close current transaction to use the session variable in unparser
-        get_current_transaction().commit()
+        await get_current_transaction().commit()
 
         filepath = self.dump_taxonomy()
         # Create a new transaction context
-        with TransactionCtx():
-            result = self.export_to_github(filepath)
-            self.set_project_status(status="CLOSED")
+        async with TransactionCtx():
+            result = await self.export_to_github(filepath)
+            await self.set_project_status(status="CLOSED")
         return result
 
-    def export_to_github(self, filename):
+    async def export_to_github(self, filename):
         """
         Helper function to export a taxonomy to GitHub
         """
         query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
-        result = get_current_transaction().run(query, {"project_name": self.project_name})
-        description = result.data()[0]["n.description"]
+        result = await get_current_transaction().run(query, {"project_name": self.project_name})
+        description = (await result.data())[0]["n.description"]
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         try:
@@ -175,28 +183,28 @@ class TaxonomyGraph:
         except Exception as e:
             raise GithubUploadError() from e
 
-    def does_project_exist(self):
+    async def does_project_exist(self):
         """
         Helper function to check the existence of a project
         """
         query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n"""
-        result = get_current_transaction().run(query, {"project_name": self.project_name})
-        if result.data() == []:
+        result = await get_current_transaction().run(query, {"project_name": self.project_name})
+        if (await result.value()) == []:
             return False
         else:
             return True
 
-    def is_branch_unique(self):
+    async def is_branch_unique(self):
         """
         Helper function to check uniqueness of GitHub branch
         """
         query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
-        result = get_current_transaction().run(query, {"branch_name": self.branch_name})
+        result = await get_current_transaction().run(query, {"branch_name": self.branch_name})
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         current_branches = github_object.list_all_branches()
 
-        if (result.data() == []) and (self.branch_name not in current_branches):
+        if (await (result.value()) == []) and (self.branch_name not in current_branches):
             return True
         else:
             return False
@@ -207,7 +215,7 @@ class TaxonomyGraph:
         """
         return normalizer.normalizing(self.branch_name, char="_") == self.branch_name
 
-    def create_project(self, description):
+    async def create_project(self, description):
         """
         Helper function to create a node with label "PROJECT"
         """
@@ -227,9 +235,9 @@ class TaxonomyGraph:
             "description": description,
             "status": "OPEN",
         }
-        get_current_transaction().run(query, params)
+        await get_current_transaction().run(query, params)
 
-    def set_project_status(self, status):
+    async def set_project_status(self, status):
         """
         Helper function to update a Taxonomy Editor project status
         """
@@ -239,9 +247,9 @@ class TaxonomyGraph:
             SET n.status = $status
         """
         params = {"project_name": self.project_name, "status": status}
-        get_current_transaction().run(query, params)
+        await get_current_transaction().run(query, params)
 
-    def list_projects(self, status=None):
+    async def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
         includes number of nodes with label ERROR for each project
@@ -257,16 +265,15 @@ class TaxonomyGraph:
             params["status"] = status
         query.extend(
             [
-                "RETURN n, size(error_node.errors) AS error_count",
+                "WITH n, size(error_node.errors) AS errors_count",
+                "RETURN n{.*, errors_count: errors_count}",
                 "ORDER BY n.created_at",
             ]
         )
-        result = get_current_transaction().run("\n".join(query), params)
-        # pack errors count in result
-        result = [[dict(node, errors_count=num_errors)] for node, num_errors in result]
-        return result
+        result = await get_current_transaction().run("\n".join(query), params)
+        return await async_list(result)
 
-    def add_node_to_end(self, label, entry):
+    async def add_node_to_end(self, label, entry):
         """
         Helper function which adds an existing node to end of taxonomy
         """
@@ -276,8 +283,8 @@ class TaxonomyGraph:
             WHERE footer.id = "__footer__" DELETE r
         RETURN last_node
         """
-        result = get_current_transaction().run(query)
-        end_node = result.data()[0]["last_node"]
+        result = await get_current_transaction().run(query)
+        end_node = (await result.data())[0]["last_node"]
         end_node_label = self.get_label(end_node["id"])  # Get current last node ID
 
         # Rebuild relationships by inserting incoming node at the end
@@ -289,9 +296,9 @@ class TaxonomyGraph:
             CREATE (last_node)-[:is_before]->(new_node)
             CREATE (new_node)-[:is_before]->(footer)
         """
-        result = get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
+        await get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
 
-    def add_node_to_beginning(self, label, entry):
+    async def add_node_to_beginning(self, label, entry):
         """
         Helper function which adds an existing node to beginning of taxonomy
         """
@@ -301,8 +308,8 @@ class TaxonomyGraph:
                 WHERE header.id = "__header__" DELETE r
             RETURN first_node
         """
-        result = get_current_transaction().run(query)
-        start_node = result.data()[0]["first_node"]
+        result = await get_current_transaction().run(query)
+        start_node = await (result.data())[0]["first_node"]
         start_node_label = self.get_label(start_node["id"])  # Get current first node ID
 
         # Rebuild relationships by inserting incoming node at the beginning
@@ -314,11 +321,9 @@ class TaxonomyGraph:
             CREATE (new_node)-[:is_before]->(first_node)
             CREATE (header)-[:is_before]->(new_node)
         """
-        result = get_current_transaction().run(
-            query, {"id": entry, "startnodeid": start_node["id"]}
-        )
+        await get_current_transaction().run(query, {"id": entry, "startnodeid": start_node["id"]})
 
-    def delete_node(self, label, entry):
+    async def delete_node(self, label, entry):
         """
         Helper function used for deleting a node with given id and label
         """
@@ -333,10 +338,10 @@ class TaxonomyGraph:
             // Rebuild relationships after deletion
             CREATE (previous_node)-[:is_before]->(next_node)
         """
-        result = get_current_transaction().run(query, {"id": entry})
-        return result
+        result = await get_current_transaction().run(query, {"id": entry})
+        return await async_list(result)
 
-    def get_all_nodes(self, label):
+    async def get_all_nodes(self, label):
         """
         Helper function used for getting all nodes with/without given label
         """
@@ -344,20 +349,22 @@ class TaxonomyGraph:
         query = f"""
             MATCH (n:{self.project_name}{qualifier}) RETURN n
         """
-        result = get_current_transaction().run(query)
-        return result
+        result = await get_current_transaction().run(query)
+        return await async_list(result)
 
-    def get_all_root_nodes(self):
+    async def get_all_root_nodes(self):
         """
         Helper function used for getting all root nodes in a taxonomy
         """
         query = f"""
-            MATCH (n:{self.project_name}) WHERE NOT (n)-[:is_child_of]->() RETURN n
+            MATCH (n:{self.project_name}:ENTRY)
+            WHERE NOT (n)-[:is_child_of]->()
+            RETURN n
         """
-        result = get_current_transaction().run(query)
-        return result
+        result = await get_current_transaction().run(query)
+        return await async_list(result)
 
-    def get_parsing_errors(self):
+    async def get_parsing_errors(self):
         """
         Helper function used for getting parsing errors in the current project
         """
@@ -371,10 +378,11 @@ class TaxonomyGraph:
             )
             RETURN error_node
         """
-        result = get_current_transaction().run(query).data()[0]["error_node"]
-        return result
+        result = await get_current_transaction().run(query)
+        error_node = (await result.data())[0]["error_node"]
+        return error_node
 
-    def get_nodes(self, label, entry):
+    async def get_nodes(self, label, entry):
         """
         Helper function used for getting the node with given id and label
         """
@@ -382,10 +390,10 @@ class TaxonomyGraph:
             MATCH (n:{self.project_name}:{label}) WHERE n.id = $id
             RETURN n
         """
-        result = get_current_transaction().run(query, {"id": entry})
-        return result
+        result = await get_current_transaction().run(query, {"id": entry})
+        return await async_list(result)
 
-    def get_parents(self, entry):
+    async def get_parents(self, entry):
         """
         Helper function used for getting node parents with given id
         """
@@ -394,10 +402,10 @@ class TaxonomyGraph:
                 WHERE child_node.id = $id
             RETURN parent.id
         """
-        result = get_current_transaction().run(query, {"id": entry})
-        return result
+        result = await get_current_transaction().run(query, {"id": entry})
+        return await async_list(result)
 
-    def get_children(self, entry):
+    async def get_children(self, entry):
         """
         Helper function used for getting node children with given id
         """
@@ -406,10 +414,10 @@ class TaxonomyGraph:
                 WHERE parent_node.id = $id
             RETURN child.id
         """
-        result = get_current_transaction().run(query, {"id": entry})
-        return result
+        result = await get_current_transaction().run(query, {"id": entry})
+        return await async_list(result)
 
-    def update_nodes(self, label, entry, new_node_keys):
+    async def update_nodes(self, label, entry, new_node_keys):
         """
         Helper function used for updation of node with given id and label
         """
@@ -419,7 +427,8 @@ class TaxonomyGraph:
                 raise ValueError("Invalid key: %s", key)
 
         # Get current node information and deleted keys
-        curr_node = self.get_nodes(label, entry).data()[0]["n"]
+        result = await self.get_nodes(label, entry)
+        curr_node = result[0]["n"]
         curr_node_keys = list(curr_node.keys())
         deleted_keys = set(curr_node_keys) ^ set(new_node_keys)
 
@@ -461,15 +470,15 @@ class TaxonomyGraph:
         query.append("""RETURN n""")
 
         params = dict(normalised_new_node_keys, id=entry)
-        result = get_current_transaction().run(" ".join(query), params)
-        return result
+        result = await get_current_transaction().run(" ".join(query), params)
+        return await async_list(result)
 
-    def update_node_children(self, entry, new_children_ids):
+    async def update_node_children(self, entry, new_children_ids):
         """
         Helper function used for updation of node children with given id
         """
         # Parse node ids from Neo4j Record object
-        current_children = [record["child.id"] for record in list(self.get_children(entry))]
+        current_children = [record["child.id"] for record in list(await self.get_children(entry))]
         deleted_children = set(current_children) - set(new_children_ids)
         added_children = set(new_children_ids) - set(current_children)
 
@@ -483,17 +492,15 @@ class TaxonomyGraph:
                 WHERE parent.id = $id AND deleted_child.id = $child
                 DELETE rel
             """
-            get_current_transaction().run(query, {"id": entry, "child": child})
+            await get_current_transaction().run(query, {"id": entry, "child": child})
 
         # Create non-existing nodes
         query = f"""
             MATCH (child:{self.project_name}:ENTRY)
                 WHERE child.id in $ids RETURN child.id
         """
-        existing_ids = [
-            record["child.id"]
-            for record in get_current_transaction().run(query, ids=list(added_children))
-        ]
+        _result = await get_current_transaction().run(query, ids=list(added_children))
+        existing_ids = [record["child.id"] for record in (await _result.data())]
         to_create = added_children - set(existing_ids)
 
         # Normalising new children node ID
@@ -501,26 +508,30 @@ class TaxonomyGraph:
 
         for child in to_create:
             main_language_code = child.split(":", 1)[0]
-            created_node_id = self.create_node("ENTRY", child, main_language_code)
+            created_node_id = await self.create_node("ENTRY", child, main_language_code)
             created_child_ids.append(created_node_id)
 
             # TODO: We would prefer to add the node just after its parent entry
-            self.add_node_to_end("ENTRY", created_node_id)
+            await self.add_node_to_end("ENTRY", created_node_id)
 
         # Stores result of last query executed
         result = []
-        for child in created_child_ids:
+        children_ids = created_child_ids + existing_ids
+        for child_id in children_ids:
             # Create new relationships if it doesn't exist
             query = f"""
                 MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
-                WHERE parent.id = $id AND new_child.id = $child
+                WHERE parent.id = $id AND new_child.id = $child_id
                 MERGE (new_child)-[r:is_child_of]->(parent)
             """
-            result = get_current_transaction().run(query, {"id": entry, "child": child})
+            _result = await get_current_transaction().run(
+                query, {"id": entry, "child_id": child_id}
+            )
+            result = list(await _result.value())
 
         return result
 
-    def full_text_search(self, text):
+    async def full_text_search(self, text):
         """
         Helper function used for searching a taxonomy
         """
@@ -578,5 +589,6 @@ class TaxonomyGraph:
 
             ORDER BY score DESC
         """
-        result = [record["node"] for record in get_current_transaction().run(query, params)]
+        _result = await get_current_transaction().run(query, params)
+        result = [record["node"] for record in await _result.data()]
         return result

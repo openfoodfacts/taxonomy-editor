@@ -29,7 +29,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Select from "@mui/material/Select";
 import ISO6391 from "iso-639-1";
 import { createBaseURL } from "../editentry/createURL";
-import { toTitleCase } from "../../components/interConvertNames";
+import { toTitleCase } from "../../utils";
 import { greyHexCode } from "../../constants";
 
 const Entry = ({ setDisplayedPages }) => {
@@ -44,7 +44,7 @@ const Entry = ({ setDisplayedPages }) => {
     isError,
     __isSuccess,
     errorMessage,
-  } = useFetch(`${baseUrl}rootnodes`);
+  } = useFetch(`${baseUrl}rootentries`);
 
   const [nodeType, setNodeType] = useState("entry"); // Used for storing node type
   const [newLanguageCode, setNewLanguageCode] = useState(null); // Used for storing new Language Code
