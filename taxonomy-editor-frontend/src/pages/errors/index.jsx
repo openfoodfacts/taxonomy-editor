@@ -1,5 +1,5 @@
 import useFetch from "../../components/useFetch";
-import { toTitleCase } from "../../components/interConvertNames";
+import { toTitleCase } from "../../utils";
 import { createBaseURL } from "../editentry/createURL";
 import { useParams } from "react-router-dom";
 import {
