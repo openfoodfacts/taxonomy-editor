@@ -40,6 +40,7 @@ The API is exposed at: `http://api.taxonomy.localhost:8091`
 You can also access the Neo4j Admin Console at `http://localhost:7474/browser/`
 
 If you modify any file in the React App, the changes will be taken into account instantly.
+However, this feature is not compatible with Windows systems. In order to use live reload on a Windows machine, you will need to install and use [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install). This will allow you to run the development server in a Linux environment, and the live reload feature will work as expected.
 
 If you modify any files related to the Python API, you need to restart the `taxonomy_api` container in Docker: `docker-compose restart taxonomy_api`
 
