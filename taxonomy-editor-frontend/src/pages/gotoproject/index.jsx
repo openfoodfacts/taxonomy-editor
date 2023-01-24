@@ -1,4 +1,4 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../../components/useFetch";
@@ -31,6 +31,7 @@ const GotoProject = () => {
           taxonomyName: toTitleCase(projectNode["taxonomy_name"]),
           branchName: projectNode["branch_name"],
           description: projectNode["description"],
+          errors_count: projectNode["errors_count"],
         });
       });
     }
@@ -65,7 +66,25 @@ const GotoProject = () => {
             { title: "Project", field: "projectName" },
             { title: "Taxonomy", field: "taxonomyName" },
             { title: "Branch", field: "branchName" },
-            { title: "Description", field: "description", width: "15vw" },
+            { title: "Description", field: "description", width: "10vw" },
+            {
+              title: "Errors",
+              field: "errors_count",
+              render: (rowData) => {
+                if (rowData["errors_count"] > 0) {
+                  return (
+                    <MuiLink
+                      color="error"
+                      href={`/${toSnakeCase(rowData["taxonomyName"])}/${
+                        rowData["branchName"]
+                      }/errors`}
+                    >
+                      {rowData["errors_count"] + " errors"}
+                    </MuiLink>
+                  );
+                }
+              },
+            },
           ]}
           options={{
             actionsColumnIndex: -1,
