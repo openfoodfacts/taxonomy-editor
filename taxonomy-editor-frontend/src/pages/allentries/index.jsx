@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+
 import {
   Typography,
   Snackbar,
@@ -11,9 +14,6 @@ import {
   InputLabel,
   Autocomplete,
 } from "@mui/material";
-import useFetch from "../../components/useFetch";
-import { Link, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -28,21 +28,20 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Select from "@mui/material/Select";
 import ISO6391 from "iso-639-1";
+
+import useFetch from "../../components/useFetch";
 import { createBaseURL } from "../editentry/createURL";
 import { toTitleCase } from "../../utils";
 import { greyHexCode } from "../../constants";
 
-const Entry = ({ setDisplayedPages }) => {
+const Entry = ({ addNavLinks }) => {
   const { taxonomyName, branchName } = useParams();
-  const title = toTitleCase(taxonomyName);
   const baseUrl = createBaseURL(taxonomyName, branchName);
-  const urlPrefix = `${taxonomyName}/${branchName}/`;
-  /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
+
   const {
     data: nodes,
     isPending,
     isError,
-    __isSuccess,
     errorMessage,
   } = useFetch(`${baseUrl}rootentries`);
 
@@ -53,17 +52,13 @@ const Entry = ({ setDisplayedPages }) => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
-  // Set url prefix for navbar component
   useEffect(
-    function addUrlPrefixToNavbar() {
-      setDisplayedPages([
-        { url: urlPrefix + "entry", translationKey: "Nodes" },
-        { url: urlPrefix + "search", translationKey: "Search" },
-        { url: urlPrefix + "errors", translationKey: "Errors" },
-        { url: urlPrefix + "export", translationKey: "Export" },
-      ]);
+    function defineMainNavLinks() {
+      if (!branchName || !taxonomyName) return;
+
+      addNavLinks({ branchName, taxonomyName });
     },
-    [urlPrefix, setDisplayedPages]
+    [taxonomyName, branchName, addNavLinks]
   );
 
   // Helper functions for Dialog component
@@ -125,7 +120,9 @@ const Entry = ({ setDisplayedPages }) => {
           </TableHead>
           <TableBody>
             <TableCell align="left" component="td" scope="row">
-              <Typography variant="body1">{title}</Typography>
+              <Typography variant="body1">
+                {toTitleCase(taxonomyName)}
+              </Typography>
             </TableCell>
             <TableCell align="left" component="td" scope="row">
               <Typography variant="body1">{branchName}</Typography>

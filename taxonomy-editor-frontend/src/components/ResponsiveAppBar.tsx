@@ -1,4 +1,6 @@
-import * as React from "react";
+import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
+
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -12,41 +14,45 @@ import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
 import SettingsIcon from "@mui/icons-material/Settings";
-import logo from "../assets/logosmall.jpg";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const ResponsiveAppBar = ({ displayedPages }) => {
-  const { t } = useTranslation();
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
+const logo = require("../assets/logosmall.jpg");
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
+type ResponsiveAppBarProps = {
+  displayedPages: Array<{ translationKey: string; url: string }>;
+};
+
+const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
+  const { t } = useTranslation();
+  const menuAnchorRef = useRef();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+    setIsMenuOpen(false);
   };
 
   return (
     <AppBar position="sticky" sx={{ background: "#ff8714" }}>
-      <Container maxWidth={null}>
+      <Container maxWidth={false}>
         <Toolbar disableGutters>
           {/* Mobile content */}
-          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+          <Box
+            sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}
+            ref={menuAnchorRef}
+          >
             <IconButton
               size="large"
               aria-label="account of current user"
               aria-controls="menu-appbar"
               aria-haspopup="true"
-              onClick={handleOpenNavMenu}
+              onClick={() => setIsMenuOpen(true)}
               color="inherit"
             >
               <MenuIcon />
             </IconButton>
             <Menu
               id="menu-appbar"
-              anchorEl={anchorElNav}
+              anchorEl={menuAnchorRef.current}
               anchorOrigin={{
                 vertical: "bottom",
                 horizontal: "left",
@@ -56,7 +62,7 @@ const ResponsiveAppBar = ({ displayedPages }) => {
                 vertical: "top",
                 horizontal: "left",
               }}
-              open={Boolean(anchorElNav)}
+              open={isMenuOpen}
               onClose={handleCloseNavMenu}
               sx={{
                 display: { xs: "block", md: "none" },
@@ -149,28 +155,26 @@ const ResponsiveAppBar = ({ displayedPages }) => {
                 Taxonomy Editor
               </Typography>
 
-              {displayedPages.map((page) =>
-                page.url ? (
-                  <Button
-                    color="inherit"
-                    key={page.url}
-                    onClick={handleCloseNavMenu}
-                    sx={{
-                      fontFamily: "Plus Jakarta Sans",
-                      my: 2,
-                      textTransform: "none",
-                    }}
-                    component={Link}
-                    to={`/${page.url}`}
-                  >
-                    {page.url === "settings" ? (
-                      <SettingsIcon />
-                    ) : (
-                      t(page.translationKey)
-                    )}
-                  </Button>
-                ) : null
-              )}
+              {displayedPages.map((page) => (
+                <Button
+                  color="inherit"
+                  key={page.url}
+                  onClick={handleCloseNavMenu}
+                  sx={{
+                    fontFamily: "Plus Jakarta Sans",
+                    my: 2,
+                    textTransform: "none",
+                  }}
+                  component={Link}
+                  to={`/${page.url}`}
+                >
+                  {page.url === "settings" ? (
+                    <SettingsIcon />
+                  ) : (
+                    t(page.translationKey)
+                  )}
+                </Button>
+              ))}
             </Box>
           </Box>
         </Toolbar>
@@ -178,4 +182,5 @@ const ResponsiveAppBar = ({ displayedPages }) => {
     </AppBar>
   );
 };
+
 export default ResponsiveAppBar;

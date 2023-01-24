@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+
 import {
   Typography,
   Box,
@@ -7,28 +10,22 @@ import {
   InputAdornment,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useState, useEffect } from "react";
+
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
-import { useParams } from "react-router-dom";
 
-const SearchNode = ({ setDisplayedPages }) => {
+const SearchNode = ({ addNavLinks }) => {
   const { taxonomyName, branchName } = useParams();
-  const urlPrefix = `${taxonomyName}/${branchName}/`;
   const [searchStringState, setSearchStringState] = useState("");
   const [queryFetchString, setQueryFetchString] = useState("");
 
-  // Set url prefix for navbar component
   useEffect(
-    function addUrlPrefixToNavbar() {
-      setDisplayedPages([
-        { url: urlPrefix + "entry", translationKey: "Nodes" },
-        { url: urlPrefix + "search", translationKey: "Search" },
-        { url: urlPrefix + "errors", translationKey: "Errors" },
-        { url: urlPrefix + "export", translationKey: "Export" },
-      ]);
+    function defineMainNavLinks() {
+      if (!branchName || !taxonomyName) return;
+
+      addNavLinks({ branchName, taxonomyName });
     },
-    [urlPrefix, setDisplayedPages]
+    [taxonomyName, branchName, addNavLinks]
   );
 
   return (

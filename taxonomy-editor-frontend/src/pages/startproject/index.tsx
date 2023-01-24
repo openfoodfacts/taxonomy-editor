@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -20,13 +20,20 @@ import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
 import { toSnakeCase } from "../../utils";
 
-const StartProject = () => {
+const StartProject = ({ resetNavLinks }) => {
   const [branchName, setBranchName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
+  useEffect(
+    function cleanMainNavLinks() {
+      resetNavLinks();
+    },
+    [resetNavLinks]
+  );
 
   const handleSubmit = () => {
     if (!taxonomyName || !branchName) return;
