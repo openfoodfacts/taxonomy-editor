@@ -11,6 +11,7 @@ import GotoProject from "./pages/gotoproject";
 import Home from "./pages/home";
 import SearchNode from "./pages/search";
 import StartProject from "./pages/startproject";
+import Errors from "./pages/errors";
 
 const theme = createTheme({
   typography: {
@@ -43,6 +44,7 @@ function App() {
         { url: urlPrefix + "entry", translationKey: "Nodes" },
         { url: urlPrefix + "search", translationKey: "Search" },
         { url: urlPrefix + "export", translationKey: "Export" },
+        { url: urlPrefix + "errors", translationKey: "Errors" },
       ];
 
       setNavLinks(newNavLinks);
@@ -80,6 +82,10 @@ function App() {
           <Route
             path=":taxonomyName/:branchName/search"
             element={<SearchNode addNavLinks={addTaxonomyBranchNavLinks} />}
+          />
+          <Route
+            path=":taxonomyName/:branchName/errors"
+            element={<Errors addNavLinks={addTaxonomyBranchNavLinks} />}
           />
         </Routes>
       </Router>

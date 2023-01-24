@@ -14,10 +14,9 @@ import {
 import MaterialTable from "@material-table/core";
 import { useState, useEffect } from "react";
 
-const Errors = ({ setDisplayedPages }) => {
+const Errors = ({ addNavLinks }) => {
   const { taxonomyName, branchName } = useParams();
   const baseUrl = createBaseURL(taxonomyName, branchName);
-  const urlPrefix = `${taxonomyName}/${branchName}/`;
   const [errors, setErrors] = useState([]);
   const {
     data: errorData,
@@ -35,15 +34,12 @@ const Errors = ({ setDisplayedPages }) => {
   }, [errorData]);
 
   useEffect(
-    function addLinksToNavbar() {
-      setDisplayedPages([
-        { url: urlPrefix + "entry", translationKey: "Nodes" },
-        { url: urlPrefix + "search", translationKey: "Search" },
-        { url: urlPrefix + "errors", translationKey: "Errors" },
-        { url: urlPrefix + "export", translationKey: "Export" },
-      ]);
+    function defineMainNavLinks() {
+      if (!branchName || !taxonomyName) return;
+
+      addNavLinks({ branchName, taxonomyName });
     },
-    [urlPrefix, setDisplayedPages]
+    [taxonomyName, branchName, addNavLinks]
   );
 
   if (isError) {
