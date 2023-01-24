@@ -16,35 +16,27 @@ import { useState, useEffect } from "react";
 
 const Errors = ({ setDisplayedPages }) => {
   const { taxonomyName, branchName } = useParams();
-  const title = toTitleCase(taxonomyName);
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const urlPrefix = `${taxonomyName}/${branchName}/`;
   const [errors, setErrors] = useState([]);
-  /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
   const {
     data: errorData,
     isPending,
     isError,
-    __isSuccess,
     errorMessage,
   } = useFetch(`${baseUrl}parsing_errors`);
 
   useEffect(() => {
     if (!errorData) return;
+    const errors = [];
     errorData.errors.forEach((error, index) => {
-      setErrors((prevErrors) => [
-        ...prevErrors,
-        {
-          id: index + 1,
-          error: error,
-        },
-      ]);
+      errors.push({ id: index + 1, error: error });
     });
+    setErrors(errors);
   }, [errorData]);
 
-  // Set url prefix for navbar component
   useEffect(
-    function addUrlPrefixToNavbar() {
+    function addLinksToNavbar() {
       setDisplayedPages([
         { url: urlPrefix + "entry", translationKey: "Nodes" },
         { url: urlPrefix + "search", translationKey: "Search" },
@@ -65,7 +57,7 @@ const Errors = ({ setDisplayedPages }) => {
   if (isPending) {
     return (
       <Box>
-        <Typography variant="h5">Loading..</Typography>
+        <Typography variant="h5">Loading...</Typography>
       </Box>
     );
   }
@@ -84,7 +76,9 @@ const Errors = ({ setDisplayedPages }) => {
           </TableHead>
           <TableBody>
             <TableCell align="left" component="td" scope="row">
-              <Typography variant="body1">{title}</Typography>
+              <Typography variant="body1">
+                {toTitleCase(taxonomyName)}
+              </Typography>
             </TableCell>
             <TableCell align="left" component="td" scope="row">
               <Typography variant="body1">{branchName}</Typography>

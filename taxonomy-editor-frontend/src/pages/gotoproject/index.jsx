@@ -81,7 +81,7 @@ const GotoProject = () => {
                     {rowData["errors_count"] + " errors"}
                   </MuiLink>
                 ) : (
-                  <Typography color="success">✅</Typography>
+                  <Typography>-</Typography>
                 );
               },
             },
