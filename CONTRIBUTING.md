@@ -55,7 +55,7 @@ Ready to contribute code? Here's how to set up Taxonomy Editor for local develop
     ```
     git clone git@github.com:your_name_here/taxonomy-editor.git
     ```
-3. Follow [install documentation](./docs/explanations/docker-compose-setup.md)
+3. Follow [install documentation](./doc/introduction/setup-dev.md)
 
 4. code!
 
