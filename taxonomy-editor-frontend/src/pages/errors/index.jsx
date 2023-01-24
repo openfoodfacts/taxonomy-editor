@@ -23,16 +23,15 @@ const Errors = ({ setDisplayedPages }) => {
     data: errorData,
     isPending,
     isError,
-    errorMessage,
   } = useFetch(`${baseUrl}parsing_errors`);
 
   useEffect(() => {
     if (!errorData) return;
-    const errors = [];
-    errorData.errors.forEach((error, index) => {
-      errors.push({ id: index + 1, error: error });
-    });
-    setErrors(errors);
+    const newErrors = errorData.errors.map((error, index) => ({
+      id: index + 1,
+      error: error,
+    }));
+    setErrors(newErrors);
   }, [errorData]);
 
   useEffect(
@@ -50,7 +49,7 @@ const Errors = ({ setDisplayedPages }) => {
   if (isError) {
     return (
       <Box>
-        <Typography variant="h5">{errorMessage}</Typography>
+        <Typography variant="h5">Unable to load errors.</Typography>
       </Box>
     );
   }

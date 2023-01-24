@@ -71,18 +71,18 @@ const GotoProject = () => {
               title: "Errors",
               field: "errors_count",
               render: (rowData) => {
-                return rowData["errors_count"] > 0 ? (
-                  <MuiLink
-                    color="error"
-                    href={`/${toSnakeCase(rowData["taxonomyName"])}/${
-                      rowData["branchName"]
-                    }/errors`}
-                  >
-                    {rowData["errors_count"] + " errors"}
-                  </MuiLink>
-                ) : (
-                  <Typography>-</Typography>
-                );
+                if (rowData["errors_count"] > 0) {
+                  return (
+                    <MuiLink
+                      color="error"
+                      href={`/${toSnakeCase(rowData["taxonomyName"])}/${
+                        rowData["branchName"]
+                      }/errors`}
+                    >
+                      {rowData["errors_count"] + " errors"}
+                    </MuiLink>
+                  );
+                }
               },
             },
           ]}
