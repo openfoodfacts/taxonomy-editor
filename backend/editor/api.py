@@ -370,11 +370,11 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=500, detail="Enter a valid branch name!")
+        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
-        raise HTTPException(status_code=500, detail="Project already exists!")
+        raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():
-        raise HTTPException(status_code=500, detail="Branch name should be unique!")
+        raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
     result = await taxonomy.import_from_github(description)
     return result
@@ -390,11 +390,11 @@ async def upload_taxonomy(
     # use the file name as the taxonomy name
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=500, detail="Enter a valid branch name!")
+        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
-        raise HTTPException(status_code=500, detail="Project already exists!")
+        raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():
-        raise HTTPException(status_code=500, detail="Branch name should be unique!")
+        raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
     with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
         filepath = f"{tmpdir}/{file.filename}"
