@@ -7,7 +7,7 @@ import ResponsiveAppBar from "./components/ResponsiveAppBar";
 import Entry from "./pages/allentries";
 import EditEntry from "./pages/editentry";
 import ExportTaxonomy from "./pages/export";
-import GotoProject from "./pages/gotoproject";
+import GoToProject from "./pages/go-to-project";
 import Home from "./pages/home";
 import SearchNode from "./pages/search";
 import StartProject from "./pages/startproject";
@@ -65,7 +65,7 @@ function App() {
           />
           <Route
             path="gotoproject"
-            element={<GotoProject resetNavLinks={resetNavLinks} />}
+            element={<GoToProject resetNavLinks={resetNavLinks} />}
           />
           <Route
             path=":taxonomyName/:branchName/export"

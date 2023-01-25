@@ -8,34 +8,54 @@ import EditIcon from "@mui/icons-material/Edit";
 import useFetch from "../../components/useFetch";
 import { API_URL } from "../../constants";
 import { toSnakeCase, toTitleCase } from "../../utils";
+import type { ProjectsAPIResponse } from "../../backend-types/types";
 
-const GotoProject = ({ resetNavLinks }) => {
-  const {
-    data: incomingData,
-    isPending,
-    isError,
-    errorMessage,
-  } = useFetch(`${API_URL}projects?status=OPEN`);
-  const [projectData, setProjectData] = useState([]);
+type ProjectType = {
+  id: string;
+  projectName: string;
+  taxonomyName: string;
+  branchName: string;
+  description: string;
+  errors_count: number;
+};
+
+type Props = {
+  resetNavLinks: () => void;
+};
+
+const GoToProject = ({ resetNavLinks }: Props) => {
+  const [projectData, setProjectData] = useState<ProjectType[]>([]);
   const navigate = useNavigate();
 
+  const { data, isPending, isError } = useFetch<ProjectsAPIResponse>(
+    `${API_URL}projects?status=OPEN`
+  );
+
   useEffect(() => {
-    const renderedProjects = [];
-    if (incomingData) {
-      incomingData.forEach((element) => {
-        const projectNode = element[0];
-        renderedProjects.push({
-          id: Math.random().toString(), // Used as Material Table component key
-          projectName: projectNode["id"],
-          taxonomyName: toTitleCase(projectNode["taxonomy_name"]),
-          branchName: projectNode["branch_name"],
-          description: projectNode["description"],
-          errors_count: projectNode["errors_count"],
+    let newProjects: ProjectType[] = [];
+
+    if (data) {
+      const backendProjects = data
+        .filter((projectsArrayItem) => projectsArrayItem[0])
+        .map((projectsArrayItem) => {
+          const { id, branch_name, taxonomy_name, description, errors_count } =
+            projectsArrayItem[0];
+
+          return {
+            id: Math.random().toString(), // Used as Material Table component key
+            projectName: id,
+            taxonomyName: toTitleCase(taxonomy_name),
+            branchName: branch_name,
+            description: description,
+            errors_count: errors_count,
+          };
         });
-      });
+
+      newProjects = backendProjects;
     }
-    setProjectData(renderedProjects);
-  }, [incomingData]);
+
+    setProjectData(newProjects);
+  }, [data]);
 
   useEffect(
     function cleanMainNavLinks() {
@@ -44,10 +64,14 @@ const GotoProject = ({ resetNavLinks }) => {
     [resetNavLinks]
   );
 
-  // Check error in fetch
   if (isError) {
-    return <Typography variant="h5">{errorMessage}</Typography>;
+    return (
+      <Typography variant="h5">
+        Something went wrong. Please try again
+      </Typography>
+    );
   }
+
   if (isPending) {
     return <Typography variant="h5">Loading..</Typography>;
   }
@@ -116,4 +140,4 @@ const GotoProject = ({ resetNavLinks }) => {
   );
 };
 
-export default GotoProject;
+export default GoToProject;
