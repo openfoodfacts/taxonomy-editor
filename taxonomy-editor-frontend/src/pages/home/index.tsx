@@ -8,7 +8,11 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
 
-const Home = ({ resetNavLinks }) => {
+type Props = {
+  resetNavLinks: () => void;
+};
+
+const Home = ({ resetNavLinks }: Props) => {
   useEffect(
     function cleanMainNavLinks() {
       resetNavLinks();
