@@ -17,4 +17,5 @@ uvloop==0.16.0
 watchfiles==0.18.1
 websockets==10.3
 PyGithub==1.56
+python-multipart==0.0.5
 -e ../parser/
