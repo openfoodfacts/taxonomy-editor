@@ -20,7 +20,7 @@ import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL } from "../editentry/createURL";
 import { toSnakeCase } from "../../utils";
 
-const StartProject = ({ resetNavLinks }) => {
+const StartProject = ({ clearNavBarLinks }) => {
   const [branchName, setBranchName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
   const [description, setDescription] = useState("");
@@ -30,9 +30,9 @@ const StartProject = ({ resetNavLinks }) => {
 
   useEffect(
     function cleanMainNavLinks() {
-      resetNavLinks();
+      clearNavBarLinks();
     },
-    [resetNavLinks]
+    [clearNavBarLinks]
   );
 
   const handleSubmit = () => {

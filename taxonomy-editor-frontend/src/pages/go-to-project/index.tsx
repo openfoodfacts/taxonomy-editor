@@ -20,10 +20,10 @@ type ProjectType = {
 };
 
 type Props = {
-  resetNavLinks: () => void;
+  clearNavBarLinks: () => void;
 };
 
-const GoToProject = ({ resetNavLinks }: Props) => {
+const GoToProject = ({ clearNavBarLinks }: Props) => {
   const [projectData, setProjectData] = useState<ProjectType[]>([]);
   const navigate = useNavigate();
 
@@ -59,9 +59,9 @@ const GoToProject = ({ resetNavLinks }: Props) => {
 
   useEffect(
     function cleanMainNavLinks() {
-      resetNavLinks();
+      clearNavBarLinks();
     },
-    [resetNavLinks]
+    [clearNavBarLinks]
   );
 
   if (isError) {

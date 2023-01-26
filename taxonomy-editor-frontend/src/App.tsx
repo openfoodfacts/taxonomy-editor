@@ -58,14 +58,14 @@ function App() {
       <Router>
         <ResponsiveAppBar displayedPages={navLinks} />
         <Routes>
-          <Route path="/" element={<Home resetNavLinks={resetNavLinks} />} />
+          <Route path="/" element={<Home clearNavBarLinks={resetNavLinks} />} />
           <Route
             path="startproject"
-            element={<StartProject resetNavLinks={resetNavLinks} />}
+            element={<StartProject clearNavBarLinks={resetNavLinks} />}
           />
           <Route
             path="gotoproject"
-            element={<GoToProject resetNavLinks={resetNavLinks} />}
+            element={<GoToProject clearNavBarLinks={resetNavLinks} />}
           />
           <Route
             path=":taxonomyName/:branchName/export"
