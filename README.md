@@ -23,6 +23,7 @@ Taxonomies are at the 🧡 of Open Food Facts data structure. This project provi
 ## Getting Started
 
 - Join us on Slack at https://openfoodfacts.slack.com/ in the channel `#taxonomy-editor`.
+- Get an invite to our organization using https://slack.openfoodfacts.org/
 - Check out the Taxonomy Editor in our pre-production environment: 
   - The UI: https://ui.taxonomy.openfoodfacts.net/
   - The API: https://api.taxonomy.openfoodfacts.net/

@@ -44,7 +44,7 @@ def test_round_trip(neo4j):
     query = "MATCH (n:p_test_branch:t_test:b_branch) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
-    assert number_of_nodes == 13
+    assert number_of_nodes == 14
 
     # dump taxonomy back
     test_dumper = unparser.WriteTaxonomy(session)
@@ -88,12 +88,12 @@ def test_two_branch_round_trip(neo4j):
     query = "MATCH (n:p_test_branch1:t_test:b_branch1) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
-    assert number_of_nodes == 13
+    assert number_of_nodes == 14
 
     query = "MATCH (n:p_test_branch2:t_test:b_branch2) RETURN COUNT(*)"
     result = session.run(query)
     number_of_nodes = result.value()[0]
-    assert number_of_nodes == 13
+    assert number_of_nodes == 14
 
     # dump taxonomy back
     test_dumper = unparser.WriteTaxonomy(session)

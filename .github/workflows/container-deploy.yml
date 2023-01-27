@@ -134,6 +134,12 @@ jobs:
           echo "COMPOSE_FILE=docker-compose.yml;docker/prod.yml" >> .env
           echo "DOCKER_TAG=sha-${{ github.sha }}" >> .env
 
+          # Neo4j configuration
+          echo "NEO4J_server_memory_heap_initial__size=3G" >> .env
+          echo "NEO4J_server_memory_heap_max__size=3G" >> .env
+          echo "NEO4J_server_memory_pagecache_size=2G" >> .env
+          # we don't want transaction to grow too big
+          echo "NEO4J_db_memory_transaction_total_max=1G" >> .env
           # App environment variables
           echo "TAXONOMY_EDITOR_EXPOSE=${{ env.TAXONOMY_EDITOR_EXPOSE }}" >> .env
           echo "TAXONOMY_EDITOR_DOMAIN=${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env

@@ -1,4 +1,6 @@
-import * as React from "react";
+import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
+
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -11,43 +13,46 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
-import SettingsIcon from '@mui/icons-material/Settings';
-import logo from "../assets/logosmall.jpg";
-import { Link } from "react-router-dom";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { useTranslation } from "react-i18next";
 
-const ResponsiveAppBar = ({displayedPages}) => {
+const logo = require("../assets/logosmall.jpg");
 
+type ResponsiveAppBarProps = {
+  displayedPages: Array<{ translationKey: string; url: string }>;
+};
+
+const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
   const { t } = useTranslation();
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
+  const menuAnchorRef = useRef();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+    setIsMenuOpen(false);
   };
 
   return (
-    <AppBar position="sticky" sx={{background: '#ff8714'}} >
-      <Container maxWidth={null}>
+    <AppBar position="sticky" sx={{ background: "#ff8714" }}>
+      <Container maxWidth={false}>
         <Toolbar disableGutters>
           {/* Mobile content */}
-          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+          <Box
+            sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}
+            ref={menuAnchorRef}
+          >
             <IconButton
               size="large"
               aria-label="account of current user"
               aria-controls="menu-appbar"
               aria-haspopup="true"
-              onClick={handleOpenNavMenu}
+              onClick={() => setIsMenuOpen(true)}
               color="inherit"
             >
               <MenuIcon />
             </IconButton>
             <Menu
               id="menu-appbar"
-              anchorEl={anchorElNav}
+              anchorEl={menuAnchorRef.current}
               anchorOrigin={{
                 vertical: "bottom",
                 horizontal: "left",
@@ -57,7 +62,7 @@ const ResponsiveAppBar = ({displayedPages}) => {
                 vertical: "top",
                 horizontal: "left",
               }}
-              open={Boolean(anchorElNav)}
+              open={isMenuOpen}
               onClose={handleCloseNavMenu}
               sx={{
                 display: { xs: "block", md: "none" },
@@ -108,68 +113,74 @@ const ResponsiveAppBar = ({displayedPages}) => {
               display: { xs: "none", md: "flex" },
               flexDirection: "row",
               alignItems: "center",
-              width: '100%',
-              justifyContent: 'space-between'
+              width: "100%",
+              justifyContent: "space-between",
             }}
           >
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              flexDirection: "row",
-              alignItems: "baseline",
-            }}
-          >
-            <MuiLink
-              sx={{ mr: 2, display: "flex", alignSelf: 'center' }}
-              href="https://world.openfoodfacts.org/"
-              target="_blank"
-            >
-              <img
-                src={logo}
-                width="50px"
-                height="50px"
-                alt="OpenFoodFacts logo"
-              />
-            </MuiLink>
-            <Typography
-              variant="h6"
-              noWrap
-              component={Link}
-              to="/"
+            <Box
               sx={{
-                mr: 2,
-                display: "flex",
-                alignSelf : 'center',
-                fontFamily: "Plus Jakarta Sans",
-                fontWeight: 1000,
-                letterSpacing: ".1rem",
-                color: "inherit",
-                textDecoration: "none",
+                display: { xs: "none", md: "flex" },
+                flexDirection: "row",
+                alignItems: "baseline",
               }}
             >
-              Taxonomy Editor
-            </Typography>
-
-            {displayedPages.map((page) =>
-            page.url ? (
-                <Button
-                color="inherit"
-                key={page.url}
-                onClick={handleCloseNavMenu}
-                sx={{ fontFamily: "Plus Jakarta Sans", my: 2, textTransform: "none" }}
+              <MuiLink
+                sx={{ mr: 2, display: "flex", alignSelf: "center" }}
+                href="https://world.openfoodfacts.org/"
+                target="_blank"
+              >
+                <img
+                  src={logo}
+                  width="50px"
+                  height="50px"
+                  alt="OpenFoodFacts logo"
+                />
+              </MuiLink>
+              <Typography
+                variant="h6"
+                noWrap
                 component={Link}
-                to={`/${page.url}`}
-                >
-                {page.url === 'settings' ? <SettingsIcon /> : t(page.translationKey)}
-                </Button>
-            ) : null
-            )}
+                to="/"
+                sx={{
+                  mr: 2,
+                  display: "flex",
+                  alignSelf: "center",
+                  fontFamily: "Plus Jakarta Sans",
+                  fontWeight: 1000,
+                  letterSpacing: ".1rem",
+                  color: "inherit",
+                  textDecoration: "none",
+                }}
+              >
+                Taxonomy Editor
+              </Typography>
 
-          </Box>
+              {displayedPages.map((page) => (
+                <Button
+                  color="inherit"
+                  key={page.url}
+                  onClick={handleCloseNavMenu}
+                  sx={{
+                    fontFamily: "Plus Jakarta Sans",
+                    my: 2,
+                    textTransform: "none",
+                  }}
+                  component={Link}
+                  to={`/${page.url}`}
+                >
+                  {page.url === "settings" ? (
+                    <SettingsIcon />
+                  ) : (
+                    t(page.translationKey)
+                  )}
+                </Button>
+              ))}
+            </Box>
           </Box>
         </Toolbar>
       </Container>
     </AppBar>
   );
 };
+
 export default ResponsiveAppBar;

@@ -21,21 +21,44 @@ export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
 DOCKER_COMPOSE=docker-compose --env-file=${ENV_FILE}
-DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy docker-compose --env-file=${ENV_FILE}
+# tweak some config to avoid port conflicts
+DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy NEO4J_ADMIN_EXPOSE=127.0.0.1:7475 NEO4J_BOLT_EXPOSE=127.0.0.1:7688 docker-compose --env-file=${ENV_FILE}
 
 .PHONY: tests
+
+#------------#
+# dev setup  #
+#------------#
+
+build:
+	@echo "🍜 Building docker images"
+	${DOCKER_COMPOSE} build
+	@echo "🍜 Project setup done"
+
+up:
+	@echo "🍜 Running project (ctrl+C to stop)"
+	${DOCKER_COMPOSE} up
+
+dev: build up
+
 
 #-----------#
 # dev tools #
 #-----------#
 
+
 # lint code
-lint: backend_lint
+lint: backend_lint frontend_lint
 
 backend_lint:
 	@echo "🍜 Linting python code"
 	${DOCKER_COMPOSE} run --rm taxonomy_api isort .
 	${DOCKER_COMPOSE} run --rm taxonomy_api black .
+
+frontend_lint:
+	@echo "🍜 Linting react code"
+	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -w src/
+
 
 # check code quality
 quality: backend_quality frontend_quality
@@ -48,7 +71,11 @@ backend_quality:
 
 frontend_quality:
 	@echo "🍜 Quality checks JS"
+	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -c src/
 	${DOCKER_COMPOSE} run --rm -e CI=true taxonomy_node npm run build
+# restore the .empty file (if possible)
+	git checkout taxonomy-editor-frontend/build/.empty || true
+
 
 
 tests: backend_tests
@@ -69,4 +96,3 @@ checks: quality tests
 create_external_volumes:
 	@echo "🍜 Creating external volumes (production only) …"
 	docker volume create ${COMPOSE_PROJECT_NAME}_neo4j-data
-
