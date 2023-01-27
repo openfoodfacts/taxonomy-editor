@@ -1,3 +1,6 @@
+# to suppress the path translation in Windows
+export MSYS_NO_PATHCONV=1
+
 ifeq ($(findstring cmd.exe,$(SHELL)),cmd.exe)
     $(error "We do not suppport using cmd.exe on Windows, please run in a 'git bash' console")
 endif
@@ -53,7 +56,7 @@ tests: backend_tests
 backend_tests:
 	@echo "🍜 Running python tests"
 	${DOCKER_COMPOSE_TEST} up -d neo4j
-	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest . //parser
+	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest . /parser
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
 checks: quality tests
