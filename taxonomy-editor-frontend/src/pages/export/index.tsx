@@ -22,14 +22,13 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import { createBaseURL } from "../editentry/createURL";
 
 const ExportTaxonomy = ({ addNavLinks }) => {
+  const [isCreatingGithubPR, setIsCreatingGithubPR] = useState(false);
+  const [pullRequestURL, setPullRequestURL] = useState("");
+  const [isDownloadingFile, setIsDownloadingFile] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const { taxonomyName, branchName } = useParams();
   const baseURL = createBaseURL(taxonomyName, branchName);
-
-  const [loadingForDownload, setLoadingForDownload] = useState(false);
-  const [loadingForGithub, setLoadingForGitHub] = useState(false);
-  const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-  const [pullRequestURL, setPullRequestURL] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(
     function defineMainNavLinks() {
@@ -41,11 +40,16 @@ const ExportTaxonomy = ({ addNavLinks }) => {
   );
 
   const handleDownload = () => {
-    setLoadingForDownload(true);
-    fetch(baseURL + "downloadexport", {
+    setIsDownloadingFile(true);
+    setErrorMessage("");
+
+    fetch(`${baseURL}downloadexport`, {
       method: "GET",
     })
       .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unable to download file");
+        }
         return response.blob();
       })
       .then((blob) => {
@@ -59,40 +63,43 @@ const ExportTaxonomy = ({ addNavLinks }) => {
         URL.revokeObjectURL(url);
       })
       .catch(() => {
-        setErrorMessage("Download failed!");
+        setErrorMessage("Unable to download file");
       })
       .finally(() => {
-        setLoadingForDownload(false);
+        setIsDownloadingFile(false);
       });
   };
 
   const handleGithub = () => {
-    setLoadingForGitHub(true);
-    fetch(baseURL + "githubexport", {
+    setIsCreatingGithubPR(true);
+    setErrorMessage("");
+    setPullRequestURL("");
+
+    fetch(`${baseURL}githubexport`, {
       method: "GET",
     })
       .then(async (response) => {
         const responseBody = await response.json();
-        if (!response.ok && responseBody.detail) {
-          throw new Error(responseBody.detail);
+        if (!response.ok) {
+          throw new Error(responseBody?.detail ?? "Unable to export to Github");
         } else {
           setPullRequestURL(responseBody);
-          setOpenSuccessDialog(true);
         }
       })
-      .catch((detail) => {
-        setErrorMessage("Unable to export to Github!");
+      .catch(() => {
+        setErrorMessage("Unable to export to Github");
       })
       .finally(() => {
-        setLoadingForGitHub(false);
+        setIsCreatingGithubPR(false);
       });
   };
 
   const handleCloseErrorSnackbar = () => {
-    setErrorMessage(null);
+    setErrorMessage("");
   };
-  const handleCloseSuccessDialog = () => {
-    setOpenSuccessDialog(false);
+
+  const handleClosePullRequestDialog = () => {
+    setPullRequestURL("");
   };
 
   return (
@@ -117,12 +124,12 @@ const ExportTaxonomy = ({ addNavLinks }) => {
         </Typography>
         <Button
           startIcon={<DownloadIcon />}
-          disabled={loadingForDownload}
+          disabled={isDownloadingFile}
           variant="contained"
           onClick={handleDownload}
           sx={{ mt: 4, width: "150px" }}
         >
-          {loadingForDownload ? <CircularProgress size={24} /> : "Download"}
+          {isDownloadingFile ? <CircularProgress size={24} /> : "Download"}
         </Button>
         <Typography
           sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
@@ -132,23 +139,24 @@ const ExportTaxonomy = ({ addNavLinks }) => {
         </Typography>
         <Button
           startIcon={<GitHubIcon />}
-          disabled={loadingForGithub}
+          disabled={isCreatingGithubPR}
           variant="contained"
           onClick={handleGithub}
           sx={{ mt: 4, width: "230px" }}
         >
-          {loadingForGithub ? (
+          {isCreatingGithubPR ? (
             <CircularProgress size={24} />
           ) : (
             "Create Pull Request"
           )}
         </Button>
       </Grid>
+
       {/* Snackbar to show errors */}
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={!!errorMessage}
-        autoHideDuration={3000}
+        open={errorMessage.length > 0}
+        autoHideDuration={6000}
         onClose={handleCloseErrorSnackbar}
       >
         <Alert
@@ -160,8 +168,9 @@ const ExportTaxonomy = ({ addNavLinks }) => {
           {errorMessage}
         </Alert>
       </Snackbar>
+
       {/* Dialog box for acknowledgement the creation of a pull request */}
-      <Dialog open={openSuccessDialog}>
+      <Dialog open={pullRequestURL.length > 0}>
         <DialogTitle>Your pull request has been created!</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -170,8 +179,8 @@ const ExportTaxonomy = ({ addNavLinks }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseSuccessDialog}>Cancel</Button>
-          <Button component={MuiLink} href={pullRequestURL} autoFocus>
+          <Button onClick={handleClosePullRequestDialog}>Cancel</Button>
+          <Button component={MuiLink} href={pullRequestURL}>
             Go to PR
           </Button>
         </DialogActions>
