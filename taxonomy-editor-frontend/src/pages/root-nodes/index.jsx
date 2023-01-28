@@ -52,6 +52,15 @@ const Entry = ({ addNavLinks }) => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
 
+  if (nodes) {
+    const flatNodes = nodes.flat();
+    const keys = flatNodes.map((item) => Object.keys(item)).flat();
+    const set1 = new Set(keys);
+    const arr1 = [...set1].sort();
+
+    console.log("hola", JSON.stringify(arr1));
+  }
+
   useEffect(
     function defineMainNavLinks() {
       if (!branchName || !taxonomyName) return;
