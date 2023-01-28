@@ -22,7 +22,13 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import { createBaseURL } from "../editentry/createURL";
 
 type Props = {
-  addNavLinks: () => void;
+  addNavLinks: ({
+    branchName,
+    taxonomyName,
+  }: {
+    branchName: string;
+    taxonomyName: string;
+  }) => void;
 };
 
 const ExportTaxonomy = ({ addNavLinks }: Props) => {
