@@ -9,15 +9,15 @@ import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
 
 type Props = {
-  resetNavLinks: () => void;
+  clearNavBarLinks: () => void;
 };
 
-const Home = ({ resetNavLinks }: Props) => {
+const Home = ({ clearNavBarLinks }: Props) => {
   useEffect(
     function cleanMainNavLinks() {
-      resetNavLinks();
+      clearNavBarLinks();
     },
-    [resetNavLinks]
+    [clearNavBarLinks]
   );
 
   return (
