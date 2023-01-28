@@ -21,7 +21,11 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 
 import { createBaseURL } from "../editentry/createURL";
 
-const ExportTaxonomy = ({ addNavLinks }) => {
+type Props = {
+  addNavLinks: () => void;
+};
+
+const ExportTaxonomy = ({ addNavLinks }: Props) => {
   const [isCreatingGithubPR, setIsCreatingGithubPR] = useState(false);
   const [pullRequestURL, setPullRequestURL] = useState("");
   const [isDownloadingFile, setIsDownloadingFile] = useState(false);
