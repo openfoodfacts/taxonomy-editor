@@ -84,7 +84,7 @@ const AddNodeDialogContent = ({
             setNewNodeName(e.target.value);
           }}
           value={newNodeName}
-          label="Node ID"
+          label="Node Name"
           size="small"
           variant="outlined"
         />
