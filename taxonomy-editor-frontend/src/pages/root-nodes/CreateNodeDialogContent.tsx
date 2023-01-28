@@ -96,7 +96,7 @@ const AddNodeDialogContent = ({
           disabled={!newLanguageCode || !newNodeName}
           onClick={handleAddNode}
         >
-          Add
+          Create
         </Button>
       </DialogActions>
     </>

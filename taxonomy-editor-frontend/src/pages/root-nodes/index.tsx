@@ -20,7 +20,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 
-import AddNodeDialogContent from "./AddNodeDialogContent";
+import CreateNodeDialogContent from "./CreateNodeDialogContent";
 import useFetch from "../../components/useFetch";
 import { createBaseURL } from "../editentry/createURL";
 import { toTitleCase } from "../../utils";
@@ -173,7 +173,7 @@ const RootNodes = ({ addNavLinks }: Props) => {
       <Dialog open={openCreateNodeDialog} onClose={handleCloseAddDialog}>
         <DialogTitle>Create new node</DialogTitle>
 
-        <AddNodeDialogContent
+        <CreateNodeDialogContent
           taxonomyName={taxonomyName}
           branchName={branchName}
           onCloseDialog={handleCloseAddDialog}
