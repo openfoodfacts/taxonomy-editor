@@ -1,3 +1,6 @@
+# to suppress the path translation in Windows
+export MSYS_NO_PATHCONV=1
+
 ifeq ($(findstring cmd.exe,$(SHELL)),cmd.exe)
     $(error "We do not suppport using cmd.exe on Windows, please run in a 'git bash' console")
 endif
