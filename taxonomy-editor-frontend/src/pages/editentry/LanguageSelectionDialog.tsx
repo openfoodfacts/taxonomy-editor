@@ -14,20 +14,24 @@ import {
 import { useState } from "react";
 import ISO6391 from "iso-639-1";
 
+type Props = {
+  handleClose: () => void;
+  mainLanguageCode: string;
+  handleDialogConfirm: (newLanguageCodes: string[]) => void;
+  shownLanguageCodes: string[];
+};
+
 const LanguageSelectionDialog = ({
   handleClose,
-  mainLanguage,
+  mainLanguageCode,
   handleDialogConfirm,
-  shownLanguages,
-}) => {
+  shownLanguageCodes,
+}: Props) => {
   const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([
-    ...shownLanguages,
-  ]); // Used for storing LCs that are selected in the checkbox (temporary state)
+    ...shownLanguageCodes,
+  ]);
 
-  const handleLanguageCheckToggle = (event) => {
-    const newLanguageCodes = event.target.value;
-    setNewShownLanguageCodes(newLanguageCodes);
-  };
+  const languageNames = [...ISO6391.getAllNames()].sort();
 
   return (
     <>
@@ -40,12 +44,15 @@ const LanguageSelectionDialog = ({
             id="multiple-lang-checkbox"
             multiple
             value={newShownLanguageCodes}
-            onChange={handleLanguageCheckToggle}
+            onChange={(event) =>
+              setNewShownLanguageCodes(event.target.value as string[])
+            }
             input={<OutlinedInput label="Languages" />}
             renderValue={(selected) =>
               selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
             }
           >
+<<<<<<< HEAD:taxonomy-editor-frontend/src/pages/editentry/LanguageSelectionDialog.jsx
             {ISO6391.getAllNames()
               .sort()
               .map(
@@ -63,6 +70,21 @@ const LanguageSelectionDialog = ({
                     </MenuItem>
                   )
               )}
+=======
+            {languageNames.map((languageNameItem) => {
+              const languageCode = ISO6391.getCode(languageNameItem);
+              return (
+                languageCode !== mainLanguageCode && (
+                  <MenuItem key={languageNameItem} value={languageCode}>
+                    <Checkbox
+                      checked={newShownLanguageCodes.indexOf(languageCode) > -1}
+                    />
+                    <ListItemText primary={languageNameItem} />
+                  </MenuItem>
+                )
+              );
+            })}
+>>>>>>> db3f481 (refactor: typescript, 2) moved utils to the utils file):taxonomy-editor-frontend/src/pages/editentry/LanguageSelectionDialog.tsx
           </Select>
         </FormControl>
       </DialogContent>

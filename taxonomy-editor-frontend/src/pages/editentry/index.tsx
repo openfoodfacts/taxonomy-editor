@@ -10,37 +10,41 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AccumulateAllComponents from "./AccumulateAllComponents";
 
-import { createBaseURL } from "./createURL";
+import { createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 
-const EditEntry = ({ addNavLinks }) => {
-  const { taxonomyName, branchName, id } = useParams();
-  const urlPrefix = `${taxonomyName}/${branchName}/`;
-  const baseUrl = createBaseURL(taxonomyName, branchName);
+type EditEntryProps = {
+  addNavLinks: ({
+    branchName,
+    taxonomyName,
+  }: {
+    branchName: string;
+    taxonomyName: string;
+  }) => void;
+  taxonomyName: string;
+  branchName: string;
+  id: string;
+};
+
+const EditEntry = ({
+  addNavLinks,
+  taxonomyName,
+  branchName,
+  id,
+}: EditEntryProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
   useEffect(
     function defineMainNavLinks() {
-      if (!branchName || !taxonomyName) return;
-
       addNavLinks({ branchName, taxonomyName });
     },
     [taxonomyName, branchName, addNavLinks]
   );
 
-  // Helper functions for Dialog component
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-  };
-  const handleOpenDeleteDialog = () => {
-    setOpenDeleteDialog(true);
-  };
-  const handleOpenSuccessDialog = () => {
-    setOpenSuccessDialog(true);
-  };
-
   const handleDeleteNode = () => {
+    const baseUrl = createBaseURL(taxonomyName, branchName);
+
     const data = { id: id };
     fetch(baseUrl + "nodes", {
       method: "DELETE",
@@ -48,8 +52,8 @@ const EditEntry = ({ addNavLinks }) => {
       body: JSON.stringify(data),
     })
       .then(() => {
-        handleCloseDeleteDialog();
-        handleOpenSuccessDialog();
+        setOpenDeleteDialog(false);
+        setOpenSuccessDialog(true);
       })
       .catch(() => {});
   };
@@ -64,18 +68,20 @@ const EditEntry = ({ addNavLinks }) => {
           </Typography>
           <IconButton
             sx={{ ml: 1, color: greyHexCode }}
-            onClick={handleOpenDeleteDialog}
+            onClick={() => setOpenDeleteDialog(true)}
           >
             <DeleteOutlineIcon />
           </IconButton>
         </Stack>
       </Box>
+
       {/* Renders node info based on id */}
       <AccumulateAllComponents
         id={id}
         taxonomyName={taxonomyName}
         branchName={branchName}
       />
+
       {/* Dialog box for confirmation of deletion of node */}
       <Dialog open={openDeleteDialog}>
         <DialogTitle>Delete a node</DialogTitle>
@@ -85,7 +91,7 @@ const EditEntry = ({ addNavLinks }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
           <Button
             sx={{ color: "#ff0000" }}
             onClick={handleDeleteNode}
@@ -95,6 +101,7 @@ const EditEntry = ({ addNavLinks }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
       {/* Dialog box for acknowledgement of deletion of node */}
       <Dialog
         open={openSuccessDialog}
@@ -102,7 +109,7 @@ const EditEntry = ({ addNavLinks }) => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Your edits have been saved!"}
+          Your edits have been saved!
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
@@ -110,7 +117,7 @@ const EditEntry = ({ addNavLinks }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button component={Link} to={`${urlPrefix}/entry`} autoFocus>
+          <Button component={Link} to={`${taxonomyName}/${branchName}/entry`}>
             Continue
           </Button>
         </DialogActions>
@@ -119,4 +126,30 @@ const EditEntry = ({ addNavLinks }) => {
   );
 };
 
-export default EditEntry;
+type EditEntryWrapperProps = {
+  addNavLinks: ({
+    branchName,
+    taxonomyName,
+  }: {
+    branchName: string;
+    taxonomyName: string;
+  }) => void;
+};
+
+const EditEntryWrapper = ({ addNavLinks }: EditEntryWrapperProps) => {
+  const { taxonomyName, branchName, id } = useParams();
+
+  if (!taxonomyName || !branchName || !id)
+    return <div>Ooops, something went wrong! Please try again later.</div>;
+
+  return (
+    <EditEntry
+      addNavLinks={addNavLinks}
+      taxonomyName={taxonomyName}
+      branchName={branchName}
+      id={id}
+    />
+  );
+};
+
+export default EditEntryWrapper;

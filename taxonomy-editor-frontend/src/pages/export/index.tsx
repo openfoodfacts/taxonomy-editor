@@ -19,9 +19,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DownloadIcon from "@mui/icons-material/Download";
 import GitHubIcon from "@mui/icons-material/GitHub";
 
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 
-type Props = {
+type ExportTaxonomyProps = {
   addNavLinks: ({
     branchName,
     taxonomyName,
@@ -29,21 +29,24 @@ type Props = {
     branchName: string;
     taxonomyName: string;
   }) => void;
+  taxonomyName: string;
+  branchName: string;
 };
 
-const ExportTaxonomy = ({ addNavLinks }: Props) => {
+const ExportTaxonomy = ({
+  addNavLinks,
+  taxonomyName,
+  branchName,
+}: ExportTaxonomyProps) => {
   const [isCreatingGithubPR, setIsCreatingGithubPR] = useState(false);
   const [pullRequestURL, setPullRequestURL] = useState("");
   const [isDownloadingFile, setIsDownloadingFile] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { taxonomyName, branchName } = useParams();
   const baseURL = createBaseURL(taxonomyName, branchName);
 
   useEffect(
     function defineMainNavLinks() {
-      if (!branchName || !taxonomyName) return;
-
       addNavLinks({ branchName, taxonomyName });
     },
     [taxonomyName, branchName, addNavLinks]
@@ -198,4 +201,29 @@ const ExportTaxonomy = ({ addNavLinks }: Props) => {
     </Box>
   );
 };
-export default ExportTaxonomy;
+
+type ExportTaxonomyWrapperProps = {
+  addNavLinks: ({
+    branchName,
+    taxonomyName,
+  }: {
+    branchName: string;
+    taxonomyName: string;
+  }) => void;
+};
+
+const ExportTaxonomyWrapper = ({ addNavLinks }: ExportTaxonomyWrapperProps) => {
+  const { taxonomyName, branchName } = useParams();
+
+  if (!taxonomyName || !branchName)
+    return <div>Ooops, something went wrong! Please try again later.</div>;
+
+  return (
+    <ExportTaxonomy
+      addNavLinks={addNavLinks}
+      taxonomyName={taxonomyName}
+      branchName={branchName}
+    />
+  );
+};
+export default ExportTaxonomyWrapper;
