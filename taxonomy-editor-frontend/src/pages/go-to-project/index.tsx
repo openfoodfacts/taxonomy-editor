@@ -38,7 +38,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
       const backendProjects = data.map(
         ({ id, branch_name, taxonomy_name, description, errors_count }) => {
           return {
-            id: Math.random().toString(), // Used as Material Table component key
+            id, // needed by MaterialTable as key
             projectName: id,
             taxonomyName: toTitleCase(taxonomy_name),
             branchName: branch_name,
