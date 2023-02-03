@@ -25,11 +25,7 @@ import useFetch from "../../components/useFetch";
 import { createBaseURL } from "../editentry/createURL";
 import { toTitleCase } from "../../utils";
 import { greyHexCode } from "../../constants";
-
-type DataType = {
-  id: string;
-  string: string | Array<string>;
-};
+import type { RootEntriesAPIResponse } from "../../backend-types/types";
 
 type Props = {
   addNavLinks: ({
@@ -54,7 +50,7 @@ const RootNodes = ({ addNavLinks }: Props) => {
     isPending,
     isError,
     errorMessage,
-  } = useFetch<Array<DataType[]>>(`${baseUrl}rootentries`);
+  } = useFetch<RootEntriesAPIResponse>(`${baseUrl}rootentries`);
 
   useEffect(
     function defineMainNavLinks() {
