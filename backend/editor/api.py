@@ -3,6 +3,8 @@ Taxonomy Editor Backend API
 """
 import logging
 import os
+import shutil
+import tempfile
 
 # Required imports
 # ------------------------------------------------------------------------------------#
@@ -11,7 +13,16 @@ from enum import Enum
 from typing import Optional
 
 # FastAPI
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response, status
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -379,13 +390,38 @@ async def import_from_github(
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=500, detail="Enter a valid branch name!")
+        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
-        raise HTTPException(status_code=500, detail="Project already exists!")
+        raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():
-        raise HTTPException(status_code=500, detail="Branch name should be unique!")
+        raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
     result = await taxonomy.import_from_github(description)
+    return result
+
+
+@app.post("/{taxonomy_name}/{branch}/upload")
+async def upload_taxonomy(
+    branch: str, taxonomy_name: str, file: UploadFile, description: str = Form(...)
+):
+    """
+    Upload taxonomy file to be parsed
+    """
+    # use the file name as the taxonomy name
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    if not taxonomy.is_valid_branch_name():
+        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
+    if await taxonomy.does_project_exist():
+        raise HTTPException(status_code=409, detail="Project already exists!")
+    if not await taxonomy.is_branch_unique():
+        raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
+
+    with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+        filepath = f"{tmpdir}/{file.filename}"
+        with open(filepath, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+        result = await taxonomy.upload_taxonomy(filepath, description)
+
     return result
 
 

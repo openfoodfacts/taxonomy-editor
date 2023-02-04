@@ -8,12 +8,16 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
 
-const Home = ({ resetNavLinks }) => {
+type Props = {
+  clearNavBarLinks: () => void;
+};
+
+const Home = ({ clearNavBarLinks }: Props) => {
   useEffect(
     function cleanMainNavLinks() {
-      resetNavLinks();
+      clearNavBarLinks();
     },
-    [resetNavLinks]
+    [clearNavBarLinks]
   );
 
   return (
