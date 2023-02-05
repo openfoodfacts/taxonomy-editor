@@ -4,7 +4,9 @@ Required pydantic models for API
 from typing import List
 
 from fastapi import Query
-from pydantic import BaseModel
+from pydantic import BaseModel, BaseConfig, validate_arguments
+
+BaseConfig.arbitrary_types_allowed = True
 
 
 class Marginal(BaseModel):
@@ -21,22 +23,21 @@ class Footer(Marginal):
 
 # Models for FastAPI
 
-
-class Entry:
-    result: []
-
-
 class CommonParameters:
     branch = "branch"
     taxonomy_name = "taxonomy_name"
 
+class Entry:
+    default: []
+    title: str
+    description: str
 
 class ImportFromGithubParameters(CommonParameters):
     pass
 
 
 class ImportFromGithubResponse(BaseModel):
-    status: str
+    status: bool
 
 
 class CreateNodeParameters(CommonParameters):
@@ -74,7 +75,7 @@ class EditHeaderParameters(CommonParameters):
 
 
 class EditHeaderResponse(BaseModel):
-    result: []
+    result: dict
 
 
 class EditFooterParameters(CommonParameters):
@@ -82,4 +83,4 @@ class EditFooterParameters(CommonParameters):
 
 
 class EditFooterResponse(BaseModel):
-    result: []
+    result: dict

@@ -374,13 +374,10 @@ async def export_to_github(
 # Post methods
 
 
-@app.post("/{taxonomy_name}/{branch}/import")
+@app.post("/{taxonomy_name}/{branch}/import", response_model=ImportFromGithubResponse)
 async def import_from_github(
-    request: Request,
-    branch: str,
-    taxonomy_name: str,
-    parameters: ImportFromGithubParameters,
-    response_model=ImportFromGithubResponse,
+    request: Request,   
+    parameters: ImportFromGithubParameters
 ):
     """
     Get taxonomy from Product Opener GitHub repository
@@ -388,7 +385,7 @@ async def import_from_github(
     incoming_data = await request.json()
     description = incoming_data["description"]
 
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
@@ -447,9 +444,9 @@ async def create_node(request: Request, parameters: CreateNodeParameters):
         await taxonomy.add_node_to_beginning(label, normalized_id)
 
 
-@app.post("/{taxonomy_name}/{branch}/entry/{entry}")
+@app.post("/{taxonomy_name}/{branch}/entry/{entry}", response_model=EditEntryResponse)
 async def edit_entry(
-    request: Request, parameters: EditEntryParameters, response_model=EditEntryResponse
+    request: Request, parameters: EditEntryParameters
 ):
     """
     Editing an entry in a taxonomy.
@@ -462,11 +459,10 @@ async def edit_entry(
     return updated_entry
 
 
-@app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")
+@app.post("/{taxonomy_name}/{branch}/entry/{entry}/children", response_model=EditChildrenResponse)
 async def edit_entry_children(
     request: Request,
-    parameters: EditChildrenParameters,
-    response_model=EditChildrenResponse,
+    parameters: EditChildrenParameters
 ):
     """
     Editing an entry's children in a taxonomy.
@@ -479,9 +475,9 @@ async def edit_entry_children(
     return updated_children
 
 
-@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}")
+@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}",  response_model=EditSynonymResponse)
 async def edit_synonyms(
-    request: Request, parameters: EditSynonymParameters, response_model=EditSynonymResponse
+    request: Request, parameters: EditSynonymParameters
 ):
     """
     Editing a synonym in a taxonomy.
@@ -507,8 +503,8 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
     return updated_stopword
 
 
-@app.post("/{taxonomy_name}/{branch}/header")
-async def edit_header(parameters: EditHeaderParameters, response_model: EditHeaderResponse):
+@app.post("/{taxonomy_name}/{branch}/header", response_model=EditHeaderResponse)
+async def edit_header(parameters: EditHeaderParameters):
     """
     Editing the __header__ in a taxonomy.
     """
@@ -519,8 +515,8 @@ async def edit_header(parameters: EditHeaderParameters, response_model: EditHead
     return updated_header
 
 
-@app.post("/{taxonomy_name}/{branch}/footer")
-async def edit_footer(parameters: EditFooterParameters, response_model: EditFooterResponse):
+@app.post("/{taxonomy_name}/{branch}/footer", response_model=EditFooterResponse)
+async def edit_footer(parameters: EditFooterParameters):
     """
     Editing the __footer__ in a taxonomy.
     """
