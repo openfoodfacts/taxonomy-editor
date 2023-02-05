@@ -1,15 +1,37 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, Reducer } from "react";
 
-const initialState = {
+type ReducerStateType<DataType> = {
+  status: "pending" | "success" | "fetching" | "error";
+  data: DataType | null;
+  errorMessage: string;
+};
+
+const initialState: ReducerStateType<null> = {
   status: "pending",
   data: null,
   errorMessage: "",
 };
 
-const reducer = (state, action) => {
+type ActionsType<DataType> =
+  | {
+      type: "fetching";
+    }
+  | {
+      type: "success";
+      data: DataType;
+    }
+  | {
+      type: "error";
+      errorMessage: string;
+    };
+
+const reducer = <DataType>(
+  state: ReducerStateType<DataType>,
+  action: ActionsType<DataType>
+): ReducerStateType<DataType> => {
   switch (action.type) {
     case "fetching":
-      return initialState;
+      return { ...initialState };
     case "success":
       return {
         status: "success",
@@ -27,8 +49,19 @@ const reducer = (state, action) => {
   }
 };
 
-const useFetch = (url) => {
-  const [fetchInfo, dispatch] = useReducer(reducer, initialState);
+type ReturnedType<DataType> = {
+  data: DataType | null;
+  isPending: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+  errorMessage: string | null;
+};
+
+const useFetch = <DataType>(url: string): ReturnedType<DataType> => {
+  const [fetchInfo, dispatch] = useReducer<
+    Reducer<ReducerStateType<DataType | null>, ActionsType<DataType>>
+  >(reducer, initialState);
+
   useEffect(() => {
     const abortCont = new AbortController();
 
