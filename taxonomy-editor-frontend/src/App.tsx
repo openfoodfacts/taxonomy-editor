@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
-import Entry from "./pages/allentries";
+import RootNodes from "./pages/root-nodes";
 import EditEntry from "./pages/editentry";
 import ExportTaxonomy from "./pages/export";
 import GoToProject from "./pages/go-to-project";
@@ -73,7 +73,7 @@ function App() {
           />
           <Route
             path=":taxonomyName/:branchName/entry"
-            element={<Entry addNavLinks={addTaxonomyBranchNavLinks} />}
+            element={<RootNodes addNavLinks={addTaxonomyBranchNavLinks} />}
           />
           <Route
             path=":taxonomyName/:branchName/entry/:id"
