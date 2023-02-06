@@ -52,7 +52,7 @@ const StartProject = ({ clearNavBarLinks }) => {
         if (!response.ok) {
           throw new Error(responseBody?.detail ?? "Unable to import");
         }
-        navigate(`/${taxonomyName}/${branchName}/entry`);
+        navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry`);
       })
       .catch(() => {
         setErrorMessage("Unable to import");
