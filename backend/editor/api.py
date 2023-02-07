@@ -36,21 +36,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models import (
-    CreateNodeParameters,
-    EditChildrenParameters,
-    EditChildrenResponse,
-    EditEntryParameters,
-    EditEntryResponse,
-    EditFooterParameters,
-    EditFooterResponse,
-    EditHeaderParameters,
-    EditHeaderResponse,
-    EditSynonymParameters,
-    EditSynonymResponse,
-    ImportFromGithubParameters,
-    ImportFromGithubResponse,
-)
+from . import models
 
 # -----------------------------------------------------------------------------------#
 
@@ -374,13 +360,17 @@ async def export_to_github(
 # Post methods
 
 
-@app.post("/{taxonomy_name}/{branch}/import", response_model=ImportFromGithubResponse)
+@app.post("/{taxonomy_name}/{branch}/import", response_model=models.ImportFromGithubResponse)
 async def import_from_github(
     request: Request,   
-    parameters: ImportFromGithubParameters
+    parameters: models.ImportFromGithubParameters,
 ):
     """
     Get taxonomy from Product Opener GitHub repository
+    
+    - **branch**: name of branch added by user
+    - **taxonomy**: name of the taxonomy added by user
+
     """
     incoming_data = await request.json()
     description = incoming_data["description"]
@@ -423,7 +413,7 @@ async def upload_taxonomy(
 
 
 @app.post("/{taxonomy_name}/{branch}/nodes")
-async def create_node(request: Request, parameters: CreateNodeParameters):
+async def create_node(request: Request, parameters: models.CreateNodeParameters):
     """
     Creating a new node in a taxonomy
     """
@@ -444,9 +434,9 @@ async def create_node(request: Request, parameters: CreateNodeParameters):
         await taxonomy.add_node_to_beginning(label, normalized_id)
 
 
-@app.post("/{taxonomy_name}/{branch}/entry/{entry}", response_model=EditEntryResponse)
+@app.post("/{taxonomy_name}/{branch}/entry/{entry}", response_model=models.EditEntryResponse)
 async def edit_entry(
-    request: Request, parameters: EditEntryParameters
+    request: Request, parameters: models.EditEntryParameters
 ):
     """
     Editing an entry in a taxonomy.
@@ -459,10 +449,10 @@ async def edit_entry(
     return updated_entry
 
 
-@app.post("/{taxonomy_name}/{branch}/entry/{entry}/children", response_model=EditChildrenResponse)
+@app.post("/{taxonomy_name}/{branch}/entry/{entry}/children", response_model=models.EditChildrenResponse)
 async def edit_entry_children(
     request: Request,
-    parameters: EditChildrenParameters
+    parameters: models.EditChildrenParameters
 ):
     """
     Editing an entry's children in a taxonomy.
@@ -475,9 +465,9 @@ async def edit_entry_children(
     return updated_children
 
 
-@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}",  response_model=EditSynonymResponse)
+@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}",  response_model=models.EditSynonymResponse)
 async def edit_synonyms(
-    request: Request, parameters: EditSynonymParameters
+    request: Request, parameters: models.EditSynonymParameters
 ):
     """
     Editing a synonym in a taxonomy.
@@ -503,8 +493,8 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
     return updated_stopword
 
 
-@app.post("/{taxonomy_name}/{branch}/header", response_model=EditHeaderResponse)
-async def edit_header(parameters: EditHeaderParameters):
+@app.post("/{taxonomy_name}/{branch}/header", response_model=models.EditHeaderResponse)
+async def edit_header(parameters: models.EditHeaderParameters):
     """
     Editing the __header__ in a taxonomy.
     """
@@ -515,8 +505,8 @@ async def edit_header(parameters: EditHeaderParameters):
     return updated_header
 
 
-@app.post("/{taxonomy_name}/{branch}/footer", response_model=EditFooterResponse)
-async def edit_footer(parameters: EditFooterParameters):
+@app.post("/{taxonomy_name}/{branch}/footer", response_model=models.EditFooterResponse)
+async def edit_footer(parameters: models.EditFooterParameters):
     """
     Editing the __footer__ in a taxonomy.
     """
