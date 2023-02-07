@@ -28,7 +28,7 @@ class CommonParameters:
     taxonomy_name = "taxonomy_name"
 
 class Entry:
-    default: []
+    default = []
     title: str
     description: str
 
