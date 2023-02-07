@@ -285,15 +285,9 @@ class TaxonomyGraph:
             ]
         )
 
-        queryResult = await get_current_transaction().run("\n".join(query), params)
+        query_result = await get_current_transaction().run("\n".join(query), params)
 
-        result = []
-
-        async for queryResultList in queryResult:
-            for item in queryResultList:
-                result.append(item)
-
-        return result
+        return [item async for result_list in query_result for item in result_list ]
 
     async def add_node_to_end(self, label, entry):
         """
