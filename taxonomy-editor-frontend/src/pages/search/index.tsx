@@ -14,9 +14,23 @@ import SearchIcon from "@mui/icons-material/Search";
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
 
-const SearchNode = ({ addNavLinks }) => {
-  const { taxonomyName, branchName } = useParams();
-  const [searchStringState, setSearchStringState] = useState("");
+type SearchNodeProps = {
+  addNavLinks: ({
+    branchName,
+    taxonomyName,
+  }: {
+    branchName: string;
+    taxonomyName: string;
+  }) => void;
+  taxonomyName: string;
+  branchName: string;
+};
+const SearchNode = ({
+  addNavLinks,
+  taxonomyName,
+  branchName,
+}: SearchNodeProps) => {
+  const [searchInput, setSearchInput] = useState("");
   const [queryFetchString, setQueryFetchString] = useState("");
 
   useEffect(
@@ -50,7 +64,7 @@ const SearchNode = ({ addNavLinks }) => {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            setQueryFetchString(searchStringState.trim());
+            setQueryFetchString(searchInput.trim());
           }}
         >
           <TextField
@@ -59,7 +73,7 @@ const SearchNode = ({ addNavLinks }) => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    disabled={searchStringState.trim().length === 0}
+                    disabled={searchInput.trim().length === 0}
                     type="submit"
                   >
                     <SearchIcon />
@@ -68,17 +82,14 @@ const SearchNode = ({ addNavLinks }) => {
               ),
             }}
             onKeyDown={(e) => {
-              if (
-                e.keyCode === ENTER_KEYCODE &&
-                searchStringState.length !== 0
-              ) {
-                setQueryFetchString(searchStringState.trim());
+              if (e.keyCode === ENTER_KEYCODE && searchInput.length !== 0) {
+                setQueryFetchString(searchInput.trim());
               }
             }}
             onChange={(event) => {
-              setSearchStringState(event.target.value);
+              setSearchInput(event.target.value);
             }}
-            value={searchStringState}
+            value={searchInput}
           />
         </form>
       </Grid>
@@ -93,4 +104,33 @@ const SearchNode = ({ addNavLinks }) => {
   );
 };
 
-export default SearchNode;
+type SearchNodeWrapperProps = {
+  addNavLinks: ({
+    branchName,
+    taxonomyName,
+  }: {
+    branchName: string;
+    taxonomyName: string;
+  }) => void;
+};
+
+const SearchNodeWrapper = ({ addNavLinks }: SearchNodeWrapperProps) => {
+  const { taxonomyName, branchName } = useParams();
+
+  if (!taxonomyName || !branchName)
+    return (
+      <Typography variant="h3">
+        Oops, something went wrong! Please try again later.
+      </Typography>
+    );
+
+  return (
+    <SearchNode
+      addNavLinks={addNavLinks}
+      taxonomyName={taxonomyName}
+      branchName={branchName}
+    />
+  );
+};
+
+export default SearchNodeWrapper;

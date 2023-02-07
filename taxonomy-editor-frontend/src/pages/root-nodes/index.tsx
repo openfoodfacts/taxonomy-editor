@@ -18,9 +18,8 @@ import TableRow from "@mui/material/TableRow";
 import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 
-import CreateNodeDialogContent from "./CreateNodeDialogContent";
+import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
 import useFetch from "../../components/useFetch";
 import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
@@ -169,8 +168,6 @@ const RootNodes = ({
 
       {/* Dialog box for adding nodes */}
       <Dialog open={openCreateNodeDialog} onClose={handleCloseAddDialog}>
-        <DialogTitle>Create new node</DialogTitle>
-
         <CreateNodeDialogContent
           taxonomyName={taxonomyName}
           branchName={branchName}
