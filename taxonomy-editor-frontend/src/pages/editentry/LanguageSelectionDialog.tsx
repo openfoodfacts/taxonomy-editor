@@ -32,8 +32,6 @@ const LanguageSelectionDialog = ({
     ...shownLanguageCodes,
   ]);
 
-  const languageNames = [...ISO6391.getAllNames()].sort();
-
   return (
     <>
       <DialogTitle>Select shown languages</DialogTitle>
@@ -53,39 +51,19 @@ const LanguageSelectionDialog = ({
               selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
             }
           >
-<<<<<<< HEAD:taxonomy-editor-frontend/src/pages/editentry/LanguageSelectionDialog.jsx
             {ISO6391.getAllNames()
               .sort()
-              .map(
-                (langName) =>
-                  langName !== mainLanguage.main_language && (
-                    <MenuItem key={langName} value={ISO6391.getCode(langName)}>
-                      <Checkbox
-                        checked={
-                          newShownLanguageCodes.indexOf(
-                            ISO6391.getCode(langName)
-                          ) > -1
-                        }
-                      />
-                      <ListItemText primary={langName} />
-                    </MenuItem>
-                  )
-              )}
-=======
-            {languageNames.map((languageNameItem) => {
-              const languageCode = ISO6391.getCode(languageNameItem);
-              return (
-                languageCode !== mainLanguageCode && (
-                  <MenuItem key={languageNameItem} value={languageCode}>
+              .map((languageNameItem) => {
+                const languageCodeItem = ISO6391.getCode(languageNameItem);
+                return languageCodeItem === mainLanguageCode ? null : (
+                  <MenuItem key={languageCodeItem} value={languageCodeItem}>
                     <Checkbox
-                      checked={newShownLanguageCodes.indexOf(languageCode) > -1}
+                      checked={newShownLanguageCodes.includes(languageCodeItem)}
                     />
                     <ListItemText primary={languageNameItem} />
                   </MenuItem>
-                )
-              );
-            })}
->>>>>>> db3f481 (refactor: typescript, 2) moved utils to the utils file):taxonomy-editor-frontend/src/pages/editentry/LanguageSelectionDialog.tsx
+                );
+              })}
           </Select>
         </FormControl>
       </DialogContent>

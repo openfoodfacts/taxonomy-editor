@@ -455,7 +455,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       <Dialog open={isDialogOpen} onClose={handleClose}>
         <LanguageSelectionDialog
           handleClose={handleClose}
-          mainLanguage={nodeObject.main_language}
+          mainLanguageCode={nodeObject.main_language}
           handleDialogConfirm={handleDialogConfirm}
           shownLanguageCodes={shownLanguageCodes}
         />
