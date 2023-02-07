@@ -25,6 +25,7 @@ type SearchNodeProps = {
   taxonomyName: string;
   branchName: string;
 };
+
 const SearchNode = ({
   addNavLinks,
   taxonomyName,
@@ -35,8 +36,6 @@ const SearchNode = ({
 
   useEffect(
     function defineMainNavLinks() {
-      if (!branchName || !taxonomyName) return;
-
       addNavLinks({ branchName, taxonomyName });
     },
     [taxonomyName, branchName, addNavLinks]
