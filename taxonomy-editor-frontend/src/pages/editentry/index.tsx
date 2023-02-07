@@ -92,11 +92,7 @@ const EditEntry = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
-          <Button
-            sx={{ color: "#ff0000" }}
-            onClick={handleDeleteNode}
-            autoFocus
-          >
+          <Button color="warning" onClick={handleDeleteNode} autoFocus>
             Delete
           </Button>
         </DialogActions>
@@ -117,7 +113,7 @@ const EditEntry = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button component={Link} to={`${taxonomyName}/${branchName}/entry`}>
+          <Button component={Link} to={`/${taxonomyName}/${branchName}/entry`}>
             Continue
           </Button>
         </DialogActions>
@@ -140,7 +136,11 @@ const EditEntryWrapper = ({ addNavLinks }: EditEntryWrapperProps) => {
   const { taxonomyName, branchName, id } = useParams();
 
   if (!taxonomyName || !branchName || !id)
-    return <div>Ooops, something went wrong! Please try again later.</div>;
+    return (
+      <Typography variant="h3">
+        Oops, something went wrong! Please try again later.
+      </Typography>
+    );
 
   return (
     <EditEntry

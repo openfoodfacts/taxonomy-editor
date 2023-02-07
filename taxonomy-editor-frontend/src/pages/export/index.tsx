@@ -216,7 +216,11 @@ const ExportTaxonomyWrapper = ({ addNavLinks }: ExportTaxonomyWrapperProps) => {
   const { taxonomyName, branchName } = useParams();
 
   if (!taxonomyName || !branchName)
-    return <div>Ooops, something went wrong! Please try again later.</div>;
+    return (
+      <Typography variant="h3">
+        Oops, something went wrong! Please try again later.
+      </Typography>
+    );
 
   return (
     <ExportTaxonomy

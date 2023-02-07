@@ -72,6 +72,6 @@ export const createURL = (
     case "entry":
       return `${baseUrl}entry/${id}`;
     default:
-      throw new Error(`Unhandled id type, id: ${id}`);
+      throw new Error(`Unknown id type, id: ${id}`);
   }
 };
