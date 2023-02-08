@@ -18,7 +18,6 @@ RUN groupadd -g $USER_GID off && \
 
 COPY backend/requirements*.txt /code/
 COPY backend/editor /code/editor
-COPY backend/tests /code/tests
 COPY parser  /parser
 
 RUN pip3 install --no-cache-dir --upgrade -r /code/$REQUIREMENTS_FILE
