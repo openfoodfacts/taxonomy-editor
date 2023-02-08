@@ -18,4 +18,6 @@ watchfiles==0.18.1
 websockets==10.3
 PyGithub==1.56
 python-multipart==0.0.5
+httpx==0.23.3
+pytest==7.1.2
 -e ../parser/
