@@ -1,7 +1,8 @@
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from editor.api import app
+
 
 @pytest.fixture
 def client():
