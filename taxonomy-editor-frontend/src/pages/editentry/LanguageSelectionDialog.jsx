@@ -46,17 +46,23 @@ const LanguageSelectionDialog = ({
               selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
             }
           >
-            {ISO6391.getAllCodes().map(
-              (langCode) =>
-                langCode !== mainLanguage.main_language && (
-                  <MenuItem key={langCode} value={langCode}>
-                    <Checkbox
-                      checked={newShownLanguageCodes.indexOf(langCode) > -1}
-                    />
-                    <ListItemText primary={ISO6391.getName(langCode)} />
-                  </MenuItem>
-                )
-            )}
+            {ISO6391.getAllNames()
+              .sort()
+              .map(
+                (langName) =>
+                  langName !== mainLanguage.main_language && (
+                    <MenuItem key={langName} value={ISO6391.getCode(langName)}>
+                      <Checkbox
+                        checked={
+                          newShownLanguageCodes.indexOf(
+                            ISO6391.getCode(langName)
+                          ) > -1
+                        }
+                      />
+                      <ListItemText primary={langName} />
+                    </MenuItem>
+                  )
+              )}
           </Select>
         </FormControl>
       </DialogContent>

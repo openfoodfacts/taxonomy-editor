@@ -23,7 +23,7 @@ type ProjectType = {
   status: string;
 };
 
-export type ProjectsAPIResponse = Array<ProjectType[]>;
+export type ProjectsAPIResponse = ProjectType[];
 
 type NodeType = {
   id: string;

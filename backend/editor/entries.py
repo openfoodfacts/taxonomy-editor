@@ -270,11 +270,13 @@ class TaxonomyGraph:
             "MATCH (n:PROJECT)",
             "OPTIONAL MATCH (error_node:ERRORS {branch_name: n.branch_name, id: n.id})",
         ]
+
         params = {}
         if status is not None:
             # List only projects matching status
             query.append("WHERE n.status = $status")
             params["status"] = status
+
         query.extend(
             [
                 "WITH n, size(error_node.errors) AS errors_count",
@@ -282,8 +284,10 @@ class TaxonomyGraph:
                 "ORDER BY n.created_at",
             ]
         )
-        result = await get_current_transaction().run("\n".join(query), params)
-        return await async_list(result)
+
+        query_result = await get_current_transaction().run("\n".join(query), params)
+
+        return [item async for result_list in query_result for item in result_list]
 
     async def add_node_to_end(self, label, entry):
         """

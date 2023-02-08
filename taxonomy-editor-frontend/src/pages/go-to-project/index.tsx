@@ -35,21 +35,18 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
     let newProjects: ProjectType[] = [];
 
     if (data) {
-      const backendProjects = data
-        .filter((projectsArrayItem) => projectsArrayItem[0])
-        .map((projectsArrayItem) => {
-          const { id, branch_name, taxonomy_name, description, errors_count } =
-            projectsArrayItem[0];
-
+      const backendProjects = data.map(
+        ({ id, branch_name, taxonomy_name, description, errors_count }) => {
           return {
-            id: Math.random().toString(), // Used as Material Table component key
+            id, // needed by MaterialTable as key
             projectName: id,
             taxonomyName: toTitleCase(taxonomy_name),
             branchName: branch_name,
             description: description,
             errors_count: errors_count,
           };
-        });
+        }
+      );
 
       newProjects = backendProjects;
     }
