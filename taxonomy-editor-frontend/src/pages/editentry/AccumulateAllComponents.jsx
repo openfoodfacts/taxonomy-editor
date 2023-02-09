@@ -1,4 +1,5 @@
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, Snackbar, Typography, Fab } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import ListEntryParents from "./ListEntryParents";
@@ -29,8 +30,19 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     errorMessage,
   } = useFetch(url);
   const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
+  const [originalNodeObject, setOriginalNodeObject] = useState(null); // For tracking changes
   const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
   const [open, setOpen] = useState(false); // Used for Dialog component
+  const [changesMade, setChangesMade] = useState(false); // Used for Dialog component
+
+  // Tracking changes
+  useEffect(() => {
+    if (nodeObject && originalNodeObject) {
+      const changesMade =
+        JSON.stringify(nodeObject) !== JSON.stringify(originalNodeObject);
+      setChangesMade(changesMade);
+    }
+  }, [nodeObject, originalNodeObject]);
 
   // Setting state of node after fetch
   useEffect(() => {
@@ -54,6 +66,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       });
     }
     setNodeObject(duplicateNode);
+    setOriginalNodeObject(JSON.parse(JSON.stringify(duplicateNode))); // Deep copy
   }, [node]);
 
   // Displaying error messages if any
@@ -145,14 +158,18 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
           />{" "}
         </>
       )}
-      {/* Button for submitting edits */}
-      <Button
-        variant="contained"
-        onClick={handleSubmit}
-        sx={{ ml: 4, mt: 2, width: 130, mb: 2 }}
-      >
-        Submit
-      </Button>
+      {/* Fab for submitting edits */}
+      {changesMade && (
+        <Fab
+          variant="extended"
+          onClick={handleSubmit}
+          color="primary"
+          sx={{ position: "fixed", bottom: 16, left: 16 }}
+        >
+          <SaveIcon sx={{ mr: 1 }} />
+          Save Changes
+        </Fab>
+      )}
       {/* Snackbar for acknowledgment of update */}
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
