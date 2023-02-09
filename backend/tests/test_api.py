@@ -15,7 +15,35 @@ def test_setup(neo4j):
 def test_hello(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Hello user! Tip: open /docs or /redoc for documentation"}
+    assert response.json() == {
+        "message": "Hello user! Tip: open /docs or /redoc for documentation"
+    }
+
+
+def test_ping(client):
+    response = client.get("/ping")
+    assert response.status_code == 200
+    assert response.json().get("ping").startswith("pong @")
+
+
+def test_import_from_github(client):
+    response = client.post(
+        "/states/testing_branch/import",
+        json={"description": "test_description"},
+    )
+    assert response.status_code == 200
+    assert response.json() == True
+
+
+def test_upload_taxonomy(client):
+    with open("tests/data/test.txt", "rb") as f:
+        response = client.post(
+            "/test_taxonomy/test_branch/upload",
+            files={"file": f},
+            data={"description": "test_description"},
+        )
+    assert response.status_code == 200
+    assert response.json() == True
 
 
 def test_delete_project(neo4j, client):
