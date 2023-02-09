@@ -87,7 +87,6 @@ backend_tests:
 	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
-
 checks: quality tests
 
 
