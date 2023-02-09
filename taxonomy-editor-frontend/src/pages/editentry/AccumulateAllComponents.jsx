@@ -33,7 +33,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   const [originalNodeObject, setOriginalNodeObject] = useState(null); // For tracking changes
   const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
   const [open, setOpen] = useState(false); // Used for Dialog component
-  const [changesMade, setChangesMade] = useState(false); // Used for Dialog component
+  const [changesMade, setChangesMade] = useState(false); // Used for displaying Fab
 
   // Tracking changes
   useEffect(() => {
