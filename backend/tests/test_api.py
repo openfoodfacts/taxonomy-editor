@@ -32,7 +32,7 @@ def test_import_from_github(client):
         json={"description": "test_description"},
     )
     assert response.status_code == 200
-    assert response.json() == True
+    assert response.json() is True
 
 
 def test_upload_taxonomy(client):
@@ -43,7 +43,7 @@ def test_upload_taxonomy(client):
             data={"description": "test_description"},
         )
     assert response.status_code == 200
-    assert response.json() == True
+    assert response.json() is True
 
 
 def test_add_taxonomy_duplicate_branch_name(client):
