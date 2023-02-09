@@ -74,7 +74,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
   }
 
   return (
-    <Box>
+    <Box sx={{ overflowY: "scroll" }}>
       <Grid
         container
         direction="column"
