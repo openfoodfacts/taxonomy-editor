@@ -28,7 +28,7 @@ def test_ping(client):
 
 def test_import_from_github(client):
     response = client.post(
-        "/states/testing_branch/import",
+        "/test/testing_branch/import",
         json={"description": "test_description"},
     )
     assert response.status_code == 200
@@ -44,6 +44,39 @@ def test_upload_taxonomy(client):
         )
     assert response.status_code == 200
     assert response.json() == True
+
+
+def test_add_taxonomy_duplicate_branch_name(client):
+    with open("tests/data/test.txt", "rb") as f:
+        response = client.post(
+            "/test_taxonomy_2/test_branch/upload",
+            files={"file": f},
+            data={"description": "test_description"},
+        )
+    assert response.status_code == 409
+    assert response.json() == {"detail": "branch_name: Branch name should be unique!"}
+
+
+def test_add_taxonomy_invalid_branch_name(client):
+    with open("tests/data/test.txt", "rb") as f:
+        response = client.post(
+            "/test_taxonomy/invalid-branch-name/upload",
+            files={"file": f},
+            data={"description": "test_description"},
+        )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
+
+
+def test_add_taxonomy_duplicate_project_name(client):
+    with open("tests/data/test.txt", "rb") as f:
+        response = client.post(
+            "/test_taxonomy/test_branch/upload",
+            files={"file": f},
+            data={"description": "test_description"},
+        )
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Project already exists!"}
 
 
 def test_delete_project(neo4j, client):

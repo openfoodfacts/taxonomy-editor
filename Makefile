@@ -87,6 +87,10 @@ backend_tests:
 	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
+delete_test_db:
+	@echo "🍜 Deleting test database"
+	${DOCKER_COMPOSE_TEST} down -v
+
 checks: quality tests
 
 
