@@ -418,8 +418,8 @@ class TaxonomyGraph:
                 WHERE child_node.id = $id
             RETURN parent.id
         """
-        result = await get_current_transaction().run(query, {"id": entry})
-        return await async_list(result)
+        query_result = await get_current_transaction().run(query, {"id": entry})
+        return [item async for result_list in query_result for item in result_list]
 
     async def get_children(self, entry):
         """
