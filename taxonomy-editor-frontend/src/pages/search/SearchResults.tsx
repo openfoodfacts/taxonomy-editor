@@ -36,8 +36,7 @@ type Props = {
 
 const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
   const [openNewNodeDialog, setOpenNewNodeDialog] = useState(false);
-  const [showNewNodeSuccessSnackbar, setShowNewNodeSuccessSnackbar] =
-    useState(false);
+  const [showNewNodeSuccess, setShowNewNodeSuccess] = useState(false);
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const {
@@ -52,7 +51,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
   };
 
   const handleCloseSuccessSnackbar = () => {
-    setShowNewNodeSuccessSnackbar(false);
+    setShowNewNodeSuccess(false);
   };
 
   // Displaying errorMessages if any
@@ -155,7 +154,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
             onCloseDialog={handleCloseAddDialog}
             onSuccess={() => {
               setOpenNewNodeDialog(false);
-              setShowNewNodeSuccessSnackbar(true);
+              setShowNewNodeSuccess(true);
             }}
           />
         </Dialog>
@@ -163,7 +162,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
         {/* Snackbar for acknowledgment of addition of node */}
         <Snackbar
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          open={showNewNodeSuccessSnackbar}
+          open={showNewNodeSuccess}
           autoHideDuration={3000}
           onClose={handleCloseSuccessSnackbar}
         >
