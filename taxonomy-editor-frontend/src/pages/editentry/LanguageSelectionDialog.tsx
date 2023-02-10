@@ -41,10 +41,11 @@ const LanguageSelectionDialog = ({
           <Select
             labelId="multiple-lang-checkbox-label"
             id="multiple-lang-checkbox"
-            multiple
             value={newShownLanguageCodes}
-            onChange={(event) =>
-              setNewShownLanguageCodes(event.target.value as string[])
+            multiple
+            onChange={
+              (event) =>
+                setNewShownLanguageCodes(event.target.value as string[]) // type casting to string[] due to the `multiple` prop
             }
             input={<OutlinedInput label="Languages" />}
             renderValue={(selected) =>
