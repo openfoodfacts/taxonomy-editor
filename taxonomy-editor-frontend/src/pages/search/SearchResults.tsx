@@ -35,8 +35,8 @@ type Props = {
 };
 
 const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
-  const [openCreateNodeDialog, setOpenCreateNodeDialog] = useState(false);
-  const [createNodeOpenSuccessSnackbar, setCreateNodeOpenSuccessSnackbar] =
+  const [openNewNodeDialog, setOpenNewNodeDialog] = useState(false);
+  const [showNewNodeSuccessSnackbar, setShowNewNodeSuccessSnackbar] =
     useState(false);
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
@@ -48,11 +48,11 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
   } = useFetch<SearchAPIResponse>(`${baseUrl}search?query=${encodeURI(query)}`);
 
   const handleCloseAddDialog = () => {
-    setOpenCreateNodeDialog(false);
+    setOpenNewNodeDialog(false);
   };
 
   const handleCloseSuccessSnackbar = () => {
-    setCreateNodeOpenSuccessSnackbar(false);
+    setShowNewNodeSuccessSnackbar(false);
   };
 
   // Displaying errorMessages if any
@@ -115,7 +115,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
                   <IconButton
                     sx={{ ml: 1, color: greyHexCode }}
                     onClick={() => {
-                      setOpenCreateNodeDialog(true);
+                      setOpenNewNodeDialog(true);
                     }}
                   >
                     <AddBoxIcon />
@@ -148,14 +148,14 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
         </TableContainer>
 
         {/* Dialog box for adding nodes */}
-        <Dialog open={openCreateNodeDialog} onClose={handleCloseAddDialog}>
+        <Dialog open={openNewNodeDialog} onClose={handleCloseAddDialog}>
           <CreateNodeDialogContent
             taxonomyName={taxonomyName}
             branchName={branchName}
             onCloseDialog={handleCloseAddDialog}
             onSuccess={() => {
-              setOpenCreateNodeDialog(false);
-              setCreateNodeOpenSuccessSnackbar(true);
+              setOpenNewNodeDialog(false);
+              setShowNewNodeSuccessSnackbar(true);
             }}
           />
         </Dialog>
@@ -163,7 +163,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
         {/* Snackbar for acknowledgment of addition of node */}
         <Snackbar
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          open={createNodeOpenSuccessSnackbar}
+          open={showNewNodeSuccessSnackbar}
           autoHideDuration={3000}
           onClose={handleCloseSuccessSnackbar}
         >
