@@ -23,7 +23,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
 
 import useFetch from "../../components/useFetch";
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { SearchAPIResponse } from "../../backend-types/types";
 import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
