@@ -9,7 +9,7 @@ import Alert from "@mui/material/Alert";
 
 import ISO6391 from "iso-639-1";
 
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 
 type Props = {
   onCloseDialog: () => void;

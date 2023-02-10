@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 
 import { TAXONOMY_NAMES } from "../../constants";
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 import { toSnakeCase } from "../../utils";
 
 const StartProject = ({ clearNavBarLinks }) => {

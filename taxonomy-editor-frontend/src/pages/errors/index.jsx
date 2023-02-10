@@ -1,6 +1,6 @@
 import useFetch from "../../components/useFetch";
 import { toTitleCase } from "../../utils";
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 import { useParams } from "react-router-dom";
 import {
   Box,

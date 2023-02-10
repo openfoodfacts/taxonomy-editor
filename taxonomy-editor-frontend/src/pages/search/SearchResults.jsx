@@ -31,7 +31,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Select from "@mui/material/Select";
 import ISO6391 from "iso-639-1";
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 
 const SearchResults = ({ query, taxonomyName, branchName }) => {
