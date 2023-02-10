@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ISO6391 from "iso-639-1";
 
 import { TextField, Button, FormControl, InputLabel } from "@mui/material";
 import DialogActions from "@mui/material/DialogActions";
@@ -6,10 +7,9 @@ import DialogContent from "@mui/material/DialogContent";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
+import DialogTitle from "@mui/material/DialogTitle";
 
-import ISO6391 from "iso-639-1";
-
-import { createBaseURL } from "../../utils";
+import { createBaseURL } from "../utils";
 
 type Props = {
   onCloseDialog: () => void;
@@ -18,7 +18,7 @@ type Props = {
   branchName: string;
 };
 
-const AddNodeDialogContent = ({
+const CreateNodeDialogContent = ({
   onCloseDialog,
   onSuccess,
   taxonomyName,
@@ -53,6 +53,7 @@ const AddNodeDialogContent = ({
 
   return (
     <>
+      <DialogTitle>Create new node</DialogTitle>
       <DialogContent>
         {isFailedSubmit && (
           <Alert severity="error">
@@ -103,4 +104,4 @@ const AddNodeDialogContent = ({
   );
 };
 
-export default AddNodeDialogContent;
+export default CreateNodeDialogContent;
