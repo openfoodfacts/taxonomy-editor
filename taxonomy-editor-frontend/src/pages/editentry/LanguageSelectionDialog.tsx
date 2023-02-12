@@ -1,3 +1,6 @@
+import { useState } from "react";
+import ISO6391 from "iso-639-1";
+
 import {
   OutlinedInput,
   InputLabel,
@@ -11,23 +14,23 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { useState } from "react";
-import ISO6391 from "iso-639-1";
+
+type Props = {
+  handleClose: () => void;
+  mainLanguageCode: string;
+  handleDialogConfirm: (newLanguageCodes: string[]) => void;
+  shownLanguageCodes: string[];
+};
 
 const LanguageSelectionDialog = ({
   handleClose,
-  mainLanguage,
+  mainLanguageCode,
   handleDialogConfirm,
-  shownLanguages,
-}) => {
+  shownLanguageCodes,
+}: Props) => {
   const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([
-    ...shownLanguages,
-  ]); // Used for storing LCs that are selected in the checkbox (temporary state)
-
-  const handleLanguageCheckToggle = (event) => {
-    const newLanguageCodes = event.target.value;
-    setNewShownLanguageCodes(newLanguageCodes);
-  };
+    ...shownLanguageCodes,
+  ]);
 
   return (
     <>
@@ -38,25 +41,30 @@ const LanguageSelectionDialog = ({
           <Select
             labelId="multiple-lang-checkbox-label"
             id="multiple-lang-checkbox"
-            multiple
             value={newShownLanguageCodes}
-            onChange={handleLanguageCheckToggle}
+            multiple
+            onChange={
+              (event) =>
+                setNewShownLanguageCodes(event.target.value as string[]) // type casting to string[] due to the `multiple` prop
+            }
             input={<OutlinedInput label="Languages" />}
             renderValue={(selected) =>
               selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
             }
           >
-            {ISO6391.getAllCodes().map(
-              (langCode) =>
-                langCode !== mainLanguage.main_language && (
-                  <MenuItem key={langCode} value={langCode}>
+            {ISO6391.getAllNames()
+              .sort()
+              .map((languageNameItem) => {
+                const languageCodeItem = ISO6391.getCode(languageNameItem);
+                return languageCodeItem === mainLanguageCode ? null : (
+                  <MenuItem key={languageCodeItem} value={languageCodeItem}>
                     <Checkbox
-                      checked={newShownLanguageCodes.indexOf(langCode) > -1}
+                      checked={newShownLanguageCodes.includes(languageCodeItem)}
                     />
-                    <ListItemText primary={ISO6391.getName(langCode)} />
+                    <ListItemText primary={languageNameItem} />
                   </MenuItem>
-                )
-            )}
+                );
+              })}
           </Select>
         </FormControl>
       </DialogContent>

@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 
 import { TAXONOMY_NAMES } from "../../constants";
-import { createBaseURL } from "../editentry/createURL";
+import { createBaseURL } from "../../utils";
 import { toSnakeCase } from "../../utils";
 
 const StartProject = ({ clearNavBarLinks }) => {
@@ -52,7 +52,7 @@ const StartProject = ({ clearNavBarLinks }) => {
         if (!response.ok) {
           throw new Error(responseBody?.detail ?? "Unable to import");
         }
-        navigate(`/${taxonomyName}/${branchName}/entry`);
+        navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry`);
       })
       .catch(() => {
         setErrorMessage("Unable to import");

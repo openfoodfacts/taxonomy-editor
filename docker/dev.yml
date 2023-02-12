@@ -16,6 +16,7 @@ services:
     volumes:
       # in development mode, mount code directory dynamically
       - ./backend/editor:/code/editor
+      - ./backend/tests:/code/tests
       - ./parser:/parser
       # for linting / checks purpose
       - ./backend/pyproject.toml:/code/pyproject.toml

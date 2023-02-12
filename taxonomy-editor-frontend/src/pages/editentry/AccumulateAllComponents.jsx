@@ -6,7 +6,7 @@ import ListEntryChildren from "./ListEntryChildren";
 import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
-import { createURL, getIdType } from "./createURL";
+import { createURL, getNodeType } from "../../utils";
 
 /**
  * Component used for rendering node information
@@ -18,7 +18,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   // Finding URL to send requests
   const url = createURL(taxonomyName, branchName, id);
   const urlPrefix = `/${taxonomyName}/${branchName}`;
-  const isEntry = getIdType(id) === "entry";
+  const isEntry = getNodeType(id) === "entry";
 
   /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
   const {

@@ -25,7 +25,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   const [mainLangRenderedTranslations, setMainLangRenderedTranslations] =
     useState([]); // Stores state of main language's tags
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Used for Dialog component
-  const [shownLanguages, setShownLanguages] = useState([]); // Used for storing LCs that are shown in the interface
+  const [shownLanguageCodes, setShownLanguageCodes] = useState([]); // Used for storing LCs that are shown in the interface
 
   const [expandedLanguages, setExpandedLanguages] = useState([]);
   // Helper functions for Dialog component
@@ -75,7 +75,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     newShownLanguageCodes.forEach((languageCode) => {
       handleAddTranslation(languageCode);
     });
-    setShownLanguages(newShownLanguageCodes);
+    setShownLanguageCodes(newShownLanguageCodes);
     localStorage.setItem(
       SHOWN_LANGUAGES_KEY,
       JSON.stringify(newShownLanguageCodes)
@@ -179,7 +179,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
       if (localStorageShownLanguages) {
         // if shown languages is not empty, use it
-        setShownLanguages(localStorageShownLanguages);
+        setShownLanguageCodes(localStorageShownLanguages);
         localStorageShownLanguages.forEach((languageCode) => {
           handleAddTranslation(languageCode);
         });
@@ -333,7 +333,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
           Translations
         </Typography>
         <Button sx={{ mt: 3.5, ml: 1 }} onClick={handleOpen}>
-          {"(" + shownLanguages.length + " languages shown)"}
+          {"(" + shownLanguageCodes.length + " languages shown)"}
         </Button>
       </Stack>
 
@@ -386,7 +386,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
       {/* All other languages */}
       {renderedTranslations.map((allTagsObj) => {
-        if (shownLanguages.includes(allTagsObj["languageCode"])) {
+        if (shownLanguageCodes.includes(allTagsObj["languageCode"])) {
           const lang = allTagsObj["languageCode"];
           const tagValue = allTagsObj["tags"];
           return (
@@ -455,9 +455,9 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       <Dialog open={isDialogOpen} onClose={handleClose}>
         <LanguageSelectionDialog
           handleClose={handleClose}
-          mainLanguage={nodeObject.main_language}
+          mainLanguageCode={nodeObject.main_language}
           handleDialogConfirm={handleDialogConfirm}
-          shownLanguages={shownLanguages}
+          shownLanguageCodes={shownLanguageCodes}
         />
       </Dialog>
     </Box>
