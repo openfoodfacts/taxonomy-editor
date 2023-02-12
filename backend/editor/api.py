@@ -28,15 +28,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
+# Data model imports
 # DB helper imports
-from . import graph_db
+from . import graph_db, models
 from .entries import TaxonomyGraph
 
 # Custom exceptions
 from .exceptions import GithubBranchExistsError, GithubUploadError
-
-# Data model imports
-from . import models
 
 # -----------------------------------------------------------------------------------#
 
@@ -362,12 +360,12 @@ async def export_to_github(
 
 @app.post("/{taxonomy_name}/{branch}/import", response_model=models.ImportFromGithubResponse)
 async def import_from_github(
-    request: Request,   
+    request: Request,
     parameters: models.ImportFromGithubParameters,
 ):
     """
     Get taxonomy from Product Opener GitHub repository
-    
+
     - **branch**: name of branch added by user
     - **taxonomy**: name of the taxonomy added by user
 
@@ -435,9 +433,7 @@ async def create_node(request: Request, parameters: models.CreateNodeParameters)
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}", response_model=models.EditEntryResponse)
-async def edit_entry(
-    request: Request, parameters: models.EditEntryParameters
-):
+async def edit_entry(request: Request, parameters: models.EditEntryParameters):
     """
     Editing an entry in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.
@@ -446,14 +442,15 @@ async def edit_entry(
     taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     incoming_data = await request.json()
     updated_entry = await taxonomy.update_nodes("ENTRY", parameters.entry, incoming_data)
+    print("jagruti")
+    print(updated_entry)
     return updated_entry
 
 
-@app.post("/{taxonomy_name}/{branch}/entry/{entry}/children", response_model=models.EditChildrenResponse)
-async def edit_entry_children(
-    request: Request,
-    parameters: models.EditChildrenParameters
-):
+@app.post(
+    "/{taxonomy_name}/{branch}/entry/{entry}/children", response_model=models.EditChildrenResponse
+)
+async def edit_entry_children(request: Request, parameters: models.EditChildrenParameters):
     """
     Editing an entry's children in a taxonomy.
     New children can be added, old children can be removed.
@@ -465,10 +462,8 @@ async def edit_entry_children(
     return updated_children
 
 
-@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}",  response_model=models.EditSynonymResponse)
-async def edit_synonyms(
-    request: Request, parameters: models.EditSynonymParameters
-):
+@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}", response_model=models.EditSynonymResponse)
+async def edit_synonyms(request: Request, parameters: models.EditSynonymParameters):
     """
     Editing a synonym in a taxonomy.
     New key-value pairs can be added, old key-value pairs can be updated.

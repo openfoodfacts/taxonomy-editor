@@ -4,13 +4,13 @@ Required pydantic models for API
 from typing import List
 
 from fastapi import Query
-from pydantic import BaseModel, BaseConfig, validate_arguments
+from pydantic import BaseConfig, BaseModel
 
 BaseConfig.arbitrary_types_allowed = True
 
 
 class Marginal(BaseModel):
-    preceding_lines: List
+    preceding_lines: List = Query(description="A list of preceding lines")
 
 
 class Header(Marginal):
@@ -23,21 +23,23 @@ class Footer(Marginal):
 
 # Models for FastAPI
 
-class CommonParameters:
-    branch = "branch"
-    taxonomy_name = "taxonomy_name"
 
-class Entry:
-    default = []
-    title: str
-    description: str
+class CommonParameters(BaseModel):
+    branch: str = Query(description="Name of the branch")
+    taxonomy_name: str = Query(description="Name of the taxonomy")
+
+
+class Entry(CommonParameters):
+    entry: str = Query(description="Name of the entry")
+    id: str = Query(description="Id of the entry")
+
 
 class ImportFromGithubParameters(CommonParameters):
     pass
 
 
 class ImportFromGithubResponse(BaseModel):
-    status: bool
+    status: bool = Query(description="Return true or false value")
 
 
 class CreateNodeParameters(CommonParameters):
@@ -45,29 +47,27 @@ class CreateNodeParameters(CommonParameters):
 
 
 class EditEntryParameters(CommonParameters):
-    entry: str
+    entry: str = Query(description="Name of the entry")
 
 
 class EditEntryResponse(BaseModel):
-    result: list[Entry] = Query(
-        default=[], title="Result of edited entry", description="Returns a list of Entry objects"
-    )
+    result: List[Entry]
 
 
 class EditChildrenParameters(CommonParameters):
-    entry: str
+    entry: str = Query(description="Name of the entry")
 
 
 class EditChildrenResponse(BaseModel):
-    result = []
+    result: List
 
 
 class EditSynonymParameters(CommonParameters):
-    entry: str
+    entry: str = Query(description="Name of the entry")
 
 
 class EditSynonymResponse(BaseModel):
-    result = []
+    result: List
 
 
 class EditHeaderParameters(CommonParameters):
