@@ -442,8 +442,6 @@ async def edit_entry(request: Request, parameters: models.EditEntryParameters):
     taxonomy = TaxonomyGraph(parameters.branch, parameters.taxonomy_name)
     incoming_data = await request.json()
     updated_entry = await taxonomy.update_nodes("ENTRY", parameters.entry, incoming_data)
-    print("jagruti")
-    print(updated_entry)
     return updated_entry
 
 
