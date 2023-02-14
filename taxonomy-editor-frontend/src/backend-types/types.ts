@@ -33,3 +33,5 @@ type NodeType = {
 export type RootEntriesAPIResponse = Array<NodeType[]>;
 
 export type SearchAPIResponse = string[];
+
+export type ParentsAPIResponse = string[];

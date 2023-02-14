@@ -117,8 +117,10 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         <Box>
           {!!nodeObject && (
             <>
-              {" "}
-              <ListEntryParents url={url + "/parents"} urlPrefix={urlPrefix} />
+              <ListEntryParents
+                fetchUrl={url + "/parents"}
+                linkHrefPrefix={urlPrefix}
+              />
               <ListEntryChildren
                 url={url + "/children"}
                 urlPrefix={urlPrefix}
@@ -131,18 +133,17 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
               <ListAllEntryProperties
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
-              />{" "}
+              />
             </>
           )}
         </Box>
       ) : (
         <>
-          {" "}
           <ListAllNonEntryInfo
             nodeObject={nodeObject}
             id={id}
             setNodeObject={setNodeObject}
-          />{" "}
+          />
         </>
       )}
       {/* Button for submitting edits */}
