@@ -39,10 +39,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       duplicateNode = { ...node[0] };
       // Adding UUIDs for tags and properties
       Object.keys(node[0]).forEach((key) => {
-        if (
-          key.startsWith("tags") &&
-          !key.includes("ids")
-        ) {
+        if (key.startsWith("tags") && !key.includes("ids")) {
           duplicateNode[key + "_uuid"] = [];
           duplicateNode[key].forEach(() => {
             duplicateNode[key + "_uuid"].push(Math.random().toString());
