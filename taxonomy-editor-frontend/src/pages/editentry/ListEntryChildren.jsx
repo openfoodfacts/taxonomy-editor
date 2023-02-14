@@ -19,6 +19,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
 import { ENTER_KEYCODE } from "../../constants";
 import { greyHexCode } from "../../constants";
+import Loader from "../../components/Loader";
 
 const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
   const [relations, setRelations] = useState(null);
@@ -87,9 +88,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
   }
   if (isPending) {
     return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
+      <Loader />
     );
   }
   return (

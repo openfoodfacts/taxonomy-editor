@@ -2,6 +2,7 @@ import useFetch from "../../components/useFetch";
 import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Loader from "../../components/Loader";
 
 const ListEntryParents = ({ url, urlPrefix }) => {
   const [relations, setRelations] = useState(null);
@@ -28,9 +29,7 @@ const ListEntryParents = ({ url, urlPrefix }) => {
   }
   if (isPending) {
     return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
+      <Loader />
     );
   }
   return (

@@ -24,6 +24,7 @@ import useFetch from "../../components/useFetch";
 import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
+import Loader from "../../components/Loader";
 
 type RootNodesProps = {
   addNavLinks: ({
@@ -80,9 +81,7 @@ const RootNodes = ({
 
   if (isPending || !nodes) {
     return (
-      <Box>
-        <Typography variant="h5">Loading...</Typography>
-      </Box>
+     <Loader />
     );
   }
 

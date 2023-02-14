@@ -7,6 +7,7 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getNodeType } from "../../utils";
+import Loader from "../../components/Loader";
 
 /**
  * Component used for rendering node information
@@ -68,9 +69,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   // Loading...
   if (isPending) {
     return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
+      <Loader />
     );
   }
 
