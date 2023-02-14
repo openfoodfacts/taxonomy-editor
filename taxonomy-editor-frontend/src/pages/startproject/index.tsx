@@ -19,7 +19,7 @@ import {
 import { TAXONOMY_NAMES } from "../../constants";
 import { createBaseURL, toSnakeCase } from "../../utils";
 
-const BranchNameRegEx = /[^a-z0-9_]+/;
+const branchNameRegEx = /[^a-z0-9_]+/;
 
 const StartProject = ({ clearNavBarLinks }) => {
   const [branchName, setBranchName] = useState("");
@@ -66,7 +66,7 @@ const StartProject = ({ clearNavBarLinks }) => {
   };
 
 
-  const isValidBranchName = BranchNameRegEx.test(branchName);
+  const isInvalidBranchName = branchNameRegEx.test(branchName);
 
   return (
     <Box>
@@ -100,8 +100,8 @@ const StartProject = ({ clearNavBarLinks }) => {
 
         <div>
           <TextField
-            error={isValidBranchName}
-            helperText={isValidBranchName && "Special characters, capital letters and white spaces are not allowed"}
+            error={isInvalidBranchName}
+            helperText={isInvalidBranchName && "Special characters, capital letters and white spaces are not allowed"}
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
@@ -131,7 +131,7 @@ const StartProject = ({ clearNavBarLinks }) => {
           variant="contained"
           sx={{ mt: 3 }}
           onClick={handleSubmit}
-          disabled={!branchName || !taxonomyName || loading || isValidBranchName}
+          disabled={!branchName || !taxonomyName || loading || isInvalidBranchName}
         >
           {loading ? (
             <>
