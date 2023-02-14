@@ -39,7 +39,8 @@ class ImportFromGithubParameters(CommonParameters):
 
 
 class ImportFromGithubResponse(BaseModel):
-    status: bool = Query(description="Return true or false value")
+    status: bool = Query(description="True if import was successful")
+
 
 
 class CreateNodeParameters(CommonParameters):
