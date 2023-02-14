@@ -26,7 +26,7 @@ const StartProject = ({ clearNavBarLinks }) => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [branchNameError, setBranchNameError] = useState(false);
+  const [showBranchNameError, setShowBranchNameError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(
@@ -97,18 +97,18 @@ const StartProject = ({ clearNavBarLinks }) => {
 
         <div>
           <TextField
-            error={branchNameError}
-            helperText={branchNameError && "Special characters or white spaces are not allowed"}
+            error={showBranchNameError}
+            helperText={showBranchNameError && "Special characters or white spaces are not allowed"}
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
               setBranchName(event.target.value);
-              const format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\s]+/;
-              if(format.test(event.target.value)){
-                setBranchNameError(true);
+              const specialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\s]+/;
+              if(specialChar.test(event.target.value)){
+                setShowBranchNameError(true);
               }
               else{
-                setBranchNameError(false)
+                setShowBranchNameError(false)
               }
             }}
             value={branchName}
