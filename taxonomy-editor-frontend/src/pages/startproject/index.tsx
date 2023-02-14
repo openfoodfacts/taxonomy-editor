@@ -135,7 +135,7 @@ const StartProject = ({ clearNavBarLinks }) => {
           variant="contained"
           sx={{ mt: 3 }}
           onClick={handleSubmit}
-          disabled={!branchName || !taxonomyName || loading}
+          disabled={!branchName || !taxonomyName || loading || showBranchNameError}
         >
           {loading ? (
             <>
