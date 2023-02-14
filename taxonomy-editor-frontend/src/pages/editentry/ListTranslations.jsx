@@ -108,8 +108,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
       if (
         key.startsWith("tags") &&
-        !key.includes("ids") &&
-        !key.includes("str")
+        !key.includes("ids")
       ) {
         if (key.endsWith("uuid")) {
           const uuids = nodeObject[key];

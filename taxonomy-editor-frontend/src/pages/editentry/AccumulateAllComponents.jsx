@@ -41,8 +41,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       Object.keys(node[0]).forEach((key) => {
         if (
           key.startsWith("tags") &&
-          !key.includes("ids") &&
-          !key.includes("str")
+          !key.includes("ids")
         ) {
           duplicateNode[key + "_uuid"] = [];
           duplicateNode[key].forEach(() => {
