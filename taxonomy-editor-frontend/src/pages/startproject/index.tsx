@@ -98,12 +98,12 @@ const StartProject = ({ clearNavBarLinks }) => {
         <div>
           <TextField
             error={showBranchNameError}
-            helperText={showBranchNameError && "Special characters or white spaces are not allowed"}
+            helperText={showBranchNameError && "Special characters, capital letters and white spaces are not allowed"}
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
               setBranchName(event.target.value);
-              const specialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\s]+/;
+              const specialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\sA-Z]+/;
               if(specialChar.test(event.target.value)){
                 setShowBranchNameError(true);
               }
