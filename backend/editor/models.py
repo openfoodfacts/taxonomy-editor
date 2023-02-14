@@ -20,9 +20,7 @@ class Header(Marginal):
 class Footer(Marginal):
     pass
 
-
 # Models for FastAPI
-
 
 class CommonParameters(BaseModel):
     branch: str = Query(description="Name of the branch")
@@ -67,7 +65,7 @@ class EditSynonymParameters(CommonParameters):
 
 
 class EditSynonymResponse(BaseModel):
-    result: List
+    result: List 
 
 
 class EditHeaderParameters(CommonParameters):
