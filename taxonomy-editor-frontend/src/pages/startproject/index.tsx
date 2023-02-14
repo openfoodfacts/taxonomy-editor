@@ -17,8 +17,9 @@ import {
 } from "@mui/material";
 
 import { TAXONOMY_NAMES } from "../../constants";
-import { createBaseURL } from "../../utils";
-import { toSnakeCase } from "../../utils";
+import { createBaseURL, toSnakeCase } from "../../utils";
+
+const BranchNameRegEx = /[^a-z0-9_]+/;
 
 const StartProject = ({ clearNavBarLinks }) => {
   const [branchName, setBranchName] = useState("");
@@ -26,7 +27,6 @@ const StartProject = ({ clearNavBarLinks }) => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showBranchNameError, setShowBranchNameError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(
@@ -65,6 +65,9 @@ const StartProject = ({ clearNavBarLinks }) => {
     setErrorMessage("");
   };
 
+
+  const textFieldError = BranchNameRegEx.test(branchName);
+
   return (
     <Box>
       <Grid
@@ -97,19 +100,12 @@ const StartProject = ({ clearNavBarLinks }) => {
 
         <div>
           <TextField
-            error={showBranchNameError}
-            helperText={showBranchNameError && "Special characters, capital letters and white spaces are not allowed"}
+            error={textFieldError}
+            helperText={textFieldError && "Special characters, capital letters and white spaces are not allowed"}
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
               setBranchName(event.target.value);
-              const specialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\sA-Z]+/;
-              if(specialChar.test(event.target.value)){
-                setShowBranchNameError(true);
-              }
-              else{
-                setShowBranchNameError(false)
-              }
             }}
             value={branchName}
             variant="outlined"
@@ -135,7 +131,7 @@ const StartProject = ({ clearNavBarLinks }) => {
           variant="contained"
           sx={{ mt: 3 }}
           onClick={handleSubmit}
-          disabled={!branchName || !taxonomyName || loading || showBranchNameError}
+          disabled={!branchName || !taxonomyName || loading || textFieldError}
         >
           {loading ? (
             <>
