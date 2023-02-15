@@ -86,11 +86,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
     );
   }
   if (isPending) {
-    return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
-    );
+    return <Loader />;
   }
   return (
     <Box>
