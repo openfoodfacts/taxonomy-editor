@@ -4,6 +4,7 @@ import { Box, Typography } from "@mui/material";
 
 import useFetch from "../../components/useFetch";
 import type { ParentsAPIResponse } from "../../backend-types/types";
+import Loader from "../../components/Loader";
 
 type Props = {
   fetchUrl: string;
@@ -25,11 +26,7 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
   }
 
   if (isPending) {
-    return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading...
-      </Typography>
-    );
+    return <Loader />;
   }
 
   return (

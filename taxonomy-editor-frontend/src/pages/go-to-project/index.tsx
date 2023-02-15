@@ -9,6 +9,7 @@ import useFetch from "../../components/useFetch";
 import { API_URL } from "../../constants";
 import { toSnakeCase, toTitleCase } from "../../utils";
 import type { ProjectsAPIResponse } from "../../backend-types/types";
+import Loader from "../../components/Loader";
 
 type ProjectType = {
   id: string;
@@ -70,7 +71,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
   }
 
   if (isPending) {
-    return <Typography variant="h5">Loading..</Typography>;
+    return <Loader />;
   }
 
   return (

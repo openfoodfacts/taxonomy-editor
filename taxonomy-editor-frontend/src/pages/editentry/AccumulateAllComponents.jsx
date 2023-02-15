@@ -63,11 +63,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
   // Loading...
   if (isPending) {
-    return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
-    );
+    return <Loader />;
   }
 
   // Helper functions for Dialog component
