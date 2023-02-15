@@ -330,7 +330,6 @@ class Parser:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
                     data["tags_" + lang] = tags_list
-                    data["tags_" + lang + "_str"] = " ".join(tags_list)
                     data["tags_ids_" + lang] = tagsids_list
                 else:
                     # property definition
@@ -439,7 +438,7 @@ class Parser:
         self.session.run("".join(query))
 
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
-        tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
+        tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
         query = f"""CREATE FULLTEXT INDEX {project_name+'_SearchTags'} IF NOT EXISTS
             FOR (n:{project_name}) ON EACH [{tags_prefixed_lc}]"""

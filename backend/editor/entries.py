@@ -465,7 +465,7 @@ class TaxonomyGraph:
         # Adding normalized tags ids corresponding to entry tags
         normalised_new_node_keys = {}
         for keys in new_node_keys.keys():
-            if keys.startswith("tags_") and not keys.endswith("_str"):
+            if keys.startswith("tags_"):
                 if "_ids_" not in keys:
                     keys_language_code = keys.split("_", 1)[1]
                     normalised_value = []
