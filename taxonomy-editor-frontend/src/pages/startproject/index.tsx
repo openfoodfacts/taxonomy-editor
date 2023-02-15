@@ -65,7 +65,6 @@ const StartProject = ({ clearNavBarLinks }) => {
     setErrorMessage("");
   };
 
-
   const isInvalidBranchName = branchNameRegEx.test(branchName);
 
   return (
@@ -101,7 +100,10 @@ const StartProject = ({ clearNavBarLinks }) => {
         <div>
           <TextField
             error={isInvalidBranchName}
-            helperText={isInvalidBranchName && "Special characters, capital letters and white spaces are not allowed"}
+            helperText={
+              isInvalidBranchName &&
+              "Special characters, capital letters and white spaces are not allowed"
+            }
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
@@ -131,7 +133,9 @@ const StartProject = ({ clearNavBarLinks }) => {
           variant="contained"
           sx={{ mt: 3 }}
           onClick={handleSubmit}
-          disabled={!branchName || !taxonomyName || loading || isInvalidBranchName}
+          disabled={
+            !branchName || !taxonomyName || loading || isInvalidBranchName
+          }
         >
           {loading ? (
             <>
