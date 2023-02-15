@@ -87,9 +87,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
     );
   }
   if (isPending) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
   return (
     <Box>

@@ -28,9 +28,7 @@ const ListEntryParents = ({ url, urlPrefix }) => {
     );
   }
   if (isPending) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
   return (
     <Box>

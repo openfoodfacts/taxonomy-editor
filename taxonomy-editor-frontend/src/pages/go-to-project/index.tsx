@@ -71,9 +71,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
   }
 
   if (isPending) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (

@@ -80,9 +80,7 @@ const RootNodes = ({
   }
 
   if (isPending || !nodes) {
-    return (
-     <Loader />
-    );
+    return <Loader />;
   }
 
   return (

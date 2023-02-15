@@ -68,9 +68,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
   // Loading...
   if (isPending) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   // Helper functions for Dialog component
