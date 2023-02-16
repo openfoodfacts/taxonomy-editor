@@ -9,6 +9,7 @@ import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import equal from "fast-deep-equal";
 import { createURL, getNodeType } from "../../utils";
+import Loader from "../../components/Loader";
 
 /**
  * Component used for rendering node information
