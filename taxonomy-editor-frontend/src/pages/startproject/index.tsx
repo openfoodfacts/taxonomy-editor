@@ -17,8 +17,9 @@ import {
 } from "@mui/material";
 
 import { TAXONOMY_NAMES } from "../../constants";
-import { createBaseURL } from "../../utils";
-import { toSnakeCase } from "../../utils";
+import { createBaseURL, toSnakeCase } from "../../utils";
+
+const branchNameRegEx = /[^a-z0-9_]+/;
 
 const StartProject = ({ clearNavBarLinks }) => {
   const [branchName, setBranchName] = useState("");
@@ -64,6 +65,8 @@ const StartProject = ({ clearNavBarLinks }) => {
     setErrorMessage("");
   };
 
+  const isInvalidBranchName = branchNameRegEx.test(branchName);
+
   return (
     <Box>
       <Grid
@@ -96,6 +99,11 @@ const StartProject = ({ clearNavBarLinks }) => {
 
         <div>
           <TextField
+            error={isInvalidBranchName}
+            helperText={
+              isInvalidBranchName &&
+              "Special characters, capital letters and white spaces are not allowed"
+            }
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={(event) => {
@@ -125,7 +133,9 @@ const StartProject = ({ clearNavBarLinks }) => {
           variant="contained"
           sx={{ mt: 3 }}
           onClick={handleSubmit}
-          disabled={!branchName || !taxonomyName || loading}
+          disabled={
+            !branchName || !taxonomyName || loading || isInvalidBranchName
+          }
         >
           {loading ? (
             <>
