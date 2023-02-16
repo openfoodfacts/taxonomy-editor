@@ -7,6 +7,7 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getNodeType } from "../../utils";
+import Loader from "../../components/Loader";
 
 /**
  * Component used for rendering node information
