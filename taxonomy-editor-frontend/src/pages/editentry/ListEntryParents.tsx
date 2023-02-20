@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 
 import { Box, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import useFetch from "../../components/useFetch";
 import type { ParentsAPIResponse } from "../../backend-types/types";
-import Loader from "../../components/Loader";
 
 type Props = {
   fetchUrl: string;
@@ -26,7 +26,16 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
   }
 
   if (isPending) {
-    return <Loader />;
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 5,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (

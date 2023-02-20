@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
 import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import useFetch from "../../components/useFetch";
 import { API_URL } from "../../constants";
 import { toSnakeCase, toTitleCase } from "../../utils";
 import type { ProjectsAPIResponse } from "../../backend-types/types";
-import Loader from "../../components/Loader";
 
 type ProjectType = {
   id: string;
@@ -71,7 +71,16 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
   }
 
   if (isPending) {
-    return <Loader />;
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 10,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (

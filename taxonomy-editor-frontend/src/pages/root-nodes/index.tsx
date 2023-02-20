@@ -18,13 +18,13 @@ import TableRow from "@mui/material/TableRow";
 import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
 import useFetch from "../../components/useFetch";
 import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
-import Loader from "../../components/Loader";
 
 type RootNodesProps = {
   addNavLinks: ({
@@ -80,7 +80,16 @@ const RootNodes = ({
   }
 
   if (isPending || !nodes) {
-    return <Loader />;
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 10,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (

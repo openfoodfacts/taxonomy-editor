@@ -16,10 +16,10 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import CircularProgress from "@mui/material/CircularProgress";
 import ISO6391 from "iso-639-1";
 import { ENTER_KEYCODE } from "../../constants";
 import { greyHexCode } from "../../constants";
-import Loader from "../../components/Loader";
 
 const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
   const [relations, setRelations] = useState(null);
@@ -87,7 +87,16 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
     );
   }
   if (isPending) {
-    return <Loader />;
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 5,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
   return (
     <Box>

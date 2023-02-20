@@ -1,4 +1,5 @@
 import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import ListEntryParents from "./ListEntryParents";
@@ -7,7 +8,6 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import { createURL, getNodeType } from "../../utils";
-import Loader from "../../components/Loader";
 
 /**
  * Component used for rendering node information
@@ -64,7 +64,16 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
 
   // Loading...
   if (isPending) {
-    return <Loader />;
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 5,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   // Helper functions for Dialog component
