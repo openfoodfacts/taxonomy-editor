@@ -1,4 +1,4 @@
-import { Alert, Box, Snackbar, Typography, Fab } from "@mui/material";
+import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
@@ -7,6 +7,7 @@ import ListEntryChildren from "./ListEntryChildren";
 import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
+import equal from "fast-deep-equal";
 import { createURL, getIdType } from "./createURL";
 
 /**
@@ -39,10 +40,10 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   useEffect(() => {
     if (nodeObject && originalNodeObject) {
       const changesMade =
-        JSON.stringify(nodeObject) !== JSON.stringify(originalNodeObject);
+        !equal(nodeObject, originalNodeObject) || updateChildren.length !== 0;
       setChangesMade(changesMade);
     }
-  }, [nodeObject, originalNodeObject]);
+  }, [nodeObject, originalNodeObject, updateChildren]);
 
   // Setting state of node after fetch
   useEffect(() => {
@@ -120,6 +121,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     )
       .then(() => {
         setOpen(true);
+        setChangesMade(false);
       })
       .catch(() => {});
   };
@@ -141,6 +143,30 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
               />
+              {/* Fab for submitting edits */}
+              {changesMade && (
+                <div
+                  style={{
+                    backgroundColor: "white",
+                    position: "sticky",
+                    bottom: 0,
+                    zIndex: 1,
+                  }}
+                >
+                  <Button
+                    onClick={handleSubmit}
+                    variant="contained"
+                    sx={{
+                      marginTop: 2,
+                      marginBottom: 2,
+                      marginLeft: 4,
+                    }}
+                  >
+                    <SaveIcon sx={{ mr: 1 }} />
+                    Save Changes
+                  </Button>
+                </div>
+              )}
               <ListAllEntryProperties
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
@@ -157,18 +183,6 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
             setNodeObject={setNodeObject}
           />{" "}
         </>
-      )}
-      {/* Fab for submitting edits */}
-      {changesMade && (
-        <Fab
-          variant="extended"
-          onClick={handleSubmit}
-          color="primary"
-          sx={{ position: "fixed", bottom: 16, left: 16 }}
-        >
-          <SaveIcon sx={{ mr: 1 }} />
-          Save Changes
-        </Fab>
       )}
       {/* Snackbar for acknowledgment of update */}
       <Snackbar
