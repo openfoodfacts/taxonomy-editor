@@ -513,3 +513,12 @@ async def delete_node(request: Request, branch: str, taxonomy_name: str):
     incoming_data = await request.json()
     id = incoming_data["id"]
     await taxonomy.delete_node(taxonomy.get_label(id), id)
+
+
+@app.delete("/{taxonomy_name}/{branch}/delete")
+async def delete_project(response: Response, branch: str, taxonomy_name: str):
+    """
+    Delete a project
+    """
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    await taxonomy.delete_taxonomy_project(branch, taxonomy_name)
