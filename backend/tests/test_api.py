@@ -6,7 +6,7 @@ from falcon import testing
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes and relations in the database
-    query = "MATCH (n:p_test_branch:t_test:b_branch) DETACH DELETE n"
+    query = "MATCH n DETACH DELETE n"
     neo4j.session().run(query)
     query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
     neo4j.session().run(query)
