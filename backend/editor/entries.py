@@ -613,10 +613,9 @@ class TaxonomyGraph:
         """
         Delete taxonomy projects
         """
-
+        
         query = f"""
             MATCH (n:{self.project_name}) DETACH DELETE n
         """
-
         result = await get_current_transaction().run(query)
         return result
