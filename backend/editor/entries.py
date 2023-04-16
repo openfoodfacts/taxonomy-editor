@@ -613,7 +613,7 @@ class TaxonomyGraph:
         """
         Delete taxonomy projects
         """
-        
+
         query = f"""
             MATCH (n:{self.project_name}) DETACH DELETE n
         """
