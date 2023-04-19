@@ -24,10 +24,10 @@ TLDR: Taxonomies are at the 🧡 of Open Food Facts data structure. This project
 
 The Open Food Facts database contains a lot of information on food products, such as ingredients, labels, additives etc. 
 
-Because thus domains evolves and their can be local peculiarities, we always let people freely enter informations (with suggestions) and we structure a posteriori. Structured informations can be more easily exploited (for example to compute the Nutri-Score, detect allergens, etc.).
-Taxonomy also brings more informations (for example is an ingredient vegan, link to other databases like agribalyse or wikidata).
+Because food industry evolves and there can be local peculiarities, we always let people freely enter informations (with suggestions) and we structure afterwards. Structured informations can be more easily exploited (for example to compute the Nutri-Score, detect allergens, etc.).
+Taxonomy also brings more informations about products (for example, if an ingredient is vegan, a link to other databases like agribalyse or wikidata…).
 Hence, taxonomies are at the heart of data structures in the Open Food Facts database and must be maintained properly.
- For more information see the [wiki page about Taxonomies](https://wiki.openfoodfacts.org/Global_taxonomies).
+For more information see the [wiki page about Taxonomies](https://wiki.openfoodfacts.org/Global_taxonomies).
 
 Currently a taxonomy in Open Food Facts is a raw text file containing a Directed Acyclic Graph (DAG) where each leaf node has one or more parent nodes.  
 The [taxonomy files present in Open Food Facts](https://github.com/openfoodfacts/openfoodfacts-server/tree/main/taxonomies) are long to read (ingredients.txt taxonomy alone has around 80000 lines!) and cumbersome to edit by contributors. It's also difficult to have a high level overview of a taxonomy or grasp its structure.
