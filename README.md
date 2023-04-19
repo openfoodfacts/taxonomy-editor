@@ -18,7 +18,7 @@
 ![Github Repo Size](https://img.shields.io/github/repo-size/openfoodfacts/taxonomy-editor?color=aqua)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-## What is this project about
+## What is this project about?
 
 TLDR: Taxonomies are at the 🧡 of Open Food Facts data structure. This project provides an user-friendly editor for editing taxonomies easily.
 
@@ -32,17 +32,17 @@ This project aims to provide a web based user-friendly interface for editing tax
 
 This tool can help a lot:
 * enable searching and navigating the taxonomy
-* enable occasional users to contribute translations and synonyms and thus enrich the taxonomy
-* help spot problems in the taxonomy (missing translations, missing pathes, etc.), get useful statistics about it
+* enable anyone to contribute translations and synonyms, thus enriching the taxonomy
+* help spot problems in the taxonomy (missing translations, missing paths, etc.), and get useful statistics about it
 * provide helpers to assist power contributors in enriching the taxonomy (eg. find corresponding wikidata entry)
-* offer an API to the taxonomy for third party applications (complementing the exsting API)
+* offer an API to the taxonomy for third party applications (complementing the existing API)
 
-## Why is this project appealing
+## Why is this project appealing?
 
-* Python and ReactJS stack
-* it uses a graph database: Neo4J and you can do a lot of useful and interesting requests
+* Python and ReactJS tech stack (a powerful combo)
+* Runs on a easy-to-learn graph database - Neo4J, using which you can do a lot of useful and interesting requests
 * not so huge and focused, you can quickly get your hands on it
-* it can have a hudge impact on Open Food Facts:
+* it can have a huge impact for Open Food Facts:
   * more language support: reaching more countries
   * better analysis of ingredients: more allergy detection, potential finer computation of environment scorer
   * better classification of products: enable product comparisons, environment score computations, etc.
@@ -50,8 +50,8 @@ This tool can help a lot:
 
 ## How to help
 
-Currently we are focusing on having a basic usable product. See [Move to MVP v2](https://github.com/openfoodfacts/taxonomy-editor/issues/167).
-A typescript migration is also in progress, we also try to simplify the API.
+Currently we are focusing on bringing the application to a minimum viable product. See [Move to MVP v2](https://github.com/openfoodfacts/taxonomy-editor/issues/167).
+A typescript migration is in progress, and we are also trying to simplify the API as well.
 
 * [GitHub Project](https://github.com/orgs/openfoodfacts/projects/28/views/1) &nbsp;
 * [Meeting Notes](https://docs.google.com/document/d/1tdYkUmoRU8BxFPdCwtewoUi7PV8PmDlXtExOcPYyu-I/edit#) </p>
