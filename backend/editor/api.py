@@ -521,4 +521,5 @@ async def delete_project(response: Response, branch: str, taxonomy_name: str):
     Delete a project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    await taxonomy.delete_taxonomy_project(branch, taxonomy_name)
+    result_data = await taxonomy.delete_taxonomy_project(branch, taxonomy_name)
+    return {"message": "Deleted {} projects".format(result_data)}

@@ -27,17 +27,29 @@ def test_delete_project(neo4j, client):
         SET n.branch_name = 'test_branch_name'
         SET n.description = 'test_description'
         SET n.status = 'OPEN'
+        SET n.project_name = 'p_test_taxonomy_name_test_branch_name'
         SET n.created_at = datetime()
     """
     result = session.run(create_project)
+
+    # check if the record was created
+    query = """
+        MATCH (n:PROJECT {id: 'test_project'})
+        RETURN n.id, n.taxonomy_name, n.branch_name, n.description, n.status, n.created_at, n.project_name
+    """
+    result = session.run(query)
+    record = result.single()
+
+    assert record['n.id'] == 'test_project'
+    assert record['n.taxonomy_name'] == 'test_taxonomy_name'
+    assert record['n.branch_name'] == 'test_branch_name'
+    assert record['n.description'] == 'test_description'
+    assert record['n.status'] == 'OPEN'
+    assert record['n.created_at'] is not None
+    assert record['n.project_name'] == "p_test_taxonomy_name_test_branch_name"
+    # check ends here
+
     response = client.delete("/test_taxonomy_name/test_branch_name/delete")
     assert response.status_code == 200
-    # assert response.json() == {"message": ""}
-
-    # this is temporary test, just to check if the branch and taxonomy are  created
-    query = "MATCH (n:test_taxonomy_name:test_branch_name) RETURN COUNT(*)"
-    result = session.run(query)
-    number_of_nodes = result.value()[0]
-    assert number_of_nodes == 0
-
+    assert response.json() == {"message": "Deleted 1 projects"}
     session.close()

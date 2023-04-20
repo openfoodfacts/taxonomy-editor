@@ -615,7 +615,8 @@ class TaxonomyGraph:
         """
 
         query = f"""
-            MATCH (n:{self.project_name}) DETACH DELETE n
+            MATCH (n:{self.project_name}) DETACH DELETE n RETURN count(n)
         """
         result = await get_current_transaction().run(query)
-        return result
+        count = await result.single()
+        return count[0]
