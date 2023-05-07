@@ -24,32 +24,31 @@ def test_delete_project(neo4j, client):
         CREATE (n:PROJECT)
         SET n.id = 'test_project'
         SET n.taxonomy_name = 'test_taxonomy_name'
-        SET n.branch_name = 'test_branch_name'
+        SET n.branch = 'test_branch'
         SET n.description = 'test_description'
         SET n.status = 'OPEN'
         SET n.project_name = 'p_test_taxonomy_name_test_branch_name'
         SET n.created_at = datetime()
     """
-    result = session.run(create_project)
 
-    # check if the record was created
-    query = """
-        MATCH (n:PROJECT {id: 'test_project'})
-        RETURN n.id, n.taxonomy_name, n.branch_name, n.description, n.status, n.created_at, n.project_name
+    create_project2 = """
+        CREATE (n:PROJECT)
+        SET n.id = 'test_project2'
+        SET n.taxonomy_name = 'test_taxonomy_name2'
+        SET n.branch = 'test_branch2'
+        SET n.description = 'test_description2'
+        SET n.status = 'OPEN'
+        SET n.project_name = 'p_test_taxonomy_name_test_branch_name2'
+        SET n.created_at = datetime()
     """
-    result = session.run(query)
-    record = result.single()
+    session.run(create_project)
+    session.run(create_project2)
 
-    assert record['n.id'] == 'test_project'
-    assert record['n.taxonomy_name'] == 'test_taxonomy_name'
-    assert record['n.branch_name'] == 'test_branch_name'
-    assert record['n.description'] == 'test_description'
-    assert record['n.status'] == 'OPEN'
-    assert record['n.created_at'] is not None
-    assert record['n.project_name'] == "p_test_taxonomy_name_test_branch_name"
-    # check ends here
+    response = client.delete("/test_taxonomy_name/test_branch/delete")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Deleted 1 projects"}
 
-    response = client.delete("/test_taxonomy_name/test_branch_name/delete")
+    response = client.delete("/test_taxonomy_name2/test_branch2/delete")
     assert response.status_code == 200
     assert response.json() == {"message": "Deleted 1 projects"}
     session.close()

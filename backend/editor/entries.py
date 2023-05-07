@@ -614,9 +614,13 @@ class TaxonomyGraph:
         Delete taxonomy projects
         """
 
-        query = f"""
-            MATCH (n:{self.project_name}) DETACH DELETE n RETURN count(n)
+        delete_query = """
+            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch: $branch})
+            DELETE n
         """
-        result = await get_current_transaction().run(query)
-        count = await result.single()
-        return count[0]
+        result = await get_current_transaction().run(
+            delete_query, taxonomy_name=taxonomy_name, branch=branch
+        )
+        summary = await result.consume()
+        count = summary.counters.nodes_deleted
+        return count
