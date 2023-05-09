@@ -608,3 +608,19 @@ class TaxonomyGraph:
         _result = await get_current_transaction().run(query, params)
         result = [record["node"] for record in await _result.data()]
         return result
+
+    async def delete_taxonomy_project(self, branch, taxonomy_name):
+        """
+        Delete taxonomy projects
+        """
+
+        delete_query = """
+            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch: $branch})
+            DELETE n
+        """
+        result = await get_current_transaction().run(
+            delete_query, taxonomy_name=taxonomy_name, branch=branch
+        )
+        summary = await result.consume()
+        count = summary.counters.nodes_deleted
+        return count
