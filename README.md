@@ -60,17 +60,6 @@ A typescript migration is in progress, and we are also trying to simplify the AP
 * [GitHub Project](https://github.com/orgs/openfoodfacts/projects/28/views/1) &nbsp;
 * [Meeting Notes](https://docs.google.com/document/d/1tdYkUmoRU8BxFPdCwtewoUi7PV8PmDlXtExOcPYyu-I/edit#) </p>
 
-<details><summary><h2> Weekly meetings </h2></summary>
-
-- We e-meet [Tuesdays at 17:00 Paris Time](https://dateful.com/convert/paris-france?t=5pm)
-- ![Google Meet](https://img.shields.io/badge/Google%20Meet-00897B?logo=google-meet&logoColor=white) Video call link: https://meet.google.com/xin-bwzm-xvj
-- Join by phone: https://tel.meet/nnw-qswu-hza?pin=2111028061202
-- Add the Event to your Calendar by [adding the Open Food Facts community calendar to your calendar](https://wiki.openfoodfacts.org/Events)
-- [Weekly Agenda](https://docs.google.com/document/d/1tdYkUmoRU8BxFPdCwtewoUi7PV8PmDlXtExOcPYyu-I): please add the Agenda items as early as you can. Make sure to check the Agenda items in advance of the meeting, so that we have the most informed discussions possible. 
-- The meeting will handle Agenda items first, and if time permits, collaborative bug triage.
-- We strive to timebox the core of the meeting (decision making) to 30 minutes, with an optional free discussion/live debugging afterwards.
-- We take comprehensive notes in the Weekly Agenda of agenda item discussions and of decisions taken.
-</details>
 
 ## Getting Started
 
