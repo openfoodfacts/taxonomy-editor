@@ -7,7 +7,7 @@ import {
   Button,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { getIdType } from "./createURL";
+import { getNodeType } from "../../utils";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
@@ -21,7 +21,7 @@ import { greyHexCode } from "../../constants";
 
 const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
   // Stores ID type of node object
-  const IDType = getIdType(id);
+  const IDType = getNodeType(id);
   // Stores 2 letter language code (LC) of the tags
   const [languageCode, setLanguageCode] = useState("");
   // Storing tags that need to be rendered for editing

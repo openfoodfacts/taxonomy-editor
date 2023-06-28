@@ -20,7 +20,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   // Finding URL to send requests
   const url = createURL(taxonomyName, branchName, id);
   const urlPrefix = `/${taxonomyName}/${branchName}`;
-  const isEntry = getIdType(id) === "entry";
+  const isEntry = getNodeType(id) === "entry";
 
   /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
   const {
@@ -52,11 +52,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       duplicateNode = { ...node[0] };
       // Adding UUIDs for tags and properties
       Object.keys(node[0]).forEach((key) => {
-        if (
-          key.startsWith("tags") &&
-          !key.includes("ids") &&
-          !key.includes("str")
-        ) {
+        if (key.startsWith("tags") && !key.includes("ids")) {
           duplicateNode[key + "_uuid"] = [];
           duplicateNode[key].forEach(() => {
             duplicateNode[key + "_uuid"].push(Math.random().toString());
@@ -132,8 +128,10 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         <Box>
           {!!nodeObject && (
             <>
-              {" "}
-              <ListEntryParents url={url + "/parents"} urlPrefix={urlPrefix} />
+              <ListEntryParents
+                fetchUrl={url + "/parents"}
+                linkHrefPrefix={urlPrefix}
+              />
               <ListEntryChildren
                 url={url + "/children"}
                 urlPrefix={urlPrefix}
@@ -178,12 +176,11 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         </Box>
       ) : (
         <>
-          {" "}
           <ListAllNonEntryInfo
             nodeObject={nodeObject}
             id={id}
             setNodeObject={setNodeObject}
-          />{" "}
+          />
         </>
       )}
       {/* Snackbar for acknowledgment of update */}

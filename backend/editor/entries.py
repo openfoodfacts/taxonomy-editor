@@ -418,8 +418,8 @@ class TaxonomyGraph:
                 WHERE child_node.id = $id
             RETURN parent.id
         """
-        result = await get_current_transaction().run(query, {"id": entry})
-        return await async_list(result)
+        query_result = await get_current_transaction().run(query, {"id": entry})
+        return [item async for result_list in query_result for item in result_list]
 
     async def get_children(self, entry):
         """
@@ -465,7 +465,7 @@ class TaxonomyGraph:
         # Adding normalized tags ids corresponding to entry tags
         normalised_new_node_keys = {}
         for keys in new_node_keys.keys():
-            if keys.startswith("tags_") and not keys.endswith("_str"):
+            if keys.startswith("tags_"):
                 if "_ids_" not in keys:
                     keys_language_code = keys.split("_", 1)[1]
                     normalised_value = []
@@ -608,3 +608,19 @@ class TaxonomyGraph:
         _result = await get_current_transaction().run(query, params)
         result = [record["node"] for record in await _result.data()]
         return result
+
+    async def delete_taxonomy_project(self, branch, taxonomy_name):
+        """
+        Delete taxonomy projects
+        """
+
+        delete_query = """
+            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch: $branch})
+            DELETE n
+        """
+        result = await get_current_transaction().run(
+            delete_query, taxonomy_name=taxonomy_name, branch=branch
+        )
+        summary = await result.consume()
+        count = summary.counters.nodes_deleted
+        return count

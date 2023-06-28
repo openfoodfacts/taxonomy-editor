@@ -18,16 +18,14 @@ import TableRow from "@mui/material/TableRow";
 import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 
-import CreateNodeDialogContent from "./CreateNodeDialogContent";
+import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
 import useFetch from "../../components/useFetch";
-import { createBaseURL } from "../editentry/createURL";
-import { toTitleCase } from "../../utils";
+import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
 
-type Props = {
+type RootNodesProps = {
   addNavLinks: ({
     taxonomyName,
     branchName,
@@ -35,14 +33,19 @@ type Props = {
     taxonomyName: string;
     branchName: string;
   }) => void;
+  taxonomyName: string;
+  branchName: string;
 };
 
-const RootNodes = ({ addNavLinks }: Props) => {
+const RootNodes = ({
+  addNavLinks,
+  taxonomyName,
+  branchName,
+}: RootNodesProps) => {
   const [openCreateNodeDialog, setOpenCreateNodeDialog] = useState(false);
   const [openCreateNodeSuccessSnackbar, setCreateNodeOpenSuccessSnackbar] =
     useState(false);
 
-  const { taxonomyName, branchName } = useParams();
   const baseUrl = createBaseURL(taxonomyName, branchName);
 
   const {
@@ -54,8 +57,6 @@ const RootNodes = ({ addNavLinks }: Props) => {
 
   useEffect(
     function defineMainNavLinks() {
-      if (!branchName || !taxonomyName) return;
-
       addNavLinks({ branchName, taxonomyName });
     },
     [taxonomyName, branchName, addNavLinks]
@@ -167,8 +168,6 @@ const RootNodes = ({ addNavLinks }: Props) => {
 
       {/* Dialog box for adding nodes */}
       <Dialog open={openCreateNodeDialog} onClose={handleCloseAddDialog}>
-        <DialogTitle>Create new node</DialogTitle>
-
         <CreateNodeDialogContent
           taxonomyName={taxonomyName}
           branchName={branchName}
@@ -200,4 +199,32 @@ const RootNodes = ({ addNavLinks }: Props) => {
   );
 };
 
-export default RootNodes;
+type RootNodesWrapperProps = {
+  addNavLinks: ({
+    taxonomyName,
+    branchName,
+  }: {
+    taxonomyName: string;
+    branchName: string;
+  }) => void;
+};
+
+const RootNodesWrapper = ({ addNavLinks }: RootNodesWrapperProps) => {
+  const { taxonomyName, branchName } = useParams();
+  if (!taxonomyName || !branchName)
+    return (
+      <Typography variant="h3">
+        Oops, something went wrong! Please try again later.
+      </Typography>
+    );
+
+  return (
+    <RootNodes
+      addNavLinks={addNavLinks}
+      taxonomyName={taxonomyName}
+      branchName={branchName}
+    />
+  );
+};
+
+export default RootNodesWrapper;
