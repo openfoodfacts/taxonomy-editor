@@ -8,7 +8,7 @@ import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import equal from "fast-deep-equal";
-import { createURL, getIdType } from "./createURL";
+import { createURL, getNodeType } from "../../utils";
 
 /**
  * Component used for rendering node information
