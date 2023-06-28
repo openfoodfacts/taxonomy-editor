@@ -144,6 +144,10 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 setNodeObject={setNodeObject}
               />
               {/* Fab for submitting edits */}
+              <ListAllEntryProperties
+                nodeObject={nodeObject}
+                setNodeObject={setNodeObject}
+              />
               {changesMade && (
                 <div
                   style={{
@@ -157,6 +161,8 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                     onClick={handleSubmit}
                     variant="contained"
                     sx={{
+                      minHeight : "50px",
+                      borderRadius : "20px",
                       marginTop: 2,
                       marginBottom: 2,
                       marginLeft: 4,
@@ -167,10 +173,6 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                   </Button>
                 </div>
               )}
-              <ListAllEntryProperties
-                nodeObject={nodeObject}
-                setNodeObject={setNodeObject}
-              />{" "}
             </>
           )}
         </Box>
