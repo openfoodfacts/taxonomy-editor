@@ -34,14 +34,14 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   const [originalNodeObject, setOriginalNodeObject] = useState(null); // For tracking changes
   const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
   const [open, setOpen] = useState(false); // Used for Dialog component
-  const [changesMade, setChangesMade] = useState(false); // Used for displaying Fab
+  const [hasChanges, sethasChanges] = useState(false); // Used for displaying Fab
 
   // Tracking changes
   useEffect(() => {
     if (nodeObject && originalNodeObject) {
-      const changesMade =
+      const hasChanges =
         !equal(nodeObject, originalNodeObject) || updateChildren.length !== 0;
-      setChangesMade(changesMade);
+      sethasChanges(hasChanges);
     }
   }, [nodeObject, originalNodeObject, updateChildren]);
 
@@ -117,7 +117,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     )
       .then(() => {
         setOpen(true);
-        setChangesMade(false);
+        sethasChanges(false);
       })
       .catch(() => {});
   };
@@ -146,7 +146,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
               />
-              {changesMade && (
+              {hasChanges && (
                 <div
                   style={{
                     backgroundColor: "white",
@@ -159,8 +159,8 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                     onClick={handleSubmit}
                     variant="contained"
                     sx={{
-                      minHeight : "50px",
-                      borderRadius : "20px",
+                      minHeight: "3rem",
+                      borderRadius: "2rem",
                       marginTop: 2,
                       marginBottom: 2,
                       marginLeft: 4,
