@@ -141,11 +141,11 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
               />
-              {/* Fab for submitting edits */}
               <ListAllEntryProperties
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
               />
+              {/* Sticky button for submitting edits */}
               {hasChanges && (
                 <div
                   style={{
