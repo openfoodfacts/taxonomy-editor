@@ -20,9 +20,10 @@ endif
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
-DOCKER_COMPOSE=docker-compose --env-file=${ENV_FILE}
+DOCKER_COMPOSE=docker compose --env-file=${ENV_FILE}
 # tweak some config to avoid port conflicts
-DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy NEO4J_ADMIN_EXPOSE=127.0.0.1:7475 NEO4J_BOLT_EXPOSE=127.0.0.1:7688 docker-compose --env-file=${ENV_FILE}
+DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy NEO4J_ADMIN_EXPOSE=127.0.0.1:7475 NEO4J_BOLT_EXPOSE=127.0.0.1:7688 docker compose --env-file=${ENV_FILE}
+
 
 .PHONY: tests
 
