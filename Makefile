@@ -25,22 +25,24 @@ DOCKER_COMPOSE=docker compose --env-file=${ENV_FILE}
 DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy NEO4J_ADMIN_EXPOSE=127.0.0.1:7475 NEO4J_BOLT_EXPOSE=127.0.0.1:7688 docker compose --env-file=${ENV_FILE}
 
 
-.PHONY: tests
 
 #------------#
 # dev setup  #
 #------------#
 
-build:
+build: ## Build docker images
 	@echo "🍜 Building docker images"
 	${DOCKER_COMPOSE} build
 	@echo "🍜 Project setup done"
 
-up:
+up: ## Run the project
 	@echo "🍜 Running project (ctrl+C to stop)"
+	@echo "🍜 The React app will be available on http://ui.taxonomy.localhost:8091"
+	@echo "🍜 The API will be exposed on http://api.taxonomy.localhost:8091"
+	@echo "🍜 The Neo4j admin console will be available on http://localhost:7474/browser/"
 	${DOCKER_COMPOSE} up
 
-dev: build up
+dev: build up ## Build and run the project
 
 
 #-----------#
@@ -49,28 +51,28 @@ dev: build up
 
 
 # lint code
-lint: backend_lint frontend_lint
+lint: backend_lint frontend_lint ## Run all linters
 
-backend_lint:
+backend_lint: ## Run lint on backend code
 	@echo "🍜 Linting python code"
 	${DOCKER_COMPOSE} run --rm taxonomy_api isort .
 	${DOCKER_COMPOSE} run --rm taxonomy_api black .
 
-frontend_lint:
+frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -w src/
 
 
 # check code quality
-quality: backend_quality frontend_quality
+quality: backend_quality frontend_quality ## Run all quality checks
 
-backend_quality:
+backend_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
 	${DOCKER_COMPOSE} run --rm taxonomy_api flake8 .
 	${DOCKER_COMPOSE} run --rm taxonomy_api isort --check-only .
 	${DOCKER_COMPOSE} run --rm taxonomy_api black --check .
 
-frontend_quality:
+frontend_quality: ## Run quality checks on frontend code
 	@echo "🍜 Quality checks JS"
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -c src/
 	${DOCKER_COMPOSE} run --rm -e CI=true taxonomy_node npm run build
@@ -79,22 +81,32 @@ frontend_quality:
 
 
 
-tests: backend_tests
+tests: backend_tests ## Run all tests
 
-backend_tests:
+backend_tests: ## Run python tests
 	@echo "🍜 Running python tests"
 	${DOCKER_COMPOSE_TEST} up -d neo4j
 	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /parser /parser
 	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
-checks: quality tests
+checks: quality tests ## Run all checks (quality + tests)
 
 
 #------------#
 # production #
 #------------#
 
-create_external_volumes:
+create_external_volumes: ## Create external volumes (production only)
 	@echo "🍜 Creating external volumes (production only) …"
 	docker volume create ${COMPOSE_PROJECT_NAME}_neo4j-data
+
+
+#------------#
+# utils #
+#------------#
+
+.PHONY: build up dev lint backend_lint frontend_lint quality backend_quality frontend_quality tests backend_tests checks create_external_volumes help
+
+help: ## Description of the available commands
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
