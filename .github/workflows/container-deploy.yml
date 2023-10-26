@@ -69,7 +69,7 @@ jobs:
         timeoutSeconds: 600 # 10m
 
     - name: Do something if build isn't launched
-      if: steps.wait-build-frontend.outputs.conclusion == 'does not exist' || steps.wait-build-api.outputs.conclusion == 'does not exist'
+      if: steps.wait-build-frontend.outputs.conclusion == 'not found' || steps.wait-build-api.outputs.conclusion == 'not found'
       run: echo job does not exist && true
 
     - name: Do something if build fail
@@ -134,11 +134,19 @@ jobs:
           echo "COMPOSE_FILE=docker-compose.yml;docker/prod.yml" >> .env
           echo "DOCKER_TAG=sha-${{ github.sha }}" >> .env
 
+          # Neo4j configuration
+          echo "NEO4J_server_memory_heap_initial__size=3G" >> .env
+          echo "NEO4J_server_memory_heap_max__size=3G" >> .env
+          echo "NEO4J_server_memory_pagecache_size=2G" >> .env
+          # we don't want transaction to grow too big
+          echo "NEO4J_db_memory_transaction_total_max=1G" >> .env
           # App environment variables
           echo "TAXONOMY_EDITOR_EXPOSE=${{ env.TAXONOMY_EDITOR_EXPOSE }}" >> .env
           echo "TAXONOMY_EDITOR_DOMAIN=${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env
           # should be blank in production
           echo "PUBLIC_TAXONOMY_EDITOR_PORT=" >> .env
+          # we use https
+          echo "API_SCHEME=https" >> .env
           # the PAT is environment dependant
           # and must have write access to PRs on the target repo (see REPO_URI)
           echo "GITHUB_PAT=${{ secrets.OFF_SERVER_GITHUB_PAT }}" >> .env
@@ -212,7 +220,7 @@ jobs:
           cd ${{ matrix.env }}
           docker system prune -af
 
-    - uses: frankie567/grafana-annotation-action@v1.0.2
+    - uses: frankie567/grafana-annotation-action@v1.0.3
       if: ${{ always() }}
       with:
         apiHost: https://grafana.openfoodfacts.org
