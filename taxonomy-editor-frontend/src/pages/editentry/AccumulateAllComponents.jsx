@@ -1,4 +1,5 @@
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import ListEntryParents from "./ListEntryParents";
@@ -6,6 +7,7 @@ import ListEntryChildren from "./ListEntryChildren";
 import ListTranslations from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
+import equal from "fast-deep-equal";
 import { createURL, getNodeType } from "../../utils";
 
 /**
@@ -29,8 +31,19 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     errorMessage,
   } = useFetch(url);
   const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
+  const [originalNodeObject, setOriginalNodeObject] = useState(null); // For tracking changes
   const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
   const [open, setOpen] = useState(false); // Used for Dialog component
+  const [hasChanges, sethasChanges] = useState(false); // Used for displaying Fab
+
+  // Tracking changes
+  useEffect(() => {
+    if (nodeObject && originalNodeObject) {
+      const hasChanges =
+        !equal(nodeObject, originalNodeObject) || updateChildren.length !== 0;
+      sethasChanges(hasChanges);
+    }
+  }, [nodeObject, originalNodeObject, updateChildren]);
 
   // Setting state of node after fetch
   useEffect(() => {
@@ -50,6 +63,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       });
     }
     setNodeObject(duplicateNode);
+    setOriginalNodeObject(JSON.parse(JSON.stringify(duplicateNode))); // Deep copy
   }, [node]);
 
   // Displaying error messages if any
@@ -103,6 +117,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     )
       .then(() => {
         setOpen(true);
+        sethasChanges(false);
       })
       .catch(() => {});
   };
@@ -130,6 +145,32 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
               />
+              {/* Sticky button for submitting edits */}
+              {hasChanges && (
+                <div
+                  style={{
+                    backgroundColor: "white",
+                    position: "sticky",
+                    bottom: 0,
+                    zIndex: 1,
+                  }}
+                >
+                  <Button
+                    onClick={handleSubmit}
+                    variant="contained"
+                    sx={{
+                      minHeight: "3rem",
+                      borderRadius: "2rem",
+                      marginTop: 2,
+                      marginBottom: 2,
+                      marginLeft: 4,
+                    }}
+                  >
+                    <SaveIcon sx={{ mr: 1 }} />
+                    Save Changes
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </Box>
@@ -142,14 +183,6 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
           />
         </>
       )}
-      {/* Button for submitting edits */}
-      <Button
-        variant="contained"
-        onClick={handleSubmit}
-        sx={{ ml: 4, mt: 2, width: 130, mb: 2 }}
-      >
-        Submit
-      </Button>
       {/* Snackbar for acknowledgment of update */}
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
