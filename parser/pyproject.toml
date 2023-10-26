@@ -18,7 +18,7 @@ exclude = '''
 
 [tool.coverage.run]
 data_file = ".cov/.coverage"
-source = ["robotoff"]
+source = ["openfoodfacts_taxonomy_parser"]
 
 [tool.coverage.xml]
 output = ".cov/coverage.xml"

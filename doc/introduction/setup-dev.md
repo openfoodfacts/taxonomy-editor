@@ -1,5 +1,8 @@
 # Setup a dev environment
 
+- [frontend doc](../../taxonomy-editor-frontend/README.md)
+- [backend doc](../../backend/README.md)
+
 ## Using Docker
 
 Docker is the easiest way to install the Taxonomy Editor, play with it, and even modify the code.
@@ -37,6 +40,7 @@ The API is exposed at: `http://api.taxonomy.localhost:8091`
 You can also access the Neo4j Admin Console at `http://localhost:7474/browser/`
 
 If you modify any file in the React App, the changes will be taken into account instantly.
+However, this feature is not compatible with Windows systems. In order to use live reload on a Windows machine, you will need to install and use [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install). This will allow you to run the development server in a Linux environment, and the live reload feature will work as expected.
 
 If you modify any files related to the Python API, you need to restart the `taxonomy_api` container in Docker: `docker-compose restart taxonomy_api`
 
@@ -46,11 +50,12 @@ Notably, if you use a `uid` which is not 1000, you should personalize the `USER_
 A smarter way to customize things, is to use [direnv](https://direnv.net/) with a `.envrc` file, or to simply have a script to source (see [the `.` command](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Builtins.html#Bourne-Shell-Builtins)) to load environment variables (they have priority above `.env`).
 
 ### Creating Pull Requests with the Taxonomy Editor
-The [settings.py](https://github.com/openfoodfacts/taxonomy-editor/blob/main/backend/editor/settings.py) file present in the `backend` directory must be updated in order to use the feature. If you'd like to see it in action in development mode, do the following steps:
 
-- Make sure a fork of Taxonomy Editor is created in your Github account.
-- Update the `access_token` variable in `settings.py` with your [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
-- Update the `repo_owner` variable in `settings.py` with your Github account username.
+If you are using docker, the [.env](https://github.com/openfoodfacts/taxonomy-editor/blob/main/.env) file must be updated in order to use the feature. If you'd like to see it in action in development mode, do the following steps:
+
+- Make sure a fork of openfoodfacts-server repository is created in your Github account.
+- Update the `access_token` variable in `.env` with your [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+- Update the `repo_uri` variable in `.env` with your Github for uri: (username/repository_name)
 
 That's it! Now, you'll be able to view any created PR's in your fork of Taxonomy Editor.
 
