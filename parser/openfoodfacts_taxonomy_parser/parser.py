@@ -15,11 +15,32 @@ def ellipsis(text, max=20):
     return text[:max] + ("..." if len(text) > max else "")
 
 
+class ParserConsoleLogger:
+    def __init__(self):
+        self.parsing_warnings = []  # Stores all warning logs
+        self.parsing_errors = []  # Stores all error logs
+
+    def info(self, msg, *args, **kwargs):
+        """Stores all parsing info logs"""
+        logging.info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """Stores all parsing warning logs"""
+        self.parsing_warnings.append(msg % args)
+        logging.warning(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """Stores all parsing error logs"""
+        self.parsing_errors.append(msg % args)
+        logging.error(msg, *args, **kwargs)
+
+
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
 
     def __init__(self, session):
         self.session = session
+        self.parser_logger = ParserConsoleLogger()
 
     def create_headernode(self, header, multi_label):
         """Create the node for the header"""
@@ -60,7 +81,7 @@ class Parser:
                 entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
-        self.session.run(query, data, is_before=self.is_before)
+        self.session.run(query, data)
 
     def normalized_filename(self, filename):
         """Add the .txt extension if it is missing in the filename"""
@@ -127,7 +148,7 @@ class Parser:
             new_line.append(self.remove_stopwords(lc, normalizing(word, lc)))
         return lc, new_line
 
-    def new_node_data(self):
+    def new_node_data(self, is_before):
         """To create an empty dictionary that will be used to create node"""
         data = {
             "id": "",
@@ -135,6 +156,7 @@ class Parser:
             "preceding_lines": [],
             "parent_tag": [],
             "src_position": None,
+            "is_before": is_before,
         }
         return data
 
@@ -184,20 +206,21 @@ class Parser:
         To remove the one separating line that is always there,
         between synonyms part and stopwords part and before each entry
         """
+        is_before = data["is_before"]
         # first, check if there is at least one preceding line
         if data["preceding_lines"] and not data["preceding_lines"][0]:
             if data["id"].startswith("synonyms"):
                 # it's a synonyms block,
                 # if the previous block is a stopwords block,
                 # there is at least one separating line
-                if "stopwords" in self.is_before:
+                if "stopwords" in is_before:
                     data["preceding_lines"].pop(0)
 
             elif data["id"].startswith("stopwords"):
                 # it's a stopwords block,
                 # if the previous block is a synonyms block,
                 # there is at least one separating line
-                if "synonyms" in self.is_before:
+                if "synonyms" in is_before:
                     data["preceding_lines"].pop(0)
 
             else:
@@ -206,7 +229,8 @@ class Parser:
         return data
 
     def harvest(self, filename):
-        """Transform data from file to dictionary"""
+        """Transform data from file to dictionary
+        """
         saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
@@ -221,24 +245,25 @@ class Parser:
         # header
         header, next_line = self.header_harvest(filename)
         yield header
-        self.is_before = "__header__"
 
         # the other entries
-        data = self.new_node_data()
+        data = self.new_node_data(is_before="__header__")
+        data["is_before"] = "__header__"
         for line_number, line in self.file_iter(filename, next_line):
             # yield data if block ended
             if self.entry_end(line, data):
                 if data["id"] in saved_nodes:
-                    msg = f"Entry with same id {data['id']} already created, "
-                    msg += f"duplicate id in file at line {data['src_position']}. "
-                    msg += "Node creation cancelled"
-                    logging.error(msg)
+                    msg = (
+                        "Entry with same id %s already created, "
+                         "duplicate id in file at line %s. "
+                         "Node creation cancelled."
+                    )
+                    self.parser_logger.error(msg, data['id'], data['src_position'])
                 else:
                     data = self.remove_separating_line(data)
                     yield data  # another function will use this dictionary to create a node
-                    self.is_before = data["id"]
                     saved_nodes.append(data["id"])
-                data = self.new_node_data()
+                data = self.new_node_data(is_before=data["id"])
 
             # harvest the line
             if not (line) or line[0] == "#":
@@ -256,7 +281,7 @@ class Parser:
                     try:
                         lc, value = self.get_lc_value(line[10:])
                     except ValueError:
-                        logging.error(
+                        self.parser_logger.error(
                             "Missing language code at line %d ? '%s'",
                             line_number + 1,
                             ellipsis(line),
@@ -275,7 +300,7 @@ class Parser:
                     try:
                         lc, value = self.get_lc_value(line)
                     except ValueError:
-                        logging.error(
+                        self.parser_logger.error(
                             "Missing language code at line %d ? '%s'",
                             line_number + 1,
                             ellipsis(line),
@@ -305,7 +330,6 @@ class Parser:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
                     data["tags_" + lang] = tags_list
-                    data["tags_" + lang + "_str"] = " ".join(tags_list)
                     data["tags_ids_" + lang] = tagsids_list
                 else:
                     # property definition
@@ -313,7 +337,7 @@ class Parser:
                     try:
                         property_name, lc, property_value = line.split(":", 2)
                     except ValueError:
-                        logging.error(
+                        self.parser_logger.error(
                             "Reading error at line %d, unexpected format: '%s'",
                             line_number + 1,
                             ellipsis(line),
@@ -325,7 +349,7 @@ class Parser:
                         if not (
                             correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
-                            logging.error(
+                            self.parser_logger.error(
                                 "Reading error at line %d, unexpected format: '%s'",
                                 line_number + 1,
                                 ellipsis(line),
@@ -340,15 +364,15 @@ class Parser:
 
     def create_nodes(self, filename, multi_label):
         """Adding nodes to database"""
-        logging.info("Creating nodes")
+        self.parser_logger.info("Creating nodes")
         harvested_data = self.harvest(filename)
         self.create_headernode(next(harvested_data), multi_label)
         for entry in harvested_data:
             self.create_node(entry, multi_label)
 
     def create_previous_link(self, multi_label):
-        logging.info("Creating 'is_before' links")
-        query = f"MATCH(n:{multi_label}) WHERE exists(n.is_before) return n.id, n.is_before"
+        self.parser_logger.info("Creating 'is_before' links")
+        query = f"MATCH(n:{multi_label}) WHERE n.is_before IS NOT NULL return n.id, n.is_before"
         results = self.session.run(query)
         for result in results:
             id = result["n.id"]
@@ -363,14 +387,14 @@ class Parser:
             results = self.session.run(query, id=id, id_previous=id_previous)
             relation = results.values()
             if len(relation) > 1:
-                logging.error(
+                self.parser_logger.error(
                     "2 or more 'is_before' links created for ids %s and %s, "
                     "one of the ids isn't unique",
                     id,
                     id_previous,
                 )
             elif not relation[0]:
-                logging.error("link not created between %s and %s", id, id_previous)
+                self.parser_logger.error("link not created between %s and %s", id, id_previous)
 
     def parent_search(self, multi_label):
         """Get the parent and the child to link"""
@@ -384,7 +408,7 @@ class Parser:
 
     def create_child_link(self, multi_label):
         """Create the relations between nodes"""
-        logging.info("Creating 'is_child_of' links")
+        self.parser_logger.info("Creating 'is_child_of' links")
         for parent, child_id in self.parent_search(multi_label):
             lc, parent_id = parent.split(":")
             query = f""" MATCH (p:{multi_label}:ENTRY) WHERE $parent_id IN p.tags_ids_""" + lc
@@ -395,7 +419,9 @@ class Parser:
             """
             result = self.session.run(query, parent_id=parent_id, child_id=child_id)
             if not result.value():
-                logging.warning(f"parent not found for child {child_id} with parent {parent_id}")
+                self.parser_logger.warning(
+                    f"parent not found for child {child_id} with parent {parent_id}"
+                )
 
     def delete_used_properties(self):
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
@@ -412,11 +438,32 @@ class Parser:
         self.session.run("".join(query))
 
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
-        tags_prefixed_lc = ["n.tags_" + lc + "_str" for lc in language_codes]
+        tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
         query = f"""CREATE FULLTEXT INDEX {project_name+'_SearchTags'} IF NOT EXISTS
             FOR (n:{project_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
+
+    def create_parsing_errors_node(self, taxonomy_name, branch_name):
+        """Create node to list parsing errors"""
+        multi_label = self.create_multi_label(taxonomy_name, branch_name)
+        query = f"""
+            CREATE (n:{multi_label}:ERRORS)
+            SET n.id = $project_name
+            SET n.branch_name = $branch_name
+            SET n.taxonomy_name = $taxonomy_name
+            SET n.created_at = datetime()
+            SET n.warnings = $warnings_list
+            SET n.errors = $errors_list
+        """
+        params = {
+            "project_name": self.get_project_name(taxonomy_name, branch_name),
+            "branch_name": branch_name,
+            "taxonomy_name": taxonomy_name,
+            "warnings_list": self.parser_logger.parsing_warnings,
+            "errors_list": self.parser_logger.parsing_errors,
+        }
+        self.session.run(query, params)
 
     def __call__(self, filename, branch_name, taxonomy_name):
         """Process the file"""
@@ -427,13 +474,13 @@ class Parser:
         self.create_child_link(multi_label)
         self.create_previous_link(multi_label)
         self.create_fulltext_index(taxonomy_name, branch_name)
+        self.create_parsing_errors_node(taxonomy_name, branch_name)
         # self.delete_used_properties()
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        handlers=[logging.FileHandler(filename="parser.log", encoding="utf-8")], level=logging.INFO
-    )
+    # Setup logs
+    logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO)
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
     branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
     taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
