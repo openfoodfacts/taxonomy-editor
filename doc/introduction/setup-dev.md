@@ -23,13 +23,13 @@ The docker-compose for Taxonomy Editor is designed in such a way that all develo
 After first checkout, or on requirements or important element changes, run the following commands in the root directory:
 
 ```bash
-DOCKER_BUILDKIT=1 docker compose build
+make build
 ```
 
 And every time, to get the server running, just use:
 
 ```bash
-docker compose up
+make up
 ```
 
 You should have a running environment.
