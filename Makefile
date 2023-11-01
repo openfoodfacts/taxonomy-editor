@@ -106,7 +106,10 @@ create_external_volumes: ## Create external volumes (production only)
 # utils #
 #------------#
 
+.DEFAULT_GOAL := help
+
 .PHONY: build up dev lint backend_lint frontend_lint quality backend_quality frontend_quality tests backend_tests checks create_external_volumes help
 
+# this command will grep targets and the following ## comment will be used as description
 help: ## Description of the available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m\033[0m\n"} /^[$$()% a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
