@@ -101,7 +101,7 @@ def check_single(id):
     if len(id) == 0:
         raise HTTPException(status_code=404, detail="Entry not found")
     elif len(id) > 1:
-        raise HTTPException(status_code=500, detail="Multiple entries found")
+        raise HTTPException(status_code=409, detail="Multiple entries found")
 
 
 def file_cleanup(filepath):
@@ -111,7 +111,7 @@ def file_cleanup(filepath):
     try:
         os.remove(filepath)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion") from e
+        raise HTTPException(status_code=404, detail="Taxonomy file not found for deletion") from e
 
 
 class StatusFilter(str, Enum):
@@ -351,10 +351,10 @@ async def export_to_github(
         return url
 
     except GithubBranchExistsError:
-        raise HTTPException(status_code=500, detail="The Github branch already exists!")
+        raise HTTPException(status_code=409, detail="The Github branch already exists!")
 
     except GithubUploadError:
-        raise HTTPException(status_code=500, detail="Github upload error!")
+        raise HTTPException(status_code=400, detail="Github upload error!")
 
 
 # Post methods
@@ -370,7 +370,7 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():
@@ -390,7 +390,7 @@ async def upload_taxonomy(
     # use the file name as the taxonomy name
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():

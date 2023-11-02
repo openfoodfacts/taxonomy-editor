@@ -3,7 +3,7 @@ Github helper functions for the Taxonomy Editor API
 """
 from textwrap import dedent
 
-from github import Github
+from github import Github, GithubException
 
 from . import settings
 
@@ -21,8 +21,14 @@ class GithubOperations:
         """
         Initalize connection to Github with an access token
         """
-        github_driver = Github(settings.access_token)
-        repo = github_driver.get_repo(settings.repo_uri)
+        access_token = settings.access_token
+        if not access_token:
+            raise Exception("Access token is not set. Please add your access token in .env")
+        repo_uri = settings.repo_uri
+        if not repo_uri:
+            raise Exception("repo_uri is not set. Please add your access token in .env")
+        github_driver = Github(access_token)
+        repo = github_driver.get_repo(repo_uri)
         return repo
 
     def list_all_branches(self):
@@ -47,19 +53,28 @@ class GithubOperations:
         # Find taxonomy text file to be updated
         github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
         commit_message = f"Update {self.taxonomy_name}.txt"
+        try:
+            current_file = self.repo.get_contents(github_filepath)
+            with open(filename, "r") as f:
+                new_file_contents = f.read()
 
-        current_file = self.repo.get_contents(github_filepath)
-        with open(filename, "r") as f:
-            new_file_contents = f.read()
-
-        # Update the file
-        self.repo.update_file(
-            github_filepath,
-            commit_message,
-            new_file_contents,
-            current_file.sha,
-            branch=self.branch_name,
-        )
+            # Update the file
+            self.repo.update_file(
+                github_filepath,
+                commit_message,
+                new_file_contents,
+                current_file.sha,
+                branch=self.branch_name,
+            )
+        except GithubException as e:
+            # Handle GitHub API-related exceptions
+            raise Exception(f"GitHub API error: {e}")
+        except FileNotFoundError:
+            # Handle file not found error (e.g., when 'filename' does not exist)
+            raise Exception(f"File not found: {filename}")
+        except Exception as e:
+            # Handle any other unexpected exceptions
+            raise Exception(f"An error occurred: {e}")
 
     def create_pr(self, description):
         """
