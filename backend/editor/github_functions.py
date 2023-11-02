@@ -3,11 +3,8 @@ Github helper functions for the Taxonomy Editor API
 """
 from textwrap import dedent
 
+from fastapi import HTTPException
 from github import Github, GithubException
-
-from fastapi import (
-    HTTPException,
-)
 
 from . import settings
 
@@ -29,13 +26,12 @@ class GithubOperations:
         if not access_token:
             raise HTTPException(
                 status_code=400,
-                detail="Access token is not set. Please add your access token in .env"
+                detail="Access token is not set. Please add your access token in .env",
             )
         repo_uri = settings.repo_uri
         if not repo_uri:
             raise HTTPException(
-                status_code=400,
-                detail="repo_uri is not set. Please add your access token in .env"
+                status_code=400, detail="repo_uri is not set. Please add your access token in .env"
             )
         github_driver = Github(access_token)
         repo = github_driver.get_repo(repo_uri)

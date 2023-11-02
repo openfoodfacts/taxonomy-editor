@@ -148,6 +148,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     log.info(f" ERROR: {exc.detail}")
     return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
 
+
 # Get methods
 
 
