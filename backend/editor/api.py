@@ -138,6 +138,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content=jsonable_encoder({"detail": "Invalid request", "errors": reformatted_errors}),
     )
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Custom exception handler to log FastAPI exceptions.
+    """
+    # Log the detail message
+    log.info(f" ERROR: {exc.detail}")
+    return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
 
 # Get methods
 
