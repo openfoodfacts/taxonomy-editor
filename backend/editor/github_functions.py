@@ -27,10 +27,16 @@ class GithubOperations:
         """
         access_token = settings.access_token
         if not access_token:
-            raise HTTPException(status_code=400, detail="Access token is not set. Please add your access token in .env")
+            raise HTTPException(
+                status_code=400,
+                detail="Access token is not set. Please add your access token in .env"
+            )
         repo_uri = settings.repo_uri
         if not repo_uri:
-            raise HTTPException(status_code=400, detail="repo_uri is not set. Please add your access token in .env")
+            raise HTTPException(
+                status_code=400,
+                detail="repo_uri is not set. Please add your access token in .env"
+            )
         github_driver = Github(access_token)
         repo = github_driver.get_repo(repo_uri)
         return repo

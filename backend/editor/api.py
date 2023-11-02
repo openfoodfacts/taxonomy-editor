@@ -138,6 +138,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content=jsonable_encoder({"detail": "Invalid request", "errors": reformatted_errors}),
     )
 
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     """
