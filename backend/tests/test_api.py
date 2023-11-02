@@ -4,20 +4,20 @@ import pytest
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes and relations in the database
+    session = neo4j.session()
     query = "MATCH (n) DETACH DELETE n"
-    neo4j.session().run(query)
+    session.run(query)
     query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
-    neo4j.session().run(query)
+    session.run(query)
     query = "DROP INDEX p_test_branch_SearchTags IF EXISTS"
-    neo4j.session().run(query)
+    session.run(query)
+    session.close()
 
 
 def test_hello(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "Hello user! Tip: open /docs or /redoc for documentation"
-    }
+    assert response.json() == {"message": "Hello user! Tip: open /docs or /redoc for documentation"}
 
 
 def test_ping(client):
@@ -47,6 +47,8 @@ def test_upload_taxonomy(client):
 
 
 def test_add_taxonomy_duplicate_branch_name(client):
+    test_upload_taxonomy(client)
+
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
             "/test_taxonomy_2/test_branch/upload",
@@ -69,6 +71,8 @@ def test_add_taxonomy_invalid_branch_name(client):
 
 
 def test_add_taxonomy_duplicate_project_name(client):
+    test_upload_taxonomy(client)
+
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
             "/test_taxonomy/test_branch/upload",

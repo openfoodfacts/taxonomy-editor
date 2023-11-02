@@ -16,7 +16,7 @@ def client():
 
 
 @pytest.fixture
-def neo4j():
+def neo4j(scope="session"):
     """waiting for neo4j to be ready"""
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     driver = GraphDatabase.driver(uri)
@@ -29,4 +29,6 @@ def neo4j():
             time.sleep(1)
         else:
             connected = True
-    return driver
+    session.close()
+    yield driver
+    driver.close()
