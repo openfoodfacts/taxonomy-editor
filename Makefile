@@ -51,6 +51,9 @@ databases: ## Start the databases Docker container for local development
 	@echo "🍜 Running neo4j (ctrl+C to stop)"
 	${DOCKER_COMPOSE} up --build neo4j
 
+add-local-test-data: ## Add test data to the local database
+	@echo "🍜 Adding test data to the database"
+	cd backend && poetry run python sample/load.py sample/test-neo4j.json
 
 #------------#
 # dev setup  #

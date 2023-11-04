@@ -70,11 +70,30 @@ Add the `--reset` switch if you already have data you want to remove.
 
 Going into the Neo4j Admin Console, you should be able to see the data.
 
-## Without Docker
+## Local Development without Docker
 
-### Install Neo4j
+Even if you want to run the frontend and backend servers without Docker, it is recommended you still use Docker for Neo4J.
 
-You are required to install Neo4j in your system.
+### Install local dependencies
+
+Before running the local dependencies installation script, you need to have the following installed on you system:
+
+- NodeJS and npm (LTS - 16.17.0, currently)
+  See https://nodejs.org/en/download/ and https://docs.npmjs.com/cli/v7/configuring-npm/install for further installation steps.
+  We recommend using [nvm](https://github.com/nvm-sh/nvm) to handle several NodeJS versions.
+
+- Python 3.11
+  See https://www.python.org/downloads/ for further installation steps.
+  We recommend using [pyenv](https://github.com/pyenv/pyenv) to handle several Python versions.
+
+- Poetry
+  See https://python-poetry.org/docs/#installation for further installation steps.
+
+Once these are installed, run `make install`.
+
+### Install Neo4j (optional)
+
+If you do not have Docker installed, you are required to install Neo4j in your system.
 
 [Neo4j Desktop](https://neo4j.com/download/) (proprietary) is an option, or get the open-source [community version](https://neo4j.com/download-center/#community).
 
@@ -82,80 +101,34 @@ Visit this [link](https://neo4j.com/docs/operations-manual/current/installation/
 
 Launch it and verify it's working by visiting the Neo4j browser: `http://localhost:7474/browser/`. In the admin UI, you should connect to `localhost:7687`.
 
-### Install the backend in a Python Virtualenv
+### Running the local environment
 
-Go to the `backend` directory of the Taxonomy Editor.
-
-Create a virtualenv with python:
+In 3 separate terminals, run
 
 ```bash
-python3 -m venv .venv
+make local-frontend
 ```
-
-and activate it:
 
 ```bash
-source .venv
+make local-backend
 ```
 
-Install dependencies:
+and if you are using Docker for Neo4J
 
 ```bash
-source pip install -r requirements.txt
+make databases
 ```
 
-Start the server locally:
+You will see:
+
+- the Taxnonomy Editor Frontend at http://localhost:8080/
+- the API docs at http://127.0.0.1:8080/docs
+- the Neo4j browser at http://localhost:7474/browser/
+
+You are able to add local test data with
 
 ```bash
-uvicorn editor.api:app --host 127.0.0.1 --port 8080
+make add-local-test-data
 ```
 
-Open http://127.0.0.1:8080 in your browser to check out the API.
-
-You will see the following:
-
-```
-{"message": "Hello user! Tip: open /docs or /redoc for documentation"}
-```
-
-### Install the npm dev server
-
-(Note: this might not be needed if you only want to work on the backend)
-
-You must have NodeJS and npm installed on your system. (LTS - 16.17.0, currently).
-See https://nodejs.org/en/download/ and https://docs.npmjs.com/cli/v7/configuring-npm/install for further installation steps.
-
-Go to the `taxonomy-editor-frontend/` directory of the Taxonomy Editor.
-
-Then run:
-
-```bash
-npm install .
-```
-
-Run the server with:
-
-```bash
-REACT_APP_API_URL="http://localhost:8080/" npm start
-```
-
-(or)
-
-```bash
-export REACT_APP_API_URL="http://localhost:8080/"
-npm start
-```
-
-This should automatically open the Taxonomy Editor frontend in this URL: http://localhost:8080/
-
-### Importing some test data
-
-To import some test data, in your Python virtualenv (don't forget to activate it), in the backend directory:
-
-```bash
-python3 sample/load.py sample/test-neo4j.json
-```
-
-Add the `--reset` switch if you already have data you want to remove.
-
-Going into the Neo4j Admin Console, you should be able to see the data.
+Going into the Neo4j browser, you should be able to see the data.
