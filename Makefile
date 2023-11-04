@@ -97,9 +97,9 @@ quality: backend_quality frontend_quality ## Run all quality checks
 
 backend_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
-	${DOCKER_COMPOSE} run --rm taxonomy_api flake8 .
-	${DOCKER_COMPOSE} run --rm taxonomy_api isort --check-only .
-	${DOCKER_COMPOSE} run --rm taxonomy_api black --check .
+	${DOCKER_COMPOSE} run --rm taxonomy_api flake8 --exclude=.venv .
+	${DOCKER_COMPOSE} run --rm taxonomy_api isort --check-only --skip .venv .
+	${DOCKER_COMPOSE} run --rm taxonomy_api black --check --exclude=.venv .
 
 frontend_quality: ## Run quality checks on frontend code
 	@echo "🍜 Quality checks JS"
