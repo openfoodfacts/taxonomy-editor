@@ -12,7 +12,7 @@ services:
       args:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
-        REQUIREMENTS_FILE: requirements-dev.txt
+        DEVELOPMENT: true
     volumes:
       # in development mode, mount code directory dynamically
       - ./backend/editor:/code/editor
@@ -22,7 +22,20 @@ services:
       - ./backend/pyproject.toml:/code/pyproject.toml
       - ./backend/setup.cfg:/code/setup.cfg
     # uvicorn with live reload
-    command: ["uvicorn", "editor.api:app", "--host", "0.0.0.0", "--port", "80", "--reload", "--reload-dir", "/parser", "--reload-dir", "/code/editor"]
+    command:
+      [
+        "uvicorn",
+        "editor.api:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "80",
+        "--reload",
+        "--reload-dir",
+        "/parser",
+        "--reload-dir",
+        "/code/editor",
+      ]
 
   taxonomy_node:
     image: taxonomy-editor/taxonomy_node:dev
@@ -34,7 +47,7 @@ services:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
     environment:
-      - REACT_APP_API_URL=//api.${TAXONOMY_EDITOR_DOMAIN}:${TAXONOMY_EDITOR_PORT:-80}/
+      - REACT_APP_API_URL=http://api.${TAXONOMY_EDITOR_DOMAIN}${PUBLIC_TAXONOMY_EDITOR_PORT:-80}/
       - WDS_SOCKET_HOST=ui.${TAXONOMY_EDITOR_DOMAIN}
       - WDS_SOCKET_PORT=${WDS_SOCKET_PORT:-80}
       - TAXONOMY_EDITOR_DOMAIN
