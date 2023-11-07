@@ -26,7 +26,9 @@ def test_ping(client):
     assert response.json().get("ping").startswith("pong @")
 
 
-def test_import_from_github(client):
+def test_import_from_github(client, mocker):
+    mocker.patch("editor.api.TaxonomyGraph.is_branch_unique", return_value=True)
+    mocker.patch("editor.api.TaxonomyGraph.import_from_github", return_value=True)
     response = client.post(
         "/test/testing_branch/import",
         json={"description": "test_description"},
@@ -35,7 +37,9 @@ def test_import_from_github(client):
     assert response.json() is True
 
 
-def test_upload_taxonomy(client):
+def test_upload_taxonomy(client, mocker):
+    mocker.patch("editor.api.TaxonomyGraph.is_branch_unique", return_value=True)
+    mocker.patch("editor.api.TaxonomyGraph.upload_taxonomy", return_value=True)
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
             "/test_taxonomy/test_branch/upload",
@@ -46,9 +50,8 @@ def test_upload_taxonomy(client):
     assert response.json() is True
 
 
-def test_add_taxonomy_duplicate_branch_name(client):
-    test_upload_taxonomy(client)
-
+def test_add_taxonomy_duplicate_branch_name(client, mocker):
+    mocker.patch("editor.api.TaxonomyGraph.is_branch_unique", return_value=False)
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
             "/test_taxonomy_2/test_branch/upload",
@@ -70,9 +73,8 @@ def test_add_taxonomy_invalid_branch_name(client):
     assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
 
 
-def test_add_taxonomy_duplicate_project_name(client):
-    test_upload_taxonomy(client)
-
+def test_add_taxonomy_duplicate_project_name(client, mocker):
+    mocker.patch("editor.api.TaxonomyGraph.does_project_exist", return_value=True)
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
             "/test_taxonomy/test_branch/upload",
