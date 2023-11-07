@@ -12,7 +12,7 @@ from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
-    TaxnonomyImportError,
+    TaxonomyImportError,
     TaxonomyParsingError,
     TaxonomyUnparsingError,
 )
@@ -125,7 +125,7 @@ class TaxonomyGraph:
 
             return status
         except Exception as e:
-            raise TaxnonomyImportError() from e
+            raise TaxonomyImportError() from e
 
     async def upload_taxonomy(self, filepath, description):
         """
@@ -137,7 +137,7 @@ class TaxonomyGraph:
                 await self.create_project(description)
             return status
         except Exception as e:
-            raise TaxnonomyImportError() from e
+            raise TaxonomyImportError() from e
 
     def dump_taxonomy(self):
         """

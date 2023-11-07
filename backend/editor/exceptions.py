@@ -23,7 +23,7 @@ class SessionMissingError(RuntimeError):
         return super().__init__(exception_message)
 
 
-class TaxnonomyImportError(RuntimeError):
+class TaxonomyImportError(RuntimeError):
     """
     Raised when attempting to fetch a taxonomy from GitHub
     """
