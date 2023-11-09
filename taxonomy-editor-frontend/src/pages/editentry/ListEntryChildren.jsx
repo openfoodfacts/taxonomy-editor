@@ -99,11 +99,11 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         <Typography sx={{ ml: 4 }} variant="h5">
           Children
         </Typography>
-        { !incomingData &&
+        {!incomingData && (
           <Box sx={{ textAlign: "left", m: 3 }}>
-            <CircularProgress size={20}/>
+            <CircularProgress size={20} />
           </Box>
-        }
+        )}
         <IconButton
           sx={{ ml: 1, color: greyHexCode }}
           onClick={handleOpenDialog}

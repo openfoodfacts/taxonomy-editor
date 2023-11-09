@@ -72,7 +72,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
 
   if (isPending) {
     return (
-      <Box sx={{ textAlign: "center", my: 10}}>
+      <Box sx={{ textAlign: "center", my: 10 }}>
         <CircularProgress />
       </Box>
     );

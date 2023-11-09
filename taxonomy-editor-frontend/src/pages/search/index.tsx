@@ -51,9 +51,7 @@ const SearchNode = ({
         justifyContent="flex-start"
         gap="20px"
       >
-        <Typography variant="h3"> 
-          Search
-        </Typography>
+        <Typography variant="h3">Search</Typography>
         <Box
           component="img"
           width={100}
@@ -93,13 +91,13 @@ const SearchNode = ({
           />
         </form>
       </Grid>
-        {queryFetchString !== "" && (
-          <SearchResults
-            query={queryFetchString}
-            taxonomyName={taxonomyName}
-            branchName={branchName}
-          />
-        )}
+      {queryFetchString !== "" && (
+        <SearchResults
+          query={queryFetchString}
+          taxonomyName={taxonomyName}
+          branchName={branchName}
+        />
+      )}
     </Box>
   );
 };

@@ -40,14 +40,14 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
 
   return (
     <Box>
-        <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
-          Parents
-        </Typography>
-        { !data &&
-          <Box sx={{ textAlign: "left", m: 3 }}>
-            <CircularProgress size={20}/>
-          </Box>
-        }
+      <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
+        Parents
+      </Typography>
+      {!data && (
+        <Box sx={{ textAlign: "left", m: 3 }}>
+          <CircularProgress size={20} />
+        </Box>
+      )}
 
       {relations.length === 0 ? (
         <Typography sx={{ ml: 8, mb: 1 }} variant="h6">
