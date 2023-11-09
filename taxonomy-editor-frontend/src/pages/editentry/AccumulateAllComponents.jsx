@@ -77,14 +77,9 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   }
 
   // Loading...
-  if (isPending) {
+  if (isPending && !node) {
     return (
-      <Box
-        sx={{
-          textAlign: "center",
-          my: 5,
-        }}
-      >
+      <Box sx={{ textAlign: "center", my: 5 }}>
         <CircularProgress />
       </Box>
     );
