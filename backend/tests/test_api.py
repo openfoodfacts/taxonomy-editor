@@ -1,3 +1,6 @@
+import os
+import json
+import subprocess
 import pytest
 
 
@@ -107,3 +110,30 @@ def test_delete_project(client, github_mock):
 
     assert response.status_code == 200
     assert response.json() == {"message": "Deleted 1 projects"}
+
+
+def test_load_and_dump():
+    # Path to the test data JSON file
+    test_data_path = "sample/test-neo4j.json"
+
+    # Run load.py to import data into Neo4j database
+    subprocess.run(["sample/load.py", test_data_path])
+
+    # Run dump.py to dump the Neo4j database into a JSON file
+    dumped_file_path = "sample/dumped_test-neo4j.json"
+    subprocess.run(["sample/dump.py", dumped_file_path])
+
+    try:
+        # Read the original and dumped JSON files
+        with open(test_data_path, "r") as original_file:
+            original_data = json.load(original_file)
+
+        with open(dumped_file_path, "r") as dumped_file:
+            dumped_data = json.load(dumped_file)
+
+        # Perform assertions to compare the JSON contents (order-insensitive)
+        assert original_data == dumped_data
+
+    finally:
+        # Clean up: remove the dumped file
+        os.remove(dumped_file_path)

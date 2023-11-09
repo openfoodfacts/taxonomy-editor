@@ -20,7 +20,6 @@ def dump_nodes(session, file):
     node_count = session.run("MATCH (n) RETURN count(n)").single()[0]
     for i, node in enumerate(session.run("MATCH (n) RETURN n")):
         node_dict = dict(node["n"])
-        print(node_dict)
         labels_list = list(node["n"].labels)
         node_dict["labels"] = labels_list
         if i < node_count - 1:
