@@ -45,16 +45,17 @@ const SearchNode = ({
     <Box>
       <Grid
         container
-        direction="column"
+        display="flex"
+        flexDirection="column"
         alignItems="center"
-        justifyContent="center"
+        justifyContent="flex-start"
+        gap="20px"
       >
-        <Typography sx={{ mt: 4 }} variant="h3">
+        <Typography variant="h3"> 
           Search
         </Typography>
         <Box
           component="img"
-          sx={{ mt: 2 }}
           width={100}
           height={100}
           src={require("../../assets/classification.png")}
@@ -67,7 +68,7 @@ const SearchNode = ({
           }}
         >
           <TextField
-            sx={{ mt: 3, width: 350 }}
+            sx={{ width: 350 }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -92,13 +93,13 @@ const SearchNode = ({
           />
         </form>
       </Grid>
-      {queryFetchString !== "" && (
-        <SearchResults
-          query={queryFetchString}
-          taxonomyName={taxonomyName}
-          branchName={branchName}
-        />
-      )}
+        {queryFetchString !== "" && (
+          <SearchResults
+            query={queryFetchString}
+            taxonomyName={taxonomyName}
+            branchName={branchName}
+          />
+        )}
     </Box>
   );
 };

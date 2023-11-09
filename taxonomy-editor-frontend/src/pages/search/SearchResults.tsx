@@ -81,10 +81,11 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
         direction="column"
         alignItems="center"
         justifyContent="center"
+        height="100%"
       >
-        <Typography sx={{ mt: 2 }} variant="h5">
-          <CircularProgress/>
-        </Typography>
+        <Box sx={{flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1em' }}>
+          <CircularProgress sx={{ textAlign: "center" }}/>
+        </Box>
       </Grid>
     );
   }

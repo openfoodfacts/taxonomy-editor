@@ -86,14 +86,9 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       </Typography>
     );
   }
-  if (isPending) {
+  if (isPending && !incomingData) {
     return (
-      <Box
-        sx={{
-          textAlign: "center",
-          my: 5,
-        }}
-      >
+      <Box sx={{ textAlign: "left", m: 5 }}>
         <CircularProgress />
       </Box>
     );
@@ -104,6 +99,11 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         <Typography sx={{ ml: 4 }} variant="h5">
           Children
         </Typography>
+        { !incomingData &&
+          <Box sx={{ textAlign: "left", m: 3 }}>
+            <CircularProgress size={20}/>
+          </Box>
+        }
         <IconButton
           sx={{ ml: 1, color: greyHexCode }}
           onClick={handleOpenDialog}
