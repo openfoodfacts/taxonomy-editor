@@ -74,13 +74,13 @@ class GithubOperations:
             )
         except GithubException as e:
             # Handle GitHub API-related exceptions
-            raise Exception(f"GitHub API error: {e}")
-        except FileNotFoundError:
+            raise Exception(f"GitHub API error: {e}") from e
+        except FileNotFoundError as e:
             # Handle file not found error (e.g., when 'filename' does not exist)
-            raise Exception(f"File not found: {filename}")
+            raise Exception(f"File not found: {filename}") from e
         except Exception as e:
             # Handle any other unexpected exceptions
-            raise Exception(f"An error occurred: {e}")
+            raise Exception(f"An error occurred: {e}") from e
 
     def create_pr(self, description):
         """

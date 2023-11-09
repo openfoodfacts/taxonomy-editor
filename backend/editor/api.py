@@ -101,7 +101,7 @@ def check_single(id):
     if len(id) == 0:
         raise HTTPException(status_code=404, detail="Entry not found")
     elif len(id) > 1:
-        raise HTTPException(status_code=409, detail="Multiple entries found")
+        raise HTTPException(status_code=500, detail="Multiple entries found")
 
 
 def file_cleanup(filepath):
@@ -110,8 +110,8 @@ def file_cleanup(filepath):
     """
     try:
         os.remove(filepath)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="Taxonomy file not found for deletion") from e
+    except FileNotFoundError:
+             log.warn(f"Taxonomy file {filepath} not found for deletion")
 
 
 class StatusFilter(str, Enum):
@@ -147,6 +147,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     # Log the detail message
     log.info(f" ERROR: {exc.detail}")
     return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
+    # return await http_exception_handler(request, exc)
 
 
 # Get methods
