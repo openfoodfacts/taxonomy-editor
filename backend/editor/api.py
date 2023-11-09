@@ -24,6 +24,7 @@ from fastapi import (
     status,
 )
 from fastapi.encoders import jsonable_encoder
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -111,7 +112,7 @@ def file_cleanup(filepath):
     try:
         os.remove(filepath)
     except FileNotFoundError:
-             log.warn(f"Taxonomy file {filepath} not found for deletion")
+        log.warn(f"Taxonomy file {filepath} not found for deletion")
 
 
 class StatusFilter(str, Enum):
@@ -140,14 +141,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 @app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+async def log_http_exception(request: Request, exc: HTTPException):
     """
     Custom exception handler to log FastAPI exceptions.
     """
     # Log the detail message
     log.info(f" ERROR: {exc.detail}")
-    return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
-    # return await http_exception_handler(request, exc)
+    return await http_exception_handler(request, exc)
 
 
 # Get methods
