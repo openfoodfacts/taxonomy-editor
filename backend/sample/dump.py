@@ -2,11 +2,12 @@
 """A script to dump a Neo4J database to a JSON file."""
 import argparse
 import json
+import os
 
 from neo4j import GraphDatabase
 
 
-DEFAULT_URL = "bolt://localhost:7687"
+DEFAULT_URL = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 
 
 def get_session(uri=DEFAULT_URL):

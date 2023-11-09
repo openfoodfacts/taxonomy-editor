@@ -3,11 +3,12 @@
 """
 import argparse
 import json
+import os
 import sys
 
 from neo4j import GraphDatabase
 
-DEFAULT_URL = "bolt://localhost:7687"
+DEFAULT_URL = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 
 
 def get_session(uri=DEFAULT_URL):
