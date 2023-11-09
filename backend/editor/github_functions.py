@@ -3,7 +3,7 @@ Github helper functions for the Taxonomy Editor API
 """
 from textwrap import dedent
 
-from github import Github
+import github
 
 from . import settings
 
@@ -21,7 +21,7 @@ class GithubOperations:
         """
         Initalize connection to Github with an access token
         """
-        github_driver = Github(settings.access_token)
+        github_driver = github.Github(settings.access_token)
         repo = github_driver.get_repo(settings.repo_uri)
         return repo
 

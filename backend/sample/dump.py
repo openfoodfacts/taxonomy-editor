@@ -18,12 +18,12 @@ def dump_nodes(session, file):
     """Dump all nodes from the database to a JSON file."""
     node_count = session.run("MATCH (n) RETURN count(n)").single()[0]
     for i, node in enumerate(session.run("MATCH (n) RETURN n")):
-        node_dict = dict(node['n'])
+        node_dict = dict(node["n"])
         print(node_dict)
-        labels_list = list(node['n'].labels)
-        node_dict['labels'] = labels_list
+        labels_list = list(node["n"].labels)
+        node_dict["labels"] = labels_list
         if i < node_count - 1:
-            f.write(json.dumps(node_dict, ensure_ascii=False) + ',')
+            f.write(json.dumps(node_dict, ensure_ascii=False) + ",")
         else:
             f.write(json.dumps(node_dict, ensure_ascii=False))
 
@@ -32,35 +32,35 @@ def dump_relations(session, file):
     """Dump all relationships from the database to a JSON file."""
     rels_count = session.run("MATCH (n)-[r]->(m) RETURN count(r)").single()[0]
     for i, rel in enumerate(session.run("MATCH (n)-[r]->(m) RETURN r")):
-        start_node_id = rel['r'].nodes[0].id
-        end_node_id = rel['r'].nodes[1].id
+        start_node_id = rel["r"].nodes[0].id
+        end_node_id = rel["r"].nodes[1].id
         start_node = session.run(
             "MATCH (n) WHERE id(n) = $id RETURN n", {"id": start_node_id}
         ).single()["n"]["id"]
         end_node = session.run(
             "MATCH (n) WHERE id(n) = $id RETURN n", {"id": end_node_id}
         ).single()["n"]["id"]
-        rel_dict = {rel['r'].type: [start_node, end_node]}
+        rel_dict = {rel["r"].type: [start_node, end_node]}
         if i < rels_count - 1:
-            f.write(json.dumps(rel_dict, ensure_ascii=False) + ',')
+            f.write(json.dumps(rel_dict, ensure_ascii=False) + ",")
         else:
             f.write(json.dumps(rel_dict, ensure_ascii=False))
 
 
 def get_options(args=None):
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Dump Neo4J database to JSON file')
-    parser.add_argument('--url', default=DEFAULT_URL, help='Neo4J database bolt URL')
-    parser.add_argument('file', help='JSON file name to dump')
+    parser = argparse.ArgumentParser(description="Dump Neo4J database to JSON file")
+    parser.add_argument("--url", default=DEFAULT_URL, help="Neo4J database bolt URL")
+    parser.add_argument("file", help="JSON file name to dump")
     return parser.parse_args(args)
 
 
 if __name__ == "__main__":
     options = get_options()
     session = get_session(options.url)
-    with open(options.file, 'w') as f:
+    with open(options.file, "w") as f:
         f.write('{"nodes": [')
         dump_nodes(session, f)
         f.write('], "relations": [')
         dump_relations(session, f)
-        f.write(']}')
+        f.write("]}")
