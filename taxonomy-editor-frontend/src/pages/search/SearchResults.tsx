@@ -1,3 +1,4 @@
+import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -82,7 +83,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
         justifyContent="center"
       >
         <Typography sx={{ mt: 2 }} variant="h5">
-          Loading..
+          <CircularProgress/>
         </Typography>
       </Grid>
     );
