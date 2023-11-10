@@ -153,7 +153,7 @@ const RootNodes = ({
                   <TableCell align="left" component="td" scope="row">
                     <IconButton
                       component={Link}
-                      to={`${node[0].id}`}
+                      to={`/${taxonomyName}/${branchName}/entry/${node[0].id}`}
                       aria-label="edit"
                     >
                       <EditIcon color="primary" />
