@@ -1,0 +1,6 @@
+version: "3.7"
+
+volumes:
+  neo4j-data:
+    external: true
+    name: "${COMPOSE_PROJECT_NAME}_neo4j-data"

@@ -1,0 +1,4 @@
+# prefer keeping line ending unix style
+# since most files are used in linux docker containers
+* text=auto eol=lf
+
