@@ -26,6 +26,35 @@ DOCKER_COMPOSE_TEST=COMPOSE_PROJECT_NAME=test_taxonomy NEO4J_ADMIN_EXPOSE=127.0.
 
 
 
+
+#------------#
+# local dev  #
+#------------#
+
+install: ## Install dependencies
+	@echo "🍜 Installing dependencies"
+	cd taxonomy-editor-frontend && npm install
+	cd backend && poetry install
+	cd parser && poetry install
+	@echo "🍜 Project setup done"
+
+
+local-frontend: ## Run the frontend locally
+	@echo "🍜 Running frontend (ctrl+C to stop)"
+	cd taxonomy-editor-frontend && REACT_APP_API_URL="http://localhost:8080/" npm start
+
+local-backend: ## Run the backend locally
+	@echo "🍜 Running backend (ctrl+C to stop)"
+	cd backend && poetry run uvicorn editor.api:app --host 127.0.0.1 --port 8080 --env-file=../.env --reload
+
+databases: ## Start the databases Docker container for local development
+	@echo "🍜 Running neo4j (ctrl+C to stop)"
+	${DOCKER_COMPOSE} up --build neo4j
+
+add-local-test-data: ## Add test data to the local database
+	@echo "🍜 Adding test data to the database"
+	cd backend && poetry run python sample/load.py sample/test-neo4j.json
+
 #------------#
 # dev setup  #
 #------------#
@@ -68,9 +97,9 @@ quality: backend_quality frontend_quality ## Run all quality checks
 
 backend_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
-	${DOCKER_COMPOSE} run --rm taxonomy_api flake8 .
-	${DOCKER_COMPOSE} run --rm taxonomy_api isort --check-only .
-	${DOCKER_COMPOSE} run --rm taxonomy_api black --check .
+	${DOCKER_COMPOSE} run --rm taxonomy_api flake8 --exclude=.venv .
+	${DOCKER_COMPOSE} run --rm taxonomy_api isort --check-only --skip .venv .
+	${DOCKER_COMPOSE} run --rm taxonomy_api black --check --exclude=.venv .
 
 frontend_quality: ## Run quality checks on frontend code
 	@echo "🍜 Quality checks JS"

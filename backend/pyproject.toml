@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.black]
 include = '\.pyi?$'
 line-length = 100
@@ -33,3 +37,28 @@ line_length = 100
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.poetry]
+name = "openfoodfacts-taxonomy-editor"
+version = "0.1.0"
+description = ""
+authors = ["Open Food Facts Team"]
+license = "GNU Affero General Public License v3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = { extras = ["all"], version = "^0.104.1" }
+uvicorn = { extras = ["standard"], version = "^0.23.2" }
+neo4j = "^5.14.0"
+openfoodfacts_taxonomy_parser = { path = "../parser", develop = true }
+pygithub = "^2.1.1"
+python-multipart = "^0.0.6"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.10.1"
+flake8 = "^6.1.0"
+isort = "^5.12.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.3"
