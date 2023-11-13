@@ -24,6 +24,7 @@ from fastapi import (
     status,
 )
 from fastapi.encoders import jsonable_encoder
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -110,8 +111,8 @@ def file_cleanup(filepath):
     """
     try:
         os.remove(filepath)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Taxonomy file not found for deletion") from e
+    except FileNotFoundError:
+        log.warn(f"Taxonomy file {filepath} not found for deletion")
 
 
 class StatusFilter(str, Enum):
@@ -137,6 +138,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=status.HTTP_400_BAD_REQUEST,
         content=jsonable_encoder({"detail": "Invalid request", "errors": reformatted_errors}),
     )
+
+
+@app.exception_handler(HTTPException)
+async def log_http_exception(request: Request, exc: HTTPException):
+    """
+    Custom exception handler to log FastAPI exceptions.
+    """
+    # Log the detail message
+    log.info(f" ERROR: {exc.detail}")
+    return await http_exception_handler(request, exc)
 
 
 # Get methods
@@ -351,10 +362,10 @@ async def export_to_github(
         return url
 
     except GithubBranchExistsError:
-        raise HTTPException(status_code=500, detail="The Github branch already exists!")
+        raise HTTPException(status_code=409, detail="The Github branch already exists!")
 
     except GithubUploadError:
-        raise HTTPException(status_code=500, detail="Github upload error!")
+        raise HTTPException(status_code=400, detail="Github upload error!")
 
 
 # Post methods
@@ -370,7 +381,7 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():
@@ -390,7 +401,7 @@ async def upload_taxonomy(
     # use the file name as the taxonomy name
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=400, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique():
