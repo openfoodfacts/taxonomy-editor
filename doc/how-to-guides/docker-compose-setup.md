@@ -3,6 +3,7 @@
 The docker compose setup is a simple setup. A bit of subtlety comes in nginx.
 
 We have:
+
 - neo4j database
 - api service - a fastapi app (taxonomy_api)
 - nginx as the frontend (taxonomy_frontend)
@@ -14,7 +15,7 @@ We have:
 
 For nginx, the routing difference between dev and prod,
 is managed by adding a suffix to production virtual server
-through the `PROD_UI_SUFFIX` env variable (see ``conf/nginx.conf``)
+through the `PROD_UI_SUFFIX` env variable (see `conf/nginx.conf`)
 
 For dev, it's important to have the same UID/GID for users in docker and for the developer,
 in order to avoid permissions problems.
