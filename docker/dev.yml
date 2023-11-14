@@ -78,4 +78,11 @@ services:
       # by setting PROD_UI_SUFFIX to "" and DEV_UI_SUFFIX to "-dev"
       PROD_UI_SUFFIX: "${PROD_UI_SUFFIX--static}"
       DEV_UI_SUFFIX: "${DEV_UI_SUFFIX-}"
-  
+
+  taxonomy_editor_code:
+    image: taxonomy-editor/taxonomy_editor_code:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code

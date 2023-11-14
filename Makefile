@@ -112,7 +112,7 @@ dev: build up ## Build and run the project
 
 
 # lint code
-lint: backend_lint frontend_lint ## Run all linters
+lint: backend_lint frontend_lint config_lint ## Run all linters
 
 backend_lint: ## Run lint on backend code
 	@echo "🍜 Linting python code"
@@ -123,9 +123,13 @@ frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -w src/
 
+config_lint: ## Run on lint configuration files
+	@echo "🍜 Linting configuration files"
+	${DOCKER_COMPOSE} run --rm taxonomy_editor_code npm run lint
+
 
 # check code quality
-quality: backend_quality frontend_quality ## Run all quality checks
+quality: backend_quality frontend_quality config_quality ## Run all quality checks
 
 backend_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
@@ -140,6 +144,9 @@ frontend_quality: ## Run quality checks on frontend code
 # restore the .empty file (if possible)
 	git checkout taxonomy-editor-frontend/build/.empty || true
 
+config_quality: ## Run quality checks on configuration files
+	@echo "🍜 Quality checks configuration files"
+	${DOCKER_COMPOSE} run --rm taxonomy_editor_code npm run lint:check
 
 
 tests: backend_tests ## Run all tests
