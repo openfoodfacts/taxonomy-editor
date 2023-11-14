@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "name": "backend",
+      "path": "./backend"
+    },
+    {
+      "name": "parser",
+      "path": "./parser"
+    },
+    {
+      "name": "frontend",
+      "path": "./taxonomy-editor-frontend"
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+  }
+}
