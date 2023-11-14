@@ -16,6 +16,7 @@ services:
     volumes:
       # in development mode, mount code directory dynamically
       - ./backend/editor:/code/editor
+      - ./backend/sample:/code/sample
       - ./backend/tests:/code/tests
       - ./parser:/parser
       # for linting / checks purpose
@@ -77,3 +78,4 @@ services:
       # by setting PROD_UI_SUFFIX to "" and DEV_UI_SUFFIX to "-dev"
       PROD_UI_SUFFIX: "${PROD_UI_SUFFIX--static}"
       DEV_UI_SUFFIX: "${DEV_UI_SUFFIX-}"
+  
