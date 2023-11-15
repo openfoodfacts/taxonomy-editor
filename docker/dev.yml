@@ -86,3 +86,4 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/code
+      - /code/node_modules
