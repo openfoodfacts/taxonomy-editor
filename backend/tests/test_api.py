@@ -21,6 +21,7 @@ def test_setup(neo4j):
 def github_mock(mocker):
     github_mock = mocker.patch("github.Github")
     github_mock.return_value.get_repo.return_value.get_branches.return_value = [mocker.Mock()]
+    mocker.patch("editor.settings.access_token", return_value="mock_access_token")
     return github_mock
 
 

@@ -3,8 +3,8 @@ Github helper functions for the Taxonomy Editor API
 """
 from textwrap import dedent
 
-from fastapi import HTTPException
 import github
+from fastapi import HTTPException
 
 from . import settings
 
