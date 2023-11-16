@@ -11,11 +11,12 @@ function taxonomyApiUrlFromUi(location) {
     return location.protocol + "//" + components.join(".") + "/";
   } else {
     // this is a default for simple dev setup
-    return "http://localhost:80/";
+    return process.env.REACT_APP_API_URL;
   }
 }
 
 export const API_URL = taxonomyApiUrlFromUi(window.location);
+
 export const ENTER_KEYCODE = 13;
 export const greyHexCode = "#808080";
 

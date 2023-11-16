@@ -86,7 +86,7 @@ def test_add_taxonomy_invalid_branch_name(client):
             data={"description": "test_description"},
         )
 
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
 
 

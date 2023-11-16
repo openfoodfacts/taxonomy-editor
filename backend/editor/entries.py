@@ -111,7 +111,6 @@ class TaxonomyGraph:
         base_url += filename
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
-
                 # File to save the downloaded taxonomy
                 filepath = f"{tmpdir}/{filename}"
 
@@ -216,7 +215,7 @@ class TaxonomyGraph:
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         current_branches = github_object.list_all_branches()
 
-        if (await (result.value()) == []) and (self.branch_name not in current_branches):
+        if (await result.value() == []) and (self.branch_name not in current_branches):
             return True
         else:
             return False
@@ -325,7 +324,7 @@ class TaxonomyGraph:
             RETURN first_node
         """
         result = await get_current_transaction().run(query)
-        start_node = await (result.data())[0]["first_node"]
+        start_node = await result.data()[0]["first_node"]
         start_node_label = self.get_label(start_node["id"])  # Get current first node ID
 
         # Rebuild relationships by inserting incoming node at the beginning
