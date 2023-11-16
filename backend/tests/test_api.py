@@ -115,13 +115,13 @@ def test_delete_project(client, github_mock):
 
 def test_load_and_dump():
     # Path to the test data JSON file
-    test_data_path = "sample/test-neo4j.json"
+    test_data_path = "sample/dumped-test-taxonomy.json"
 
     # Run load.py to import data into Neo4j database
     subprocess.run(["sample/load.py", test_data_path])
 
     # Run dump.py to dump the Neo4j database into a JSON file
-    dumped_file_path = "sample/dumped_test-neo4j.json"
+    dumped_file_path = "sample/dump.json"
     subprocess.run(["sample/dump.py", dumped_file_path])
 
     try:
@@ -132,7 +132,17 @@ def test_load_and_dump():
         with open(dumped_file_path, "r") as dumped_file:
             dumped_data = json.load(dumped_file)
 
-        # Perform assertions to compare the JSON contents (order-insensitive)
+        # Label order does not matter: make it a set
+        for node in original_data["nodes"]:
+            node["labels"] = set(node["labels"])
+        for node in dumped_data["nodes"]:
+            node["labels"] = set(node["labels"])
+
+        # Relation order does not matter: sort relations
+        original_data["relations"].sort(key=json.dumps)
+        dumped_data["relations"].sort(key=json.dumps)
+
+        # Perform assertions to compare the JSON contents
         assert original_data == dumped_data
 
     finally:

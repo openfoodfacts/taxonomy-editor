@@ -22,9 +22,9 @@ def dump_nodes(session, file):
         labels_list = list(node["n"].labels)
         node_dict["labels"] = labels_list
         if i < node_count - 1:
-            f.write(json.dumps(node_dict, ensure_ascii=False) + ",")
+            file.write(json.dumps(node_dict, ensure_ascii=False, default=str) + ",")
         else:
-            f.write(json.dumps(node_dict, ensure_ascii=False))
+            file.write(json.dumps(node_dict, ensure_ascii=False, default=str))
 
 
 def dump_relations(session, file):
@@ -41,9 +41,9 @@ def dump_relations(session, file):
         ).single()["n"]["id"]
         rel_dict = {rel["r"].type: [start_node, end_node]}
         if i < rels_count - 1:
-            f.write(json.dumps(rel_dict, ensure_ascii=False) + ",")
+            file.write(json.dumps(rel_dict, ensure_ascii=False) + ",")
         else:
-            f.write(json.dumps(rel_dict, ensure_ascii=False))
+            file.write(json.dumps(rel_dict, ensure_ascii=False))
 
 
 def get_options(args=None):

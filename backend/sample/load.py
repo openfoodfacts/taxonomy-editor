@@ -6,6 +6,7 @@ import json
 import os
 import sys
 
+from datetime import datetime
 from neo4j import GraphDatabase
 
 DEFAULT_URL = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
@@ -21,7 +22,11 @@ def clean_db(session):
 
 def add_node(node, session):
     labels = node.pop("labels", [])
-    query = f"CREATE (n:{','.join(labels)} $data)"
+    if "created_at" in node:
+        # Truncate the microseconds to six digits to match the format string
+        stringified_datetime = node["created_at"][:26] + node["created_at"][29:]
+        node["created_at"] = datetime.strptime(stringified_datetime, "%Y-%m-%dT%H:%M:%S.%f%z")
+    query = f"CREATE (n:{':'.join(labels)} $data)"
     session.run(query, data=node)
 
 
