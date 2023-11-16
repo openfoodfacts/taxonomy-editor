@@ -5,8 +5,8 @@ import argparse
 import json
 import os
 import sys
-
 from datetime import datetime
+
 from neo4j import GraphDatabase
 
 DEFAULT_URL = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
