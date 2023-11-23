@@ -398,7 +398,6 @@ async def upload_taxonomy(
     """
     Upload taxonomy file to be parsed
     """
-    # use the file name as the taxonomy name
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")

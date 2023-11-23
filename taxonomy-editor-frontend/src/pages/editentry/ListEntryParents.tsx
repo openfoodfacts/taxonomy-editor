@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { Box, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import useFetch from "../../components/useFetch";
 import type { ParentsAPIResponse } from "../../backend-types/types";
@@ -24,21 +25,29 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
     );
   }
 
-  if (isPending) {
+  if (isPending && !data) {
     return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading...
-      </Typography>
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 5,
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
   return (
     <Box>
-      {
-        <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
-          Parents
-        </Typography>
-      }
+      <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
+        Parents
+      </Typography>
+      {!data && (
+        <Box sx={{ textAlign: "left", m: 3 }}>
+          <CircularProgress size={20} />
+        </Box>
+      )}
 
       {relations.length === 0 ? (
         <Typography sx={{ ml: 8, mb: 1 }} variant="h6">

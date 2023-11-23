@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
 import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import useFetch from "../../components/useFetch";
 import { API_URL } from "../../constants";
@@ -70,7 +71,11 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
   }
 
   if (isPending) {
-    return <Typography variant="h5">Loading..</Typography>;
+    return (
+      <Box sx={{ textAlign: "center", my: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (

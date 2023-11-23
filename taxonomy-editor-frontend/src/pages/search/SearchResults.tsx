@@ -1,5 +1,5 @@
+import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
 import {
   Typography,
@@ -13,12 +13,10 @@ import {
 } from "@mui/material";
 import Container from "@mui/material/Container";
 import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
 
@@ -27,6 +25,7 @@ import { createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { SearchAPIResponse } from "../../backend-types/types";
 import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
+import NodesTableBody from "../../components/NodesTableBody";
 
 type Props = {
   query: string;
@@ -80,10 +79,19 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
         direction="column"
         alignItems="center"
         justifyContent="center"
+        height="100%"
       >
-        <Typography sx={{ mt: 2 }} variant="h5">
-          Loading..
-        </Typography>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "1em",
+          }}
+        >
+          <CircularProgress sx={{ textAlign: "center" }} />
+        </Box>
       </Grid>
     );
   }
@@ -125,24 +133,11 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
                 </TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
-              {(nodeIds ?? []).map((nodeId) => (
-                <TableRow key={nodeId}>
-                  <TableCell align="left" component="td" scope="row">
-                    <Typography variant="subtitle1">{nodeId}</Typography>
-                  </TableCell>
-                  <TableCell align="left" component="td" scope="row">
-                    <IconButton
-                      component={Link}
-                      to={`/${taxonomyName}/${branchName}/entry/${nodeId}`}
-                      aria-label="edit"
-                    >
-                      <EditIcon color="primary" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+            <NodesTableBody
+              nodeIds={nodeIds ?? []}
+              taxonomyName={taxonomyName}
+              branchName={branchName}
+            />
           </Table>
         </TableContainer>
 

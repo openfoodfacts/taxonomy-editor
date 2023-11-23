@@ -1,5 +1,6 @@
 import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useEffect, useState } from "react";
 import useFetch from "../../components/useFetch";
 import ListEntryParents from "./ListEntryParents";
@@ -76,11 +77,18 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   }
 
   // Loading...
-  if (isPending) {
+  if (isPending && !node) {
     return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress sx={{ textAlign: "center" }} />
+      </Box>
     );
   }
 

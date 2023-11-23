@@ -16,6 +16,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import CircularProgress from "@mui/material/CircularProgress";
 import ISO6391 from "iso-639-1";
 import { ENTER_KEYCODE } from "../../constants";
 import { greyHexCode } from "../../constants";
@@ -85,11 +86,11 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       </Typography>
     );
   }
-  if (isPending) {
+  if (isPending && !incomingData) {
     return (
-      <Typography sx={{ ml: 4 }} variant="h5">
-        Loading..
-      </Typography>
+      <Box sx={{ textAlign: "left", m: 5 }}>
+        <CircularProgress />
+      </Box>
     );
   }
   return (
@@ -98,6 +99,11 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         <Typography sx={{ ml: 4 }} variant="h5">
           Children
         </Typography>
+        {!incomingData && (
+          <Box sx={{ textAlign: "left", m: 3 }}>
+            <CircularProgress size={20} />
+          </Box>
+        )}
         <IconButton
           sx={{ ml: 1, color: greyHexCode }}
           onClick={handleOpenDialog}

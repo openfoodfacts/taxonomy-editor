@@ -12,6 +12,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import MaterialTable from "@material-table/core";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useState, useEffect } from "react";
 
 const Errors = ({ addNavLinks }) => {
@@ -51,8 +52,15 @@ const Errors = ({ addNavLinks }) => {
   }
   if (isPending) {
     return (
-      <Box>
-        <Typography variant="h5">Loading...</Typography>
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress sx={{ textAlign: "center" }} />
       </Box>
     );
   }
