@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import {
   Typography,
@@ -15,7 +15,6 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
 
@@ -24,6 +23,7 @@ import useFetch from "../../components/useFetch";
 import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
+import NodesTableBody from "../../components/NodesTableBody";
 
 type RootNodesProps = {
   addNavLinks: ({
@@ -54,6 +54,11 @@ const RootNodes = ({
     isError,
     errorMessage,
   } = useFetch<RootEntriesAPIResponse>(`${baseUrl}rootentries`);
+
+  let nodeIds: string[] = [];
+  if (nodes && nodes.length > 0) {
+    nodeIds = nodes.map((node) => node[0].id);
+  }
 
   useEffect(
     function defineMainNavLinks() {
@@ -143,25 +148,11 @@ const RootNodes = ({
                 </TableCell>
               </TableRow>
             </TableHead>
-
-            <TableBody>
-              {nodes.map((node) => (
-                <TableRow key={node[0].id}>
-                  <TableCell align="left" component="td" scope="row">
-                    <Typography variant="subtitle1">{node[0].id}</Typography>
-                  </TableCell>
-                  <TableCell align="left" component="td" scope="row">
-                    <IconButton
-                      component={Link}
-                      to={`/${taxonomyName}/${branchName}/entry/${node[0].id}`}
-                      aria-label="edit"
-                    >
-                      <EditIcon color="primary" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+            <NodesTableBody
+              nodeIds={nodeIds}
+              taxonomyName={taxonomyName}
+              branchName={branchName}
+            />
           </Table>
         </TableContainer>
       </div>
