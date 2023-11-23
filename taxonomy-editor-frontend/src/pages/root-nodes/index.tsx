@@ -17,6 +17,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
 import useFetch from "../../components/useFetch";
@@ -85,8 +86,13 @@ const RootNodes = ({
 
   if (isPending || !nodes) {
     return (
-      <Box>
-        <Typography variant="h5">Loading...</Typography>
+      <Box
+        sx={{
+          textAlign: "center",
+          my: 10,
+        }}
+      >
+        <CircularProgress />
       </Box>
     );
   }
