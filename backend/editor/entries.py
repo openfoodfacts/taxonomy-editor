@@ -12,7 +12,7 @@ from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
-    TaxnonomyImportError,
+    TaxonomyImportError,
     TaxonomyParsingError,
     TaxonomyUnparsingError,
 )
@@ -124,7 +124,7 @@ class TaxonomyGraph:
 
             return status
         except Exception as e:
-            raise TaxnonomyImportError() from e
+            raise TaxonomyImportError() from e
 
     async def upload_taxonomy(self, filepath, description):
         """
@@ -136,7 +136,7 @@ class TaxonomyGraph:
                 await self.create_project(description)
             return status
         except Exception as e:
-            raise TaxnonomyImportError() from e
+            raise TaxonomyImportError() from e
 
     def dump_taxonomy(self):
         """
@@ -614,11 +614,11 @@ class TaxonomyGraph:
         """
 
         delete_query = """
-            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch: $branch})
+            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch_name: $branch_name})
             DELETE n
         """
         result = await get_current_transaction().run(
-            delete_query, taxonomy_name=taxonomy_name, branch=branch
+            delete_query, taxonomy_name=taxonomy_name, branch_name=branch
         )
         summary = await result.consume()
         count = summary.counters.nodes_deleted

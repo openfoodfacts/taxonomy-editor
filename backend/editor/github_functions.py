@@ -3,8 +3,8 @@ Github helper functions for the Taxonomy Editor API
 """
 from textwrap import dedent
 
+import github
 from fastapi import HTTPException
-from github import Github, GithubException
 
 from . import settings
 
@@ -33,7 +33,7 @@ class GithubOperations:
             raise HTTPException(
                 status_code=400, detail="repo_uri is not set. Please add your access token in .env"
             )
-        github_driver = Github(access_token)
+        github_driver = github.Github(access_token)
         repo = github_driver.get_repo(repo_uri)
         return repo
 
@@ -72,7 +72,7 @@ class GithubOperations:
                 current_file.sha,
                 branch=self.branch_name,
             )
-        except GithubException as e:
+        except github.GithubException as e:
             # Handle GitHub API-related exceptions
             raise Exception(f"GitHub API error: {e}") from e
         except FileNotFoundError as e:
