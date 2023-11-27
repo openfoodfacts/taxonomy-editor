@@ -54,12 +54,16 @@ def get_options(args=None):
     return parser.parse_args(args)
 
 
-if __name__ == "__main__":
-    options = get_options()
-    session = get_session(options.url)
-    with open(options.file, "w") as f:
+def dump_db(file_path, url=DEFAULT_URL):
+    session = get_session(url)
+    with open(file_path, "w") as f:
         f.write('{"nodes": [')
         dump_nodes(session, f)
         f.write('], "relations": [')
         dump_relations(session, f)
         f.write("]}")
+
+
+if __name__ == "__main__":
+    options = get_options()
+    dump_db(file_path=options.file, url=options.url)
