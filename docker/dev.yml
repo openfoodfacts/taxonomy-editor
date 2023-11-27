@@ -79,6 +79,7 @@ services:
       PROD_UI_SUFFIX: "${PROD_UI_SUFFIX--static}"
       DEV_UI_SUFFIX: "${DEV_UI_SUFFIX-}"
 
+  # we want to be able to run linting from a container
   taxonomy_editor_code:
     image: taxonomy-editor/taxonomy_editor_code:dev
     build:
