@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+CYAN='\033[0;36m'
+NO_COLOR='\033[0m'
+
+make local_quality || (echo "${CYAN}If you want to skip the pre-push tests, use git push --no-verify${NO_COLOR}" && exit 1)

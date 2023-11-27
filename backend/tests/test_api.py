@@ -1,8 +1,10 @@
 import json
 import os
-import subprocess
 
 import pytest
+
+from sample.dump import dump_db
+from sample.load import load_file
 
 
 @pytest.fixture(autouse=True)
@@ -119,11 +121,11 @@ def test_load_and_dump():
     test_data_path = "sample/dumped-test-taxonomy.json"
 
     # Run load.py to import data into Neo4j database
-    subprocess.run(["sample/load.py", test_data_path])
+    load_file(test_data_path)
 
     # Run dump.py to dump the Neo4j database into a JSON file
     dumped_file_path = "sample/dump.json"
-    subprocess.run(["sample/dump.py", dumped_file_path])
+    dump_db(dumped_file_path)
 
     try:
         # Read the original and dumped JSON files

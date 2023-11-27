@@ -39,11 +39,11 @@ install: ## Install dependencies
 	@echo "🍜 Project setup done"
 
 
-local-frontend: ## Run the frontend locally
+local_frontend: ## Run the frontend locally
 	@echo "🍜 Running frontend (ctrl+C to stop)"
 	cd taxonomy-editor-frontend && REACT_APP_API_URL="http://localhost:8080/" npm start
 
-local-backend: ## Run the backend locally
+local_backend: ## Run the backend locally
 	@echo "🍜 Running backend (ctrl+C to stop)"
 	cd backend && poetry run uvicorn editor.api:app --host 127.0.0.1 --port 8080 --env-file=../.env --reload
 
@@ -51,9 +51,41 @@ databases: ## Start the databases Docker container for local development
 	@echo "🍜 Running neo4j (ctrl+C to stop)"
 	${DOCKER_COMPOSE} up --build neo4j
 
-add-local-test-data: ## Add test data to the local database
+add_local_test_data: ## Add test data to the local database
 	@echo "🍜 Adding test data to the database"
 	cd backend && poetry run python sample/load.py sample/test-neo4j.json
+
+local_lint: local_backend_lint local_frontend_lint local_config_lint ## Run lint on local code
+
+local_backend_lint: ## Run lint on local backend code
+	@echo "🍜 Linting python code"
+	cd backend && poetry run isort --skip .venv .
+	cd backend && poetry run black --exclude=.venv .
+
+local_frontend_lint: ## Run lint on local frontend code
+	@echo "🍜 Linting react code"
+	cd taxonomy-editor-frontend && npm run lint
+
+local_config_lint: ## Run on lint configuration files
+	@echo "🍜 Linting configuration files"
+	npm run lint
+
+
+local_quality: local_backend_quality local_frontend_quality local_config_quality ## Run lint on local code
+
+local_backend_quality: ## Run lint on local backend code
+	@echo "🍜 Quality python code checks"
+	cd backend && poetry run isort --check-only --skip .venv .
+	cd backend && poetry run black --check --exclude=.venv .
+	cd backend && poetry run flake8 --exclude=.venv .
+
+local_frontend_quality: ## Run lint on local frontend code
+	@echo "🍜 Quality react code checks"
+	cd taxonomy-editor-frontend && npm run lint:check
+
+local_config_quality: ## Run on lint configuration files
+	@echo "🍜 Quality configuration files checks"
+	npm run lint:check
 
 #------------#
 # dev setup  #
@@ -80,7 +112,7 @@ dev: build up ## Build and run the project
 
 
 # lint code
-lint: backend_lint frontend_lint ## Run all linters
+lint: backend_lint frontend_lint config_lint ## Run all linters
 
 backend_lint: ## Run lint on backend code
 	@echo "🍜 Linting python code"
@@ -91,9 +123,13 @@ frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -w src/
 
+config_lint: ## Run on lint configuration files
+	@echo "🍜 Linting configuration files"
+	${DOCKER_COMPOSE} run --rm taxonomy_editor_code npm run lint
+
 
 # check code quality
-quality: backend_quality frontend_quality ## Run all quality checks
+quality: backend_quality frontend_quality config_quality ## Run all quality checks
 
 backend_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
@@ -108,6 +144,9 @@ frontend_quality: ## Run quality checks on frontend code
 # restore the .empty file (if possible)
 	git checkout taxonomy-editor-frontend/build/.empty || true
 
+config_quality: ## Run quality checks on configuration files
+	@echo "🍜 Quality checks configuration files"
+	${DOCKER_COMPOSE} run --rm taxonomy_editor_code npm run lint:check
 
 
 tests: backend_tests ## Run all tests

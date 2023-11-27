@@ -55,11 +55,12 @@ Ready to contribute code? Here's how to set up Taxonomy Editor for local develop
     ```
     git clone git@github.com:your_name_here/taxonomy-editor.git
     ```
-3. Follow [install documentation](./doc/introduction/setup-dev.md)
 
-4. code!
+3.  Follow [install documentation](./doc/introduction/setup-dev.md)
 
-5. TODO: add explanations about linting / checks / tests when we have automated them.
+4.  code!
+
+5.  TODO: add explanations about linting / checks / tests when we have automated them.
 
 6.  Commit your changes and push your branch to GitHub:
 
@@ -72,12 +73,15 @@ Ready to contribute code? Here's how to set up Taxonomy Editor for local develop
 
     In brief, commit messages should follow these conventions:
 
-    > - Always start using 
-        [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 
+    > - Always start using
+
+        [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
         prefix, e.g. "fix: ..." or "feat: ..."
+
     > - Always contain a subject line which briefly describes the changes made. For example "fix: fixed typo in CONTRIBUTING.md".
     > - Subject lines should not exceed 50 characters, but you can add more line after
     > - The commit body should contain context about the change - how the code worked before,
+
         how it works now and why you decided to solve the issue in the way you did.
 
     More tips at <https://chris.beams.io/posts/git-commit>
@@ -92,8 +96,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. You don't have to anything to the CHANGELOG.md yourself, this is done automatically
 3. Please ensure to add a before/after screenshot when doing a PR that has visual impacts
 
-1. if possible, the pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring.
-
+4. if possible, the pull request should include tests.
+5. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring.
 
 This contributing page was adapted from [Pyswarms documentation](https://github.com/ljvmiranda921/pyswarms/blob/master/CONTRIBUTING.rst).

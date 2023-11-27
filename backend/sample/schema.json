@@ -1,64 +1,56 @@
 {
-    "taxonomy-name" : [
+  "taxonomy-name": [
+    {
+      "id": "__header__",
+      "value": [{ "type": "string" }]
+    },
+    {
+      "id": {
+        "type": "string",
+        "description": "stopwords:IDX"
+      },
+      "value": {
+        "lang": "LC",
+        "tag": ["Tag1", "Tag2", "Tag3"],
+        "tagsid": ["tag1", "tag2", "tag3"]
+      },
+      "block_index": { "type": "integer" },
+      "block_subindex": { "type": "integer" },
+      "preceding_lines": [{ "type": "string" }]
+    },
+    {
+      "id": {
+        "type": "string",
+        "description": "synonyms:IDX"
+      },
+      "value": {
+        "lang": "LC",
+        "tag": ["Tag1", "Tag2", "Tag3"],
+        "tagsid": ["tag1", "tag2", "tag3"]
+      },
+      "block_index": { "type": "integer" },
+      "block_subindex": { "type": "integer" },
+      "preceding_lines": [{ "type": "string" }]
+    },
+    {
+      "id": "canonical_tagid",
+      "tags": {
+        "LC": ["Tag1", "Tag2", "Tag3"]
+      },
+      "tagsid": {
+        "LC": ["tag1", "tag2", "tag3"]
+      },
+      "parents": ["LC:parent_tag"],
+      "properties": [
         {
-            "id" : "__header__",
-            "value" : [
-                {"type" : "string"}
-            ]
-        },
-        {
-            "id" : {
-                "type" : "string",
-                "description" : "stopwords:IDX"
-            },
-            "value" : {
-                "lang" : "LC",
-                "tag" : ["Tag1", "Tag2", "Tag3"],
-                "tagsid" : ["tag1", "tag2", "tag3"]
-            },
-            "block_index" : {"type" : "integer"},
-            "block_subindex" : {"type" : "integer"}, 
-            "preceding_lines" : [
-                {"type" : "string"}
-            ]
-        },
-        {
-            "id" : {
-                "type" : "string",
-                "description" : "synonyms:IDX"
-            },
-            "value" : {
-                "lang" : "LC",
-                "tag" : ["Tag1", "Tag2", "Tag3"],
-                "tagsid" : ["tag1", "tag2", "tag3"]
-            },
-            "block_index" : {"type" : "integer"},
-            "block_subindex" : {"type" : "integer"}, 
-            "preceding_lines" : [
-                {"type" : "string"}
-            ]
-        },
-        {
-            "id" : "canonical_tagid",
-            "tags" : {
-                "LC" : ["Tag1", "Tag2", "Tag3"]
-            },
-            "tagsid" : {
-                "LC" : ["tag1", "tag2", "tag3"]
-            },
-            "parents" : ["LC:parent_tag"],
-            "properties" : [
-                {
-                    "id" : {"type" : "integer"},
-                    "name" : {"type" : "string"},
-                    "value" : "LC:property_value"
-                }
-            ],
-            "block_index" : {"type" : "integer"},
-            "block_subindex" : {"type" : "integer"},
-            "preceding_lines" : [ 
-                {"type" : "string"}
-            ]
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "value": "LC:property_value"
         }
-    ]
+      ],
+      "block_index": { "type": "integer" },
+      "block_subindex": { "type": "integer" },
+      "preceding_lines": [{ "type": "string" }]
+    }
+  ]
 }

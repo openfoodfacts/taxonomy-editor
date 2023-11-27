@@ -1,0 +1,11 @@
+{
+  "//": "This file is for global dev tools only ! For frontend see in taxonomy-editor-frontend folder",
+  "devDependencies": {
+    "prettier": "3.0.3",
+    "prettier-plugin-toml": "^1.0.0"
+  },
+  "scripts": {
+    "lint": "prettier --plugin=prettier-plugin-toml --write \"**/*.{json,md,yml,yaml,toml}\"",
+    "lint:check": "prettier --plugin=prettier-plugin-toml --check \"**/*.{json,md,yml,yaml,toml}\""
+  }
+}

@@ -10,6 +10,11 @@ from datetime import datetime
 from neo4j import GraphDatabase
 
 DEFAULT_URL = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+DEFAULT_LOAD_DB_ARGS = {
+    "url": DEFAULT_URL,
+    "reset_db": False,
+    "confirm_reset_db": False,
+}
 
 
 def get_session(uri=DEFAULT_URL):
@@ -58,13 +63,21 @@ def load_jsonl(file_path, session):
 
 def get_options(args=None):
     parser = argparse.ArgumentParser(description="Import json file to Neo4J database")
-    parser.add_argument("--url", default=DEFAULT_URL, help="Neo4J database bolt URL")
+    parser.add_argument(
+        "--url", default=DEFAULT_LOAD_DB_ARGS["url"], help="Neo4J database bolt URL"
+    )
     parser.add_argument("file", help="Json file to import")
     parser.add_argument(
-        "--reset", default=False, action="store_true", help="Clean all database before importing"
+        "--reset",
+        default=DEFAULT_LOAD_DB_ARGS["reset_db"],
+        action="store_true",
+        help="Clean all database before importing",
     )
     parser.add_argument(
-        "--yes", default=False, action="store_true", help="Assume yes to all questions"
+        "--yes",
+        default=DEFAULT_LOAD_DB_ARGS["confirm_reset_db"],
+        action="store_true",
+        help="Assume yes to all questions",
     )
     return parser.parse_args(args)
 
@@ -77,13 +90,27 @@ def confirm_clean_db(session):
     return response.lower() in ("y", "yes")
 
 
-if __name__ == "__main__":
-    options = get_options()
-    session = get_session(options.url)
-    if options.reset:
-        confirmed = options.yes or confirm_clean_db(session)
+def load_file(
+    file_path,
+    url=DEFAULT_LOAD_DB_ARGS["url"],
+    reset_db=DEFAULT_LOAD_DB_ARGS["reset_db"],
+    confirm_reset_db=DEFAULT_LOAD_DB_ARGS["confirm_reset_db"],
+):
+    session = get_session(url)
+    if reset_db:
+        confirmed = confirm_reset_db or confirm_clean_db(session)
         if not confirmed:
             sys.exit(1)
         else:
             clean_db(session)
-    load_jsonl(options.file, session)
+    load_jsonl(file_path, session)
+
+
+if __name__ == "__main__":
+    options = get_options()
+    load_file(
+        file_path=options.file,
+        url=options.url,
+        reset_db=options.reset,
+        confirm_reset_db=options.yes,
+    )

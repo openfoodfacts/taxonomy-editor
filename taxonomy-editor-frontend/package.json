@@ -30,7 +30,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prepare": "cd .. && husky install taxonomy-editor-frontend/.husky"
+    "prepare": "cd .. && husky install taxonomy-editor-frontend/.husky",
+    "lint": "prettier --write .",
+    "lint:check": "prettier --check ."
   },
   "proxy": "http://localhost:80",
   "eslintConfig": {
