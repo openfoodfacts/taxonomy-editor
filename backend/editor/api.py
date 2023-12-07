@@ -372,7 +372,7 @@ async def export_to_github(
 
 
 @app.post("/{taxonomy_name}/{branch}/import")
-async def import_from_github(request: Request, branch: str, taxonomy_name: str):
+async def import_from_github(request: Request, branch: str, taxonomy_name: str,background_tasks: BackgroundTasks):
     """
     Get taxonomy from Product Opener GitHub repository
     """
@@ -387,8 +387,8 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
     if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    result = await taxonomy.import_from_github(description)
-    return result
+    background_tasks.add_task(await taxonomy.import_from_github(description))
+    return {"message": "Parsing sending in the background"}
 
 
 @app.post("/{taxonomy_name}/{branch}/upload")
