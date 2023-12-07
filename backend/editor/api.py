@@ -390,7 +390,7 @@ async def import_from_github(
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
     background_tasks.add_task(await taxonomy.import_from_github(description))
-    return {"message": "Parsing sending in the background"}
+    return {"message": "Parsing sent in the background"}
 
 
 @app.post("/{taxonomy_name}/{branch}/upload")
