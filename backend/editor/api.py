@@ -372,7 +372,9 @@ async def export_to_github(
 
 
 @app.post("/{taxonomy_name}/{branch}/import")
-async def import_from_github(request: Request, branch: str, taxonomy_name: str,background_tasks: BackgroundTasks):
+async def import_from_github(
+    request: Request, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks
+):
     """
     Get taxonomy from Product Opener GitHub repository
     """
