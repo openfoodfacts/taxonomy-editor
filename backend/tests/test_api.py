@@ -52,7 +52,7 @@ def test_import_from_github(client, github_mock, mocker):
     )
 
     assert response.status_code == 200
-    assert response.json() is True
+    assert response.json()["message"] == "Parsing sent in the background"
 
 
 def test_upload_taxonomy(client, github_mock):
