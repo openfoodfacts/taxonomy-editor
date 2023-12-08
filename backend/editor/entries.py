@@ -470,7 +470,7 @@ class TaxonomyGraph:
                     normalised_value = []
                     for values in new_node_keys[keys]:
                         normalised_value.append(normalizer.normalizing(values, keys_language_code))
-                    normalised_new_node_keys[keys] = normalised_value
+                    normalised_new_node_keys[keys] = new_node_keys[keys]
                     normalised_new_node_keys["tags_ids_" + keys_language_code] = normalised_value
                 else:
                     pass  # We generate tags_ids, and ignore the one sent

@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Typography,
   TextField,
   Stack,
@@ -6,6 +7,7 @@ import {
   IconButton,
   Box,
   Dialog,
+  Chip,
 } from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
 import { useCallback, useEffect, useState } from "react";
@@ -15,19 +17,31 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
 
+type MainLanguageTag = {
+  index: string;
+  tag: string;
+};
+
+type OtherLanguageTag = {
+  languageCode: string;
+  tags: MainLanguageTag[];
+};
+
 const SHOWN_LANGUAGES_KEY = "shownLanguages";
 
 /**
  * Sub-component for rendering translation of an "entry"
  */
 const ListTranslations = ({ nodeObject, setNodeObject }) => {
-  const [renderedTranslations, setRenderedTranslations] = useState([]); // Stores state of all tags
+  const [renderedTranslations, setRenderedTranslations] = useState<
+    OtherLanguageTag[]
+  >([]); // Stores state of all tags
   const [mainLangRenderedTranslations, setMainLangRenderedTranslations] =
-    useState([]); // Stores state of main language's tags
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // Used for Dialog component
-  const [shownLanguageCodes, setShownLanguageCodes] = useState([]); // Used for storing LCs that are shown in the interface
+    useState<MainLanguageTag[]>([]); // Stores state of main language's tags
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // Used for Dialog component
+  const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]); // Used for storing LCs that are shown in the interface
 
-  const [expandedLanguages, setExpandedLanguages] = useState([]);
+  const [expandedLanguages, setExpandedLanguages] = useState<string[]>([]);
   // Helper functions for Dialog component
   const handleClose = () => {
     setIsDialogOpen(false);
@@ -38,7 +52,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
   // Used for addition of a translation language
   const handleAddTranslation = useCallback(
-    (key) => {
+    (key: string) => {
       key = "tags_" + key; // LC must have a prefix "tags_"
       const uuidKey = key + "_uuid"; // Format for the uuid
 
@@ -58,7 +72,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   );
 
   // Used for deleting a translation language
-  const handleDeleteTranslation = (key) => {
+  const handleDeleteTranslation = (key: string) => {
     key = "tags_" + key; // LC must have a prefix "tags_"
     const uuidKey = key + "_uuid"; // Format for the uuid
 
@@ -71,7 +85,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
   };
 
-  const handleDialogConfirm = (newShownLanguageCodes) => {
+  const handleDialogConfirm = (newShownLanguageCodes: string[]) => {
     newShownLanguageCodes.forEach((languageCode) => {
       handleAddTranslation(languageCode);
     });
@@ -83,7 +97,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     setIsDialogOpen(false);
   };
 
-  const handleToggleExpand = (newLanguageCode) => {
+  const handleToggleExpand = (newLanguageCode: string) => {
     if (expandedLanguages.includes(newLanguageCode)) {
       setExpandedLanguages((prev) =>
         prev.filter((languageCodeItem) => languageCodeItem !== newLanguageCode)
@@ -97,10 +111,10 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   // Changes the translations to be rendered
   // Dependent on changes occuring in "nodeObject"
   useEffect(() => {
-    // Main langauge tags are considered separately, since they have to be rendered first
-    const mainLangTags = [];
-    const otherLangTags = [];
-    const allLanguageCodes = [];
+    // Main language tags are considered separately, since they have to be rendered first
+    const mainLangTags: MainLanguageTag[] = [];
+    const otherLangTags: OtherLanguageTag[] = [];
+    const allLanguageCodes: string[] = [];
     Object.keys(nodeObject).forEach((key) => {
       // Get all tags and its corresponding language code
       // Tagids need to be recomputed, so shouldn't be rendered
@@ -126,7 +140,10 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             const languageCode = key.split("_").slice(1, -1)[0];
             allLanguageCodes.push(languageCode);
             // General format for storing tags for different lc's
-            const tobeInsertedObj = { languageCode: languageCode, tags: [] };
+            const tobeInsertedObj: OtherLanguageTag = {
+              languageCode: languageCode,
+              tags: [],
+            };
             const tagsKey = key.split("_").slice(0, -1).join("_");
             nodeObject[tagsKey].forEach((tag, index) =>
               tobeInsertedObj["tags"].push({
@@ -158,9 +175,11 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   useEffect(() => {
     // get shown languages from local storage if it exists else use main language
     try {
-      let localStorageShownLanguages = JSON.parse(
-        localStorage.getItem(SHOWN_LANGUAGES_KEY)
-      );
+      let localStorageShownLanguages: string[] | null = localStorage.getItem(
+        SHOWN_LANGUAGES_KEY
+      )
+        ? JSON.parse(localStorage.getItem(SHOWN_LANGUAGES_KEY)!)
+        : null;
       // validate that shown languages is an array of strings and filter all items that are valid language codes
       if (
         Array.isArray(localStorageShownLanguages) &&
@@ -187,8 +206,8 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   }, [handleAddTranslation]);
 
   // Helper function used for changing state
-  const changeData = (key, index, value) => {
-    let updatedTags = []; // Stores all the tags of a language code
+  const changeData = (key: string, index: string, value: string) => {
+    let updatedTags: MainLanguageTag[] = []; // Stores all the tags of a language code
 
     if (key === nodeObject["main_language"]) {
       // Update state in correct format after duplication
@@ -198,7 +217,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       );
       setMainLangRenderedTranslations(updatedTags);
     } else {
-      let duplicateOtherTags = []; // Stores the updated state for "renderedTranslations"
+      let duplicateOtherTags: OtherLanguageTag[] = []; // Stores the updated state for "renderedTranslations"
       const updatedObj = { index: index, tag: value };
       renderedTranslations.forEach((allTagsObj) => {
         // Check if update LC and current element LC are same
@@ -237,17 +256,17 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
   };
 
   // Helper function for adding a translation for a LC
-  const handleAdd = (key) => {
+  const handleAdd = (key: string, tag: string) => {
     if (!expandedLanguages.includes(key)) {
       handleToggleExpand(key);
     }
-    let tagsToBeInserted = [];
+    let tagsToBeInserted: string[] = [];
     const newUUID = Math.random().toString();
     // State of "MainLangRenderedTranslations" is updated according to format used
     if (key === nodeObject.main_language) {
       const duplicateMainLangRenderedTranslations = [
         ...mainLangRenderedTranslations,
-        { index: newUUID, tag: "" },
+        { index: newUUID, tag },
       ];
       setMainLangRenderedTranslations(duplicateMainLangRenderedTranslations); // Set state
 
@@ -261,7 +280,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       const newRenderedTranslations = [...renderedTranslations];
       newRenderedTranslations.map((allTagsObj) =>
         allTagsObj["languageCode"] === key
-          ? (allTagsObj["tags"].push({ index: newUUID, tag: "" }),
+          ? (allTagsObj["tags"].push({ index: newUUID, tag }),
             // Updated tags assigned for later use
             (tagsToBeInserted = allTagsObj["tags"].map((el) => el.tag)))
           : allTagsObj
@@ -277,8 +296,8 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
   };
 
-  const handleDelete = (key, index) => {
-    let tagsToBeInserted = [];
+  const handleDelete = (key: string, index: string) => {
+    let tagsToBeInserted: string[] = [];
     // State of "MainLangRenderedTranslations" is updated according to format used
     if (key === nodeObject.main_language) {
       const duplicateMainLangRenderedTranslations =
@@ -292,7 +311,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }
     // State of "renderedTranslations" is updated according to format used
     else {
-      const newRenderedTranslations = [];
+      const newRenderedTranslations: OtherLanguageTag[] = [];
       renderedTranslations.forEach((allTagsObj) => {
         if (allTagsObj["languageCode"] === key) {
           const unDeletedTags = allTagsObj["tags"].filter(
@@ -334,51 +353,83 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
       </Stack>
 
       {/* Main Language */}
-      <Stack direction="row" alignItems="center">
+      <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
         <Typography variant="h6">
           {nodeObject && ISO6391.getName(nodeObject.main_language)}
         </Typography>
-        <IconButton
-          sx={{ ml: 1 }}
-          onClick={() => handleAdd(nodeObject.main_language)}
-        >
-          <AddBoxIcon />
-        </IconButton>
       </Stack>
 
       {/* Render main language tags */}
-      {nodeObject &&
-        mainLangRenderedTranslations.map(({ index, tag }) => {
-          return (
-            <Stack
-              sx={{ ml: 2 }}
-              key={index}
-              direction="row"
-              alignItems="center"
-            >
-              <TextField
-                size="small"
-                sx={{ mt: 1 }}
-                onChange={(event) => {
-                  changeData(
-                    nodeObject["main_language"],
-                    index,
-                    event.target.value
-                  );
-                }}
-                value={tag}
-                variant="outlined"
-              />
+      <Stack direction="row" sx={{ mr: 4 }}>
+        {console.log(mainLangRenderedTranslations)}
+        {
+          nodeObject && (
+            <Autocomplete
+              multiple
+              freeSolo
+              value={mainLangRenderedTranslations}
+              options={[]}
+              renderTags={(value, getTagProps) =>
+                value.map(({ index, tag }) => (
+                  <Chip
+                    label={tag}
+                    key={index}
+                    onDelete={() =>
+                      handleDelete(nodeObject.main_language, index)
+                    }
+                    sx={{ m: 0.5 }}
+                  />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  placeholder="Type and press enter"
+                  onKeyDown={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    if (e.code === "Enter" && target.value) {
+                      handleAdd(nodeObject.main_language, target.value);
+                    }
+                  }}
+                />
+              )}
+              fullWidth
+            />
+          )
+          // mainLangRenderedTranslations.map(({ index, tag }) => {
+          //   return (
+          //     <Stack
+          //       sx={{ ml: 2 }}
+          //       key={index}
+          //       direction="row"
+          //       alignItems="center"
+          //     >
+          //       <Chip label={tag} onClick={() => {}} onDelete={() => handleDelete(nodeObject.main_language, index)} />
+          //     <TextField
+          //       size="small"
+          //       sx={{ mt: 1 }}
+          //       onChange={(event) => {
+          //         changeData(
+          //           nodeObject["main_language"],
+          //           index,
+          //           event.target.value
+          //         );
+          //       }}
+          //       value={tag}
+          //       variant="outlined"
+          //     />
 
-              <IconButton
-                sx={{ ml: 1, mt: 1 }}
-                onClick={() => handleDelete(nodeObject.main_language, index)}
-              >
-                <DeleteOutlineIcon />
-              </IconButton>
-            </Stack>
-          );
-        })}
+          //     <IconButton
+          //       sx={{ ml: 1, mt: 1 }}
+          //       onClick={() => handleDelete(nodeObject.main_language, index)}
+          //     >
+          //       <DeleteOutlineIcon />
+          //     </IconButton>
+          //   </Stack>
+          // );
+        }
+      </Stack>
 
       {/* All other languages */}
       {renderedTranslations.map((allTagsObj) => {
@@ -389,7 +440,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
             <Box key={lang}>
               <Stack sx={{ mt: 2 }} direction="row" alignItems="center">
                 <Typography variant="h6">{ISO6391.getName(lang)}</Typography>
-                <IconButton sx={{ ml: 1 }} onClick={() => handleAdd(lang)}>
+                <IconButton sx={{ ml: 1 }} onClick={() => handleAdd(lang, "")}>
                   <AddBoxIcon />
                 </IconButton>
                 <IconButton onClick={() => handleDeleteTranslation(lang)}>
@@ -436,7 +487,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                   );
                 })
               ) : (
-                <Button sx={{ ml: 2 }} onClick={() => handleAdd(lang)}>
+                <Button sx={{ ml: 2 }} onClick={() => handleAdd(lang, "")}>
                   Add a Translation
                 </Button>
               )}
