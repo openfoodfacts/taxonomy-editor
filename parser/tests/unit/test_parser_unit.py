@@ -7,30 +7,27 @@ TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.tx
 
 
 def test_normalized_filename(neo4j):
-    session = neo4j.session()
-
-    x = parser.Parser(session)
-    normalizer = x.normalized_filename
-    name = normalizer("test")
-    assert name == "test.txt"
-    name = normalizer("test.txt")
-    assert name == "test.txt"
-    name = normalizer("t")
-    assert name == "t.txt"
-    session.close()
+    with neo4j.session() as session:
+        x = parser.Parser(session)
+        normalizer = x.normalized_filename
+        name = normalizer("test")
+        assert name == "test.txt"
+        name = normalizer("test.txt")
+        assert name == "test.txt"
+        name = normalizer("t")
+        assert name == "t.txt"
 
 
 def test_fileiter(neo4j):
-    session = neo4j.session()
-    x = parser.Parser(session)
-    file = x.file_iter(TEST_TAXONOMY_TXT)
+    with neo4j.session() as session:
+        x = parser.Parser(session)
+        file = x.file_iter(TEST_TAXONOMY_TXT)
 
-    for counter, (_, line) in enumerate(file):
-        assert line == "" or line[0] == "#" or ":" in line
-        if counter == 26:
-            assert line == "carbon_footprint_fr_foodges_value:fr:10"
-    assert counter == 37
-    session.close()
+        for counter, (_, line) in enumerate(file):
+            assert line == "" or line[0] == "#" or ":" in line
+            if counter == 26:
+                assert line == "carbon_footprint_fr_foodges_value:fr:10"
+        assert counter == 37
 
 
 def test_normalizing():

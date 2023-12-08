@@ -35,22 +35,20 @@ def test_setup(neo4j):
 
 def test_round_trip(neo4j):
     """test parsing and dumping back a taxonomy"""
-    session = neo4j.session()
-    test_parser = parser.Parser(session)
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
 
-    # parse taxonomy
-    test_parser(TEST_TAXONOMY_TXT, "branch", "test")
-    # just quick check it runs ok with total number of nodes
-    query = "MATCH (n:p_test_branch:t_test:b_branch) RETURN COUNT(*)"
-    result = session.run(query)
-    number_of_nodes = result.value()[0]
-    assert number_of_nodes == 14
+        # parse taxonomy
+        test_parser(TEST_TAXONOMY_TXT, "branch", "test")
+        # just quick check it runs ok with total number of nodes
+        query = "MATCH (n:p_test_branch:t_test:b_branch) RETURN COUNT(*)"
+        result = session.run(query)
+        number_of_nodes = result.value()[0]
+        assert number_of_nodes == 14
 
-    # dump taxonomy back
-    test_dumper = unparser.WriteTaxonomy(session)
-    lines = list(test_dumper.iter_lines("p_test_branch:t_test:b_branch"))
-
-    session.close()
+        # dump taxonomy back
+        test_dumper = unparser.WriteTaxonomy(session)
+        lines = list(test_dumper.iter_lines("p_test_branch:t_test:b_branch"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
@@ -75,32 +73,29 @@ def test_round_trip(neo4j):
 def test_two_branch_round_trip(neo4j):
     """test parsing and dumping the same taxonomy with two different branches"""
 
-    session = neo4j.session()
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
 
-    test_parser = parser.Parser(session)
+        # parse taxonomy with branch1
+        test_parser(TEST_TAXONOMY_TXT, "branch1", "test")
+        # parse taxonomy with branch2
+        test_parser(TEST_TAXONOMY_TXT, "branch2", "test")
 
-    # parse taxonomy with branch1
-    test_parser(TEST_TAXONOMY_TXT, "branch1", "test")
-    # parse taxonomy with branch2
-    test_parser(TEST_TAXONOMY_TXT, "branch2", "test")
+        # just quick check it runs ok with total number of nodes
+        query = "MATCH (n:p_test_branch1:t_test:b_branch1) RETURN COUNT(*)"
+        result = session.run(query)
+        number_of_nodes = result.value()[0]
+        assert number_of_nodes == 14
 
-    # just quick check it runs ok with total number of nodes
-    query = "MATCH (n:p_test_branch1:t_test:b_branch1) RETURN COUNT(*)"
-    result = session.run(query)
-    number_of_nodes = result.value()[0]
-    assert number_of_nodes == 14
+        query = "MATCH (n:p_test_branch2:t_test:b_branch2) RETURN COUNT(*)"
+        result = session.run(query)
+        number_of_nodes = result.value()[0]
+        assert number_of_nodes == 14
 
-    query = "MATCH (n:p_test_branch2:t_test:b_branch2) RETURN COUNT(*)"
-    result = session.run(query)
-    number_of_nodes = result.value()[0]
-    assert number_of_nodes == 14
-
-    # dump taxonomy back
-    test_dumper = unparser.WriteTaxonomy(session)
-    lines_branch1 = list(test_dumper.iter_lines("p_test_branch1:t_test:b_branch1"))
-    lines_branch2 = list(test_dumper.iter_lines("p_test_branch2:t_test:b_branch2"))
-
-    session.close()
+        # dump taxonomy back
+        test_dumper = unparser.WriteTaxonomy(session)
+        lines_branch1 = list(test_dumper.iter_lines("p_test_branch1:t_test:b_branch1"))
+        lines_branch2 = list(test_dumper.iter_lines("p_test_branch2:t_test:b_branch2"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
