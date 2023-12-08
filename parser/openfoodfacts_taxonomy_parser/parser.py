@@ -2,9 +2,10 @@ import logging
 import os
 import re
 import sys
+from typing import Iterator, TypedDict
 
 import iso639
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, Session
 
 from .exception import DuplicateIDError
 from .normalizer import normalizing
@@ -13,6 +14,15 @@ from .normalizer import normalizing
 def ellipsis(text, max=20):
     """Cut a text adding eventual ellipsis if we do not display it fully"""
     return text[:max] + ("..." if len(text) > max else "")
+
+
+class NodeData(TypedDict):
+    id: str
+    main_language: str
+    preceding_lines: list[str]
+    parent_tag: list[str]
+    src_position: int | None
+    is_before: str
 
 
 class ParserConsoleLogger:
@@ -38,11 +48,11 @@ class ParserConsoleLogger:
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
 
-    def __init__(self, session):
+    def __init__(self, session: Session):
         self.session = session
         self.parser_logger = ParserConsoleLogger()
 
-    def _create_headernode(self, header, multi_label):
+    def _create_headernode(self, header: list[str], multi_label: str):
         """Create the node for the header"""
         query = f"""
                 CREATE (n:{multi_label}:TEXT)
@@ -52,7 +62,7 @@ class Parser:
             """
         self.session.run(query, header=header)
 
-    def _create_node(self, data, multi_label):
+    def _create_node(self, data: NodeData, multi_label: str):
         """Run the query to create the node with data dictionary"""
         position_query = """
             SET n.id = $id
@@ -81,24 +91,25 @@ class Parser:
                 entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
-        self.session.run(query, data)
+        self.session.run(query, {**data})
 
-    def normalized_filename(self, filename):
+    def normalized_filename(self, filename: str) -> str:
         """Add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
-    def _get_project_name(self, taxonomy_name, branch_name):
+    def _get_project_name(self, taxonomy_name: str, branch_name: str):
         """Create a project name for given branch and taxonomy"""
         return "p_" + taxonomy_name + "_" + branch_name
 
-    def _create_multi_label(self, taxonomy_name, branch_name):
+    def _create_multi_label(self, taxonomy_name: str, branch_name: str) -> str:
         """Create a combined label with taxonomy name and branch name"""
         project_name = self._get_project_name(taxonomy_name, branch_name)
         return project_name + ":" + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
 
-    def file_iter(self, filename, start=0):
+    def file_iter(self, filename: str, start: int = 0) -> Iterator[tuple[int, str]]:
         """Generator to get the file line by line"""
         with open(filename, "r", encoding="utf8") as file:
+            line_count = 0
             for line_number, line in enumerate(file):
                 if line_number < start:
                     continue
@@ -115,9 +126,10 @@ class Parser:
                 # removes parenthesis for roman numeral
                 line = re.sub(r"\(([ivx]+)\)", r"\1", line, flags=re.I)
                 yield line_number, line
-        yield line_number, ""  # to end the last entry if not ended
+                line_count += 1
+            yield line_count, ""  # to end the last entry if not ended
 
-    def _remove_stopwords(self, lc, words):
+    def _remove_stopwords(self, lc: str, words: str) -> str:
         """Remove the stopwords that were read at the beginning of the file"""
         # First check if this language has stopwords
         if lc in self.stopwords:
@@ -130,7 +142,7 @@ class Parser:
         else:
             return words
 
-    def _add_line(self, line):
+    def _add_line(self, line: str) -> str:
         """
         Get a normalized string but keeping the language code "lc:",
         used for id and parent tag
@@ -140,40 +152,40 @@ class Parser:
         new_line += self._remove_stopwords(lc, normalizing(line, lc))
         return new_line
 
-    def _get_lc_value(self, line):
+    def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
         """Get the language code "lc" and a list of normalized values"""
         lc, line = line.split(":", 1)
-        new_line = []
+        new_line: list[str] = []
         for word in line.split(","):
             new_line.append(self._remove_stopwords(lc, normalizing(word, lc)))
         return lc, new_line
 
-    def _new_node_data(self, is_before):
+    def _new_node_data(self, is_before: str) -> NodeData:
         """To create an empty dictionary that will be used to create node"""
-        data = {
-            "id": "",
-            "main_language": "",
-            "preceding_lines": [],
-            "parent_tag": [],
-            "src_position": None,
-            "is_before": is_before,
-        }
+        data = NodeData(
+            id="",
+            main_language="",
+            preceding_lines=[],
+            parent_tag=[],
+            src_position=None,
+            is_before=is_before,
+        )
         return data
 
-    def _set_data_id(self, data, id, line_number):
+    def _set_data_id(self, data: NodeData, id: str, line_number: int) -> NodeData:
         if not data["id"]:
             data["id"] = id
         else:
             raise DuplicateIDError(line_number)
         return data
 
-    def _header_harvest(self, filename):
+    def _header_harvest(self, filename: str) -> tuple[list[str], int]:
         """
         Harvest the header (comment with #),
         it has its own function because some header has multiple blocks
         """
         h = 0
-        header = []
+        header: list[str] = []
         for _, line in self.file_iter(filename):
             if not (line) or line[0] == "#":
                 header.append(line)
@@ -191,7 +203,7 @@ class Parser:
 
         return header, h
 
-    def _entry_end(self, line, data):
+    def _entry_end(self, line: str, data: NodeData) -> bool:
         """Return True if the block ended"""
         # stopwords and synonyms are one-liner, entries are separated by a blank line
         if line.startswith("stopwords") or line.startswith("synonyms") or not line:
@@ -201,7 +213,7 @@ class Parser:
                 return True
         return False
 
-    def _remove_separating_line(self, data):
+    def _remove_separating_line(self, data: NodeData) -> NodeData:
         """
         To remove the one separating line that is always there,
         between synonyms part and stopwords part and before each entry
@@ -228,7 +240,7 @@ class Parser:
                 data["preceding_lines"].pop(0)
         return data
 
-    def _harvest(self, filename):
+    def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
         saved_nodes = []
         index_stopwords = 0
@@ -240,15 +252,11 @@ class Parser:
         correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
-
-        # header
-        header, next_line = self._header_harvest(filename)
-        yield header
-
         # the other entries
         data = self._new_node_data(is_before="__header__")
         data["is_before"] = "__header__"
-        for line_number, line in self.file_iter(filename, next_line):
+        line_number = entries_start_line
+        for line_number, line in self.file_iter(filename, entries_start_line):
             # yield data if block ended
             if self._entry_end(line, data):
                 if data["id"] in saved_nodes:
@@ -353,23 +361,24 @@ class Parser:
                                 line_number + 1,
                                 ellipsis(line),
                             )
-                    if property_name:
-                        data["prop_" + property_name + "_" + lc] = property_value
+                        if property_name:
+                            data["prop_" + property_name + "_" + lc] = property_value
 
         data["id"] = "__footer__"
         data["preceding_lines"].pop(0)
         data["src_position"] = line_number + 1 - len(data["preceding_lines"])
         yield data
 
-    def create_nodes(self, filename, multi_label):
+    def create_nodes(self, filename: str, multi_label: str):
         """Adding nodes to database"""
         self.parser_logger.info("Creating nodes")
-        harvested_data = self._harvest(filename)
-        self._create_headernode(next(harvested_data), multi_label)
+        harvested_header_data, entries_start_line = self._header_harvest(filename)
+        self._create_headernode(harvested_header_data, multi_label)
+        harvested_data = self._harvest_entries(filename, entries_start_line)
         for entry in harvested_data:
             self._create_node(entry, multi_label)
 
-    def create_previous_link(self, multi_label):
+    def create_previous_link(self, multi_label: str):
         self.parser_logger.info("Creating 'is_before' links")
         query = f"MATCH(n:{multi_label}) WHERE n.is_before IS NOT NULL return n.id, n.is_before"
         results = self.session.run(query)
@@ -395,7 +404,7 @@ class Parser:
             elif not relation[0]:
                 self.parser_logger.error("link not created between %s and %s", id, id_previous)
 
-    def _parent_search(self, multi_label):
+    def _parent_search(self, multi_label: str) -> Iterator[tuple[str, str]]:
         """Get the parent and the child to link"""
         query = f"MATCH (n:{multi_label}:ENTRY) WHERE SIZE(n.parents)>0 RETURN n.id, n.parents"
         results = self.session.run(query)
@@ -405,7 +414,7 @@ class Parser:
             for parent in parent_list:
                 yield parent, id
 
-    def create_child_link(self, multi_label):
+    def create_child_link(self, multi_label: str):
         """Create the relations between nodes"""
         self.parser_logger.info("Creating 'is_child_of' links")
         for parent, child_id in self._parent_search(multi_label):
@@ -426,15 +435,16 @@ class Parser:
         query = "MATCH (n) SET n.is_before = null, n.parents = null"
         self.session.run(query)
 
-    def _create_fulltext_index(self, taxonomy_name, branch_name):
+    def _create_fulltext_index(self, taxonomy_name: str, branch_name: str):
         """Create indexes for search"""
         project_name = self._get_project_name(taxonomy_name, branch_name)
-        query = [
+        query = (
             f"""CREATE FULLTEXT INDEX {project_name+'_SearchIds'} IF NOT EXISTS
             FOR (n:{project_name}) ON EACH [n.id]\n"""
-        ]
-        query.append("""OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}""")
-        self.session.run("".join(query))
+            + """
+            OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}"""
+        )
+        self.session.run(query)
 
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
         tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
@@ -443,7 +453,7 @@ class Parser:
             FOR (n:{project_name}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 
-    def _create_parsing_errors_node(self, taxonomy_name, branch_name):
+    def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str):
         """Create node to list parsing errors"""
         multi_label = self._create_multi_label(taxonomy_name, branch_name)
         query = f"""
@@ -464,7 +474,7 @@ class Parser:
         }
         self.session.run(query, params)
 
-    def __call__(self, filename, branch_name, taxonomy_name):
+    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
         """Process the file"""
         filename = self.normalized_filename(filename)
         branch_name = normalizing(branch_name, char="_")
