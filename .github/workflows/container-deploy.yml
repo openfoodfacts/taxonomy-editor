@@ -101,7 +101,6 @@ jobs:
             # Go to repository directory
             cd ${{ matrix.env }}
 
-<<<<<<< Updated upstream
             # Fetch newest commits (in case it wasn't freshly cloned)
             git fetch --depth 1
 
