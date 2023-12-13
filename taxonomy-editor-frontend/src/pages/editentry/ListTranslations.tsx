@@ -10,6 +10,12 @@ import {
   Chip,
 } from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
+import {
+  DragDropContext,
+  Draggable,
+  type DropResult,
+  Droppable,
+} from "react-beautiful-dnd";
 import { useCallback, useEffect, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -340,6 +346,27 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     });
   };
 
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const newItems = Array.from(mainLangRenderedTranslations);
+    const [removed] = newItems.splice(result.source.index, 1);
+    newItems.splice(result.destination.index, 0, removed);
+
+    setMainLangRenderedTranslations(newItems);
+
+    // Make changes to the parent NodeObject
+    setNodeObject((prevNodeObject) => {
+      const newNodeObject = {
+        ...prevNodeObject,
+        [`tags_${prevNodeObject["main_language"]}`]: newItems.map(
+          (el) => el.tag
+        ),
+      };
+      return newNodeObject;
+    });
+  };
+
   return (
     <Box sx={{ ml: 4 }}>
       {/* Title */}
@@ -361,26 +388,49 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
 
       {/* Render main language tags */}
       <Stack direction="row" sx={{ mr: 4 }}>
-        {console.log(mainLangRenderedTranslations)}
         {
           nodeObject && (
             <Autocomplete
               multiple
               freeSolo
+              disableClearable
               value={mainLangRenderedTranslations}
               options={[]}
-              renderTags={(value, getTagProps) =>
-                value.map(({ index, tag }) => (
-                  <Chip
-                    label={tag}
-                    key={index}
-                    onDelete={() =>
-                      handleDelete(nodeObject.main_language, index)
-                    }
-                    sx={{ m: 0.5 }}
-                  />
-                ))
-              }
+              renderTags={(value) => (
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <Droppable droppableId="main-language" direction="horizontal">
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        style={{ display: "flex" }}
+                      >
+                        {value.map(({ index, tag }, i: number) => (
+                          <Draggable key={index} draggableId={index} index={i}>
+                            {(provided) => (
+                              <Chip
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                label={tag}
+                                key={index}
+                                onDelete={() =>
+                                  handleDelete(nodeObject.main_language, index)
+                                }
+                                sx={{
+                                  m: 0.5,
+                                  fontWeight: i === 0 ? "bold" : "",
+                                }}
+                              />
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              )}
               renderInput={(params) => (
                 <TextField
                   {...params}

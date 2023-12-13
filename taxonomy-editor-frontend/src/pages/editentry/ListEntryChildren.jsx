@@ -112,29 +112,32 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         </IconButton>
       </Stack>
       {/* Renders parents or children of the node */}
-      {relations &&
-        relations.map((relationObject) => (
-          <Stack
-            key={relationObject["index"]}
-            direction="row"
-            alignItems="center"
-          >
-            <Link
-              to={`${urlPrefix}/entry/${relationObject["child"]}`}
-              style={{ color: "#0064c8", display: "inline-block" }}
+      {relations && (
+        <Stack direction="row">
+          {relations.map((relationObject) => (
+            <Stack
+              key={relationObject["index"]}
+              direction="row"
+              alignItems="center"
             >
-              <Typography sx={{ ml: 8 }} variant="h6">
-                {relationObject["child"]}
-              </Typography>
-            </Link>
-            <IconButton
-              sx={{ ml: 1, color: greyHexCode }}
-              onClick={(e) => handleDeleteChild(relationObject["index"], e)}
-            >
-              <DeleteOutlineIcon />
-            </IconButton>
-          </Stack>
-        ))}
+              <Link
+                to={`${urlPrefix}/entry/${relationObject["child"]}`}
+                style={{ color: "#0064c8", display: "inline-block" }}
+              >
+                <Typography sx={{ ml: 8 }} variant="h6">
+                  {relationObject["child"]}
+                </Typography>
+              </Link>
+              <IconButton
+                sx={{ ml: 1, color: greyHexCode }}
+                onClick={(e) => handleDeleteChild(relationObject["index"], e)}
+              >
+                <DeleteOutlineIcon />
+              </IconButton>
+            </Stack>
+          ))}
+        </Stack>
+      )}
 
       {/* When no parents or children are present */}
       {relations && relations.length === 0 && (

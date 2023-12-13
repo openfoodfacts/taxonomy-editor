@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import useFetch from "../../components/useFetch";
@@ -54,9 +54,10 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
           None
         </Typography>
       ) : (
-        relations.map((relation) => (
-          <Box key={relation}>
+        <Stack direction="row">
+          {relations.map((relation) => (
             <Link
+              key={relation}
               to={`${linkHrefPrefix}/entry/${relation}`}
               style={{ color: "#0064c8", display: "inline-block" }}
             >
@@ -64,8 +65,8 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
                 {relation}
               </Typography>
             </Link>
-          </Box>
-        ))
+          ))}
+        </Stack>
       )}
     </Box>
   );

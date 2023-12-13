@@ -432,12 +432,12 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def update_nodes(self, label, entry, new_node_keys):
+    async def update_nodes(self, label, entry, new_node):
         """
         Helper function used for updation of node with given id and label
         """
         # Sanity check keys
-        for key in new_node_keys.keys():
+        for key in new_node.keys():
             if not re.match(r"^\w+$", key) or key == "id":
                 raise ValueError("Invalid key: %s", key)
 
@@ -445,7 +445,7 @@ class TaxonomyGraph:
         result = await self.get_nodes(label, entry)
         curr_node = result[0]["n"]
         curr_node_keys = list(curr_node.keys())
-        deleted_keys = set(curr_node_keys) ^ set(new_node_keys)
+        deleted_keys = set(curr_node_keys) ^ set(new_node)
 
         # Check for keys having null/empty values
         for key in curr_node_keys:
@@ -462,29 +462,29 @@ class TaxonomyGraph:
             query.append(f"""\nREMOVE n.{key}\n""")
 
         # Adding normalized tags ids corresponding to entry tags
-        normalised_new_node_keys = {}
-        for keys in new_node_keys.keys():
-            if keys.startswith("tags_"):
-                if "_ids_" not in keys:
-                    keys_language_code = keys.split("_", 1)[1]
+        normalised_new_node = {}
+        for key in new_node.keys():
+            if key.startswith("tags_"):
+                if "_ids_" not in key:
+                    keys_language_code = key.split("_", 1)[1]
                     normalised_value = []
-                    for values in new_node_keys[keys]:
+                    for values in new_node[key]:
                         normalised_value.append(normalizer.normalizing(values, keys_language_code))
-                    normalised_new_node_keys[keys] = new_node_keys[keys]
-                    normalised_new_node_keys["tags_ids_" + keys_language_code] = normalised_value
+                    normalised_new_node[key] = new_node[key]
+                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
                 else:
                     pass  # We generate tags_ids, and ignore the one sent
             else:
                 # No need to normalise
-                normalised_new_node_keys[keys] = new_node_keys[keys]
+                normalised_new_node[key] = new_node[key]
 
         # Update keys
-        for key in normalised_new_node_keys.keys():
+        for key in normalised_new_node.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
 
         query.append("""RETURN n""")
 
-        params = dict(normalised_new_node_keys, id=entry)
+        params = dict(normalised_new_node, id=entry)
         result = await get_current_transaction().run(" ".join(query), params)
         return await async_list(result)
 
