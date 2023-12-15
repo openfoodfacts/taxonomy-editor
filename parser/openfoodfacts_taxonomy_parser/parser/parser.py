@@ -8,7 +8,7 @@ import iso639
 from neo4j import GraphDatabase, Session
 
 from .exception import DuplicateIDError
-from .normalizer import normalizing
+from ..normalizer import normalizing
 
 
 def ellipsis(text, max=20):
