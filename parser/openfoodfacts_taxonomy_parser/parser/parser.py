@@ -110,24 +110,74 @@ class Parser:
                 "Created %s 'is_before' links, %s links expected", count, len(previous_links)
             )
 
-    def create_child_link(self, child_links: list[ChildLink], project_label: str):
+    def _create_child_links(
+        self, child_links: list[ChildLink], entry_nodes: list[NodeData], project_label: str
+    ):
         """Create the relations between nodes"""
         self.parser_logger.info("Creating 'is_child_of' links")
+        node_ids = set([node.id for node in entry_nodes])
+        normalised_child_links = []
+        unnormalised_child_links = []
         for child_link in child_links:
-            child_id = child_link["id"]
-            parent = child_link["parent_id"]
-            lc, parent_id = parent.split(":")
-            query = f""" MATCH (p:{project_label}:ENTRY) WHERE $parent_id IN p.tags_ids_""" + lc
-            query += f"""
-                MATCH (c:{project_label}) WHERE c.id= $child_id
-                CREATE (c)-[r:is_child_of]->(p)
-                RETURN r
-            """
-            result = self.session.run(query, parent_id=parent_id, child_id=child_id)
-            if not result.value():
-                self.parser_logger.warning(
-                    f"parent not found for child {child_id} with parent {parent_id}"
-                )
+            if child_link["parent_id"] in node_ids:
+                normalised_child_links.append(child_link)
+            else:
+                unnormalised_child_links.append(child_link)
+
+        normalised_query = f"""
+            UNWIND $normalised_child_links as child_link
+            MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
+            WHERE p.id = child_link.parent_id
+            MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+            WHERE c.id = child_link.id
+            CREATE (c)-[relations:is_child_of]->(p)
+            WITH relations
+            UNWIND relations AS relation
+            RETURN COUNT(relation)
+        """
+
+        language_codes = set()
+        for child_link in unnormalised_child_links:
+            lc, parent_id = child_link["parent_id"].split(":")
+            language_codes.add(lc)
+            child_link["parent_id"] = parent_id
+
+        parent_id_query = " OR ".join(
+            [f"child_link.parent_id IN p.tags_ids_{lc}" for lc in language_codes]
+        )
+
+        unnormalised_query = f"""
+            UNWIND $unnormalised_child_links as child_link
+            MATCH (p:{project_label})
+            WHERE {parent_id_query}
+            MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+            WHERE c.id = child_link.id
+            CREATE (c)-[relations:is_child_of]->(p)
+            WITH relations
+            UNWIND relations AS relation
+            RETURN COUNT(relation)
+        """
+        count = 0
+
+        if normalised_child_links:
+            normalised_result = self.session.run(
+                normalised_query, normalised_child_links=normalised_child_links
+            )
+            count += normalised_result.value()[0]
+
+        if unnormalised_child_links:
+            unnormalised_result = self.session.run(
+                unnormalised_query, unnormalised_child_links=unnormalised_child_links
+            )
+            count += unnormalised_result.value()[0]
+        
+
+        if count != len(child_links):
+            self.parser_logger.error(
+                "Created %s 'is_child_of' links, %s links expected",
+                count,
+                len(child_links),
+            )
 
     def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str, project_label: str):
         """Create node to list parsing errors"""
@@ -187,7 +237,7 @@ class Parser:
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self._create_node_indexes(project_label)
-        self.create_child_link(taxonomy.child_links, project_label)
+        self._create_child_links(taxonomy.child_links, taxonomy.entry_nodes, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
         self._create_parsing_errors_node(taxonomy_name, branch_name, project_label)
 
