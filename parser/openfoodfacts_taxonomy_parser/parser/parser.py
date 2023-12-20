@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import timeit
 
 import iso639
 from neo4j import GraphDatabase, Session, Transaction
@@ -33,8 +34,8 @@ class Parser:
         """Create a project name for given branch and taxonomy"""
         return "p_" + taxonomy_name + "_" + branch_name
 
-    def _create_other_node(self, node_data: NodeData, project_label: str):
-        """Create TEXT, SYNONYMS or STOPWORDS nodes"""
+    def _create_other_node(self, tx: Transaction, node_data: NodeData, project_label: str):
+        """Create a TEXT, SYNONYMS or STOPWORDS node"""
         position_query = """
             SET n.id = $id
             SET n.preceding_lines = $preceding_lines
@@ -58,6 +59,9 @@ class Parser:
 
     def _create_entry_nodes(self, entry_nodes: list[NodeData], project_label: str):
         """Create all ENTRY nodes in a single batch query"""
+        self.parser_logger.info("Creating ENTRY nodes")
+        start_time = timeit.default_timer()
+
         base_query = f"""
           WITH $entry_nodes as entry_nodes
           UNWIND entry_nodes as entry_node
@@ -85,13 +89,28 @@ class Parser:
         query = base_query + additional_query
         self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
 
+        self.parser_logger.info(
+            f"Created {len(entry_nodes)} ENTRY nodes in {timeit.default_timer() - start_time} seconds"
+        )
+
     def _create_other_nodes(self, other_nodes: list[NodeData], project_label: str):
+        """Create all TEXT, SYNONYMS and STOPWORDS nodes"""
+        self.parser_logger.info("Creating TEXT, SYNONYMS and STOPWORDS nodes")
+        start_time = timeit.default_timer()
+
         with self.session.begin_transaction() as tx:
             for node in other_nodes:
                 self._create_other_node(tx, node, project_label)
 
+        self.parser_logger.info(
+            f"Created {len(other_nodes)} TEXT, SYNONYMS and STOPWORDS nodes in {timeit.default_timer() - start_time} seconds"
+        )
+
     def _create_previous_links(self, previous_links: list[PreviousLink], project_label: str):
+        """Create the 'is_before' relations between nodes"""
         self.parser_logger.info("Creating 'is_before' links")
+        start_time = timeit.default_timer()
+
         query = f"""
             UNWIND $previous_links as previous_link
             MATCH(n:{project_label}) USING INDEX n:{project_label}(id)
@@ -104,18 +123,24 @@ class Parser:
             RETURN COUNT(relation)
         """
         result = self.session.run(query, previous_links=previous_links)
-
         count = result.value()[0]
+
+        self.parser_logger.info(
+            f"Created {count} 'is_before' links in {timeit.default_timer() - start_time} seconds"
+        )
+
         if count != len(previous_links):
             self.parser_logger.error(
-                "Created %s 'is_before' links, %s links expected", count, len(previous_links)
+                f"Created {count} 'is_before' links, {len(previous_links)} links expected"
             )
 
     def _create_child_links(
         self, child_links: list[ChildLink], entry_nodes: list[NodeData], project_label: str
     ):
-        """Create the relations between nodes"""
+        """Create the 'is_child_of' relations between nodes"""
         self.parser_logger.info("Creating 'is_child_of' links")
+        start_time = timeit.default_timer()
+
         node_ids = set([node.id for node in entry_nodes])
         normalised_child_links = []
         unnormalised_child_links = []
@@ -171,17 +196,21 @@ class Parser:
                 unnormalised_query, unnormalised_child_links=unnormalised_child_links
             )
             count += unnormalised_result.value()[0]
-        
+
+        self.parser_logger.info(
+            f"Created {count} 'is_child_of' links in {timeit.default_timer() - start_time} seconds"
+        )
 
         if count != len(child_links):
             self.parser_logger.error(
-                "Created %s 'is_child_of' links, %s links expected",
-                count,
-                len(child_links),
+                f"Created {count} 'is_child_of' links, {len(child_links)} links expected"
             )
 
     def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str, project_label: str):
         """Create node to list parsing errors"""
+        self.parser_logger.info("Creating 'ERRORS' node")
+        start_time = timeit.default_timer()
+
         query = f"""
             CREATE (n:{project_label}:ERRORS)
             SET n.id = $project_name
@@ -199,6 +228,10 @@ class Parser:
             "errors_list": self.parser_logger.parsing_errors,
         }
         self.session.run(query, params)
+
+        self.parser_logger.info(
+            f"Created 'ERRORS' node in {timeit.default_timer() - start_time} seconds"
+        )
 
     def _create_node_id_index(self, project_label: str):
         """Create index for search query optimization"""
@@ -225,8 +258,14 @@ class Parser:
         self.session.run(query)
 
     def _create_node_indexes(self, project_label: str):
+        """Create node indexes"""
+        self.parser_logger.info("Creating indexes")
+        start_time = timeit.default_timer()
+
         self._create_node_id_index(project_label)
         self._create_node_fulltext_index(project_label)
+
+        self.parser_logger.info(f"Created indexes in {timeit.default_timer() - start_time} seconds")
 
     def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
         project_label = self._get_project_name(taxonomy_name, branch_name)
@@ -239,10 +278,17 @@ class Parser:
 
     def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
         """Process the file"""
+        start_time = timeit.default_timer()
+
         branch_name = normalizing(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
         taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
         self._write_to_database(taxonomy, taxonomy_name, branch_name)
+
+        self.parser_logger.info(
+            f"Finished parsing {taxonomy_name} in {timeit.default_timer() - start_time} seconds"
+        )
+
 
 if __name__ == "__main__":
     # Setup logs
