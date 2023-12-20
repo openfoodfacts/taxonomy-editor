@@ -89,29 +89,26 @@ class Parser:
         for node in other_nodes:
             self._create_other_node(node, project_label)
 
-    def create_previous_link(self, previous_links: list[PreviousLink], project_label: str):
+    def _create_previous_links(self, previous_links: list[PreviousLink], project_label: str):
         self.parser_logger.info("Creating 'is_before' links")
-        for previous_link in previous_links:
-            id = previous_link["id"]
-            before_id = previous_link["before_id"]
+        query = f"""
+            UNWIND $previous_links as previous_link
+            MATCH(n:{project_label}) USING INDEX n:{project_label}(id)
+            WHERE n.id = previous_link.id
+            MATCH(p:{project_label}) USING INDEX p:{project_label}(id)
+            WHERE p.id = previous_link.before_id
+            CREATE (p)-[relations:is_before]->(n)
+            WITH relations
+            UNWIND relations AS relation
+            RETURN COUNT(relation)
+        """
+        result = self.session.run(query, previous_links=previous_links)
 
-            query = f"""
-                MATCH(n:{project_label}) WHERE n.id = $id
-                MATCH(p:{project_label}) WHERE p.id= $before_id
-                CREATE (p)-[r:is_before]->(n)
-                RETURN r
-            """
-            results = self.session.run(query, id=id, before_id=before_id)
-            relation = results.values()
-            if len(relation) > 1:
-                self.parser_logger.error(
-                    "2 or more 'is_before' links created for ids %s and %s, "
-                    "one of the ids isn't unique",
-                    id,
-                    before_id,
-                )
-            elif not relation[0]:
-                self.parser_logger.error("link not created between %s and %s", id, before_id)
+        count = result.value()[0]
+        if count != len(previous_links):
+            self.parser_logger.error(
+                "Created %s 'is_before' links, %s links expected", count, len(previous_links)
+            )
 
     def create_child_link(self, child_links: list[ChildLink], project_label: str):
         """Create the relations between nodes"""
@@ -191,7 +188,7 @@ class Parser:
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self._create_node_indexes(project_label)
         self.create_child_link(taxonomy.child_links, project_label)
-        self.create_previous_link(taxonomy.previous_links, project_label)
+        self._create_previous_links(taxonomy.previous_links, project_label)
         self._create_parsing_errors_node(taxonomy_name, branch_name, project_label)
 
 
