@@ -18,11 +18,6 @@ from .taxonomy_parser import (
 )
 
 
-def ellipsis(text, max=20):
-    """Cut a text adding eventual ellipsis if we do not display it fully"""
-    return text[:max] + ("..." if len(text) > max else "")
-
-
 class Parser:
     """Parse a taxonomy file and build a neo4j graph"""
 

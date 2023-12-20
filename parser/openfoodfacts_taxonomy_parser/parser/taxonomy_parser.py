@@ -11,11 +11,6 @@ from .exception import DuplicateIDError
 from ..normalizer import normalizing
 
 
-def ellipsis(text, max=20):
-    """Cut a text adding eventual ellipsis if we do not display it fully"""
-    return text[:max] + ("..." if len(text) > max else "")
-
-
 class NodeType(str, Enum):
     TEXT = "TEXT"
     SYNONYMS = "SYNONYMS"
@@ -255,7 +250,7 @@ class TaxonomyParser:
                         lc, value = self._get_lc_value(line[10:])
                     except ValueError:
                         self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? '{ellipsis(line)}'"
+                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = value
@@ -272,7 +267,7 @@ class TaxonomyParser:
                         lc, value = self._get_lc_value(line)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? '{ellipsis(line)}'"
+                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
@@ -307,7 +302,7 @@ class TaxonomyParser:
                         property_name, lc, property_value = line.split(":", 2)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Reading error at line {line_number + 1}, unexpected format: '{ellipsis(line)}'"
+                            f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         # in case there is space before or after the colons
@@ -317,7 +312,7 @@ class TaxonomyParser:
                             correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
                             self.parser_logger.error(
-                                f"Reading error at line {line_number + 1}, unexpected format: '{ellipsis(line)}'"
+                                f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
                             )
                         if property_name:
                             data.properties["prop_" + property_name + "_" + lc] = property_value

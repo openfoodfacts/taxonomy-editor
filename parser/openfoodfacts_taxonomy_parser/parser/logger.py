@@ -2,6 +2,11 @@ import logging
 
 
 class ParserConsoleLogger:
+    @staticmethod
+    def ellipsis(text, max=20):
+        """Cut a text adding eventual ellipsis if we do not display it fully"""
+        return text[:max] + ("..." if len(text) > max else "")
+
     def __init__(self):
         self.parsing_warnings = []  # Stores all warning logs
         self.parsing_errors = []  # Stores all error logs
