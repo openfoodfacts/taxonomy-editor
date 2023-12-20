@@ -300,7 +300,7 @@ if __name__ == "__main__":
     # Initialize neo4j
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     driver = GraphDatabase.driver(uri)
-    session = driver.session()
+    session = driver.session(database="neo4j")
 
     # Pass session variable to parser object
     parse = Parser(session)
