@@ -120,6 +120,8 @@ class StatusFilter(str, Enum):
 
     OPEN = "OPEN"
     CLOSED = "CLOSED"
+    LOADING = "LOADING"
+    FAILED = "FAILED"
 
 
 @app.exception_handler(RequestValidationError)
