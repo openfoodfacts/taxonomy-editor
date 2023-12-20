@@ -37,10 +37,8 @@ class NodeData:
     def to_dict(self):
         return {
             "id": self.id,
-            "is_before": self.is_before,
             "main_language": self.main_language,
             "preceding_lines": self.preceding_lines,
-            "parent_tag": self.parent_tag,
             "src_position": self.src_position,
             **self.properties,
             **self.tags,

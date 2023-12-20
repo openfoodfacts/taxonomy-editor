@@ -32,25 +32,13 @@ class Parser:
         """Create a project name for given branch and taxonomy"""
         return "p_" + taxonomy_name + "_" + branch_name
 
-    def _create_headernode(self, header: list[str], project_label: str):
-        """Create the node for the header"""
-        query = f"""
-                CREATE (n:{project_label}:TEXT)
-                SET n.id = '__header__'
-                SET n.preceding_lines= $header
-                SET n.src_position= 1
-            """
-        self.session.run(query, header=header)
-
-    def _create_node(self, node_data: NodeData, project_label: str):
-        """Run the query to create the node with data dictionary"""
+    def _create_other_node(self, node_data: NodeData, project_label: str):
+        """Create TEXT, SYNONYMS or STOPWORDS nodes"""
         position_query = """
             SET n.id = $id
-            SET n.is_before = $is_before
             SET n.preceding_lines = $preceding_lines
             SET n.src_position = $src_position
         """
-        entry_query = ""
         if node_data.get_node_type() == NodeType.TEXT:
             id_query = f" CREATE (n:{project_label}:TEXT) \n "
         elif node_data.get_node_type() == NodeType.SYNONYMS:
@@ -58,29 +46,48 @@ class Parser:
         elif node_data.get_node_type() == NodeType.STOPWORDS:
             id_query = f" CREATE (n:{project_label}:STOPWORDS) \n "
         else:
-            id_query = f" CREATE (n:{project_label}:ENTRY) \n "
-            position_query += " SET n.main_language = $main_language "
-            if node_data.parent_tag:
-                entry_query += " SET n.parents = $parent_tag \n"
-            for key in node_data.properties:
-                if key.startswith("prop_"):
-                    entry_query += " SET n." + key + " = $" + key + "\n"
+            raise ValueError(f"ENTRY node type should be batched")
 
+        entry_query = ""
         for key in node_data.tags:
-            if key.startswith("tags_"):
-                entry_query += " SET n." + key + " = $" + key + "\n"
+            entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
         self.session.run(query, node_data.to_dict())
 
-    def create_nodes(self, nodes: list[NodeData], project_label: str):
-        """Adding nodes to database"""
-        self.parser_logger.info("Creating nodes")
-        for node in nodes:
-            if node.id == "__header__":
-                self._create_headernode(node.preceding_lines, project_label)
-            else:
-                self._create_node(node, project_label)
+    def _create_entry_nodes(self, entry_nodes: list[NodeData], project_label: str):
+        """Create all ENTRY nodes in a single batch query"""
+        base_query = f"""
+          WITH $entry_nodes as entry_nodes
+          UNWIND entry_nodes as entry_node
+          CREATE (n:{project_label}:ENTRY)
+          SET n.id = entry_node.id
+          SET n.preceding_lines = entry_node.preceding_lines
+          SET n.src_position = entry_node.src_position
+          SET n.main_language = entry_node.main_language
+        """
+        additional_query = ""
+        seen_properties = set()
+        seen_tags = set()
+        for entry_node in entry_nodes:
+            if entry_node.get_node_type() != NodeType.ENTRY:
+                raise ValueError(f"Only ENTRY nodes can be batched")
+            for key in entry_node.properties:
+                if not key in seen_properties:
+                    additional_query += " SET n." + key + " = entry_node." + key + "\n"
+                    seen_properties.add(key)
+            for key in entry_node.tags:
+                if not key in seen_tags:
+                    additional_query += " SET n." + key + " = entry_node." + key + "\n"
+                    seen_tags.add(key)
+
+        query = base_query + additional_query
+        self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
+
+    def _create_other_nodes(self, other_nodes: list[NodeData], project_label: str):
+        """Adding all TEXT, SYNONYMS and STOPWORDS nodes to the database"""
+        for node in other_nodes:
+            self._create_other_node(node, project_label)
 
     def create_previous_link(self, previous_links: list[PreviousLink], project_label: str):
         self.parser_logger.info("Creating 'is_before' links")
@@ -168,7 +175,9 @@ class Parser:
         project_label = self._get_project_name(taxonomy_name, branch_name)
         taxonomy_parser = TaxonomyParser()
         taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
-        self.create_nodes([*taxonomy.entry_nodes, *taxonomy.other_nodes], project_label)
+        self.parser_logger.info("Creating nodes")
+        self._create_other_nodes(taxonomy.other_nodes, project_label)
+        self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self.create_child_link(taxonomy.child_links, project_label)
         self.create_previous_link(taxonomy.previous_links, project_label)
         self._create_fulltext_index(project_label)
