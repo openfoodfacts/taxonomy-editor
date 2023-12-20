@@ -132,23 +132,6 @@ class Parser:
                     f"parent not found for child {child_id} with parent {parent_id}"
                 )
 
-    def _create_fulltext_index(self, project_label: str):
-        """Create indexes for search"""
-        query = (
-            f"""CREATE FULLTEXT INDEX {project_label+'_SearchIds'} IF NOT EXISTS
-            FOR (n:{project_label}) ON EACH [n.id]\n"""
-            + """
-            OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}"""
-        )
-        self.session.run(query)
-
-        language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
-        tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
-        tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX {project_label+'_SearchTags'} IF NOT EXISTS
-            FOR (n:{project_label}) ON EACH [{tags_prefixed_lc}]"""
-        self.session.run(query)
-
     def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str, project_label: str):
         """Create node to list parsing errors"""
         query = f"""
@@ -169,6 +152,34 @@ class Parser:
         }
         self.session.run(query, params)
 
+    def _create_node_id_index(self, project_label: str):
+        """Create index for search query optimization"""
+        query = f"""
+            CREATE INDEX {project_label}_id_index FOR (n:{project_label}) ON (n.id)
+        """
+        self.session.run(query)
+
+    def _create_node_fulltext_index(self, project_label: str):
+        """Create indexes for text search"""
+        query = (
+            f"""CREATE FULLTEXT INDEX {project_label+'_SearchIds'} IF NOT EXISTS
+            FOR (n:{project_label}) ON EACH [n.id]\n"""
+            + """
+            OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}"""
+        )
+        self.session.run(query)
+
+        language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
+        tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
+        tags_prefixed_lc = ", ".join(tags_prefixed_lc)
+        query = f"""CREATE FULLTEXT INDEX {project_label+'_SearchTags'} IF NOT EXISTS
+            FOR (n:{project_label}) ON EACH [{tags_prefixed_lc}]"""
+        self.session.run(query)
+
+    def _create_node_indexes(self, project_label: str):
+        self._create_node_id_index(project_label)
+        self._create_node_fulltext_index(project_label)
+
     def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
         """Process the file"""
         branch_name = normalizing(branch_name, char="_")
@@ -178,9 +189,9 @@ class Parser:
         self.parser_logger.info("Creating nodes")
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
+        self._create_node_indexes(project_label)
         self.create_child_link(taxonomy.child_links, project_label)
         self.create_previous_link(taxonomy.previous_links, project_label)
-        self._create_fulltext_index(project_label)
         self._create_parsing_errors_node(taxonomy_name, branch_name, project_label)
 
 
