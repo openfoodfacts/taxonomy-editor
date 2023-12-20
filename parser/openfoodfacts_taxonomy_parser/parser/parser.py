@@ -3,13 +3,14 @@ import os
 import sys
 
 import iso639
-from neo4j import GraphDatabase, Session
+from neo4j import GraphDatabase, Session, Transaction
 
 from .logger import ParserConsoleLogger
 from ..normalizer import normalizing
 from .taxonomy_parser import (
     NodeType,
     PreviousLink,
+    Taxonomy,
     TaxonomyParser,
     NodeData,
     ChildLink,
@@ -53,7 +54,7 @@ class Parser:
             entry_query += " SET n." + key + " = $" + key + "\n"
 
         query = id_query + entry_query + position_query
-        self.session.run(query, node_data.to_dict())
+        tx.run(query, node_data.to_dict())
 
     def _create_entry_nodes(self, entry_nodes: list[NodeData], project_label: str):
         """Create all ENTRY nodes in a single batch query"""
@@ -85,9 +86,9 @@ class Parser:
         self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
 
     def _create_other_nodes(self, other_nodes: list[NodeData], project_label: str):
-        """Adding all TEXT, SYNONYMS and STOPWORDS nodes to the database"""
-        for node in other_nodes:
-            self._create_other_node(node, project_label)
+        with self.session.begin_transaction() as tx:
+            for node in other_nodes:
+                self._create_other_node(tx, node, project_label)
 
     def _create_previous_links(self, previous_links: list[PreviousLink], project_label: str):
         self.parser_logger.info("Creating 'is_before' links")
@@ -227,13 +228,8 @@ class Parser:
         self._create_node_id_index(project_label)
         self._create_node_fulltext_index(project_label)
 
-    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
-        """Process the file"""
-        branch_name = normalizing(branch_name, char="_")
+    def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
         project_label = self._get_project_name(taxonomy_name, branch_name)
-        taxonomy_parser = TaxonomyParser()
-        taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
-        self.parser_logger.info("Creating nodes")
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self._create_node_indexes(project_label)
@@ -241,6 +237,12 @@ class Parser:
         self._create_previous_links(taxonomy.previous_links, project_label)
         self._create_parsing_errors_node(taxonomy_name, branch_name, project_label)
 
+    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
+        """Process the file"""
+        branch_name = normalizing(branch_name, char="_")
+        taxonomy_parser = TaxonomyParser()
+        taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
+        self._write_to_database(taxonomy, taxonomy_name, branch_name)
 
 if __name__ == "__main__":
     # Setup logs
