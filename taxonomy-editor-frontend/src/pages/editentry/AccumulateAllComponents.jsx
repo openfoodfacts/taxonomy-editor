@@ -51,14 +51,9 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     let duplicateNode = null;
     if (node) {
       duplicateNode = { ...node[0] };
-      // Adding UUIDs for tags and properties
+      // Adding UUIDs for properties
       Object.keys(node[0]).forEach((key) => {
-        if (key.startsWith("tags") && !key.includes("ids")) {
-          duplicateNode[key + "_uuid"] = [];
-          duplicateNode[key].forEach(() => {
-            duplicateNode[key + "_uuid"].push(Math.random().toString());
-          });
-        } else if (key.startsWith("prop")) {
+        if (key.startsWith("prop")) {
           duplicateNode[key + "_uuid"] = [Math.random().toString()];
         }
       });

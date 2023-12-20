@@ -1,0 +1,7 @@
+.tags-input, .tagify {
+    width: 100%;
+}
+
+tag:first-of-type {
+    font-weight: bold;
+}
