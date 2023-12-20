@@ -1,11 +1,8 @@
 import logging
-import os
 import re
 import sys
 from typing import Iterator, TypedDict
 
-import iso639
-from neo4j import GraphDatabase, Session
 
 from .logger import ParserConsoleLogger
 from .exception import DuplicateIDError
@@ -26,68 +23,17 @@ class NodeData(TypedDict):
     is_before: str
 
 
-class Parser:
-    """Parse a taxonomy file and build a neo4j graph"""
+class TaxonomyParser:
+    """Parse a taxonomy file"""
 
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self):
         self.parser_logger = ParserConsoleLogger()
 
-    def _create_headernode(self, header: list[str], multi_label: str):
-        """Create the node for the header"""
-        query = f"""
-                CREATE (n:{multi_label}:TEXT)
-                SET n.id = '__header__'
-                SET n.preceding_lines= $header
-                SET n.src_position= 1
-            """
-        self.session.run(query, header=header)
-
-    def _create_node(self, data: NodeData, multi_label: str):
-        """Run the query to create the node with data dictionary"""
-        position_query = """
-            SET n.id = $id
-            SET n.is_before = $is_before
-            SET n.preceding_lines = $preceding_lines
-            SET n.src_position = $src_position
-        """
-        entry_query = ""
-        if data["id"] == "__footer__":
-            id_query = f" CREATE (n:{multi_label}:TEXT) \n "
-        elif data["id"].startswith("synonyms"):
-            id_query = f" CREATE (n:{multi_label}:SYNONYMS) \n "
-        elif data["id"].startswith("stopwords"):
-            id_query = f" CREATE (n:{multi_label}:STOPWORDS) \n "
-        else:
-            id_query = f" CREATE (n:{multi_label}:ENTRY) \n "
-            position_query += " SET n.main_language = $main_language "
-            if data["parent_tag"]:
-                entry_query += " SET n.parents = $parent_tag \n"
-            for key in data:
-                if key.startswith("prop_"):
-                    entry_query += " SET n." + key + " = $" + key + "\n"
-
-        for key in data:
-            if key.startswith("tags_"):
-                entry_query += " SET n." + key + " = $" + key + "\n"
-
-        query = id_query + entry_query + position_query
-        self.session.run(query, {**data})
-
-    def normalized_filename(self, filename: str) -> str:
+    def _normalized_filename(self, filename: str) -> str:
         """Add the .txt extension if it is missing in the filename"""
         return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
-    def _get_project_name(self, taxonomy_name: str, branch_name: str):
-        """Create a project name for given branch and taxonomy"""
-        return "p_" + taxonomy_name + "_" + branch_name
-
-    def _create_multi_label(self, taxonomy_name: str, branch_name: str) -> str:
-        """Create a combined label with taxonomy name and branch name"""
-        project_name = self._get_project_name(taxonomy_name, branch_name)
-        return project_name + ":" + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
-
-    def file_iter(self, filename: str, start: int = 0) -> Iterator[tuple[int, str]]:
+    def _file_iter(self, filename: str, start: int = 0) -> Iterator[tuple[int, str]]:
         """Generator to get the file line by line"""
         with open(filename, "r", encoding="utf8") as file:
             line_count = 0
@@ -167,7 +113,7 @@ class Parser:
         """
         h = 0
         header: list[str] = []
-        for _, line in self.file_iter(filename):
+        for _, line in self._file_iter(filename):
             if not (line) or line[0] == "#":
                 header.append(line)
             else:
@@ -237,7 +183,7 @@ class Parser:
         data = self._new_node_data(is_before="__header__")
         data["is_before"] = "__header__"
         line_number = entries_start_line
-        for line_number, line in self.file_iter(filename, entries_start_line):
+        for line_number, line in self._file_iter(filename, entries_start_line):
             # yield data if block ended
             if self._entry_end(line, data):
                 if data["id"] in saved_nodes:
@@ -354,132 +300,21 @@ class Parser:
         """Adding nodes to database"""
         self.parser_logger.info("Creating nodes")
         harvested_header_data, entries_start_line = self._header_harvest(filename)
-        self._create_headernode(harvested_header_data, multi_label)
         harvested_data = self._harvest_entries(filename, entries_start_line)
         for entry in harvested_data:
-            self._create_node(entry, multi_label)
+            print(entry)
 
-    def create_previous_link(self, multi_label: str):
-        self.parser_logger.info("Creating 'is_before' links")
-        query = f"MATCH(n:{multi_label}) WHERE n.is_before IS NOT NULL return n.id, n.is_before"
-        results = self.session.run(query)
-        for result in results:
-            id = result["n.id"]
-            id_previous = result["n.is_before"]
-
-            query = f"""
-                MATCH(n:{multi_label}) WHERE n.id = $id
-                MATCH(p:{multi_label}) WHERE p.id= $id_previous
-                CREATE (p)-[r:is_before]->(n)
-                RETURN r
-            """
-            results = self.session.run(query, id=id, id_previous=id_previous)
-            relation = results.values()
-            if len(relation) > 1:
-                self.parser_logger.error(
-                    "2 or more 'is_before' links created for ids %s and %s, "
-                    "one of the ids isn't unique",
-                    id,
-                    id_previous,
-                )
-            elif not relation[0]:
-                self.parser_logger.error("link not created between %s and %s", id, id_previous)
-
-    def _parent_search(self, multi_label: str) -> Iterator[tuple[str, str]]:
-        """Get the parent and the child to link"""
-        query = f"MATCH (n:{multi_label}:ENTRY) WHERE SIZE(n.parents)>0 RETURN n.id, n.parents"
-        results = self.session.run(query)
-        for result in results:
-            id = result["n.id"]
-            parent_list = result["n.parents"]
-            for parent in parent_list:
-                yield parent, id
-
-    def create_child_link(self, multi_label: str):
-        """Create the relations between nodes"""
-        self.parser_logger.info("Creating 'is_child_of' links")
-        for parent, child_id in self._parent_search(multi_label):
-            lc, parent_id = parent.split(":")
-            query = f""" MATCH (p:{multi_label}:ENTRY) WHERE $parent_id IN p.tags_ids_""" + lc
-            query += f"""
-                MATCH (c:{multi_label}) WHERE c.id= $child_id
-                CREATE (c)-[r:is_child_of]->(p)
-                RETURN r
-            """
-            result = self.session.run(query, parent_id=parent_id, child_id=child_id)
-            if not result.value():
-                self.parser_logger.warning(
-                    f"parent not found for child {child_id} with parent {parent_id}"
-                )
-
-    def _delete_used_properties(self):
-        query = "MATCH (n) SET n.is_before = null, n.parents = null"
-        self.session.run(query)
-
-    def _create_fulltext_index(self, taxonomy_name: str, branch_name: str):
-        """Create indexes for search"""
-        project_name = self._get_project_name(taxonomy_name, branch_name)
-        query = (
-            f"""CREATE FULLTEXT INDEX {project_name+'_SearchIds'} IF NOT EXISTS
-            FOR (n:{project_name}) ON EACH [n.id]\n"""
-            + """
-            OPTIONS {indexConfig: {`fulltext.analyzer`: 'keyword'}}"""
-        )
-        self.session.run(query)
-
-        language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
-        tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
-        tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX {project_name+'_SearchTags'} IF NOT EXISTS
-            FOR (n:{project_name}) ON EACH [{tags_prefixed_lc}]"""
-        self.session.run(query)
-
-    def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str):
-        """Create node to list parsing errors"""
-        multi_label = self._create_multi_label(taxonomy_name, branch_name)
-        query = f"""
-            CREATE (n:{multi_label}:ERRORS)
-            SET n.id = $project_name
-            SET n.branch_name = $branch_name
-            SET n.taxonomy_name = $taxonomy_name
-            SET n.created_at = datetime()
-            SET n.warnings = $warnings_list
-            SET n.errors = $errors_list
-        """
-        params = {
-            "project_name": self._get_project_name(taxonomy_name, branch_name),
-            "branch_name": branch_name,
-            "taxonomy_name": taxonomy_name,
-            "warnings_list": self.parser_logger.parsing_warnings,
-            "errors_list": self.parser_logger.parsing_errors,
-        }
-        self.session.run(query, params)
-
-    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
+    def __call__(self, filename: str):
         """Process the file"""
-        filename = self.normalized_filename(filename)
-        branch_name = normalizing(branch_name, char="_")
-        multi_label = self._create_multi_label(taxonomy_name, branch_name)
-        self.create_nodes(filename, multi_label)
-        self.create_child_link(multi_label)
-        self.create_previous_link(multi_label)
-        self._create_fulltext_index(taxonomy_name, branch_name)
-        self._create_parsing_errors_node(taxonomy_name, branch_name)
-        # self.delete_used_properties()
+        filename = self._normalized_filename(filename)
+        self.create_nodes(filename, "")
 
 
 if __name__ == "__main__":
     # Setup logs
     logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO)
     filename = sys.argv[1] if len(sys.argv) > 1 else "test"
-    branch_name = sys.argv[2] if len(sys.argv) > 1 else "branch"
-    taxonomy_name = sys.argv[3] if len(sys.argv) > 1 else filename.rsplit(".", 1)[0]
-
-    # Initialize neo4j
-    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-    driver = GraphDatabase.driver(uri)
-    session = driver.session()
 
     # Pass session variable to parser object
-    parse = Parser(session)
-    parse(filename, branch_name, taxonomy_name)
+    parse = TaxonomyParser()
+    parse(filename)
