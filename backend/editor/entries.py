@@ -1,6 +1,7 @@
 """
 Database helper functions for API
 """
+import asyncio
 import re
 import shutil
 import tempfile
@@ -119,6 +120,10 @@ class TaxonomyGraph:
                     except Exception as e:
                         raise TaxonomyParsingError() from e
         except Exception as e:
+            # async with TransactionCtx():
+            #     await self.set_project_status(status="FAILED")
+            # Call the asynchronous function to update status without awaiting it
+            asyncio.create_task(self.set_project_status_async(status="FAILED"))
             raise TaxonomyImportError() from e
 
     async def import_from_github(self, description, background_tasks: BackgroundTasks):
@@ -127,6 +132,9 @@ class TaxonomyGraph:
         """
         # Close current transaction to use the session variable in parser
         await get_current_transaction().commit()
+
+        async with TransactionCtx():
+            await self.create_project(description)  # Creates a "project node" in neo4j
 
         # Add the task to background tasks
         background_tasks.add_task(self.parse_taxonomy)
@@ -148,6 +156,9 @@ class TaxonomyGraph:
         # Close current transaction to use the session variable in parser
         await get_current_transaction().commit()
         try:
+            async with TransactionCtx():
+                await self.create_project(description)
+
             # Add the task to background tasks
             background_tasks.add_task(self.parse_taxonomy, uploadfile)
             print("Background task added")
@@ -263,9 +274,13 @@ class TaxonomyGraph:
             "taxonomy_name": self.taxonomy_name,
             "branch_name": self.branch_name,
             "description": description,
-            "status": "OPEN",
+            "status": "LOADING",
         }
         await get_current_transaction().run(query, params)
+
+    async def set_project_status_async(self, status):
+        async with TransactionCtx():
+            await self.set_project_status(status=status)
 
     async def set_project_status(self, status):
         """

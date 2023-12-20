@@ -84,7 +84,7 @@ const RootNodes = ({
     );
   }
 
-  if (isPending || !nodes) {
+  if (isPending || !nodes || nodes.length === 0) {
     return (
       <Box
         sx={{
@@ -93,6 +93,12 @@ const RootNodes = ({
         }}
       >
         <CircularProgress />
+        <Typography sx={{ m: 5 }} variant="h6">
+          Taxonomy parsing may take several minutes, depending on the complexity
+          of the taxonomy being imported.
+          <br />
+          Kindly refresh the page to view the updated status of the project.
+        </Typography>
       </Box>
     );
   }
