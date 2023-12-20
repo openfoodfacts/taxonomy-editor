@@ -86,10 +86,6 @@ class TaxonomyGraph:
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
-        # Close current transaction to use the session variable in parser
-        async with get_current_transaction() as transaction:
-            transaction.commit()
-
         with SyncTransactionCtx() as session:
             # Create parser object and pass current session to it
             parser_object = parser.Parser(session)
