@@ -13,7 +13,9 @@ TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.tx
 @pytest.fixture(autouse=True)
 def test_setup(neo4j):
     # delete all the nodes and relations in the database
-    query = "MATCH (n:p_test_branch:t_test:b_branch) DETACH DELETE n"
+    query = "MATCH (n:p_test_branch) DETACH DELETE n"
+    neo4j.session().run(query)
+    query = "DROP INDEX p_test_branch_id_index IF EXISTS"
     neo4j.session().run(query)
     query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
     neo4j.session().run(query)
@@ -24,24 +26,22 @@ def test_setup(neo4j):
 def test_calling(neo4j):
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
+        test_parser(TEST_TAXONOMY_TXT, "branch", "test")
 
-        # Create node test
-        test_parser.create_nodes(TEST_TAXONOMY_TXT, "p_test_branch:t_test:b_branch")
-
-        # total number of nodes
-        query = "MATCH (n:p_test_branch:t_test:b_branch) RETURN COUNT(*)"
+        # total number of nodes (TEXT, ENTRY, SYNONYMS, STOPWORDS) + 1 ERROR node
+        query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
         result = session.run(query)
         number_of_nodes = result.value()[0]
-        assert number_of_nodes == 13
+        assert number_of_nodes == 14
 
         # header correctly added
-        query = "MATCH (n:p_test_branch:t_test:b_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
+        query = "MATCH (n:p_test_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
         result = session.run(query)
         header = result.value()[0]
         assert header == ["# test taxonomy"]
 
         # synonyms correctly added
-        query = "MATCH (n:p_test_branch:t_test:b_branch:SYNONYMS) RETURN n ORDER BY n.src_position"
+        query = "MATCH (n:p_test_branch:SYNONYMS) RETURN n ORDER BY n.src_position"
         results = session.run(query)
         expected_synonyms = [
             {
@@ -65,7 +65,7 @@ def test_calling(neo4j):
                 assert node[key] == expected_synonyms[i][key]
 
         # stopwords correctly added
-        query = "MATCH (n:p_test_branch:t_test:b_branch:STOPWORDS) RETURN n"
+        query = "MATCH (n:p_test_branch:STOPWORDS) RETURN n"
         results = session.run(query)
         expected_stopwords = {
             "id": "stopwords:0",
@@ -80,7 +80,7 @@ def test_calling(neo4j):
         # entries correctly added
         # check for two of them
         query = """
-            MATCH (n:p_test_branch:t_test:b_branch:ENTRY)
+            MATCH (n:p_test_branch:ENTRY)
             WHERE n.id='en:banana-yogurts'
             OR n.id='en:meat'
             RETURN n
@@ -108,10 +108,8 @@ def test_calling(neo4j):
             for key in expected_entries[i]:
                 assert node[key] == expected_entries[i][key]
 
-        # Child link test
-        test_parser.create_child_link("p_test_branch:t_test:b_branch")  # nodes already added
         query = """
-            MATCH (c:p_test_branch:t_test:b_branch)-[:is_child_of]->(p:p_test_branch:t_test:b_branch)
+            MATCH (c:p_test_branch)-[:is_child_of]->(p:p_test_branch)
             RETURN c.id, p.id
         """
         results = session.run(query)
@@ -133,10 +131,8 @@ def test_calling(neo4j):
         for pair in created_pairs:
             assert pair in expected_pairs
 
-        # Order link test
-        test_parser.create_previous_link("p_test_branch:t_test:b_branch")
         query = """
-            MATCH (n:p_test_branch:t_test:b_branch)-[:is_before]->(p:p_test_branch:t_test:b_branch)
+            MATCH (n:p_test_branch)-[:is_before]->(p:p_test_branch)
             RETURN n.id, p.id
         """
         results = session.run(query)
@@ -193,7 +189,7 @@ def test_error_log(neo4j, tmp_path, caplog):
             test_parser(str(taxonomy_path), "branch", "test")
 
         # only the 2 nodes imported, not the duplicate
-        query = "MATCH (n:p_test_branch:t_test:b_branch:ENTRY) RETURN COUNT(*)"
+        query = "MATCH (n:p_test_branch:ENTRY) RETURN COUNT(*)"
         result = session.run(query)
         number_of_nodes = result.value()[0]
         assert number_of_nodes == 2

@@ -11,7 +11,7 @@ def neo4j():
     """waiting for neo4j to be ready"""
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     driver = GraphDatabase.driver(uri)
-    session = driver.session()
+    session = driver.session(database="neo4j")
     connected = False
     while not connected:
         try:
