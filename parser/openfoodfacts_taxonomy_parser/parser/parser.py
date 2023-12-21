@@ -231,7 +231,7 @@ class Parser:
     def _create_node_id_index(self, project_label: str):
         """Create index for search query optimization"""
         query = f"""
-            CREATE INDEX {project_label}_id_index FOR (n:{project_label}) ON (n.id)
+            CREATE INDEX {project_label}_id_index IF NOT EXISTS FOR (n:{project_label}) ON (n.id)
         """
         self.session.run(query)
 
