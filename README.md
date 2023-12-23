@@ -92,6 +92,8 @@ A typescript migration is in progress, and we are also trying to simplify the AP
 Please visit the [doc folder](./doc) for more documentation about the Taxonomy Editor.
 This documentation tries to follow as much as possible the documentation system from [Diataxis](https://diataxis.fr/).
 
+<img width="500" src="./doc/assets/taxonomy_editor_overview.png">
+
 ## User interface
 
 <details><summary><h2> Screenshots </h2></summary>
