@@ -468,8 +468,8 @@ class TaxonomyGraph:
                 if "_ids_" not in key:
                     keys_language_code = key.split("_", 1)[1]
                     normalised_value = []
-                    for values in new_node[key]:
-                        normalised_value.append(normalizer.normalizing(values, keys_language_code))
+                    for value in new_node[key]:
+                        normalised_value.append(normalizer.normalizing(value, keys_language_code))
                     normalised_new_node[key] = new_node[key]
                     normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
                 else:
@@ -484,9 +484,9 @@ class TaxonomyGraph:
 
         # Update id if first translation of the main language has changed
         main_language, id = curr_node["id"].split(":")
-        new_first_translation = normalised_new_node["tags_" + main_language][0]
-        if id != new_first_translation:
-            normalised_new_node["new_id"] = main_language + ":" + new_first_translation
+        new_normalised_first_translation = normalizer.normalizing(normalised_new_node["tags_" + main_language][0], main_language)
+        if id != new_normalised_first_translation:
+            normalised_new_node["new_id"] = main_language + ":" + new_normalised_first_translation
             query.append("""\nSET n.id = $new_id\n""")
 
         query.append("""RETURN n""")
