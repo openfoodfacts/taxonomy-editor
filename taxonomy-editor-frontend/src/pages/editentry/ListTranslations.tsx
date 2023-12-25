@@ -1,4 +1,4 @@
-import { Typography, Stack, Button, Box, Dialog } from "@mui/material";
+import { Alert, Typography, Stack, Button, Box, Dialog } from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
 import { useCallback, useEffect, useState } from "react";
 import ISO6391 from "iso-639-1";
@@ -9,7 +9,11 @@ const SHOWN_LANGUAGES_KEY = "shownLanguages";
 /**
  * Sub-component for rendering translation of an "entry"
  */
-const ListTranslations = ({ nodeObject, setNodeObject }) => {
+const ListTranslations = ({
+  originalNodeObject,
+  nodeObject,
+  setNodeObject,
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // Used for Dialog component
   const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]); // Used for storing LCs that are shown in the interface
 
@@ -110,6 +114,12 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
     }
   });
 
+  const hasFirstTranslationChanged: boolean[] = languagesToShow.map(
+    (language: string) =>
+      nodeObject[`tags_${language}`]?.[0] !==
+      originalNodeObject[`tags_${language}`]?.[0]
+  );
+
   return (
     <Box sx={{ ml: 4 }}>
       {/* Title */}
@@ -126,7 +136,7 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
         </Button>
       </Stack>
 
-      {/* Render translation tags */}
+      {/* Render translation tags for each language to show */}
       {languagesToShow.map((language: string) => (
         <Stack key={language}>
           <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
@@ -137,6 +147,15 @@ const ListTranslations = ({ nodeObject, setNodeObject }) => {
                   : "")}
             </Typography>
           </Stack>
+          {hasFirstTranslationChanged[languagesToShow.indexOf(language)] && (
+            <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
+              Changing the first translation will modify{" "}
+              {language === nodeObject.main_language
+                ? "the ID of the node and "
+                : ""}
+              the display name for this language!
+            </Alert>
+          )}
           <Stack direction="row" sx={{ mr: 4 }}>
             {
               <TranslationTags

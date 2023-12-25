@@ -121,6 +121,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       .then(() => {
         setOpen(true);
         sethasChanges(false);
+        setOriginalNodeObject(JSON.parse(JSON.stringify(nodeObject)));
       })
       .catch(() => {});
   };
@@ -141,6 +142,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 setUpdateNodeChildren={setUpdateChildren}
               />
               <ListTranslations
+                originalNodeObject={originalNodeObject}
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
               />

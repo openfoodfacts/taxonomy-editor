@@ -482,6 +482,13 @@ class TaxonomyGraph:
         for key in normalised_new_node.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
 
+        # Update id if first translation of the main language has changed
+        main_language, id = curr_node["id"].split(":")
+        new_first_translation = normalised_new_node["tags_" + main_language][0]
+        if id != new_first_translation:
+            normalised_new_node["new_id"] = main_language + ":" + new_first_translation
+            query.append("""\nSET n.id = $new_id\n""")
+
         query.append("""RETURN n""")
 
         params = dict(normalised_new_node, id=entry)
