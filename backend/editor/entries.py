@@ -3,7 +3,8 @@ Database helper functions for API
 """
 import re
 import tempfile
-import urllib.request  # Sending requests
+import urllib.request
+from fastapi import BackgroundTasks  # Sending requests
 
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
@@ -82,26 +83,9 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
-    async def parse_taxonomy(self, filename):
+    def parse_taxonomy(self):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
-        """
-        # Close current transaction to use the session variable in parser
-        await get_current_transaction().commit()
-
-        with SyncTransactionCtx() as session:
-            # Create parser object and pass current session to it
-            parser_object = parser.Parser(session)
-            try:
-                # Parse taxonomy with given file name and branch name
-                parser_object(filename, self.branch_name, self.taxonomy_name)
-                return True
-            except Exception as e:
-                raise TaxonomyParsingError() from e
-
-    async def import_from_github(self, description):
-        """
-        Helper function to import a taxonomy from GitHub
         """
         base_url = (
             "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
@@ -109,6 +93,7 @@ class TaxonomyGraph:
         )
         filename = self.taxonomy_name + ".txt"
         base_url += filename
+
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
                 # File to save the downloaded taxonomy
@@ -117,14 +102,36 @@ class TaxonomyGraph:
                 # Downloads and creates taxonomy file in current working directory
                 urllib.request.urlretrieve(base_url, filepath)
 
-                status = await self.parse_taxonomy(filepath)  # Parse the taxonomy
+                with SyncTransactionCtx() as session:
+                    # Create parser object and pass current session to it
+                    parser_object = parser.Parser(session)
+                    try:
+                        # Parse taxonomy with given file name and branch name
+                        # background_tasks.add_task(
+                        #     parser_object, filename, self.branch_name, self.taxonomy_name
+                        # )
+                        parser_object(filepath, self.branch_name, self.taxonomy_name)
 
-            async with TransactionCtx():
-                await self.create_project(description)  # Creates a "project node" in neo4j
-
-            return status
+                        return True
+                    except Exception as e:
+                        raise TaxonomyParsingError() from e
         except Exception as e:
             raise TaxonomyImportError() from e
+
+    async def import_from_github(self, description, background_tasks: BackgroundTasks):
+        """
+        Helper function to import a taxonomy from GitHub
+        """
+        # Close current transaction to use the session variable in parser
+        await get_current_transaction().commit()
+
+        background_tasks.add_task(self.parse_taxonomy)
+        print("Background task added")
+
+        async with TransactionCtx():
+            await self.create_project(description)  # Creates a "project node" in neo4j
+
+        return True
 
     async def upload_taxonomy(self, filepath, description):
         """
@@ -265,6 +272,7 @@ class TaxonomyGraph:
         Helper function for listing all existing projects created in Taxonomy Editor
         includes number of nodes with label ERROR for each project
         """
+        print("Listing projects......")
         query = [
             "MATCH (n:PROJECT)",
             "OPTIONAL MATCH (error_node:ERRORS {branch_name: n.branch_name, id: n.id})",
