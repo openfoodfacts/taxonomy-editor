@@ -82,7 +82,7 @@ async def shutdown():
     """
     Shutdown database
     """
-    graph_db.shutdown_db()
+    await graph_db.shutdown_db()
 
 
 @app.middleware("http")
@@ -389,8 +389,8 @@ async def import_from_github(
     if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    background_tasks.add_task(taxonomy.import_from_github, description)
-    return {"message": "Parsing sent in the background"}
+    status = await taxonomy.import_from_github(description,background_tasks)
+    return status
 
 
 @app.post("/{taxonomy_name}/{branch}/upload")

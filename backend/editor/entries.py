@@ -22,6 +22,7 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
+from fastapi import BackgroundTasks
 
 
 async def async_list(async_iterable):
@@ -82,23 +83,9 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
-    async def parse_taxonomy(self, filename):
+    def parse_taxonomy(self):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
-        """
-        with SyncTransactionCtx() as session:
-            # Create parser object and pass current session to it
-            parser_object = parser.Parser(session)
-            try:
-                # Parse taxonomy with given file name and branch name
-                parser_object(filename, self.branch_name, self.taxonomy_name)
-                return True
-            except Exception as e:
-                raise TaxonomyParsingError() from e
-
-    async def import_from_github(self, description):
-        """
-        Helper function to import a taxonomy from GitHub
         """
         base_url = (
             "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
@@ -114,14 +101,34 @@ class TaxonomyGraph:
                 # Downloads and creates taxonomy file in current working directory
                 urllib.request.urlretrieve(base_url, filepath)
 
-                status = await self.parse_taxonomy(filepath)  # Parse the taxonomy
-
-            async with TransactionCtx():
-                await self.create_project(description)  # Creates a "project node" in neo4j
-
-            return status
+                with SyncTransactionCtx() as session:
+                    # Create parser object and pass current session to it
+                    parser_object = parser.Parser(session)
+                    try:
+                        # Parse taxonomy with given file name and branch name
+                        parser_object(filepath, self.branch_name, self.taxonomy_name)
+                        return True
+                    except Exception as e:
+                        raise TaxonomyParsingError() from e
         except Exception as e:
             raise TaxonomyImportError() from e
+                
+        
+
+    async def import_from_github(self, description, background_tasks: BackgroundTasks):
+        """
+        Helper function to import a taxonomy from GitHub
+        """
+        # Close current transaction to use the session variable in parser
+        await get_current_transaction().commit()
+
+        background_tasks.add_task(self.parse_taxonomy)
+        print("Background task added")
+
+        async with TransactionCtx():
+            await self.create_project(description)  # Creates a "project node" in neo4j
+
+        return True
 
     async def upload_taxonomy(self, filepath, description):
         """
