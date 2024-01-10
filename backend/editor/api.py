@@ -382,6 +382,7 @@ async def import_from_github(
     description = incoming_data["description"]
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
+
     if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
@@ -389,7 +390,7 @@ async def import_from_github(
     if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    status = await taxonomy.import_from_github(description,background_tasks)
+    status = await taxonomy.import_from_github(description, background_tasks)
     return status
 
 
