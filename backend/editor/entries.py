@@ -5,6 +5,7 @@ import re
 import tempfile
 import urllib.request  # Sending requests
 
+from fastapi import BackgroundTasks
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
@@ -22,7 +23,6 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
-from fastapi import BackgroundTasks
 
 
 async def async_list(async_iterable):
@@ -91,7 +91,7 @@ class TaxonomyGraph:
             "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
             "/main/taxonomies/"
         )
-        filename = self.taxonomy_name + ".txt"
+        filename = f"{self.taxonomy_name}.txt"
         base_url += filename
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
@@ -112,8 +112,6 @@ class TaxonomyGraph:
                         raise TaxonomyParsingError() from e
         except Exception as e:
             raise TaxonomyImportError() from e
-                
-        
 
     async def import_from_github(self, description, background_tasks: BackgroundTasks):
         """
@@ -122,11 +120,13 @@ class TaxonomyGraph:
         # Close current transaction to use the session variable in parser
         await get_current_transaction().commit()
 
+        # Add the task to background tasks
         background_tasks.add_task(self.parse_taxonomy)
         print("Background task added")
 
+        # Create a new transaction context and create a "project node" in Neo4j
         async with TransactionCtx():
-            await self.create_project(description)  # Creates a "project node" in neo4j
+            await self.create_project(description)
 
         return True
 
