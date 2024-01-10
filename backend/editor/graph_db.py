@@ -49,11 +49,11 @@ def initialize_db():
     driver = neo4j.AsyncGraphDatabase.driver(uri)
 
 
-def shutdown_db():
+async def shutdown_db():
     """
     Close session and driver of Neo4J database
     """
-    driver.close()
+    await driver.close()
 
 
 def get_current_transaction():
@@ -85,6 +85,6 @@ def SyncTransactionCtx():
     Normally it should be reserved to background tasks
     """
     uri = settings.uri
-    driver = neo4j.GraphDatabase.driver(uri)
-    with driver.session() as _session:
-        yield _session
+    with neo4j.GraphDatabase.driver(uri) as driverSync:
+        with driverSync.session() as _session:
+            yield _session
