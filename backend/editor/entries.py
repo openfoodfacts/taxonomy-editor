@@ -2,10 +2,11 @@
 Database helper functions for API
 """
 import re
+import shutil
 import tempfile
 import urllib.request  # Sending requests
 
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, UploadFile
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
@@ -83,23 +84,30 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
-    def parse_taxonomy(self):
+    def parse_taxonomy(self, uploadfile=None):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
-        base_url = (
-            "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
-            "/main/taxonomies/"
-        )
-        filename = f"{self.taxonomy_name}.txt"
-        base_url += filename
+        if uploadfile is None:  # taxonomy is imported
+            base_url = (
+                "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
+                "/main/taxonomies/"
+            )
+            filename = f"{self.taxonomy_name}.txt"
+            base_url += filename
+        else:  # taxonomy is uploaded
+            filename = uploadfile.filename
+
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
                 # File to save the downloaded taxonomy
                 filepath = f"{tmpdir}/{filename}"
-
-                # Downloads and creates taxonomy file in current working directory
-                urllib.request.urlretrieve(base_url, filepath)
+                if uploadfile is None:
+                    # Downloads and creates taxonomy file in current working directory
+                    urllib.request.urlretrieve(base_url, filepath)
+                else:
+                    with open(filepath, "wb") as f:
+                        shutil.copyfileobj(uploadfile.file, f)
 
                 with SyncTransactionCtx() as session:
                     # Create parser object and pass current session to it
@@ -130,15 +138,22 @@ class TaxonomyGraph:
 
         return True
 
-    async def upload_taxonomy(self, filepath, description):
+    # async def upload_taxonomy(self, filepath, description,background_tasks: BackgroundTasks):
+    async def upload_taxonomy(
+        self, uploadfile: UploadFile, description, background_tasks: BackgroundTasks
+    ):
         """
         Helper function to upload a taxonomy file and create a project node
         """
+        # Close current transaction to use the session variable in parser
+        await get_current_transaction().commit()
         try:
-            status = await self.parse_taxonomy(filepath)
+            # Add the task to background tasks
+            background_tasks.add_task(self.parse_taxonomy, uploadfile)
+            print("Background task added")
             async with TransactionCtx():
                 await self.create_project(description)
-            return status
+            return True
         except Exception as e:
             raise TaxonomyImportError() from e
 

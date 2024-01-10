@@ -52,7 +52,6 @@ def test_import_from_github(client, github_mock, mocker):
     )
 
     assert response.status_code == 200
-    # assert response.json()["message"] == "Parsing sent in the background"
     assert response.json() is True
 
 

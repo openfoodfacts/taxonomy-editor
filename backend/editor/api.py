@@ -3,8 +3,6 @@ Taxonomy Editor Backend API
 """
 import logging
 import os
-import shutil
-import tempfile
 
 # Required imports
 # ------------------------------------------------------------------------------------#
@@ -396,7 +394,11 @@ async def import_from_github(
 
 @app.post("/{taxonomy_name}/{branch}/upload")
 async def upload_taxonomy(
-    branch: str, taxonomy_name: str, file: UploadFile, description: str = Form(...)
+    branch: str,
+    taxonomy_name: str,
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    description: str = Form(...),
 ):
     """
     Upload taxonomy file to be parsed
@@ -409,11 +411,7 @@ async def upload_taxonomy(
     if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
-        filepath = f"{tmpdir}/{file.filename}"
-        with open(filepath, "wb") as f:
-            shutil.copyfileobj(file.file, f)
-        result = await taxonomy.upload_taxonomy(filepath, description)
+    result = await taxonomy.upload_taxonomy(file, description, background_tasks)
 
     return result
 
