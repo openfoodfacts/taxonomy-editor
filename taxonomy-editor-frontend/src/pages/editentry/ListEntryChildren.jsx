@@ -86,13 +86,25 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       </Typography>
     );
   }
+
   if (isPending && !incomingData) {
     return (
-      <Box sx={{ textAlign: "left", m: 5 }}>
+      <Box sx={{ textAlign: "center", my: 5 }}>
         <CircularProgress />
       </Box>
     );
   }
+
+  if (relations && !relations.length) {
+    return (
+      <Box>
+        <Typography sx={{ ml: 4 }} variant="h5">
+          No children
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Stack direction="row" alignItems="center">
@@ -111,6 +123,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
           <AddBoxIcon />
         </IconButton>
       </Stack>
+
       {/* Renders parents or children of the node */}
       {relations && (
         <Stack direction="row">
@@ -137,14 +150,6 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
             </Stack>
           ))}
         </Stack>
-      )}
-
-      {/* When no parents or children are present */}
-      {relations && relations.length === 0 && (
-        <Typography sx={{ ml: 8, mb: 1, mt: 1 }} variant="h6">
-          {" "}
-          None{" "}
-        </Typography>
       )}
 
       {/* Dialog box for adding translations */}

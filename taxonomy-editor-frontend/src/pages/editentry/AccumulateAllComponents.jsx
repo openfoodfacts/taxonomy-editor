@@ -1,15 +1,16 @@
 import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useEffect, useState } from "react";
-import useFetch from "../../components/useFetch";
+import { useMemo, useState } from "react";
 import ListEntryParents from "./ListEntryParents";
 import ListEntryChildren from "./ListEntryChildren";
-import ListTranslations from "./ListTranslations";
+import { ListTranslations } from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import equal from "fast-deep-equal";
-import { createURL, getNodeType } from "../../utils";
+import { createURL, getNodeType, toSnakeCase } from "../../utils";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Component used for rendering node information
@@ -28,45 +29,65 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     data: node,
     isPending,
     isError,
-    __isSuccess,
-    errorMessage,
-  } = useFetch(url);
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: [url],
+    queryFn: async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch node");
+      }
+      return response.json();
+    },
+  });
   const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
   const [originalNodeObject, setOriginalNodeObject] = useState(null); // For tracking changes
-  const [updateChildren, setUpdateChildren] = useState([]); // Storing updates of children in node
+  const [updateChildren, setUpdateChildren] = useState(null); // Storing updates of children in node
+  const [previousUpdateChildren, setPreviousUpdateChildren] = useState(null); // Tracking changes of children
   const [open, setOpen] = useState(false); // Used for Dialog component
-  const [hasChanges, sethasChanges] = useState(false); // Used for displaying Fab
+  const [isSaveError, setIsSaveError] = useState(false); // Used for displaying error message if save failed
+  const [saveErrorMessage, setSaveErrorMessage] = useState(""); // Error message if save failed
+  const navigate = useNavigate();
 
-  // Tracking changes
-  useEffect(() => {
-    if (nodeObject && originalNodeObject) {
-      const hasChanges =
-        !equal(nodeObject, originalNodeObject) || updateChildren.length !== 0;
-      sethasChanges(hasChanges);
-    }
-  }, [nodeObject, originalNodeObject, updateChildren]);
+  if (previousUpdateChildren === null && updateChildren !== null) {
+    setPreviousUpdateChildren(updateChildren);
+  }
 
-  // Setting state of node after fetch
-  useEffect(() => {
+  const hasChanges = !nodeObject
+    ? false
+    : !equal(nodeObject, originalNodeObject) ||
+      !equal(updateChildren, previousUpdateChildren);
+
+  const createNodeObject = (node) => {
     let duplicateNode = null;
     if (node) {
-      duplicateNode = { ...node[0] };
+      duplicateNode = { ...node };
       // Adding UUIDs for properties
-      Object.keys(node[0]).forEach((key) => {
+      Object.keys(node).forEach((key) => {
         if (key.startsWith("prop")) {
           duplicateNode[key + "_uuid"] = [Math.random().toString()];
         }
       });
     }
-    setNodeObject(duplicateNode);
-    setOriginalNodeObject(JSON.parse(JSON.stringify(duplicateNode))); // Deep copy
-  }, [node]);
+    return duplicateNode;
+  };
+
+  const nodeObj = useMemo(() => createNodeObject(node), [node]);
+
+  if (
+    (!nodeObject && nodeObj) ||
+    (originalNodeObject && !equal(nodeObj, originalNodeObject))
+  ) {
+    setNodeObject(nodeObj);
+    setOriginalNodeObject(nodeObj);
+  }
 
   // Displaying error messages if any
   if (isError) {
     return (
       <Typography sx={{ ml: 4 }} variant="h5">
-        {errorMessage}
+        {error.message}
       </Typography>
     );
   }
@@ -90,6 +111,7 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   // Helper functions for Dialog component
   const handleClose = () => {
     setOpen(false);
+    setIsSaveError(false);
   };
 
   // Function handling updation of node
@@ -105,25 +127,43 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
         dataToBeSent[key] = data[key];
       }
     });
-    const allUrlsAndData = [[url, dataToBeSent]];
-    if (isEntry) {
-      allUrlsAndData.push([url + "/children", updateChildren]);
-    }
-    Promise.all(
-      allUrlsAndData.map(([url, dataToBeSent]) => {
-        return fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dataToBeSent),
-        });
+    let newId = id;
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dataToBeSent),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorMessage = await res.text();
+          throw Error(JSON.parse(errorMessage).detail);
+        }
+        if (isEntry) {
+          newId = (await res.json()).id;
+          const newUrl = createURL(taxonomyName, branchName, newId);
+          return fetch(newUrl + "/children", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updateChildren),
+          });
+        }
+        return res;
       })
-    )
       .then(() => {
         setOpen(true);
-        sethasChanges(false);
-        setOriginalNodeObject(JSON.parse(JSON.stringify(nodeObject)));
+        setPreviousUpdateChildren(updateChildren);
+        if (newId !== id) {
+          navigate(
+            `/${toSnakeCase(taxonomyName)}/${branchName}/entry/${newId}`
+          );
+        } else {
+          refetch();
+        }
       })
-      .catch(() => {});
+      .catch((error) => {
+        setIsSaveError(true);
+        setSaveErrorMessage(error.message);
+      });
   };
   return (
     <Box>
@@ -191,18 +231,29 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       {/* Snackbar for acknowledgment of update */}
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={open}
+        open={open || isSaveError}
         autoHideDuration={3000}
         onClose={handleClose}
       >
-        <Alert
-          elevation={6}
-          variant="filled"
-          onClose={handleClose}
-          severity="success"
-        >
-          The node has been successfully updated!
-        </Alert>
+        {!isSaveError ? (
+          <Alert
+            elevation={6}
+            variant="filled"
+            onClose={handleClose}
+            severity="success"
+          >
+            The node has been successfully updated!
+          </Alert>
+        ) : (
+          <Alert
+            elevation={6}
+            variant="filled"
+            onClose={handleClose}
+            severity="error"
+          >
+            {saveErrorMessage}
+          </Alert>
+        )}
       </Snackbar>
     </Box>
   );

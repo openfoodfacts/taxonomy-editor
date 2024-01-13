@@ -1,4 +1,3 @@
-// import { Autocomplete, Chip, TextField } from "@mui/material";
 import Tags from "@yaireo/tagify/dist/react.tagify"; // React-wrapper file
 import DragSort from "@yaireo/dragsort";
 import "@yaireo/tagify/dist/tagify.css"; // Tagify CSS
@@ -28,6 +27,7 @@ export const TranslationTags = ({
     saveTranslations(translations);
   };
 
+  // Inspired from the codesandbox example in https://github.com/yairEO/tagify#react
   useMemo(() => {
     if (tagifyRefDragSort.current)
       new DragSort(tagifyRefDragSort.current.DOM.scope, {

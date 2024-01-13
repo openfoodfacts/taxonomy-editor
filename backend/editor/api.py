@@ -220,7 +220,7 @@ async def find_one_entry(response: Response, branch: str, taxonomy_name: str, en
 
     check_single(one_entry)
 
-    return one_entry[0]
+    return one_entry[0]["n"]
 
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/parents")
@@ -446,8 +446,11 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    updated_entry = await taxonomy.update_nodes("ENTRY", entry, incoming_data)
-    return updated_entry
+    try:
+        updated_entry = await taxonomy.update_node("ENTRY", entry, incoming_data)
+        return updated_entry
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=e.args[0])
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")
@@ -472,7 +475,7 @@ async def edit_synonyms(request: Request, branch: str, taxonomy_name: str, synon
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    updated_synonym = await taxonomy.update_nodes("SYNONYMS", synonym, incoming_data)
+    updated_synonym = await taxonomy.update_node("SYNONYMS", synonym, incoming_data)
     return updated_synonym
 
 
@@ -485,7 +488,7 @@ async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stop
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    updated_stopword = await taxonomy.update_nodes("STOPWORDS", stopword, incoming_data)
+    updated_stopword = await taxonomy.update_node("STOPWORDS", stopword, incoming_data)
     return updated_stopword
 
 
@@ -496,7 +499,7 @@ async def edit_header(incoming_data: Header, branch: str, taxonomy_name: str):
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     convertedData = incoming_data.dict()
-    updated_header = await taxonomy.update_nodes("TEXT", "__header__", convertedData)
+    updated_header = await taxonomy.update_node("TEXT", "__header__", convertedData)
     return updated_header
 
 
@@ -507,7 +510,7 @@ async def edit_footer(incoming_data: Footer, branch: str, taxonomy_name: str):
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     convertedData = incoming_data.dict()
-    updated_footer = await taxonomy.update_nodes("TEXT", "__footer__", convertedData)
+    updated_footer = await taxonomy.update_node("TEXT", "__footer__", convertedData)
     return updated_footer
 
 

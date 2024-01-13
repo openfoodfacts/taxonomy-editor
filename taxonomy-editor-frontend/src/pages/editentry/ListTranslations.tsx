@@ -1,6 +1,6 @@
 import { Alert, Typography, Stack, Button, Box, Dialog } from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ISO6391 from "iso-639-1";
 import { TranslationTags } from "./TranslationTags";
 
@@ -9,7 +9,7 @@ const SHOWN_LANGUAGES_KEY = "shownLanguages";
 /**
  * Sub-component for rendering translation of an "entry"
  */
-const ListTranslations = ({
+export const ListTranslations = ({
   originalNodeObject,
   nodeObject,
   setNodeObject,
@@ -25,29 +25,7 @@ const ListTranslations = ({
     setIsDialogOpen(true);
   };
 
-  // Used for addition of a translation language
-  const handleAddTranslation = useCallback(
-    (key: string) => {
-      key = "tags_" + key; // LC must have a prefix "tags_"
-
-      if (nodeObject[key]) {
-        // If the key already exists, do nothing
-        return;
-      }
-      // Make changes to the parent NodeObject
-      setNodeObject((prevState) => {
-        const newNodeObject = { ...prevState };
-        newNodeObject[key] = [];
-        return newNodeObject;
-      });
-    },
-    [nodeObject, setNodeObject]
-  );
-
   const handleDialogConfirm = (newShownLanguageCodes: string[]) => {
-    newShownLanguageCodes.forEach((languageCode) => {
-      handleAddTranslation(languageCode);
-    });
     setShownLanguageCodes(newShownLanguageCodes);
     localStorage.setItem(
       SHOWN_LANGUAGES_KEY,
@@ -59,11 +37,12 @@ const ListTranslations = ({
   useEffect(() => {
     // get shown languages from local storage if it exists else use main language
     try {
-      let localStorageShownLanguages: string[] | null = localStorage.getItem(
-        SHOWN_LANGUAGES_KEY
-      )
-        ? JSON.parse(localStorage.getItem(SHOWN_LANGUAGES_KEY)!)
-        : null;
+      let rawLocalStorageShownLanguages =
+        localStorage.getItem(SHOWN_LANGUAGES_KEY);
+      let localStorageShownLanguages: string[] | null =
+        rawLocalStorageShownLanguages
+          ? JSON.parse(rawLocalStorageShownLanguages)
+          : null;
       // validate that shown languages is an array of strings and filter all items that are valid language codes
       if (
         Array.isArray(localStorageShownLanguages) &&
@@ -78,16 +57,13 @@ const ListTranslations = ({
 
       if (localStorageShownLanguages) {
         // if shown languages is not empty, use it
-        localStorageShownLanguages.forEach((languageCode) => {
-          handleAddTranslation(languageCode);
-        });
         setShownLanguageCodes(localStorageShownLanguages);
       }
     } catch (e) {
       // shown languages is an empty list, when we can't parse the local storage
       console.log(e);
     }
-  }, [handleAddTranslation]);
+  }, []);
 
   const saveTranslationsForLanguage = (language: string) => {
     return (translations: string[]) => {
@@ -104,15 +80,12 @@ const ListTranslations = ({
   );
   languagesToShow.unshift(nodeObject.main_language);
 
-  const translations: Record<string, string[]> = {};
-  Object.keys(nodeObject).forEach((key: string) => {
-    if (key.startsWith("tags") && !key.includes("ids")) {
-      const languageCode = key.split("_")[1];
-      if (languagesToShow.includes(languageCode)) {
-        translations[languageCode] = nodeObject[key].map((tag: string) => tag);
-      }
-    }
-  });
+  const numberOfLanguagesShownMessage =
+    "(" +
+    languagesToShow.length +
+    " language" +
+    (languagesToShow.length === 1 ? "" : "s") +
+    " shown)";
 
   const hasFirstTranslationChanged: boolean[] = languagesToShow.map(
     (language: string) =>
@@ -128,44 +101,42 @@ const ListTranslations = ({
           Translations
         </Typography>
         <Button sx={{ mt: 3.5, ml: 1 }} onClick={handleOpen}>
-          {"(" +
-            languagesToShow.length +
-            " language" +
-            (languagesToShow.length === 1 ? "" : "s") +
-            " shown)"}
+          {numberOfLanguagesShownMessage}
         </Button>
       </Stack>
 
       {/* Render translation tags for each language to show */}
-      {languagesToShow.map((language: string) => (
-        <Stack key={language}>
-          <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
-            <Typography variant="h6">
-              {ISO6391.getName(language) +
-                (language === nodeObject.main_language
-                  ? " (main language)"
-                  : "")}
-            </Typography>
+      {languagesToShow.map((language: string) => {
+        const languageName =
+          ISO6391.getName(language) +
+          (language === nodeObject.main_language ? " (main language)" : "");
+        const alertMessage =
+          "Changing the first translation will modify " +
+          (language === nodeObject.main_language
+            ? "the ID of the node and "
+            : "") +
+          "the display name for this language!";
+        return (
+          <Stack key={language}>
+            <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
+              <Typography variant="h6">{languageName}</Typography>
+            </Stack>
+            {hasFirstTranslationChanged[languagesToShow.indexOf(language)] && (
+              <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
+                {alertMessage}
+              </Alert>
+            )}
+            <Stack direction="row" sx={{ mr: 4 }}>
+              {
+                <TranslationTags
+                  translations={nodeObject["tags_" + language] ?? []}
+                  saveTranslations={saveTranslationsForLanguage(language)}
+                />
+              }
+            </Stack>
           </Stack>
-          {hasFirstTranslationChanged[languagesToShow.indexOf(language)] && (
-            <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
-              Changing the first translation will modify{" "}
-              {language === nodeObject.main_language
-                ? "the ID of the node and "
-                : ""}
-              the display name for this language!
-            </Alert>
-          )}
-          <Stack direction="row" sx={{ mr: 4 }}>
-            {
-              <TranslationTags
-                translations={translations[language]}
-                saveTranslations={saveTranslationsForLanguage(language)}
-              />
-            }
-          </Stack>
-        </Stack>
-      ))}
+        );
+      })}
 
       {/* Dialog box for adding translations */}
       <Dialog open={isDialogOpen} onClose={handleClose}>
@@ -179,5 +150,3 @@ const ListTranslations = ({
     </Box>
   );
 };
-
-export default ListTranslations;

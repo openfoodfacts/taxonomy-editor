@@ -432,7 +432,7 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def update_nodes(self, label, entry, new_node):
+    async def update_node(self, label, entry, new_node):
         """
         Helper function used for updation of node with given id and label
         """
@@ -444,13 +444,15 @@ class TaxonomyGraph:
         # Get current node information and deleted keys
         result = await self.get_nodes(label, entry)
         curr_node = result[0]["n"]
-        curr_node_keys = list(curr_node.keys())
-        deleted_keys = set(curr_node_keys) ^ set(new_node)
+        deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
         # Check for keys having null/empty values
-        for key in curr_node_keys:
-            if (curr_node[key] == []) or (curr_node[key] is None):
+        for key in new_node.keys():
+            if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
+                # Delete tags_ids if we delete tags of a language
+                if key.startswith("tags_") and "_ids_" not in key:
+                    deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
 
         # Build query
         query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
@@ -463,7 +465,7 @@ class TaxonomyGraph:
 
         # Adding normalized tags ids corresponding to entry tags
         normalised_new_node = {}
-        for key in new_node.keys():
+        for key in set(new_node.keys()) - deleted_keys:
             if key.startswith("tags_"):
                 if "_ids_" not in key:
                     keys_language_code = key.split("_", 1)[1]
@@ -484,10 +486,19 @@ class TaxonomyGraph:
 
         # Update id if first translation of the main language has changed
         main_language, id = curr_node["id"].split(":")
-        new_normalised_first_translation = normalizer.normalizing(
-            normalised_new_node["tags_" + main_language][0], main_language
-        )
+        new_normalised_first_translation = normalised_new_node["tags_ids_" + main_language][0]
         if id != new_normalised_first_translation:
+            if (
+                len(
+                    await self.get_nodes(
+                        label, f"{main_language}:{new_normalised_first_translation}"
+                    )
+                )
+                != 0
+            ):
+                raise ValueError(
+                    f"Entry {main_language}:{new_normalised_first_translation} already exists"
+                )
             normalised_new_node["new_id"] = main_language + ":" + new_normalised_first_translation
             query.append("""\nSET n.id = $new_id\n""")
 
@@ -495,7 +506,7 @@ class TaxonomyGraph:
 
         params = dict(normalised_new_node, id=entry)
         result = await get_current_transaction().run(" ".join(query), params)
-        return await async_list(result)
+        return (await async_list(result))[0]["n"]
 
     async def update_node_children(self, entry, new_children_ids):
         """
