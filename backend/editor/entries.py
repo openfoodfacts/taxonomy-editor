@@ -5,6 +5,7 @@ import re
 import shutil
 import tempfile
 import urllib.request  # Sending requests
+import os
 
 from fastapi import BackgroundTasks, UploadFile
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
@@ -89,10 +90,7 @@ class TaxonomyGraph:
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
         if uploadfile is None:  # taxonomy is imported
-            base_url = (
-                "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
-                "/main/taxonomies/"
-            )
+            base_url = os.environ.get("REPO_URI", "openfoodfacts/openfoodfacts-server") + "/main/taxonomies/"
             filename = f"{self.taxonomy_name}.txt"
             base_url += filename
         else:  # taxonomy is uploaded
@@ -125,17 +123,9 @@ class TaxonomyGraph:
         """
         Helper function to import a taxonomy from GitHub
         """
-        # Close current transaction to use the session variable in parser
-        await get_current_transaction().commit()
-
-        # Add the task to background tasks
-        background_tasks.add_task(self.parse_taxonomy)
-        print("Background task added")
-
-        # Create a new transaction context and create a "project node" in Neo4j
         async with TransactionCtx():
             await self.create_project(description)
-
+        background_tasks.add_task(self.parse_taxonomy)
         return True
 
     # async def upload_taxonomy(self, filepath, description,background_tasks: BackgroundTasks):
@@ -145,17 +135,11 @@ class TaxonomyGraph:
         """
         Helper function to upload a taxonomy file and create a project node
         """
-        # Close current transaction to use the session variable in parser
-        await get_current_transaction().commit()
-        try:
-            # Add the task to background tasks
-            background_tasks.add_task(self.parse_taxonomy, uploadfile)
-            print("Background task added")
-            async with TransactionCtx():
-                await self.create_project(description)
-            return True
-        except Exception as e:
-            raise TaxonomyImportError() from e
+        async with TransactionCtx():
+            await self.create_project(description)
+        background_tasks.add_task(self.parse_taxonomy, uploadfile)
+        return True
+
 
     def dump_taxonomy(self):
         """
