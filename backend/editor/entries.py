@@ -1,11 +1,11 @@
 """
 Database helper functions for API
 """
+import os
 import re
 import shutil
 import tempfile
 import urllib.request  # Sending requests
-import os
 
 from fastapi import BackgroundTasks, UploadFile
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
@@ -90,7 +90,10 @@ class TaxonomyGraph:
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
         if uploadfile is None:  # taxonomy is imported
-            base_url = os.environ.get("REPO_URI", "openfoodfacts/openfoodfacts-server") + "/main/taxonomies/"
+            base_url = (
+                os.environ.get("REPO_URI", "openfoodfacts/openfoodfacts-server")
+                + "/main/taxonomies/"
+            )
             filename = f"{self.taxonomy_name}.txt"
             base_url += filename
         else:  # taxonomy is uploaded
@@ -139,7 +142,6 @@ class TaxonomyGraph:
             await self.create_project(description)
         background_tasks.add_task(self.parse_taxonomy, uploadfile)
         return True
-
 
     def dump_taxonomy(self):
         """
