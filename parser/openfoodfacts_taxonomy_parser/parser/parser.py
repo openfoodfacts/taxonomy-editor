@@ -32,24 +32,28 @@ class Parser:
 
     def _create_other_node(self, tx: Transaction, node_data: NodeData, project_label: str):
         """Create a TEXT, SYNONYMS or STOPWORDS node"""
-        position_query = """
-            SET n.id = $id
-            SET n.preceding_lines = $preceding_lines
-            SET n.src_position = $src_position
-        """
         if node_data.get_node_type() == NodeType.TEXT:
-            id_query = f"CREATE (n:{project_label}:TEXT) \n"
+            type_label = "TEXT"
         elif node_data.get_node_type() == NodeType.SYNONYMS:
-            id_query = f"CREATE (n:{project_label}:SYNONYMS) \n"
+            type_label = "SYNONYMS"
         elif node_data.get_node_type() == NodeType.STOPWORDS:
-            id_query = f"CREATE (n:{project_label}:STOPWORDS) \n"
+            type_label = "STOPWORDS"
         else:
             raise ValueError(f"ENTRY nodes should not be passed to this function")
 
-        entry_queries = [f"SET n.{key} = ${key}" for key in node_data.tags]
-        entry_query = "\n".join(entry_queries) + "\n"
+        node_tags_queries = [f"{key} : ${key}" for key in node_data.tags]
 
-        query = id_query + entry_query + position_query
+        base_properties_query = """
+            id: $id,
+            preceding_lines: $preceding_lines,
+            src_position: $src_position
+        """
+
+        properties_query = ",\n".join([base_properties_query, *node_tags_queries])
+
+        query = f"""
+            CREATE (n:{project_label}:{type_label} {{ {properties_query} }})
+        """
         tx.run(query, node_data.to_dict())
 
     def _create_other_nodes(self, other_nodes: list[NodeData], project_label: str):
@@ -70,16 +74,6 @@ class Parser:
         self.parser_logger.info("Creating ENTRY nodes")
         start_time = timeit.default_timer()
 
-        base_query = f"""
-          WITH $entry_nodes as entry_nodes
-          UNWIND entry_nodes as entry_node
-          CREATE (n:{project_label}:ENTRY)
-          SET n.id = entry_node.id
-          SET n.preceding_lines = entry_node.preceding_lines
-          SET n.src_position = entry_node.src_position
-          SET n.main_language = entry_node.main_language
-        """
-
         # we don't know in advance which properties and tags
         # we will encounter in the batch
         # so we accumulate them in this set
@@ -91,11 +85,24 @@ class Parser:
             seen_properties_and_tags.update(entry_node.tags)
             seen_properties_and_tags.update(entry_node.properties)
 
-        additional_query = "\n" + "\n".join(
-            [f"SET n.{key} = entry_node.{key}" for key in seen_properties_and_tags]
-        )
+        additional_properties_queries = [
+            f"{key} : entry_node.{key}" for key in seen_properties_and_tags
+        ]
 
-        query = base_query + additional_query
+        base_properties_query = f"""
+            id: entry_node.id,
+            preceding_lines: entry_node.preceding_lines,
+            src_position: entry_node.src_position,
+            main_language: entry_node.main_language
+        """
+
+        properties_query = ",\n".join([base_properties_query, *additional_properties_queries])
+
+        query = f"""
+          WITH $entry_nodes as entry_nodes
+          UNWIND entry_nodes as entry_node
+          CREATE (n:{project_label}:ENTRY {{ {properties_query} }})
+        """
         self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
 
         self.parser_logger.info(
