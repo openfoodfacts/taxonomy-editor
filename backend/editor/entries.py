@@ -119,13 +119,11 @@ class TaxonomyGraph:
                         return True
                     except Exception as e:
                         # add an error node so we can display it with errors in the app
-                        parser.Parser.create_parsing_errors_node(
+                        parser_object.create_parsing_errors_node(
                             self.taxonomy_name, self.branch_name
                         )
                         raise TaxonomyParsingError() from e
         except Exception as e:
-            # add an error node so we can display it with errors in the app
-            parser.Parser.create_parsing_errors_node(self.taxonomy_name, self.branch_name)
             raise TaxonomyImportError() from e
 
     async def import_from_github(self, description, background_tasks: BackgroundTasks):
