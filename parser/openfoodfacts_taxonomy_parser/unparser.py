@@ -28,6 +28,10 @@ class WriteTaxonomy:
     def get_all_nodes(self, multi_label):
         """query the database and yield each node with its parents,
         this function use the relationships between nodes"""
+        # This query first lists all the nodes in the "is_before" order
+        # then for each node in the path, it finds its parents
+        # and finally it returns the node and its parents (the parents are ordered in the same order as in the original file)
+        # Note: OPTIONAL MATCH is used to return nodes without parents
         query = f"""
             MATCH path = ShortestPath(
                 (h:{multi_label}:TEXT)-[:is_before*]->(f:{multi_label}:TEXT)
