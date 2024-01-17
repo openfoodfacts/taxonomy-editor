@@ -231,29 +231,33 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       {/* Snackbar for acknowledgment of update */}
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={open || isSaveError}
+        open={open}
         autoHideDuration={3000}
         onClose={handleClose}
       >
-        {!isSaveError ? (
-          <Alert
-            elevation={6}
-            variant="filled"
-            onClose={handleClose}
-            severity="success"
-          >
-            The node has been successfully updated!
-          </Alert>
-        ) : (
-          <Alert
-            elevation={6}
-            variant="filled"
-            onClose={handleClose}
-            severity="error"
-          >
-            {saveErrorMessage}
-          </Alert>
-        )}
+        <Alert
+          elevation={6}
+          variant="filled"
+          onClose={handleClose}
+          severity="success"
+        >
+          The node has been successfully updated!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={isSaveError}
+        autoHideDuration={3000}
+        onClose={handleClose}
+      >
+        <Alert
+          elevation={6}
+          variant="filled"
+          onClose={handleClose}
+          severity="error"
+        >
+          {saveErrorMessage}
+        </Alert>
       </Snackbar>
     </Box>
   );
