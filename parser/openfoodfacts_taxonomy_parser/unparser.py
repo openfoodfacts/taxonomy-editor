@@ -33,8 +33,12 @@ class WriteTaxonomy:
                 (h:{multi_label}:TEXT)-[:is_before*]->(f:{multi_label}:TEXT)
             )
             WHERE h.id="__header__" AND f.id="__footer__"
-            UNWIND nodes(path) AS n
-            RETURN n , [(n)-[:is_child_of]->(m) | m ]
+            WITH nodes(path) AS nodes, range(0, size(nodes(path))-1) AS indexes
+            UNWIND indexes AS index
+            WITH nodes[index] AS n, index
+            OPTIONAL MATCH (n)-[r:is_child_of]->(parent)
+            WITH n, r, parent ORDER BY index, r.position
+            RETURN n, collect(parent)
         """
         results = self.session.run(query)
         for result in results:

@@ -416,6 +416,7 @@ class TaxonomyGraph:
             MATCH (child_node:{self.project_name}:ENTRY)-[r:is_child_of]->(parent)
                 WHERE child_node.id = $id
             RETURN parent.id
+            ORDER BY r.position
         """
         query_result = await get_current_transaction().run(query, {"id": entry})
         return [item async for result_list in query_result for item in result_list]
