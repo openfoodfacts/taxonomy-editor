@@ -7,7 +7,7 @@ import unicodedata
 import unidecode
 
 
-def normalizing(line, lang="default", char="-"):
+def normalizing(line: str, lang="default", char="-"):
     """Normalize a string depending on the language code"""
     line = unicodedata.normalize("NFC", line)
 
