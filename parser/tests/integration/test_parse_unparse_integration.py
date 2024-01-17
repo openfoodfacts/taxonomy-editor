@@ -60,11 +60,6 @@ def test_round_trip(neo4j):
         # second tweak: renaming parent
         elif line.startswith("<fr:yaourts fruit de la passion"):
             line = "<en:Passion fruit yogurts"
-        # last tweak: parent order
-        elif line.startswith("<en:fake-stuff"):
-            line = "<en:fake-meat"
-        elif line.startswith("<en:fake-meat"):
-            line = "<en:fake-stuff"
         expected_lines.append(line)
 
     assert expected_lines == lines
@@ -107,11 +102,6 @@ def test_two_branch_round_trip(neo4j):
         # second tweak: renaming parent
         elif line.startswith("<fr:yaourts fruit de la passion"):
             line = "<en:Passion fruit yogurts"
-        # last tweak: parent order
-        elif line.startswith("<en:fake-stuff"):
-            line = "<en:fake-meat"
-        elif line.startswith("<en:fake-meat"):
-            line = "<en:fake-stuff"
         expected_lines.append(line)
 
     assert expected_lines == lines_branch1
