@@ -11,11 +11,6 @@ from .exception import DuplicateIDError
 from ..normalizer import normalizing
 
 
-def ellipsis(text, max=20):
-    """Cut a text adding eventual ellipsis if we do not display it fully"""
-    return text[:max] + ("..." if len(text) > max else "")
-
-
 class NodeType(str, Enum):
     TEXT = "TEXT"
     SYNONYMS = "SYNONYMS"
@@ -37,10 +32,8 @@ class NodeData:
     def to_dict(self):
         return {
             "id": self.id,
-            "is_before": self.is_before,
             "main_language": self.main_language,
             "preceding_lines": self.preceding_lines,
-            "parent_tag": self.parent_tag,
             "src_position": self.src_position,
             **self.properties,
             **self.tags,
@@ -229,11 +222,11 @@ class TaxonomyParser:
             if self._entry_end(line, data):
                 if data.id in saved_nodes:
                     msg = (
-                        "Entry with same id %s already created, "
-                        "duplicate id in file at line %s. "
+                        f"Entry with same id {data.id} already created, "
+                        f"duplicate id in file at line {data.src_position}. "
                         "Node creation cancelled."
                     )
-                    self.parser_logger.error(msg, data.id, data.src_position)
+                    self.parser_logger.error(msg)
                 else:
                     data = self._remove_separating_line(data)
                     yield data  # another function will use this dictionary to create a node
@@ -257,9 +250,7 @@ class TaxonomyParser:
                         lc, value = self._get_lc_value(line[10:])
                     except ValueError:
                         self.parser_logger.error(
-                            "Missing language code at line %d ? '%s'",
-                            line_number + 1,
-                            ellipsis(line),
+                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = value
@@ -276,9 +267,7 @@ class TaxonomyParser:
                         lc, value = self._get_lc_value(line)
                     except ValueError:
                         self.parser_logger.error(
-                            "Missing language code at line %d ? '%s'",
-                            line_number + 1,
-                            ellipsis(line),
+                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
@@ -313,9 +302,7 @@ class TaxonomyParser:
                         property_name, lc, property_value = line.split(":", 2)
                     except ValueError:
                         self.parser_logger.error(
-                            "Reading error at line %d, unexpected format: '%s'",
-                            line_number + 1,
-                            ellipsis(line),
+                            f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         # in case there is space before or after the colons
@@ -325,9 +312,7 @@ class TaxonomyParser:
                             correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
                             self.parser_logger.error(
-                                "Reading error at line %d, unexpected format: '%s'",
-                                line_number + 1,
-                                ellipsis(line),
+                                f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
                             )
                         if property_name:
                             data.properties["prop_" + property_name + "_" + lc] = property_value
@@ -339,7 +324,7 @@ class TaxonomyParser:
 
     def _create_taxonomy(self, filename: str) -> Taxonomy:
         """Create the taxonomy from the file"""
-        self.parser_logger.info("Parsing taxonomy file %s", filename)
+        self.parser_logger.info(f"Parsing {filename}")
         harvested_header_data, entries_start_line = self._header_harvest(filename)
         entry_nodes: list[NodeData] = []
         other_nodes = [
@@ -372,13 +357,12 @@ class TaxonomyParser:
         start_time = timeit.default_timer()
         filename = self._normalized_filename(filename)
         taxonomy = self._create_taxonomy(filename)
-        end_time = timeit.default_timer()
-        self.parser_logger.info("Parsing done in %s seconds", end_time - start_time)
+        self.parser_logger.info(f"Parsing done in {timeit.default_timer() - start_time} seconds.")
         self.parser_logger.info(
-            "Found %d nodes", len(taxonomy.entry_nodes) + len(taxonomy.other_nodes)
+            f"Found {len(taxonomy.entry_nodes) + len(taxonomy.other_nodes)} nodes"
         )
-        self.parser_logger.info("Found %d previous links", len(taxonomy.previous_links))
-        self.parser_logger.info("Found %d child links", len(taxonomy.child_links))
+        self.parser_logger.info(f"Found {len(taxonomy.previous_links)} previous links")
+        self.parser_logger.info(f"Found {len(taxonomy.child_links)} child links")
 
         return taxonomy
 

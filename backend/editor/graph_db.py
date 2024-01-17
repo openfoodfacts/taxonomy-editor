@@ -12,6 +12,7 @@ from .exceptions import SessionMissingError  # Custom exceptions
 from .exceptions import TransactionMissingError
 
 log = logging.getLogger(__name__)
+DEFAULT_DB = "neo4j"
 
 
 txn = contextvars.ContextVar("txn")
@@ -29,7 +30,7 @@ async def TransactionCtx():
     """
     global txn, session
     try:
-        async with driver.session() as _session:
+        async with driver.session(database=DEFAULT_DB) as _session:
             txn_manager = await _session.begin_transaction()
             async with txn_manager as _txn:
                 txn.set(_txn)
@@ -86,5 +87,5 @@ def SyncTransactionCtx():
     """
     uri = settings.uri
     driver = neo4j.GraphDatabase.driver(uri)
-    with driver.session() as _session:
+    with driver.session(database=DEFAULT_DB) as _session:
         yield _session
