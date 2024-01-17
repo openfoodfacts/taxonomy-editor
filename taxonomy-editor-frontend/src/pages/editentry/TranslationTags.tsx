@@ -14,10 +14,10 @@ export const TranslationTags = ({
   translations,
   saveTranslations,
 }: TranslationTagsProps) => {
-  const tagifyRefDragSort = useRef<typeof Tags>();
+  const tagifyRefDragSort = useRef<typeof Tags>(null);
 
   const handleDragEnd = () => {
-    tagifyRefDragSort.current.updateValueByDOMTags();
+    tagifyRefDragSort.current?.updateValueByDOMTags();
   };
 
   const handleChange = (e) => {
