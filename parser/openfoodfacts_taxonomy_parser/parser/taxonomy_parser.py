@@ -58,6 +58,7 @@ class PreviousLink(TypedDict):
 class ChildLink(TypedDict):
     parent_id: str
     id: str
+    position: int
 
 
 @dataclass(slots=True)
@@ -341,8 +342,8 @@ class TaxonomyParser:
             if entry.is_before:
                 previous_links.append(PreviousLink(before_id=entry.is_before, id=entry.id))
             if entry.parent_tag:
-                for parent in entry.parent_tag:
-                    child_links.append(ChildLink(parent_id=parent, id=entry.id))
+                for position, parent in enumerate(entry.parent_tag):
+                    child_links.append(ChildLink(parent_id=parent, id=entry.id, position=position))
         return Taxonomy(
             entry_nodes=entry_nodes,
             other_nodes=other_nodes,

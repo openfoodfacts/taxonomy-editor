@@ -158,17 +158,21 @@ class Parser:
                 unnormalised_child_links.append(child_link)
 
         # adding normalised links is easy as we can directly match parent entries
-        normalised_query = f"""
-            UNWIND $normalised_child_links as child_link
-            MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
-            WHERE p.id = child_link.parent_id
-            MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
-            WHERE c.id = child_link.id
-            CREATE (c)-[relations:is_child_of]->(p)
-            WITH relations
-            UNWIND relations AS relation
-            RETURN COUNT(relation)
-        """
+        normalised_query = (
+            f"""
+                UNWIND $normalised_child_links as child_link
+                MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
+                WHERE p.id = child_link.parent_id
+                MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+            """
+            + """
+                WHERE c.id = child_link.id
+                CREATE (c)-[relations:is_child_of {position: child_link.position}]->(p)
+                WITH relations
+                UNWIND relations AS relation
+                RETURN COUNT(relation)
+            """
+        )
 
         # for unnormalised links, we need to group them by language code of the parent id
         lc_child_links_map = collections.defaultdict(list)
@@ -180,17 +184,21 @@ class Parser:
         # we create a query for each language code
         lc_queries = []
         for lc, lc_child_links in lc_child_links_map.items():
-            lc_query = f"""
-                UNWIND $lc_child_links as child_link
-                MATCH (p:{project_label})
-                WHERE child_link.parent_id IN p.tags_ids_{lc}
-                MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
-                WHERE c.id = child_link.id
-                CREATE (c)-[relations:is_child_of]->(p)
-                WITH relations
-                UNWIND relations AS relation
-                RETURN COUNT(relation)
-            """
+            lc_query = (
+                f"""
+                    UNWIND $lc_child_links as child_link
+                    MATCH (p:{project_label})
+                    WHERE child_link.parent_id IN p.tags_ids_{lc}
+                    MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+                """
+                + """
+                    WHERE c.id = child_link.id
+                    CREATE (c)-[relations:is_child_of {position: child_link.position}]->(p)
+                    WITH relations
+                    UNWIND relations AS relation
+                    RETURN COUNT(relation)
+                """
+            )
             lc_queries.append((lc_query, lc_child_links))
 
         count = 0
