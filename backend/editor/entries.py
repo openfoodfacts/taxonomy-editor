@@ -1,7 +1,6 @@
 """
 Database helper functions for API
 """
-import os
 import re
 import shutil
 import tempfile
@@ -12,6 +11,7 @@ from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 
+from . import settings
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
@@ -91,8 +91,7 @@ class TaxonomyGraph:
         """
         if uploadfile is None:  # taxonomy is imported
             base_url = (
-                os.environ.get("REPO_URI", "openfoodfacts/openfoodfacts-server")
-                + "/main/taxonomies/"
+                "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
             )
             filename = f"{self.taxonomy_name}.txt"
             base_url += filename
@@ -116,12 +115,14 @@ class TaxonomyGraph:
                     try:
                         # Parse taxonomy with given file name and branch name
                         parser_object(filepath, self.branch_name, self.taxonomy_name)
+                        self.set_project_status(session, status="OPEN")
                         return True
                     except Exception as e:
                         # add an error node so we can display it with errors in the app
                         parser_object.create_parsing_errors_node(
                             self.taxonomy_name, self.branch_name
                         )
+                        self.set_project_status(session, status="FAILED")
                         raise TaxonomyParsingError() from e
         except Exception as e:
             raise TaxonomyImportError() from e
@@ -178,9 +179,9 @@ class TaxonomyGraph:
 
         filepath = self.dump_taxonomy()
         # Create a new transaction context
-        async with TransactionCtx():
+        async with TransactionCtx() as (_, session):
             result = await self.export_to_github(filepath)
-            await self.set_project_status(status="CLOSED")
+            self.set_project_status(session, status="CLOSED")
         return result
 
     async def export_to_github(self, filename):
@@ -257,7 +258,7 @@ class TaxonomyGraph:
         }
         await get_current_transaction().run(query, params)
 
-    async def set_project_status(self, status):
+    def set_project_status(self, session, status):
         """
         Helper function to update a Taxonomy Editor project status
         """
@@ -267,7 +268,8 @@ class TaxonomyGraph:
             SET n.status = $status
         """
         params = {"project_name": self.project_name, "status": status}
-        await get_current_transaction().run(query, params)
+        with session.begin_transaction() as tx:
+            tx.run(query, params)
 
     async def list_projects(self, status=None):
         """
