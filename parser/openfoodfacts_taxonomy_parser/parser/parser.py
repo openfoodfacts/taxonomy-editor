@@ -1,3 +1,4 @@
+import collections
 import logging
 import os
 import sys
@@ -163,12 +164,10 @@ class Parser:
         """
 
         # for unnormalised links, we need to group them by language code of the parent id
-        lc_child_links_map = {}
+        lc_child_links_map = collections.defaultdict(list)
         for child_link in unnormalised_child_links:
             lc, parent_id = child_link["parent_id"].split(":")
             child_link["parent_id"] = parent_id
-            if lc not in lc_child_links_map:
-                lc_child_links_map[lc] = []
             lc_child_links_map[lc].append(child_link)
 
         # we create a query for each language code
