@@ -13,7 +13,7 @@ quality:
 
 tests:
 	cd .. && docker compose up -d neo4j
-	pytest .
+	poetry run pytest .
 # we do not shutdown neo4j
 
 checks: quality tests

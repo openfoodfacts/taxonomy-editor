@@ -3,7 +3,7 @@ version: "3.9"
 services:
   neo4j:
     restart: ${RESTART_POLICY:-no}
-    image: neo4j:5.3.0-community
+    image: neo4j:5.14.0-community
     ports:
       # admin console
       - "${NEO4J_ADMIN_EXPOSE:-127.0.0.1:7474}:7474"
