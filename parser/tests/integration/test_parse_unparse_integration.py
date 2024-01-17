@@ -50,24 +50,9 @@ def test_round_trip(neo4j):
         test_dumper = unparser.WriteTaxonomy(session)
         lines = list(test_dumper.iter_lines("p_test_branch"))
 
-    original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
-    # expected result is close to original file with a few tweaks
-    expected_lines = []
-    for line in original_lines:
-        # first tweak: spaces between stopwords
-        if line.startswith("stopwords:fr: aux"):
-            line = "stopwords:fr:aux, au, de, le, du, la, a, et"
-        # second tweak: renaming parent
-        elif line.startswith("<fr:yaourts fruit de la passion"):
-            line = "<en:Passion fruit yogurts"
-        # last tweak: parent order
-        elif line.startswith("<en:fake-stuff"):
-            line = "<en:fake-meat"
-        elif line.startswith("<en:fake-meat"):
-            line = "<en:fake-stuff"
-        expected_lines.append(line)
+    possible_lines = get_possible_lines_for_test_taxonomy()
 
-    assert expected_lines == lines
+    assert lines in possible_lines
 
 
 def test_two_branch_round_trip(neo4j):
@@ -97,9 +82,19 @@ def test_two_branch_round_trip(neo4j):
         lines_branch1 = list(test_dumper.iter_lines("p_test_branch1"))
         lines_branch2 = list(test_dumper.iter_lines("p_test_branch2"))
 
+    possible_lines = get_possible_lines_for_test_taxonomy()
+
+    assert lines_branch1 in possible_lines
+    assert lines_branch2 in possible_lines
+
+
+def get_possible_lines_for_test_taxonomy():
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
+
     # expected result is close to original file with a few tweaks
-    expected_lines = []
+    expected_lines_1 = []
+    expected_lines_2 = []
+
     for line in original_lines:
         # first tweak: spaces between stopwords
         if line.startswith("stopwords:fr: aux"):
@@ -107,12 +102,14 @@ def test_two_branch_round_trip(neo4j):
         # second tweak: renaming parent
         elif line.startswith("<fr:yaourts fruit de la passion"):
             line = "<en:Passion fruit yogurts"
-        # last tweak: parent order
-        elif line.startswith("<en:fake-stuff"):
-            line = "<en:fake-meat"
+        line_1, line_2 = line, line
+        # parent order is undeterministic
+        if line.startswith("<en:fake-stuff"):
+            line_2 = "<en:fake-meat"
         elif line.startswith("<en:fake-meat"):
-            line = "<en:fake-stuff"
-        expected_lines.append(line)
+            line_2 = "<en:fake-stuff"
 
-    assert expected_lines == lines_branch1
-    assert expected_lines == lines_branch2
+        expected_lines_1.append(line_1)
+        expected_lines_2.append(line_2)
+
+    return [expected_lines_1, expected_lines_2]
