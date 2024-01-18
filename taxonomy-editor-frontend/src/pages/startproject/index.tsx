@@ -42,6 +42,7 @@ const StartProject = ({ clearNavBarLinks }) => {
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
     const dataToBeSent = { description: description };
+    let errorMessage: string = "Unable to import";
 
     fetch(`${baseUrl}import`, {
       method: "POST",
@@ -51,12 +52,13 @@ const StartProject = ({ clearNavBarLinks }) => {
       .then(async (response) => {
         const responseBody = await response.json();
         if (!response.ok) {
-          throw new Error(responseBody?.detail ?? "Unable to import");
+          errorMessage = responseBody?.detail ?? "Unable to import";
+          throw new Error(errorMessage);
         }
         navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry`);
       })
       .catch(() => {
-        setErrorMessage("Unable to import");
+        setErrorMessage(errorMessage);
       })
       .finally(() => setLoading(false));
   };

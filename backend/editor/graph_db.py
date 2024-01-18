@@ -50,11 +50,11 @@ def initialize_db():
     driver = neo4j.AsyncGraphDatabase.driver(uri)
 
 
-def shutdown_db():
+async def shutdown_db():
     """
     Close session and driver of Neo4J database
     """
-    driver.close()
+    await driver.close()
 
 
 def get_current_transaction():
