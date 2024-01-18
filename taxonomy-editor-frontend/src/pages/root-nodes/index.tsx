@@ -25,6 +25,7 @@ import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
 import NodesTableBody from "../../components/NodesTableBody";
+import WarningParsingErrors from "../../components/Alerts";
 
 type RootNodesProps = {
   addNavLinks: ({
@@ -105,6 +106,7 @@ const RootNodes = ({
 
   return (
     <>
+      <WarningParsingErrors baseUrl={baseUrl} />
       <div>
         <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
           Root Nodes:
