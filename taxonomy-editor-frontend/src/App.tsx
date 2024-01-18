@@ -24,6 +24,8 @@ const theme = createTheme({
   },
 });
 
+const queryClient = new QueryClient();
+
 function App() {
   const [navLinks, setNavLinks] = useState<
     Array<{ translationKey: string; url: string }>
@@ -52,8 +54,6 @@ function App() {
     },
     []
   );
-
-  const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>

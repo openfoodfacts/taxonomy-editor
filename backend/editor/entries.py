@@ -5,6 +5,7 @@ import re
 import tempfile
 import urllib.request  # Sending requests
 
+from fastapi import HTTPException
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
@@ -497,8 +498,9 @@ class TaxonomyGraph:
                 )
                 != 0
             ):
-                raise ValueError(
-                    f"Entry {main_language}:{new_normalised_first_translation} already exists"
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Entry {main_language}:{new_normalised_first_translation} already exists",
                 )
             normalised_new_node["new_id"] = main_language + ":" + new_normalised_first_translation
             query.append("""\nSET n.id = $new_id\n""")

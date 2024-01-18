@@ -446,11 +446,8 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    try:
-        updated_entry = await taxonomy.update_node("ENTRY", entry, incoming_data)
-        return updated_entry
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=e.args[0])
+    updated_entry = await taxonomy.update_node("ENTRY", entry, incoming_data)
+    return updated_entry
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}/children")

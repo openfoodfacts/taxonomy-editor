@@ -93,6 +93,19 @@ export const ListTranslations = ({
       originalNodeObject[`tags_${language}`]?.[0]
   );
 
+  const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
+    const languageName =
+      ISO6391.getName(languageCode) +
+      (languageCode === nodeObject.main_language ? " (main language)" : "");
+    const alertMessage =
+      "Changing the first translation will modify " +
+      (languageCode === nodeObject.main_language
+        ? "the ID of the node and "
+        : "") +
+      "the display name for this language!";
+    return { languageCode, languageName, alertMessage };
+  });
+
   return (
     <Box sx={{ ml: 4 }}>
       {/* Title */}
@@ -106,22 +119,15 @@ export const ListTranslations = ({
       </Stack>
 
       {/* Render translation tags for each language to show */}
-      {languagesToShow.map((language: string) => {
-        const languageName =
-          ISO6391.getName(language) +
-          (language === nodeObject.main_language ? " (main language)" : "");
-        const alertMessage =
-          "Changing the first translation will modify " +
-          (language === nodeObject.main_language
-            ? "the ID of the node and "
-            : "") +
-          "the display name for this language!";
-        return (
-          <Stack key={language}>
+      {shownLanguagesInfo.map(
+        ({ languageCode, languageName, alertMessage }) => (
+          <Stack key={languageCode}>
             <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
               <Typography variant="h6">{languageName}</Typography>
             </Stack>
-            {hasFirstTranslationChanged[languagesToShow.indexOf(language)] && (
+            {hasFirstTranslationChanged[
+              languagesToShow.indexOf(languageCode)
+            ] && (
               <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
                 {alertMessage}
               </Alert>
@@ -129,14 +135,14 @@ export const ListTranslations = ({
             <Stack direction="row" sx={{ mr: 4 }}>
               {
                 <TranslationTags
-                  translations={nodeObject["tags_" + language] ?? []}
-                  saveTranslations={saveTranslationsForLanguage(language)}
+                  translations={nodeObject["tags_" + languageCode] ?? []}
+                  saveTranslations={saveTranslationsForLanguage(languageCode)}
                 />
               }
             </Stack>
           </Stack>
-        );
-      })}
+        )
+      )}
 
       {/* Dialog box for adding translations */}
       <Dialog open={isDialogOpen} onClose={handleClose}>
