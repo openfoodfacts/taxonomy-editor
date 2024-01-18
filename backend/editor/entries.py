@@ -119,37 +119,21 @@ class TaxonomyGraph:
                         self.set_project_status(session, status="OPEN")
                         return True
                     except Exception as e:
-                        # add an error node so we can display it with errors in the app
-                        parser_object.create_parsing_errors_node(
-                            self.taxonomy_name, self.branch_name
-                        )
-                        self.set_project_status(session, status="FAILED")
+                        # outer exception handler will put project status to FAILED
                         raise TaxonomyParsingError() from e
         except Exception as e:
-            # async with TransactionCtx():
-            #     await self.set_project_status(status="FAILED")
-            # Call the asynchronous function to update status without awaiting it
-            asyncio.create_task(self.set_project_status_async(status="FAILED"))
+            # add an error node so we can display it with errors in the app
+            parser_object.create_parsing_errors_node(
+                self.taxonomy_name, self.branch_name
+            )
+            self.set_project_status(session, status="FAILED")
             raise TaxonomyImportError() from e
 
-    async def import_from_github(self, description, background_tasks: BackgroundTasks):
+    async def import_from_github(self, description, background_tasks: BackgroundTasks, uploadfile: UploadFile=None):
         """
         Helper function to import a taxonomy from GitHub
         """
-        async with TransactionCtx():
-            await self.create_project(description)
-        background_tasks.add_task(self.parse_taxonomy)
-        return True
-
-    # async def upload_taxonomy(self, filepath, description,background_tasks: BackgroundTasks):
-    async def upload_taxonomy(
-        self, uploadfile: UploadFile, description, background_tasks: BackgroundTasks
-    ):
-        """
-        Helper function to upload a taxonomy file and create a project node
-        """
-        async with TransactionCtx():
-            await self.create_project(description)
+        await self.create_project(description)
         background_tasks.add_task(self.parse_taxonomy, uploadfile)
         return True
 
