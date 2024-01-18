@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import urllib.request  # Sending requests
 
-from fastapi import BackgroundTasks, UploadFile, HTTPException
+from fastapi import BackgroundTasks, HTTPException, UploadFile
 from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
