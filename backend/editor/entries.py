@@ -1,6 +1,7 @@
 """
 Database helper functions for API
 """
+import contextlib
 import re
 import shutil
 import tempfile
@@ -85,10 +86,8 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
-    def parse_taxonomy(self, uploadfile=None):
-        """
-        Helper function to call the Open Food Facts Python Taxonomy Parser
-        """
+    @contextlib.contextmanager
+    def get_taxonomy_file(self, uploadfile=None):
         if uploadfile is None:  # taxonomy is imported
             base_url = (
                 "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
@@ -98,17 +97,22 @@ class TaxonomyGraph:
         else:  # taxonomy is uploaded
             filename = uploadfile.filename
 
-        try:
-            with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
-                # File to save the downloaded taxonomy
-                filepath = f"{tmpdir}/{filename}"
-                if uploadfile is None:
-                    # Downloads and creates taxonomy file in current working directory
-                    urllib.request.urlretrieve(base_url, filepath)
-                else:
-                    with open(filepath, "wb") as f:
-                        shutil.copyfileobj(uploadfile.file, f)
+        with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+            filepath = f"{tmpdir}/{filename}"
+            if uploadfile is None:
+                # Downloads and creates taxonomy file in current working directory
+                urllib.request.urlretrieve(base_url, filepath)
+            else:
+                with open(filepath, "wb") as f:
+                    shutil.copyfileobj(uploadfile.file, f)
+            yield filepath
 
+    def parse_taxonomy(self, uploadfile=None):
+        """
+        Helper function to call the Open Food Facts Python Taxonomy Parser
+        """
+        try:
+            with self.get_taxonomy_file(uploadfile) as filepath:
                 with SyncTransactionCtx() as session:
                     # Create parser object and pass current session to it
                     parser_object = parser.Parser(session)
