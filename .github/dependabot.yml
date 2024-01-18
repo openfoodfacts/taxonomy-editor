@@ -5,7 +5,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     labels:
       - "dependencies"
     commit-message:
@@ -14,7 +14,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/taxonomy-editor-frontend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     labels:
       - "dependencies"
     commit-message:
@@ -23,5 +23,5 @@ updates:
   - package-ecosystem: docker
     directory: "/"
     schedule:
-      interval: daily
+      interval: "monthly"
     open-pull-requests-limit: 30

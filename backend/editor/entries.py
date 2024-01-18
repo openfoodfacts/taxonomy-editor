@@ -416,6 +416,7 @@ class TaxonomyGraph:
             MATCH (child_node:{self.project_name}:ENTRY)-[r:is_child_of]->(parent)
                 WHERE child_node.id = $id
             RETURN parent.id
+            ORDER BY r.position
         """
         query_result = await get_current_transaction().run(query, {"id": entry})
         return [item async for result_list in query_result for item in result_list]
@@ -555,9 +556,12 @@ class TaxonomyGraph:
         for child_id in children_ids:
             # Create new relationships if it doesn't exist
             query = f"""
-                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
+                MATCH ()-[r:is_child_of]->(parent:{self.project_name}:ENTRY),
+                (new_child:{self.project_name}:ENTRY)
                 WHERE parent.id = $id AND new_child.id = $child_id
+                WITH parent, new_child, COUNT(r) AS rel_count
                 MERGE (new_child)-[r:is_child_of]->(parent)
+                ON CREATE SET r.position = rel_count
             """
             _result = await get_current_transaction().run(
                 query, {"id": entry, "child_id": child_id}
