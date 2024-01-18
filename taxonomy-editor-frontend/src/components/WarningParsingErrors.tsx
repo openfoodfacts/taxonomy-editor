@@ -34,7 +34,6 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
 export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
   baseUrl,
 }) => {
-  console.log("in WarningParsingErrors");
   const { data: parsingErrors, isPending: isPendingParsingErrors } =
     useFetch<ParsingErrorsType>(`${baseUrl}parsing_errors`);
   if (!isPendingParsingErrors) {
@@ -57,11 +56,3 @@ export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
 };
 
 export default WarningParsingErrors;
-
-<CustomAlert
-  severity="warning"
-  title="Parsing errors"
-  message="This taxonomy has encountered parsing errors, preventing further editing. 
-          Please review the errors on the dedicated error page for resolution, ensuring the 
-          taxonomy can be edited once the issues are addressed."
-/>;

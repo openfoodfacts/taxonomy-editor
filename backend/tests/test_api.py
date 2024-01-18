@@ -42,9 +42,9 @@ def test_ping(client):
 
 
 def test_import_from_github(client, github_mock, mocker):
-    # We mock the TaxonomyGraph.import_from_github method,
+    # We mock the TaxonomyGraph.import_taxonomy method,
     # which downloads the taxonomy file from a Github URL
-    mocker.patch("editor.api.TaxonomyGraph.import_from_github", return_value=True)
+    mocker.patch("editor.api.TaxonomyGraph.import_taxonomy", return_value=True)
 
     response = client.post(
         "/test/testing_branch/import",

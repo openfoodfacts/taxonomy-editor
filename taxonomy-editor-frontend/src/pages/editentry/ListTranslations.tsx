@@ -135,7 +135,14 @@ export const ListTranslations = ({
             <Stack direction="row" sx={{ mr: 4 }}>
               {
                 <TranslationTags
-                  translations={nodeObject["tags_" + languageCode] ?? []}
+                  // display the words associated to the language to show and the "xx" language (which is universal)
+                  translations={Array.from(
+                    new Set(
+                      (nodeObject[`tags_${languageCode}`] ?? []).concat(
+                        nodeObject["tags_xx"] ?? []
+                      )
+                    )
+                  )}
                   saveTranslations={saveTranslationsForLanguage(languageCode)}
                 />
               }

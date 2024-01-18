@@ -25,7 +25,7 @@ import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
 import NodesTableBody from "../../components/NodesTableBody";
-import WarningParsingErrors from "../../components/Alerts";
+import WarningParsingErrors from "../../components/WarningParsingErrors";
 
 type RootNodesProps = {
   addNavLinks: ({

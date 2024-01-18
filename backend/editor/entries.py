@@ -130,11 +130,11 @@ class TaxonomyGraph:
             self.set_project_status(session, status="FAILED")
             raise TaxonomyImportError() from e
 
-    async def import_from_github(
+    async def import_taxonomy(
         self, description, background_tasks: BackgroundTasks, uploadfile: UploadFile = None
     ):
         """
-        Helper function to import a taxonomy from GitHub
+        Helper function to import a taxonomy
         """
         await self.create_project(description)
         background_tasks.add_task(self.parse_taxonomy, uploadfile)

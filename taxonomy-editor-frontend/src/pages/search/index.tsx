@@ -13,7 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
-import WarningParsingErrors from "../../components/Alerts";
+import WarningParsingErrors from "../../components/WarningParsingErrors";
 import { createBaseURL } from "../../utils";
 
 type SearchNodeProps = {

@@ -12,7 +12,7 @@ import AccumulateAllComponents from "./AccumulateAllComponents";
 
 import { createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
-import WarningParsingErrors from "../../components/Alerts";
+import WarningParsingErrors from "../../components/WarningParsingErrors";
 
 type EditEntryProps = {
   addNavLinks: ({
