@@ -502,7 +502,9 @@ class TaxonomyGraph:
             ):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Entry {main_language}:{new_normalised_first_translation} already exists",
+                    detail=(
+                        f"Entry {main_language}:{new_normalised_first_translation} already exists"
+                    ),
                 )
             normalised_new_node["new_id"] = main_language + ":" + new_normalised_first_translation
             query.append("""\nSET n.id = $new_id\n""")
