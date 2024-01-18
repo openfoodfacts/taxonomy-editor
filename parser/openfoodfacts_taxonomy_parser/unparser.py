@@ -3,7 +3,7 @@ import sys
 
 from neo4j import GraphDatabase
 
-from .normalizer import normalizing
+from .utils import get_project_name, normalize_filename, normalizing
 
 
 class WriteTaxonomy:
@@ -11,14 +11,6 @@ class WriteTaxonomy:
 
     def __init__(self, session):
         self.session = session
-
-    def normalized_filename(self, filename):
-        """add the .txt extension if it is missing in the filename"""
-        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
-
-    def get_project_name(self, taxonomy_name, branch_name):
-        """Create a project name for given branch and taxonomy"""
-        return "p_" + taxonomy_name + "_" + branch_name
 
     def get_all_nodes(self, project_label):
         """query the database and yield each node with its parents,
@@ -129,15 +121,15 @@ class WriteTaxonomy:
 
     def rewrite_file(self, filename, lines):
         """Write a .txt file with the given name"""
-        filename = self.normalized_filename(filename)
+        filename = normalize_filename(filename)
         with open(filename, "w", encoding="utf8") as file:
             for line in lines:
                 file.write(line + "\n")
 
     def __call__(self, filename, branch_name, taxonomy_name):
-        filename = self.normalized_filename(filename)
+        filename = normalize_filename(filename)
         branch_name = normalizing(branch_name, char="_")
-        project_label = self.get_project_name(taxonomy_name, branch_name)
+        project_label = get_project_name(taxonomy_name, branch_name)
         lines = self.iter_lines(project_label)
         self.rewrite_file(filename, lines)
 

@@ -8,7 +8,7 @@ from typing import Iterator, TypedDict
 
 from .logger import ParserConsoleLogger
 from .exception import DuplicateIDError
-from ..normalizer import normalizing
+from ..utils import normalize_filename, normalizing
 
 
 class NodeType(str, Enum):
@@ -74,10 +74,6 @@ class TaxonomyParser:
 
     def __init__(self):
         self.parser_logger = ParserConsoleLogger()
-
-    def _normalized_filename(self, filename: str) -> str:
-        """Add the .txt extension if it is missing in the filename"""
-        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
 
     def _file_iter(self, filename: str, start: int = 0) -> Iterator[tuple[int, str]]:
         """Generator to get the file line by line"""
@@ -356,7 +352,7 @@ class TaxonomyParser:
             self.parser_logger = logger
         """Process the file into a Taxonomy object"""
         start_time = timeit.default_timer()
-        filename = self._normalized_filename(filename)
+        filename = normalize_filename(filename)
         taxonomy = self._create_taxonomy(filename)
         self.parser_logger.info(f"Parsing done in {timeit.default_timer() - start_time} seconds.")
         self.parser_logger.info(

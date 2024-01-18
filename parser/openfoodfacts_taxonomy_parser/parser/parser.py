@@ -8,7 +8,7 @@ import iso639
 from neo4j import GraphDatabase, Session, Transaction
 
 from .logger import ParserConsoleLogger
-from ..normalizer import normalizing
+from ..utils import get_project_name, normalizing
 from .taxonomy_parser import (
     NodeType,
     PreviousLink,
@@ -25,10 +25,6 @@ class Parser:
     def __init__(self, session: Session):
         self.session = session
         self.parser_logger = ParserConsoleLogger()
-
-    def _get_project_name(self, taxonomy_name: str, branch_name: str):
-        """Create a project name for given branch and taxonomy"""
-        return "p_" + taxonomy_name + "_" + branch_name
 
     def _create_other_node(self, tx: Transaction, node_data: NodeData, project_label: str):
         """Create a TEXT, SYNONYMS or STOPWORDS node"""
@@ -285,7 +281,7 @@ class Parser:
         self.parser_logger.info(f"Created indexes in {timeit.default_timer() - start_time} seconds")
 
     def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
-        project_label = self._get_project_name(taxonomy_name, branch_name)
+        project_label = get_project_name(taxonomy_name, branch_name)
         # First create nodes, then create node indexes to accelerate relationship creation, then create relationships
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)

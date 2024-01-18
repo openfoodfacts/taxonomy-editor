@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from openfoodfacts_taxonomy_parser import normalizer, parser
+from openfoodfacts_taxonomy_parser import parser, utils
 
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -17,8 +17,7 @@ TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.tx
     ],
 )
 def test_normalized_filename(filename: str, normalized_name: str):
-    taxonomy_parser = parser.TaxonomyParser()
-    assert taxonomy_parser._normalized_filename(filename) == normalized_name
+    assert utils.normalize_filename(filename) == normalized_name
 
 
 def test_fileiter(neo4j):
@@ -40,4 +39,4 @@ def test_fileiter(neo4j):
     ],
 )
 def test_normalizing(text: str, normalized_text: str, lang: str):
-    assert normalizer.normalizing(text, lang) == normalized_text
+    assert utils.normalizing(text, lang) == normalized_text
