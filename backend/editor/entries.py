@@ -1,7 +1,6 @@
 """
 Database helper functions for API
 """
-import asyncio
 import re
 import shutil
 import tempfile
@@ -123,13 +122,13 @@ class TaxonomyGraph:
                         raise TaxonomyParsingError() from e
         except Exception as e:
             # add an error node so we can display it with errors in the app
-            parser_object.create_parsing_errors_node(
-                self.taxonomy_name, self.branch_name
-            )
+            parser_object.create_parsing_errors_node(self.taxonomy_name, self.branch_name)
             self.set_project_status(session, status="FAILED")
             raise TaxonomyImportError() from e
 
-    async def import_from_github(self, description, background_tasks: BackgroundTasks, uploadfile: UploadFile=None):
+    async def import_from_github(
+        self, description, background_tasks: BackgroundTasks, uploadfile: UploadFile = None
+    ):
         """
         Helper function to import a taxonomy from GitHub
         """
