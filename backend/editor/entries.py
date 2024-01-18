@@ -5,9 +5,9 @@ import re
 import tempfile
 import urllib.request  # Sending requests
 
-from openfoodfacts_taxonomy_parser import utils as parser_utils  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
+from openfoodfacts_taxonomy_parser import utils as parser_utils  # Normalizing tags
 
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
@@ -61,7 +61,7 @@ class TaxonomyGraph:
         if label == "ENTRY":
             # Normalizing new canonical tag
             language_code, canonical_tag = entry.split(":", 1)
-            normalised_canonical_tag = normalizer.normalizing(canonical_tag, main_language_code)
+            normalised_canonical_tag = parser_utils.normalizing(canonical_tag, main_language_code)
 
             # Reconstructing and updation of node ID
             params["id"] = language_code + ":" + normalised_canonical_tag
