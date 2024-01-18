@@ -3,7 +3,7 @@ import sys
 
 from neo4j import GraphDatabase
 
-from .utils import get_project_name, normalize_filename, normalizing
+from .utils import get_project_name, normalize_filename, normalize_text
 
 
 class WriteTaxonomy:
@@ -128,7 +128,7 @@ class WriteTaxonomy:
 
     def __call__(self, filename, branch_name, taxonomy_name):
         filename = normalize_filename(filename)
-        branch_name = normalizing(branch_name, char="_")
+        branch_name = normalize_text(branch_name, char="_")
         project_label = get_project_name(taxonomy_name, branch_name)
         lines = self.iter_lines(project_label)
         self.rewrite_file(filename, lines)

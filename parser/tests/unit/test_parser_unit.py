@@ -39,4 +39,4 @@ def test_fileiter(neo4j):
     ],
 )
 def test_normalizing(text: str, normalized_text: str, lang: str):
-    assert utils.normalizing(text, lang) == normalized_text
+    assert utils.normalize_text(text, lang) == normalized_text

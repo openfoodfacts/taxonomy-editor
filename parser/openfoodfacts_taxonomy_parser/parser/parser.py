@@ -8,7 +8,7 @@ import iso639
 from neo4j import GraphDatabase, Session, Transaction
 
 from .logger import ParserConsoleLogger
-from ..utils import get_project_name, normalizing
+from ..utils import get_project_name, normalize_text
 from .taxonomy_parser import (
     NodeType,
     PreviousLink,
@@ -295,7 +295,7 @@ class Parser:
         """Process the file"""
         start_time = timeit.default_timer()
 
-        branch_name = normalizing(branch_name, char="_")
+        branch_name = normalize_text(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
         taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
         self._write_to_database(taxonomy, taxonomy_name, branch_name)

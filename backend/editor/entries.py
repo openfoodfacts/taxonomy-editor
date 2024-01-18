@@ -224,7 +224,7 @@ class TaxonomyGraph:
         """
         Helper function to check if a branch name is valid
         """
-        return parser_utils.normalizing(self.branch_name, char="_") == self.branch_name
+        return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
     async def create_project(self, description):
         """
@@ -471,7 +471,7 @@ class TaxonomyGraph:
                     normalised_value = []
                     for values in new_node_keys[keys]:
                         normalised_value.append(
-                            parser_utils.normalizing(values, keys_language_code)
+                            parser_utils.normalize_text(values, keys_language_code)
                         )
                     normalised_new_node_keys[keys] = normalised_value
                     normalised_new_node_keys["tags_ids_" + keys_language_code] = normalised_value
@@ -558,7 +558,7 @@ class TaxonomyGraph:
         """
         # Escape special characters
         normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
-        normalized_id_text = parser_utils.normalizing(text)
+        normalized_id_text = parser_utils.normalize_text(text)
 
         # If normalized text is empty, no searches are found
         if normalized_text.strip() == "":
