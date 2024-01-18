@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
@@ -22,6 +23,8 @@ const theme = createTheme({
     },
   },
 });
+
+const queryClient = new QueryClient();
 
 function App() {
   const [navLinks, setNavLinks] = useState<
@@ -53,43 +56,50 @@ function App() {
   );
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <ResponsiveAppBar displayedPages={navLinks} />
-        <Routes>
-          <Route path="/" element={<Home clearNavBarLinks={resetNavLinks} />} />
-          <Route
-            path="startproject"
-            element={<StartProject clearNavBarLinks={resetNavLinks} />}
-          />
-          <Route
-            path="gotoproject"
-            element={<GoToProject clearNavBarLinks={resetNavLinks} />}
-          />
-          <Route
-            path=":taxonomyName/:branchName/export"
-            element={<ExportTaxonomy addNavLinks={addTaxonomyBranchNavLinks} />}
-          />
-          <Route
-            path=":taxonomyName/:branchName/entry"
-            element={<RootNodes addNavLinks={addTaxonomyBranchNavLinks} />}
-          />
-          <Route
-            path=":taxonomyName/:branchName/entry/:id"
-            element={<EditEntry addNavLinks={addTaxonomyBranchNavLinks} />}
-          />
-          <Route
-            path=":taxonomyName/:branchName/search"
-            element={<SearchNode addNavLinks={addTaxonomyBranchNavLinks} />}
-          />
-          <Route
-            path=":taxonomyName/:branchName/errors"
-            element={<Errors addNavLinks={addTaxonomyBranchNavLinks} />}
-          />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <ResponsiveAppBar displayedPages={navLinks} />
+          <Routes>
+            <Route
+              path="/"
+              element={<Home clearNavBarLinks={resetNavLinks} />}
+            />
+            <Route
+              path="startproject"
+              element={<StartProject clearNavBarLinks={resetNavLinks} />}
+            />
+            <Route
+              path="gotoproject"
+              element={<GoToProject clearNavBarLinks={resetNavLinks} />}
+            />
+            <Route
+              path=":taxonomyName/:branchName/export"
+              element={
+                <ExportTaxonomy addNavLinks={addTaxonomyBranchNavLinks} />
+              }
+            />
+            <Route
+              path=":taxonomyName/:branchName/entry"
+              element={<RootNodes addNavLinks={addTaxonomyBranchNavLinks} />}
+            />
+            <Route
+              path=":taxonomyName/:branchName/entry/:id"
+              element={<EditEntry addNavLinks={addTaxonomyBranchNavLinks} />}
+            />
+            <Route
+              path=":taxonomyName/:branchName/search"
+              element={<SearchNode addNavLinks={addTaxonomyBranchNavLinks} />}
+            />
+            <Route
+              path=":taxonomyName/:branchName/errors"
+              element={<Errors addNavLinks={addTaxonomyBranchNavLinks} />}
+            />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

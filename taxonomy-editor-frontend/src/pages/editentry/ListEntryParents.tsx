@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import useFetch from "../../components/useFetch";
@@ -38,35 +38,34 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
     );
   }
 
+  if (!relations.length) {
+    return (
+      <Box>
+        <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
+          No parents
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
         Parents
       </Typography>
-      {!data && (
-        <Box sx={{ textAlign: "left", m: 3 }}>
-          <CircularProgress size={20} />
-        </Box>
-      )}
-
-      {relations.length === 0 ? (
-        <Typography sx={{ ml: 8, mb: 1 }} variant="h6">
-          None
-        </Typography>
-      ) : (
-        relations.map((relation) => (
-          <Box key={relation}>
-            <Link
-              to={`${linkHrefPrefix}/entry/${relation}`}
-              style={{ color: "#0064c8", display: "inline-block" }}
-            >
-              <Typography sx={{ ml: 8, mb: 1 }} variant="h6">
-                {relation}
-              </Typography>
-            </Link>
-          </Box>
-        ))
-      )}
+      <Stack direction="row">
+        {relations.map((relation) => (
+          <Link
+            key={relation}
+            to={`${linkHrefPrefix}/entry/${relation}`}
+            style={{ color: "#0064c8", display: "inline-block" }}
+          >
+            <Typography sx={{ ml: 8, mb: 1 }} variant="h6">
+              {relation}
+            </Typography>
+          </Link>
+        ))}
+      </Stack>
     </Box>
   );
 };
