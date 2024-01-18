@@ -25,6 +25,7 @@ import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
 import type { RootEntriesAPIResponse } from "../../backend-types/types";
 import NodesTableBody from "../../components/NodesTableBody";
+import WarningParsingErrors from "../../components/Alerts";
 
 type RootNodesProps = {
   addNavLinks: ({
@@ -84,7 +85,7 @@ const RootNodes = ({
     );
   }
 
-  if (isPending || !nodes) {
+  if (isPending || !nodes || nodes.length === 0) {
     return (
       <Box
         sx={{
@@ -93,12 +94,19 @@ const RootNodes = ({
         }}
       >
         <CircularProgress />
+        <Typography sx={{ m: 5 }} variant="h6">
+          Taxonomy parsing may take several minutes, depending on the complexity
+          of the taxonomy being imported.
+          <br />
+          Kindly refresh the page to view the updated status of the project.
+        </Typography>
       </Box>
     );
   }
 
   return (
     <>
+      <WarningParsingErrors baseUrl={baseUrl} />
       <div>
         <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
           Root Nodes:

@@ -3,8 +3,6 @@ Taxonomy Editor Backend API
 """
 import logging
 import os
-import shutil
-import tempfile
 
 # Required imports
 # ------------------------------------------------------------------------------------#
@@ -82,7 +80,7 @@ async def shutdown():
     """
     Shutdown database
     """
-    graph_db.shutdown_db()
+    await graph_db.shutdown_db()
 
 
 @app.middleware("http")
@@ -122,6 +120,8 @@ class StatusFilter(str, Enum):
 
     OPEN = "OPEN"
     CLOSED = "CLOSED"
+    LOADING = "LOADING"
+    FAILED = "FAILED"
 
 
 @app.exception_handler(RequestValidationError)
@@ -372,7 +372,9 @@ async def export_to_github(
 
 
 @app.post("/{taxonomy_name}/{branch}/import")
-async def import_from_github(request: Request, branch: str, taxonomy_name: str):
+async def import_from_github(
+    request: Request, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks
+):
     """
     Get taxonomy from Product Opener GitHub repository
     """
@@ -380,6 +382,7 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
     description = incoming_data["description"]
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
+
     if not taxonomy.is_valid_branch_name():
         raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
@@ -387,13 +390,17 @@ async def import_from_github(request: Request, branch: str, taxonomy_name: str):
     if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    result = await taxonomy.import_from_github(description)
-    return result
+    status = await taxonomy.import_from_github(description, background_tasks)
+    return status
 
 
 @app.post("/{taxonomy_name}/{branch}/upload")
 async def upload_taxonomy(
-    branch: str, taxonomy_name: str, file: UploadFile, description: str = Form(...)
+    branch: str,
+    taxonomy_name: str,
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    description: str = Form(...),
 ):
     """
     Upload taxonomy file to be parsed
@@ -406,11 +413,7 @@ async def upload_taxonomy(
     if not await taxonomy.is_branch_unique():
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
-        filepath = f"{tmpdir}/{file.filename}"
-        with open(filepath, "wb") as f:
-            shutil.copyfileobj(file.file, f)
-        result = await taxonomy.upload_taxonomy(filepath, description)
+    result = await taxonomy.import_from_github(description, background_tasks, file)
 
     return result
 

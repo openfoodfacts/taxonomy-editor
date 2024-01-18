@@ -29,7 +29,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
   const navigate = useNavigate();
 
   const { data, isPending, isError } = useFetch<ProjectsAPIResponse>(
-    `${API_URL}projects?status=OPEN`
+    `${API_URL}projects`
   );
 
   useEffect(() => {
@@ -37,7 +37,14 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
 
     if (data) {
       const backendProjects = data.map(
-        ({ id, branch_name, taxonomy_name, description, errors_count }) => {
+        ({
+          id,
+          branch_name,
+          taxonomy_name,
+          description,
+          errors_count,
+          status,
+        }) => {
           return {
             id, // needed by MaterialTable as key
             projectName: id,
@@ -45,6 +52,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
             branchName: branch_name,
             description: description,
             errors_count: errors_count,
+            status: status,
           };
         }
       );
@@ -117,6 +125,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
                 }
               },
             },
+            { title: "Status", field: "status" },
           ]}
           options={{
             actionsColumnIndex: -1,

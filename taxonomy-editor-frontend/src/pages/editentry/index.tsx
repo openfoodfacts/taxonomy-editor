@@ -12,6 +12,7 @@ import AccumulateAllComponents from "./AccumulateAllComponents";
 
 import { createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
+import WarningParsingErrors from "../../components/Alerts";
 
 type EditEntryProps = {
   addNavLinks: ({
@@ -35,6 +36,8 @@ const EditEntry = ({
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
+  const baseUrl: string = createBaseURL(taxonomyName, branchName);
+
   useEffect(
     function defineMainNavLinks() {
       addNavLinks({ branchName, taxonomyName });
@@ -42,9 +45,7 @@ const EditEntry = ({
     [taxonomyName, branchName, addNavLinks]
   );
 
-  const handleDeleteNode = () => {
-    const baseUrl = createBaseURL(taxonomyName, branchName);
-
+  const handleDeleteNode = (baseUrl: string) => {
     const data = { id: id };
     fetch(baseUrl + "nodes", {
       method: "DELETE",
@@ -59,66 +60,76 @@ const EditEntry = ({
   };
 
   return (
-    <Box>
-      {/* Renders id of current node */}
+    <>
+      <WarningParsingErrors baseUrl={baseUrl} />
       <Box>
-        <Stack direction="row" alignItems="center">
-          <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
-            You are now editing "{id}"
-          </Typography>
-          <IconButton
-            sx={{ ml: 1, color: greyHexCode }}
-            onClick={() => setOpenDeleteDialog(true)}
-          >
-            <DeleteOutlineIcon />
-          </IconButton>
-        </Stack>
+        {/* Renders id of current node */}
+        <Box>
+          <Stack direction="row" alignItems="center">
+            <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
+              You are now editing "{id}"
+            </Typography>
+            <IconButton
+              sx={{ ml: 1, color: greyHexCode }}
+              onClick={() => setOpenDeleteDialog(true)}
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+          </Stack>
+        </Box>
+
+        {/* Renders node info based on id */}
+        <AccumulateAllComponents
+          id={id}
+          taxonomyName={taxonomyName}
+          branchName={branchName}
+        />
+
+        {/* Dialog box for confirmation of deletion of node */}
+        <Dialog open={openDeleteDialog}>
+          <DialogTitle>Delete a node</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this node?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+            <Button
+              color="warning"
+              onClick={() => handleDeleteNode(baseUrl)}
+              autoFocus
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog box for acknowledgement of deletion of node */}
+        <Dialog
+          open={openSuccessDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Your edits have been saved!
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              The node {id} has been successfully deleted.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              component={Link}
+              to={`/${taxonomyName}/${branchName}/entry`}
+            >
+              Continue
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
-
-      {/* Renders node info based on id */}
-      <AccumulateAllComponents
-        id={id}
-        taxonomyName={taxonomyName}
-        branchName={branchName}
-      />
-
-      {/* Dialog box for confirmation of deletion of node */}
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Delete a node</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this node?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
-          <Button color="warning" onClick={handleDeleteNode} autoFocus>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Dialog box for acknowledgement of deletion of node */}
-      <Dialog
-        open={openSuccessDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          Your edits have been saved!
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            The node {id} has been successfully deleted.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button component={Link} to={`/${taxonomyName}/${branchName}/entry`}>
-            Continue
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </>
   );
 };
 
