@@ -12,7 +12,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import MaterialTable from "@material-table/core";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Alert, CircularProgress } from "@mui/material";
 import { useState, useEffect } from "react";
 
 const Errors = ({ addNavLinks }) => {
@@ -66,12 +66,14 @@ const Errors = ({ addNavLinks }) => {
   }
 
   return (
-    <>
-      <TableContainer sx={{ ml: 2, width: 375, mt: 2 }}>
+    <Box
+      sx={{ display: "flex", flexDirection: "column", my: 4, mx: 6, gap: 2 }}
+    >
+      <TableContainer sx={{ width: 375, mb: 2 }}>
         <Table style={{ border: "solid", borderWidth: 1.5 }}>
           <TableHead>
             <TableCell align="left">
-              <Typography variant="h6">Taxonony Name</Typography>
+              <Typography variant="h6">Taxonomy Name</Typography>
             </TableCell>
             <TableCell align="left">
               <Typography variant="h6">Branch Name</Typography>
@@ -89,11 +91,11 @@ const Errors = ({ addNavLinks }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Alert severity="warning">
+        These errors must be fixed manually via Github!
+      </Alert>
       <Box
         sx={{
-          width: 500,
-          ml: 2,
-          mt: 2,
           border: "solid",
           borderWidth: 1.5,
         }}
@@ -111,10 +113,12 @@ const Errors = ({ addNavLinks }) => {
           title="Errors"
           options={{
             tableLayout: "fixed",
+            pageSize: 50,
+            pageSizeOptions: ["20", "50", "100", "200"],
           }}
         />
       </Box>
-    </>
+    </Box>
   );
 };
 

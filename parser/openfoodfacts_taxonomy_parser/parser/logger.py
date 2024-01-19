@@ -3,7 +3,7 @@ import logging
 
 class ParserConsoleLogger:
     @staticmethod
-    def ellipsis(text, max=20):
+    def ellipsis(text, max=1000):
         """Cut a text adding eventual ellipsis if we do not display it fully"""
         return text[:max] + ("..." if len(text) > max else "")
 

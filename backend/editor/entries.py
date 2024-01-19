@@ -1,14 +1,18 @@
 """
 Database helper functions for API
 """
+import contextlib
 import re
+import shutil
 import tempfile
 import urllib.request  # Sending requests
 
+from fastapi import BackgroundTasks, HTTPException, UploadFile
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils  # Normalizing tags
 
+from . import settings
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
@@ -84,61 +88,59 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
-    async def parse_taxonomy(self, filename):
+    @contextlib.contextmanager
+    def get_taxonomy_file(self, uploadfile=None):
+        if uploadfile is None:  # taxonomy is imported
+            base_url = (
+                "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
+            )
+            filename = f"{self.taxonomy_name}.txt"
+            base_url += filename
+        else:  # taxonomy is uploaded
+            filename = uploadfile.filename
+
+        with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+            filepath = f"{tmpdir}/{filename}"
+            if uploadfile is None:
+                # Downloads and creates taxonomy file in current working directory
+                urllib.request.urlretrieve(base_url, filepath)
+            else:
+                with open(filepath, "wb") as f:
+                    shutil.copyfileobj(uploadfile.file, f)
+            yield filepath
+
+    def parse_taxonomy(self, uploadfile=None):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
-        # Close current transaction to use the session variable in parser
-        await get_current_transaction().commit()
+        try:
+            with self.get_taxonomy_file(uploadfile) as filepath:
+                with SyncTransactionCtx() as session:
+                    # Create parser object and pass current session to it
+                    parser_object = parser.Parser(session)
+                    try:
+                        # Parse taxonomy with given file name and branch name
+                        parser_object(filepath, self.branch_name, self.taxonomy_name)
+                        self.set_project_status(session, status="OPEN")
+                        return True
+                    except Exception as e:
+                        # outer exception handler will put project status to FAILED
+                        raise TaxonomyParsingError() from e
+        except Exception as e:
+            # add an error node so we can display it with errors in the app
+            parser_object.create_parsing_errors_node(self.taxonomy_name, self.branch_name)
+            self.set_project_status(session, status="FAILED")
+            raise TaxonomyImportError() from e
 
-        with SyncTransactionCtx() as session:
-            # Create parser object and pass current session to it
-            parser_object = parser.Parser(session)
-            try:
-                # Parse taxonomy with given file name and branch name
-                parser_object(filename, self.branch_name, self.taxonomy_name)
-                return True
-            except Exception as e:
-                raise TaxonomyParsingError() from e
-
-    async def import_from_github(self, description):
+    async def import_from_github(
+        self, description, background_tasks: BackgroundTasks, uploadfile: UploadFile = None
+    ):
         """
         Helper function to import a taxonomy from GitHub
         """
-        base_url = (
-            "https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server"
-            "/main/taxonomies/"
-        )
-        filename = self.taxonomy_name + ".txt"
-        base_url += filename
-        try:
-            with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
-                # File to save the downloaded taxonomy
-                filepath = f"{tmpdir}/{filename}"
-
-                # Downloads and creates taxonomy file in current working directory
-                urllib.request.urlretrieve(base_url, filepath)
-
-                status = await self.parse_taxonomy(filepath)  # Parse the taxonomy
-
-            async with TransactionCtx():
-                await self.create_project(description)  # Creates a "project node" in neo4j
-
-            return status
-        except Exception as e:
-            raise TaxonomyImportError() from e
-
-    async def upload_taxonomy(self, filepath, description):
-        """
-        Helper function to upload a taxonomy file and create a project node
-        """
-        try:
-            status = await self.parse_taxonomy(filepath)
-            async with TransactionCtx():
-                await self.create_project(description)
-            return status
-        except Exception as e:
-            raise TaxonomyImportError() from e
+        await self.create_project(description)
+        background_tasks.add_task(self.parse_taxonomy, uploadfile)
+        return True
 
     def dump_taxonomy(self):
         """
@@ -171,9 +173,9 @@ class TaxonomyGraph:
 
         filepath = self.dump_taxonomy()
         # Create a new transaction context
-        async with TransactionCtx():
+        async with TransactionCtx() as (_, session):
             result = await self.export_to_github(filepath)
-            await self.set_project_status(status="CLOSED")
+            self.set_project_status(session, status="CLOSED")
         return result
 
     async def export_to_github(self, filename):
@@ -246,11 +248,11 @@ class TaxonomyGraph:
             "taxonomy_name": self.taxonomy_name,
             "branch_name": self.branch_name,
             "description": description,
-            "status": "OPEN",
+            "status": "LOADING",
         }
         await get_current_transaction().run(query, params)
 
-    async def set_project_status(self, status):
+    def set_project_status(self, session, status):
         """
         Helper function to update a Taxonomy Editor project status
         """
@@ -260,7 +262,8 @@ class TaxonomyGraph:
             SET n.status = $status
         """
         params = {"project_name": self.project_name, "status": status}
-        await get_current_transaction().run(query, params)
+        with session.begin_transaction() as tx:
+            tx.run(query, params)
 
     async def list_projects(self, status=None):
         """
@@ -435,25 +438,27 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def update_nodes(self, label, entry, new_node_keys):
+    async def update_node(self, label, entry, new_node):
         """
         Helper function used for updation of node with given id and label
         """
         # Sanity check keys
-        for key in new_node_keys.keys():
+        for key in new_node.keys():
             if not re.match(r"^\w+$", key) or key == "id":
                 raise ValueError("Invalid key: %s", key)
 
         # Get current node information and deleted keys
         result = await self.get_nodes(label, entry)
         curr_node = result[0]["n"]
-        curr_node_keys = list(curr_node.keys())
-        deleted_keys = set(curr_node_keys) ^ set(new_node_keys)
+        deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
         # Check for keys having null/empty values
-        for key in curr_node_keys:
-            if (curr_node[key] == []) or (curr_node[key] is None):
+        for key in new_node.keys():
+            if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
+                # Delete tags_ids if we delete tags of a language
+                if key.startswith("tags_") and "_ids_" not in key:
+                    deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
 
         # Build query
         query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
@@ -465,33 +470,54 @@ class TaxonomyGraph:
             query.append(f"""\nREMOVE n.{key}\n""")
 
         # Adding normalized tags ids corresponding to entry tags
-        normalised_new_node_keys = {}
-        for keys in new_node_keys.keys():
-            if keys.startswith("tags_"):
-                if "_ids_" not in keys:
-                    keys_language_code = keys.split("_", 1)[1]
+        normalised_new_node = {}
+        for key in set(new_node.keys()) - deleted_keys:
+            if key.startswith("tags_"):
+                if "_ids_" not in key:
+                    keys_language_code = key.split("_", 1)[1]
                     normalised_value = []
-                    for values in new_node_keys[keys]:
+                    for value in new_node[key]:
                         normalised_value.append(
-                            parser_utils.normalize_text(values, keys_language_code)
+                            parser_utils.normalize_text(value, keys_language_code)
                         )
-                    normalised_new_node_keys[keys] = normalised_value
-                    normalised_new_node_keys["tags_ids_" + keys_language_code] = normalised_value
+                    normalised_new_node[key] = new_node[key]
+                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
                 else:
                     pass  # We generate tags_ids, and ignore the one sent
             else:
                 # No need to normalise
-                normalised_new_node_keys[keys] = new_node_keys[keys]
+                normalised_new_node[key] = new_node[key]
 
         # Update keys
-        for key in normalised_new_node_keys.keys():
+        for key in normalised_new_node.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
+
+        # Update id if first translation of the main language has changed
+        main_language, id = curr_node["id"].split(":")
+        new_normalised_first_translation = normalised_new_node["tags_ids_" + main_language][0]
+        if id != new_normalised_first_translation:
+            if (
+                len(
+                    await self.get_nodes(
+                        label, f"{main_language}:{new_normalised_first_translation}"
+                    )
+                )
+                != 0
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Entry {main_language}:{new_normalised_first_translation} already exists"
+                    ),
+                )
+            normalised_new_node["new_id"] = main_language + ":" + new_normalised_first_translation
+            query.append("""\nSET n.id = $new_id\n""")
 
         query.append("""RETURN n""")
 
-        params = dict(normalised_new_node_keys, id=entry)
+        params = dict(normalised_new_node, id=entry)
         result = await get_current_transaction().run(" ".join(query), params)
-        return await async_list(result)
+        return (await async_list(result))[0]["n"]
 
     async def update_node_children(self, entry, new_children_ids):
         """
