@@ -52,14 +52,9 @@ class WriteTaxonomy:
     def list_tags_lc(self, node):
         """return an ordered list of the language codes (lc) used in a node"""
         lc_list = []
-        if "stopwords" in node["id"]:
-            # stopwords node only have a tags_lc property
-            key = "tags_"
-            # number of dashes to split on to get language code
-            dash_before_lc = 1
-        else:
-            key = "tags_ids_"
-            dash_before_lc = 2
+        key = "tags_ids_"
+        # number of dashes to split on to get language code
+        dash_before_lc = 2
 
         for property in node:
             if property.startswith(key):

@@ -56,7 +56,7 @@ def test_round_trip(neo4j):
     for line in original_lines:
         # first tweak: spaces between stopwords
         if line.startswith("stopwords:fr: aux"):
-            line = "stopwords:fr:aux, au, de, le, du, la, a, et"
+            line = "stopwords:fr:aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
         elif line.startswith("<fr:yaourts fruit de la passion"):
             line = "<en:Passion fruit yogurts"
@@ -98,7 +98,7 @@ def test_two_branch_round_trip(neo4j):
     for line in original_lines:
         # first tweak: spaces between stopwords
         if line.startswith("stopwords:fr: aux"):
-            line = "stopwords:fr:aux, au, de, le, du, la, a, et"
+            line = "stopwords:fr:aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
         elif line.startswith("<fr:yaourts fruit de la passion"):
             line = "<en:Passion fruit yogurts"
