@@ -8,7 +8,7 @@ from typing import Iterator, TypedDict
 
 from .logger import ParserConsoleLogger
 from .exception import DuplicateIDError
-from ..normalizer import normalizing
+from ..utils import normalize_filename, normalize_text
 
 
 class NodeType(str, Enum):
@@ -75,10 +75,6 @@ class TaxonomyParser:
     def __init__(self):
         self.parser_logger = ParserConsoleLogger()
 
-    def _normalized_filename(self, filename: str) -> str:
-        """Add the .txt extension if it is missing in the filename"""
-        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
-
     def _file_iter(self, filename: str, start: int = 0) -> Iterator[tuple[int, str]]:
         """Generator to get the file line by line"""
         with open(filename, "r", encoding="utf8") as file:
@@ -122,7 +118,7 @@ class TaxonomyParser:
         """
         lc, line = line.split(":", 1)
         new_line = lc + ":"
-        new_line += self._remove_stopwords(lc, normalizing(line, lc))
+        new_line += self._remove_stopwords(lc, normalize_text(line, lc))
         return new_line
 
     def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
@@ -130,7 +126,7 @@ class TaxonomyParser:
         lc, line = line.split(":", 1)
         new_line: list[str] = []
         for word in line.split(","):
-            new_line.append(self._remove_stopwords(lc, normalizing(word, lc)))
+            new_line.append(self._remove_stopwords(lc, normalize_text(word, lc)))
         return lc, new_line
 
     def _set_data_id(self, data: NodeData, id: str, line_number: int) -> NodeData:
@@ -293,7 +289,7 @@ class TaxonomyParser:
                     tagsids_list = []
                     for word in line.split(","):
                         tags_list.append(word.strip())
-                        word_normalized = self._remove_stopwords(lang, normalizing(word, lang))
+                        word_normalized = self._remove_stopwords(lang, normalize_text(word, lang))
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
@@ -359,7 +355,7 @@ class TaxonomyParser:
             self.parser_logger = logger
         """Process the file into a Taxonomy object"""
         start_time = timeit.default_timer()
-        filename = self._normalized_filename(filename)
+        filename = normalize_filename(filename)
         taxonomy = self._create_taxonomy(filename)
         self.parser_logger.info(f"Parsing done in {timeit.default_timer() - start_time} seconds.")
         self.parser_logger.info(

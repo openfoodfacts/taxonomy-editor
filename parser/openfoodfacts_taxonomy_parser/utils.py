@@ -1,13 +1,10 @@
-"""
-String normalizer
-"""
 import re
 import unicodedata
 
 import unidecode
 
 
-def normalizing(line: str, lang="default", char="-"):
+def normalize_text(line: str, lang="default", char="-"):
     """Normalize a string depending on the language code"""
     line = unicodedata.normalize("NFC", line)
 
@@ -33,3 +30,13 @@ def normalizing(line: str, lang="default", char="-"):
     line = re.sub(r"-+", char, line)
     line = line.strip(char)
     return line
+
+
+def normalize_filename(filename: str) -> str:
+    """add the .txt extension if it is missing in the filename"""
+    return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
+
+
+def get_project_name(taxonomy_name: str, branch_name: str) -> str:
+    """Create a project name for given branch and taxonomy"""
+    return "p_" + taxonomy_name + "_" + branch_name
