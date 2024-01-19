@@ -3,7 +3,7 @@ import sys
 
 from neo4j import GraphDatabase
 
-from .normalizer import normalizing
+from .utils import get_project_name, normalize_filename, normalize_text
 
 
 class WriteTaxonomy:
@@ -12,20 +12,7 @@ class WriteTaxonomy:
     def __init__(self, session):
         self.session = session
 
-    def normalized_filename(self, filename):
-        """add the .txt extension if it is missing in the filename"""
-        return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
-
-    def get_project_name(self, taxonomy_name, branch_name):
-        """Create a project name for given branch and taxonomy"""
-        return "p_" + taxonomy_name + "_" + branch_name
-
-    def create_multi_label(self, taxonomy_name, branch_name):
-        """Create a combined label with taxonomy name and branch name"""
-        project_name = self.get_project_name(taxonomy_name, branch_name)
-        return project_name + ":" + ("t_" + taxonomy_name) + ":" + ("b_" + branch_name)
-
-    def get_all_nodes(self, multi_label):
+    def get_all_nodes(self, project_label):
         """query the database and yield each node with its parents,
         this function use the relationships between nodes"""
         # This query first lists all the nodes in the "is_before" order
@@ -34,7 +21,7 @@ class WriteTaxonomy:
         # Note: OPTIONAL MATCH is used to return nodes without parents
         query = f"""
             MATCH path = ShortestPath(
-                (h:{multi_label}:TEXT)-[:is_before*]->(f:{multi_label}:TEXT)
+                (h:{project_label}:TEXT)-[:is_before*]->(f:{project_label}:TEXT)
             )
             WHERE h.id="__header__" AND f.id="__footer__"
             WITH nodes(path) AS nodes, range(0, size(nodes(path))-1) AS indexes
@@ -92,9 +79,9 @@ class WriteTaxonomy:
             parent_id = parent["tags_" + lc][0]
             yield "<" + lc + ":" + parent_id
 
-    def iter_lines(self, multi_label):
+    def iter_lines(self, project_label):
         previous_block_id = ""
-        for node, parents in self.get_all_nodes(multi_label):
+        for node, parents in self.get_all_nodes(project_label):
             node = dict(node)
             has_content = node["id"] not in ["__header__", "__footer__"]
             # eventually add a blank line but in specific case
@@ -134,16 +121,16 @@ class WriteTaxonomy:
 
     def rewrite_file(self, filename, lines):
         """Write a .txt file with the given name"""
-        filename = self.normalized_filename(filename)
+        filename = normalize_filename(filename)
         with open(filename, "w", encoding="utf8") as file:
             for line in lines:
                 file.write(line + "\n")
 
     def __call__(self, filename, branch_name, taxonomy_name):
-        filename = self.normalized_filename(filename)
-        branch_name = normalizing(branch_name, char="_")
-        multi_label = self.create_multi_label(taxonomy_name, branch_name)
-        lines = self.iter_lines(multi_label)
+        filename = normalize_filename(filename)
+        branch_name = normalize_text(branch_name, char="_")
+        project_label = get_project_name(taxonomy_name, branch_name)
+        lines = self.iter_lines(project_label)
         self.rewrite_file(filename, lines)
 
 
