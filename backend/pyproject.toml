@@ -48,10 +48,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = { extras = ["all"], version = "^0.104.1" }
+githubkit = { version = "^0.11.0a4", allow-prereleases = true }
 uvicorn = { extras = ["standard"], version = "^0.23.2" }
 neo4j = "^5.14.0"
 openfoodfacts_taxonomy_parser = { path = "../parser", develop = true }
-pygithub = "^2.1.1"
 python-multipart = "^0.0.6"
 
 [tool.poetry.group.dev.dependencies]

@@ -188,12 +188,12 @@ class TaxonomyGraph:
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         try:
-            github_object.checkout_branch()
+            await github_object.checkout_branch()
         except Exception as e:
             raise GithubBranchExistsError() from e
         try:
-            github_object.update_file(filename)
-            pr_object = github_object.create_pr(description)
+            await github_object.update_file(filename)
+            pr_object = await github_object.create_pr(description)
             return (pr_object.html_url, filename)
         except Exception as e:
             raise GithubUploadError() from e
@@ -217,9 +217,9 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"branch_name": self.branch_name})
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
-        current_branches = github_object.list_all_branches()
+        github_branch = await github_object.get_branch(self.branch_name)
 
-        if (await result.value() == []) and (self.branch_name not in current_branches):
+        if (await result.value() == []) and (github_branch is None):
             return True
         else:
             return False

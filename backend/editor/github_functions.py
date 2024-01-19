@@ -1,10 +1,14 @@
 """
 Github helper functions for the Taxonomy Editor API
 """
-from textwrap import dedent
+import base64
 
-import github
+
 from fastapi import HTTPException
+from githubkit import GitHub
+from githubkit.exception import RequestFailed
+from githubkit.versions.latest.models import BranchWithProtection, PullRequest
+from textwrap import dedent
 
 from . import settings
 
@@ -13,12 +17,22 @@ class GithubOperations:
 
     """Class for Github operations"""
 
-    def __init__(self, taxonomy_name, branch_name):
+    def __init__(self, taxonomy_name: str, branch_name: str):
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
-        self.repo = self.init_driver_and_repo()
+        self.repo_info = self.get_repo_info()
+        self.connection = self.init_connection()
 
-    def init_driver_and_repo(self):
+    def get_repo_info(self) -> tuple[str, str]:
+        repo_uri = settings.repo_uri
+        if not repo_uri:
+            raise HTTPException(
+                status_code=400, detail="repo_uri is not set. Please add your access token in .env"
+            )
+        repo_owner, repo_name = repo_uri.split("/")
+        return repo_owner, repo_name
+
+    def init_connection(self) -> GitHub:
         """
         Initalize connection to Github with an access token
         """
@@ -33,26 +47,35 @@ class GithubOperations:
             raise HTTPException(
                 status_code=400, detail="repo_uri is not set. Please add your access token in .env"
             )
-        github_driver = github.Github(access_token)
-        repo = github_driver.get_repo(repo_uri)
-        return repo
+        github = GitHub(access_token)
+        return github
 
-    def list_all_branches(self):
+    async def get_branch(self, branch_name: str) -> BranchWithProtection | None:
         """
-        List of all current branches in the "openfoodfacts-server" repo
+        Get a branch in the "openfoodfacts-server" repo
         """
-        result = list(self.repo.get_branches())
-        all_branches = [branch.name for branch in result]
-        return all_branches
+        try:
+            result = await self.connection.rest.repos.async_get_branch(
+                *self.repo_info, branch=branch_name
+            )
+        except RequestFailed as e:
+            if e.response.status_code == 404:
+                return None
+            raise e
+        return result.parsed_data
 
-    def checkout_branch(self):
+    async def checkout_branch(self) -> None:
         """
         Create a new branch in the "openfoodfacts-server" repo
         """
-        source_branch = self.repo.get_branch("main")
-        self.repo.create_git_ref(ref="refs/heads/" + self.branch_name, sha=source_branch.commit.sha)
+        source_branch = (
+            await self.connection.rest.repos.async_get_branch(*self.repo_info, branch="main")
+        ).parsed_data
+        await self.connection.rest.git.async_create_ref(
+            *self.repo_info, ref="refs/heads/" + self.branch_name, sha=source_branch.commit.sha
+        )
 
-    def update_file(self, filename):
+    async def update_file(self, filename: str) -> None:
         """
         Update the taxonomy txt file edited by user using the Taxonomy Editor
         """
@@ -60,20 +83,26 @@ class GithubOperations:
         github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
         commit_message = f"Update {self.taxonomy_name}.txt"
         try:
-            current_file = self.repo.get_contents(github_filepath)
+            current_file = (
+                await self.connection.rest.repos.async_get_content(
+                    *self.repo_info, path=github_filepath
+                )
+            ).parsed_data
             with open(filename, "r") as f:
                 new_file_contents = f.read()
-
             # Update the file
-            self.repo.update_file(
-                github_filepath,
-                commit_message,
-                new_file_contents,
-                current_file.sha,
-                branch=self.branch_name,
-            )
-        except github.GithubException as e:
-            # Handle GitHub API-related exceptions
+            (
+                await self.connection.rest.repos.async_create_or_update_file_contents(
+                    *self.repo_info,
+                    path=github_filepath,
+                    message=commit_message,
+                    content=base64.b64encode(new_file_contents.encode("utf-8")),
+                    sha=current_file.sha,
+                    branch=self.branch_name,
+                )
+            ).parsed_data
+        except RequestFailed as e:
+            # Handle GitHub API-related exceptions: result.parsed_data raises a ValidationError if the response is not valid
             raise Exception(f"GitHub API error: {e}") from e
         except FileNotFoundError as e:
             # Handle file not found error (e.g., when 'filename' does not exist)
@@ -82,7 +111,7 @@ class GithubOperations:
             # Handle any other unexpected exceptions
             raise Exception(f"An error occurred: {e}") from e
 
-    def create_pr(self, description):
+    async def create_pr(self, description) -> PullRequest:
         """
         Create a pull request to "openfoodfacts-server" repo
         """
@@ -96,4 +125,8 @@ class GithubOperations:
         {description}
         """
         )
-        return self.repo.create_pull(title=title, body=body, head=self.branch_name, base="main")
+        return (
+            await self.connection.rest.pulls.async_create(
+                *self.repo_info, title=title, body=body, head=self.branch_name, base="main"
+            )
+        ).parsed_data
