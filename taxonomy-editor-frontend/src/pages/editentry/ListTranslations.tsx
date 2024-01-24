@@ -48,8 +48,9 @@ export const ListTranslations = ({
         Array.isArray(localStorageShownLanguages) &&
         localStorageShownLanguages.every((item) => typeof item === "string")
       ) {
-        localStorageShownLanguages = localStorageShownLanguages.filter((item) =>
-          ISO6391.validate(item)
+        localStorageShownLanguages = localStorageShownLanguages.filter((item) => {
+           return item === "xx" || ISO6391.validate(item)
+          }
         );
       } else {
         localStorageShownLanguages = [];
@@ -78,7 +79,6 @@ export const ListTranslations = ({
   const languagesToShow: string[] = shownLanguageCodes.filter(
     (languageCode) => languageCode !== nodeObject.main_language
   );
-  languagesToShow.unshift("xx"); // to show "All languages" section
   languagesToShow.unshift(nodeObject.main_language);
 
   const numberOfLanguagesShownMessage =

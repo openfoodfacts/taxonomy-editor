@@ -52,10 +52,10 @@ const LanguageSelectionDialog = ({
               selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
             }
           >
-            {ISO6391.getAllNames()
+            {["All languages"].concat(ISO6391.getAllNames())
               .sort()
               .map((languageNameItem) => {
-                const languageCodeItem = ISO6391.getCode(languageNameItem);
+                const languageCodeItem = languageNameItem === "All languages" ? "xx" : ISO6391.getCode(languageNameItem);
                 return languageCodeItem === mainLanguageCode ? null : (
                   <MenuItem key={languageCodeItem} value={languageCodeItem}>
                     <Checkbox
