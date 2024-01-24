@@ -243,15 +243,20 @@ class TaxonomyParser:
                     id = "stopwords:" + str(index_stopwords)
                     data = self._set_data_id(data, id, line_number)
                     index_stopwords += 1
+                    # remove "stopwords:" part
+                    line = line[10:]
+                    # compute raw values outside _get_lc_value as it removes stop words !
+                    tags = [words.strip() for words in line[3:].split(",")]
                     try:
-                        lc, value = self._get_lc_value(line[10:])
+                        lc, value = self._get_lc_value(line)
                     except ValueError:
                         self.parser_logger.error(
                             f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
-                        data.tags["tags_" + lc] = value
-                        # add the list with its lc
+                        data.tags["tags_" + lc] = tags
+                        data.tags["tags_ids_" + lc] = value
+                        # add the normalized list with its lc
                         self.stopwords[lc] = value
                 elif line.startswith("synonyms"):
                     # general synonyms definition for a language
