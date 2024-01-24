@@ -78,6 +78,7 @@ export const ListTranslations = ({
   const languagesToShow: string[] = shownLanguageCodes.filter(
     (languageCode) => languageCode !== nodeObject.main_language
   );
+  languagesToShow.unshift("xx"); // to show "All languages" section
   languagesToShow.unshift(nodeObject.main_language);
 
   const numberOfLanguagesShownMessage =
@@ -95,8 +96,10 @@ export const ListTranslations = ({
 
   const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
     const languageName =
-      ISO6391.getName(languageCode) +
-      (languageCode === nodeObject.main_language ? " (main language)" : "");
+      languageCode === "xx"
+        ? "All languages"
+        : ISO6391.getName(languageCode) +
+          (languageCode === nodeObject.main_language ? " (main language)" : "");
     const alertMessage =
       "Changing the first translation will modify " +
       (languageCode === nodeObject.main_language
@@ -135,14 +138,7 @@ export const ListTranslations = ({
             <Stack direction="row" sx={{ mr: 4 }}>
               {
                 <TranslationTags
-                  // display the words associated to the language to show and the "xx" language (which is universal)
-                  translations={Array.from(
-                    new Set(
-                      (nodeObject[`tags_${languageCode}`] ?? []).concat(
-                        nodeObject["tags_xx"] ?? []
-                      )
-                    )
-                  )}
+                  translations={nodeObject["tags_" + languageCode] ?? []}
                   saveTranslations={saveTranslationsForLanguage(languageCode)}
                 />
               }
