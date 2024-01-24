@@ -171,6 +171,7 @@ export const ListTranslations = ({
           mainLanguageCode={nodeObject.main_language}
           handleDialogConfirm={handleDialogConfirm}
           shownLanguageCodes={shownLanguageCodes}
+          isAllLanguagesDisabled={xxLanguageExists()} // if "xx" words exist, the "All language" is always displayed
         />
       </Dialog>
     </Box>

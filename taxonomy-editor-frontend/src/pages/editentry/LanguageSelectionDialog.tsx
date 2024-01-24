@@ -20,6 +20,7 @@ type Props = {
   mainLanguageCode: string;
   handleDialogConfirm: (newLanguageCodes: string[]) => void;
   shownLanguageCodes: string[];
+  isAllLanguagesDisabled: boolean;
 };
 
 const LanguageSelectionDialog = ({
@@ -27,6 +28,7 @@ const LanguageSelectionDialog = ({
   mainLanguageCode,
   handleDialogConfirm,
   shownLanguageCodes,
+  isAllLanguagesDisabled,
 }: Props) => {
   const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([
     ...shownLanguageCodes,
@@ -62,9 +64,15 @@ const LanguageSelectionDialog = ({
                     : ISO6391.getCode(languageNameItem);
                 return languageCodeItem === mainLanguageCode ? null : (
                   <MenuItem key={languageCodeItem} value={languageCodeItem}>
-                    <Checkbox
-                      checked={newShownLanguageCodes.includes(languageCodeItem)}
-                    />
+                    {languageCodeItem === "xx" && isAllLanguagesDisabled ? (
+                      <Checkbox checked={true} disabled />
+                    ) : (
+                      <Checkbox
+                        checked={newShownLanguageCodes.includes(
+                          languageCodeItem
+                        )}
+                      />
+                    )}
                     <ListItemText primary={languageNameItem} />
                   </MenuItem>
                 );
