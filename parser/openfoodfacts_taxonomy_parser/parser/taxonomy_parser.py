@@ -243,7 +243,9 @@ class TaxonomyParser:
                     id = "stopwords:" + str(index_stopwords)
                     data = self._set_data_id(data, id, line_number)
                     index_stopwords += 1
+                    # remove "stopwords:" part
                     line = line[10:]
+                    # compute raw values outside _get_lc_value as it removes stop words !
                     tags = [words.strip() for words in line[3:].split(",")]
                     try:
                         lc, value = self._get_lc_value(line)
