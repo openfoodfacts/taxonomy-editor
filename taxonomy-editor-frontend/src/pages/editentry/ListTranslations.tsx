@@ -1,6 +1,6 @@
 import { Alert, Typography, Stack, Button, Box, Dialog } from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ISO6391 from "iso-639-1";
 import { TranslationTags } from "./TranslationTags";
 
@@ -25,13 +25,13 @@ export const ListTranslations = ({
     setIsDialogOpen(true);
   };
 
-  const xxLanguageExists = () => {
+  const xxLanguageExists = useCallback(() => {
     const exists =
       nodeObject["tags_xx"] === undefined
         ? false
         : nodeObject["tags_xx"].length > 0;
     return exists;
-  };
+  }, [nodeObject]);
 
   const handleDialogConfirm = (newShownLanguageCodes: string[]) => {
     localStorage.setItem(
@@ -81,7 +81,7 @@ export const ListTranslations = ({
       // shown languages is an empty list, when we can't parse the local storage
       console.log(e);
     }
-  }, []);
+  }, [xxLanguageExists]);
 
   const saveTranslationsForLanguage = (language: string) => {
     return (translations: string[]) => {
