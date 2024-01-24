@@ -25,12 +25,25 @@ export const ListTranslations = ({
     setIsDialogOpen(true);
   };
 
+  const xxLanguageExists = () => {
+    const exists =
+      nodeObject["tags_xx"] === undefined
+        ? false
+        : nodeObject["tags_xx"].length > 0;
+    return exists;
+  };
+
   const handleDialogConfirm = (newShownLanguageCodes: string[]) => {
-    setShownLanguageCodes(newShownLanguageCodes);
     localStorage.setItem(
       SHOWN_LANGUAGES_KEY,
       JSON.stringify(newShownLanguageCodes)
     );
+
+    if (xxLanguageExists() && !newShownLanguageCodes.includes("xx")) {
+      newShownLanguageCodes = ["xx", ...newShownLanguageCodes];
+    }
+    setShownLanguageCodes(newShownLanguageCodes);
+
     setIsDialogOpen(false);
   };
 
@@ -48,8 +61,9 @@ export const ListTranslations = ({
         Array.isArray(localStorageShownLanguages) &&
         localStorageShownLanguages.every((item) => typeof item === "string")
       ) {
-        localStorageShownLanguages = localStorageShownLanguages.filter((item) => {
-           return item === "xx" || ISO6391.validate(item)
+        localStorageShownLanguages = localStorageShownLanguages.filter(
+          (item) => {
+            return item === "xx" || ISO6391.validate(item);
           }
         );
       } else {
@@ -58,6 +72,9 @@ export const ListTranslations = ({
 
       if (localStorageShownLanguages) {
         // if shown languages is not empty, use it
+        if (xxLanguageExists() && !localStorageShownLanguages.includes("xx")) {
+          localStorageShownLanguages = ["xx", ...localStorageShownLanguages];
+        }
         setShownLanguageCodes(localStorageShownLanguages);
       }
     } catch (e) {
