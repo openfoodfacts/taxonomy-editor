@@ -24,10 +24,12 @@ class NodeData:
     is_before: str | None = None
     main_language: str | None = None
     preceding_lines: list[str] = field(default_factory=list)
-    parent_tag: list[str] = field(default_factory=list)
+    parent_tags: list[str] = field(default_factory=list)
     src_position: int | None = None
     properties: dict[str, str] = field(default_factory=dict)
     tags: dict[str, list[str]] = field(default_factory=dict)
+    comments: dict[str, list[str]] = field(default_factory=dict)
+    comments_stack: list[(int, str)] = field(default_factory=list)
 
     def to_dict(self):
         return {
@@ -37,6 +39,7 @@ class NodeData:
             "src_position": self.src_position,
             **self.properties,
             **self.tags,
+            **self.comments,
         }
 
     def get_node_type(self):
@@ -162,12 +165,12 @@ class TaxonomyParser:
 
     def _entry_end(self, line: str, data: NodeData) -> bool:
         """Return True if the block ended"""
-        # stopwords and synonyms are one-liner, entries are separated by a blank line
-        if line.startswith("stopwords") or line.startswith("synonyms") or not line:
-            # can be the end of an block or just additional line separator,
-            # file_iter() always end with ''
-            if data.id:  # to be sure that it's an end
-                return True
+        if data.id.startswith("stopwords") or data.id.startswith("synonyms"):
+            # stopwords and synonyms are one-liners; if the id is set, it's the end
+            return True
+        if not line and data.id:
+            # entries are separated by a blank line
+            return True
         return False
 
     def _remove_separating_line(self, data: NodeData) -> NodeData:
@@ -196,6 +199,22 @@ class TaxonomyParser:
                 # it's an entry block, there is always a separating line
                 data.preceding_lines.pop(0)
         return data
+    
+    def _get_comments_above(self, data: NodeData, line_number: int) -> list[str]:
+        """Get comments just above the current line"""
+        comments = []
+        current_line = line_number - 1
+        while data.comments_stack and data.comments_stack[-1][0] == current_line:
+            comments.append(data.comments_stack.pop()[1])
+            current_line -= 1
+        return comments[::-1]
+    
+    def _get_parent_comments(self, data: NodeData) -> list[str]:
+        """Get comments just above the current line"""
+        parent_comments = []
+        while data.preceding_lines and data.preceding_lines[-1] != "":
+            parent_comments.append(data.preceding_lines.pop())
+        return parent_comments[::-1]
 
     def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
@@ -226,14 +245,22 @@ class TaxonomyParser:
                     self.parser_logger.error(msg)
                 else:
                     data = self._remove_separating_line(data)
+                    if data.get_node_type() == NodeType.ENTRY:
+                        data.comments["parent_comments"] = self._get_parent_comments(data)
+                        data.comments["end_comments"] = [comment[1] for comment in data.comments_stack]
                     yield data  # another function will use this dictionary to create a node
                     saved_nodes.append(data.id)
                 data = NodeData(is_before=data.id)
 
             # harvest the line
             if not (line) or line[0] == "#":
-                # comment or blank
-                data.preceding_lines.append(line)
+                # comment or blank line
+                if data.id:
+                    # we are within the node definition
+                    data.comments_stack.append((line_number, line))
+                else:
+                    # we are before the actual node
+                    data.preceding_lines.append(line)
             else:
                 line = line.rstrip(",")
                 if not data.src_position:
@@ -245,7 +272,7 @@ class TaxonomyParser:
                     index_stopwords += 1
                     # remove "stopwords:" part
                     line = line[10:]
-                    # compute raw values outside _get_lc_value as it removes stop words !
+                    # compute raw values outside _get_lc_value as it normalizes them!
                     tags = [words.strip() for words in line[3:].split(",")]
                     try:
                         lc, value = self._get_lc_value(line)
@@ -263,7 +290,9 @@ class TaxonomyParser:
                     id = "synonyms:" + str(index_synonyms)
                     data = self._set_data_id(data, id, line_number)
                     index_synonyms += 1
+                    # remove "synonyms:" part
                     line = line[9:]
+                    # compute raw values outside _get_lc_value as it normalizes them!
                     tags = [words.strip() for words in line[3:].split(",")]
                     try:
                         lc, value = self._get_lc_value(line)
@@ -276,7 +305,7 @@ class TaxonomyParser:
                         data.tags["tags_ids_" + lc] = value
                 elif line[0] == "<":
                     # parent definition
-                    data.parent_tag.append(self._add_line(line[1:]))
+                    data.parent_tags.append(self._add_line(line[1:]))
                 elif language_code_prefix.match(line):
                     # synonyms definition
                     if not data.id:
@@ -297,6 +326,7 @@ class TaxonomyParser:
                             tagsids_list.append(word_normalized)
                     data.tags["tags_" + lang] = tags_list
                     data.tags["tags_ids_" + lang] = tagsids_list
+                    data.comments["tags_" + lang + "_comments"] = self._get_comments_above(data, line_number)
                 else:
                     # property definition
                     property_name = None
@@ -317,7 +347,9 @@ class TaxonomyParser:
                                 f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
                             )
                         if property_name:
-                            data.properties["prop_" + property_name + "_" + lc] = property_value
+                            prop_key = "prop_" + property_name + "_" + lc
+                            data.properties[prop_key] = property_value
+                            data.comments[prop_key + "_comments"] = self._get_comments_above(data, line_number)
 
         data.id = "__footer__"
         data.preceding_lines.pop(0)
@@ -342,8 +374,8 @@ class TaxonomyParser:
                 other_nodes.append(entry)
             if entry.is_before:
                 previous_links.append(PreviousLink(before_id=entry.is_before, id=entry.id))
-            if entry.parent_tag:
-                for position, parent in enumerate(entry.parent_tag):
+            if entry.parent_tags:
+                for position, parent in enumerate(entry.parent_tags):
                     child_links.append(ChildLink(parent_id=parent, id=entry.id, position=position))
         return Taxonomy(
             entry_nodes=entry_nodes,

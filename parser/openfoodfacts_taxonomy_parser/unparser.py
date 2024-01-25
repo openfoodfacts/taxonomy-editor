@@ -58,7 +58,7 @@ class WriteTaxonomy:
         """return a ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        return [property[5:] for property in node if property.startswith("prop_")]
+        return [property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")]
 
     def get_property_line(self, node, property):
         """return a string that should look like the original property line"""
@@ -99,19 +99,27 @@ class WriteTaxonomy:
                 elif node["id"].startswith("synonyms"):
                     yield "synonyms:" + self.get_tags_line(node, tags_lc[0])
                 else:
-                    # synonyms line
+                    # parents
+                    if node["parent_comments"]:
+                        yield from node["parent_comments"]
                     yield from self.get_parents_lines(parents)
                     # main language synonyms first
                     main_language = node.pop("main_language")
                     tags_lc.remove(main_language)
+                    yield from node["tags_" + main_language + "_comments"]
                     yield self.get_tags_line(node, main_language)
                     # more synonyms after
                     for lc in tags_lc:
+                        yield from node["tags_" + lc + "_comments"]
                         yield self.get_tags_line(node, lc)
                     # properties
                     properties_list = self.list_property_and_lc(node)
                     for property in properties_list:
+                        yield from node["prop_" + property + "_comments"]
                         yield self.get_property_line(node, property)
+                    # final comments
+                    if node["end_comments"]:
+                        yield from node["end_comments"]
             previous_block_id = node["id"]
 
     def rewrite_file(self, filename, lines):

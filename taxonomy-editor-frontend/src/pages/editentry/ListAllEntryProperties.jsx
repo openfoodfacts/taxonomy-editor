@@ -33,13 +33,6 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     setData(renderedProperties);
   }, [nodeObject]);
 
-  // Helper function used for changing comments from node
-  const changeCommentData = (value) => {
-    const newNodeObject = { ...nodeObject };
-    newNodeObject["preceding_lines"] = value;
-    setNodeObject(newNodeObject);
-  };
-
   // Helper function used for changing properties of node
   const changePropertyData = (key, value) => {
     setNodeObject((prevState) => {
@@ -60,21 +53,6 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
 
   return (
     <Box>
-      {/* Comments */}
-      <Typography sx={{ ml: 4, mt: 2, mb: 1 }} variant="h5">
-        Comments
-      </Typography>
-      <TextField
-        sx={{ ml: 8, mt: 1, width: 250 }}
-        minRows={4}
-        multiline
-        onChange={(event) => {
-          changeCommentData(event.target.value.split("\n"));
-        }}
-        value={nodeObject?.preceding_lines.join("\n")}
-        variant="outlined"
-      />
-
       {/* Properties */}
       <Box sx={{ width: "50%", ml: 4 }}>
         <MaterialTable
