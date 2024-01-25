@@ -74,7 +74,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
       />
 
       {/* Properties */}
-      <Box sx={{ width: "50%", ml: 4 }}>
+      <Box sx={{ width: "90%", ml: 4, maxWidth: "1000px", m: "auto" }}>
         <MaterialTable
           data={data}
           columns={[
@@ -129,6 +129,8 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
           options={{
             actionsColumnIndex: -1,
             addRowPosition: "last",
+            tableLayout: "fixed",
+            paging: false,
           }}
           components={{
             Toolbar: (props) => {
