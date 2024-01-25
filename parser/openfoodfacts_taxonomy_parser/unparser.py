@@ -55,10 +55,10 @@ class WriteTaxonomy:
         return lc + ":" + line
 
     def list_property_and_lc(self, node):
-        """return a ordered list of properties with their language code (lc)"""
+        """return an ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        return [property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")]
+        return sorted([property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")])
 
     def get_property_line(self, node, property):
         """return a string that should look like the original property line"""
