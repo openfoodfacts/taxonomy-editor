@@ -99,14 +99,25 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
               }),
             onRowDelete: (selectedRow) =>
               new Promise((resolve, reject) => {
-                // Delete property from rendered rows
-                const index = selectedRow.tableData.id;
-                const updatedRows = data.filter((obj) => !(index === obj.id));
-                setData(updatedRows);
+                try {
+                  console.log("I want to delete this property : ",selectedRow.propertyName)
+                  // Delete property from rendered rows
+                  const updatedRows = [...data];
+                  console.log(selectedRow.tableData)
+                  // const index = selectedRow.tableData.id;
+                  const index = selectedRow.id;
+                  // const updatedRows = data.filter((obj) => !(index === obj.id));
+                  updatedRows.splice(index,1);
+                  setData([...updatedRows]);
+                  console.log("updated Rows = ",updatedRows);
+                  console.log("New data = ", data);
 
-                // Delete key-value pair of a property from nodeObject
-                deletePropertyData(selectedRow.propertyName);
-                resolve();
+                  // Delete key-value pair of a property from nodeObject
+                  deletePropertyData(selectedRow.propertyName);
+                  resolve();
+                } catch (error) {
+                  console.log(error);
+                }
               }),
             onRowUpdate: (updatedRow, oldRow) =>
               new Promise((resolve, reject) => {
