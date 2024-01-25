@@ -8,9 +8,9 @@ import tempfile
 import urllib.request  # Sending requests
 
 from fastapi import BackgroundTasks, HTTPException, UploadFile
-from openfoodfacts_taxonomy_parser import normalizer  # Normalizing tags
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
+from openfoodfacts_taxonomy_parser import utils as parser_utils  # Normalizing tags
 
 from . import settings
 from .exceptions import GithubBranchExistsError  # Custom exceptions
@@ -65,7 +65,9 @@ class TaxonomyGraph:
         if label == "ENTRY":
             # Normalizing new canonical tag
             language_code, canonical_tag = entry.split(":", 1)
-            normalised_canonical_tag = normalizer.normalizing(canonical_tag, main_language_code)
+            normalised_canonical_tag = parser_utils.normalize_text(
+                canonical_tag, main_language_code
+            )
 
             # Reconstructing and updation of node ID
             params["id"] = language_code + ":" + normalised_canonical_tag
@@ -226,7 +228,7 @@ class TaxonomyGraph:
         """
         Helper function to check if a branch name is valid
         """
-        return normalizer.normalizing(self.branch_name, char="_") == self.branch_name
+        return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
     async def create_project(self, description):
         """
@@ -475,7 +477,9 @@ class TaxonomyGraph:
                     keys_language_code = key.split("_", 1)[1]
                     normalised_value = []
                     for value in new_node[key]:
-                        normalised_value.append(normalizer.normalizing(value, keys_language_code))
+                        normalised_value.append(
+                            parser_utils.normalize_text(value, keys_language_code)
+                        )
                     normalised_new_node[key] = new_node[key]
                     normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
                 else:
@@ -582,7 +586,7 @@ class TaxonomyGraph:
         """
         # Escape special characters
         normalized_text = re.sub(r"[^A-Za-z0-9_]", r" ", text)
-        normalized_id_text = normalizer.normalizing(text)
+        normalized_id_text = parser_utils.normalize_text(text)
 
         # If normalized text is empty, no searches are found
         if normalized_text.strip() == "":
