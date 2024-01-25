@@ -246,8 +246,12 @@ class TaxonomyParser:
                 else:
                     data = self._remove_separating_line(data)
                     if data.get_node_type() == NodeType.ENTRY:
-                        data.comments["parent_comments"] = self._get_parent_comments(data)
-                        data.comments["end_comments"] = [comment[1] for comment in data.comments_stack]
+                        parent_comments = self._get_parent_comments(data)
+                        if parent_comments:
+                            data.comments["parent_comments"] = parent_comments
+                        end_comments = [comment[1] for comment in data.comments_stack]
+                        if end_comments:
+                            data.comments["end_comments"] = end_comments
                     yield data  # another function will use this dictionary to create a node
                     saved_nodes.append(data.id)
                 data = NodeData(is_before=data.id)
@@ -326,7 +330,9 @@ class TaxonomyParser:
                             tagsids_list.append(word_normalized)
                     data.tags["tags_" + lang] = tags_list
                     data.tags["tags_ids_" + lang] = tagsids_list
-                    data.comments["tags_" + lang + "_comments"] = self._get_comments_above(data, line_number)
+                    tags_comments = self._get_comments_above(data, line_number)
+                    if tags_comments:
+                        data.comments["tags_" + lang + "_comments"] = tags_comments
                 else:
                     # property definition
                     property_name = None
@@ -349,7 +355,9 @@ class TaxonomyParser:
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
                             data.properties[prop_key] = property_value
-                            data.comments[prop_key + "_comments"] = self._get_comments_above(data, line_number)
+                            prop_comments = self._get_comments_above(data, line_number)
+                            if prop_comments:
+                                data.comments[prop_key + "_comments"] = prop_comments
 
         data.id = "__footer__"
         data.preceding_lines.pop(0)

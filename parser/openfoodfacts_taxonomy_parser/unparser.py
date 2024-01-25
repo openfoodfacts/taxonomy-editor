@@ -90,8 +90,7 @@ class WriteTaxonomy:
             if add_blank:
                 yield ""
             # comments
-            if node["preceding_lines"]:
-                yield from node["preceding_lines"]
+            yield from node.get("preceding_lines", [])
             if has_content:
                 tags_lc = self.list_tags_lc(node)
                 if node["id"].startswith("stopwords"):
@@ -100,26 +99,24 @@ class WriteTaxonomy:
                     yield "synonyms:" + self.get_tags_line(node, tags_lc[0])
                 else:
                     # parents
-                    if node["parent_comments"]:
-                        yield from node["parent_comments"]
+                    yield from node.get("parent_comments", [])
                     yield from self.get_parents_lines(parents)
                     # main language synonyms first
                     main_language = node.pop("main_language")
                     tags_lc.remove(main_language)
-                    yield from node["tags_" + main_language + "_comments"]
+                    yield from node.get("tags_" + main_language + "_comments", [])
                     yield self.get_tags_line(node, main_language)
                     # more synonyms after
                     for lc in tags_lc:
-                        yield from node["tags_" + lc + "_comments"]
+                        yield from node.get("tags_" + lc + "_comments", [])
                         yield self.get_tags_line(node, lc)
                     # properties
                     properties_list = self.list_property_and_lc(node)
                     for property in properties_list:
-                        yield from node["prop_" + property + "_comments"]
+                        yield from node.get("prop_" + property + "_comments", [])
                         yield self.get_property_line(node, property)
                     # final comments
-                    if node["end_comments"]:
-                        yield from node["end_comments"]
+                    yield from node.get("end_comments", [])
             previous_block_id = node["id"]
 
     def rewrite_file(self, filename, lines):
