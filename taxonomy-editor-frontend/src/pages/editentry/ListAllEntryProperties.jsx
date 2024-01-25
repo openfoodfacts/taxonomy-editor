@@ -3,7 +3,6 @@ import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
-  
   const collectProperties = () => {
     let renderedProperties = [];
     Object.keys(nodeObject).forEach((key) => {
@@ -98,15 +97,15 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
               }),
             onRowDelete: (selectedRow) =>
               new Promise((resolve, reject) => {
-                  // Delete property from rendered rows
-                  const updatedRows = [...data];
-                  const index = selectedRow.id;
-                  updatedRows.splice(index, 1);
-                  setData(updatedRows);
+                // Delete property from rendered rows
+                const updatedRows = [...data];
+                const index = selectedRow.id;
+                updatedRows.splice(index, 1);
+                setData(updatedRows);
 
-                  // Delete key-value pair of a property from nodeObject
-                  deletePropertyData(selectedRow.propertyName);
-                  resolve();
+                // Delete key-value pair of a property from nodeObject
+                deletePropertyData(selectedRow.propertyName);
+                resolve();
               }),
             onRowUpdate: (updatedRow, oldRow) =>
               new Promise((resolve, reject) => {
