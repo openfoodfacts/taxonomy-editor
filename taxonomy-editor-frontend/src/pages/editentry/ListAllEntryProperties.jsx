@@ -1,13 +1,10 @@
 import { Box, Grid, Paper, TextField, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
-  const [data, setData] = useState([]);
-
-  // Changes the properties to be rendered
-  // Dependent on changes occuring in "nodeObject"
-  useEffect(() => {
+  
+  const collectProperties = () => {
     let renderedProperties = [];
     Object.keys(nodeObject).forEach((key) => {
       // Collecting uuids of properties
@@ -30,8 +27,10 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
         });
       }
     });
-    setData(renderedProperties);
-  }, [nodeObject]);
+    return renderedProperties;
+  };
+
+  const [data, setData] = useState(collectProperties());
 
   // Helper function used for changing comments from node
   const changeCommentData = (value) => {
@@ -99,25 +98,15 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
               }),
             onRowDelete: (selectedRow) =>
               new Promise((resolve, reject) => {
-                try {
-                  console.log("I want to delete this property : ",selectedRow.propertyName)
                   // Delete property from rendered rows
                   const updatedRows = [...data];
-                  console.log(selectedRow.tableData)
-                  // const index = selectedRow.tableData.id;
                   const index = selectedRow.id;
-                  // const updatedRows = data.filter((obj) => !(index === obj.id));
-                  updatedRows.splice(index,1);
-                  setData([...updatedRows]);
-                  console.log("updated Rows = ",updatedRows);
-                  console.log("New data = ", data);
+                  updatedRows.splice(index, 1);
+                  setData(updatedRows);
 
                   // Delete key-value pair of a property from nodeObject
                   deletePropertyData(selectedRow.propertyName);
                   resolve();
-                } catch (error) {
-                  console.log(error);
-                }
               }),
             onRowUpdate: (updatedRow, oldRow) =>
               new Promise((resolve, reject) => {
@@ -126,7 +115,6 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                   el.id === oldRow.id ? updatedRow : el
                 );
                 setData(updatedRows);
-
                 // Updation takes place by deletion + addition
                 // If property name has been changed, previous key should be removed from nodeObject
                 updatedRow.propertyName !== oldRow.propertyName &&
