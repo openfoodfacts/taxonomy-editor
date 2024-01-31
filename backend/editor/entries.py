@@ -216,11 +216,17 @@ class TaxonomyGraph:
         Helper function to export a taxonomy to GitHub
         """
         project = await get_project(self.project_name)
-        description, file_sha, commit_sha = (
+        is_from_github, description, file_sha, commit_sha = (
+            project.is_from_github,
             project.description,
             project.github_file_sha,
             project.github_commit_sha,
         )
+        if not is_from_github:
+            raise HTTPException(
+                status_code=422,
+                detail="This taxonomy was not imported from GitHub. It cannot be exported to GitHub",
+            )
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         try:
