@@ -1,5 +1,7 @@
 from enum import Enum
+
 from neo4j.time import DateTime
+
 from .base_models import BaseModel
 
 

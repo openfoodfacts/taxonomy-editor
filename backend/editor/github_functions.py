@@ -2,13 +2,12 @@
 Github helper functions for the Taxonomy Editor API
 """
 import base64
-
+from textwrap import dedent
 
 from fastapi import HTTPException
 from githubkit import GitHub
 from githubkit.exception import RequestFailed
 from githubkit.versions.latest.models import BranchWithProtection, ContentFile, PullRequest
-from textwrap import dedent
 
 from . import settings
 
@@ -107,7 +106,8 @@ class GithubOperations:
                 )
             ).parsed_data
         except RequestFailed as e:
-            # Handle GitHub API-related exceptions: result.parsed_data raises a ValidationError if the response is not valid
+            # Handle GitHub API-related exceptions: result.parsed_data raises a ValidationError
+            # if the response is not valid
             raise Exception(f"GitHub API error: {e}") from e
         except FileNotFoundError as e:
             # Handle file not found error (e.g., when 'filename' does not exist)

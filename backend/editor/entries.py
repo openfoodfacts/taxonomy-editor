@@ -7,16 +7,15 @@ import tempfile
 import urllib.request  # Sending requests
 
 from fastapi import BackgroundTasks, HTTPException, UploadFile
-from fastapi.concurrency import (
-    run_in_threadpool,
-)  # For synchronous functions that are I/O bound in async path operations/background tasks
+
+# For synchronous I/O-bound functions in async path operations/background tasks
+from fastapi.concurrency import run_in_threadpool
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
-from .utils import file_cleanup  # Normalizing tags
-
 from . import settings
+from .controllers.project_controller import create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
@@ -30,9 +29,8 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
-
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
-from .controllers.project_controller import create_project, edit_project, get_project
+from .utils import file_cleanup  # Normalizing tags
 
 
 async def async_list(async_iterable):
@@ -225,7 +223,9 @@ class TaxonomyGraph:
         if not is_from_github:
             raise HTTPException(
                 status_code=422,
-                detail="This taxonomy was not imported from GitHub. It cannot be exported to GitHub",
+                detail=(
+                    "This taxonomy was not imported from GitHub. It cannot be exported to GitHub"
+                ),
             )
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)

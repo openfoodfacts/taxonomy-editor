@@ -2,7 +2,6 @@
 Taxonomy Editor Backend API
 """
 import logging
-import os
 
 # Required imports
 # ------------------------------------------------------------------------------------#
@@ -28,6 +27,9 @@ from fastapi.responses import FileResponse, JSONResponse
 
 # DB helper imports
 from . import graph_db
+
+# Controller imports
+from .controllers.project_controller import edit_project, get_project
 from .entries import TaxonomyGraph
 
 # Custom exceptions
@@ -35,10 +37,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
 from .models.node_models import Footer, Header
-from .models.project_models import ProjectStatus, ProjectEdit
-
-# Controller imports
-from .controllers.project_controller import edit_project
+from .models.project_models import Project, ProjectEdit, ProjectStatus
 
 # -----------------------------------------------------------------------------------#
 
