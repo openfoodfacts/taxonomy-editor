@@ -21,6 +21,88 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 
 import { createBaseURL } from "../../utils";
 
+interface ExportTaxonomyToGithubProps {
+  baseURL: string;
+  setErrorMessage: (message: string) => void;
+}
+
+const ExportTaxonomyToGithub = ({
+  baseURL,
+  setErrorMessage,
+}: ExportTaxonomyToGithubProps) => {
+  const [isCreatingGithubPR, setIsCreatingGithubPR] = useState(false);
+  const [pullRequestURL, setPullRequestURL] = useState("");
+
+  const handleGithub = () => {
+    setIsCreatingGithubPR(true);
+    setErrorMessage("");
+    setPullRequestURL("");
+
+    fetch(`${baseURL}githubexport`, {
+      method: "GET",
+    })
+      .then(async (response) => {
+        const responseBody = await response.json();
+        if (!response.ok) {
+          throw new Error(responseBody?.detail ?? "Unable to export to Github");
+        } else {
+          setPullRequestURL(responseBody);
+        }
+      })
+      .catch(() => {
+        setErrorMessage("Unable to export to Github");
+      })
+      .finally(() => {
+        setIsCreatingGithubPR(false);
+      });
+  };
+
+  const handleClosePullRequestDialog = () => {
+    setPullRequestURL("");
+  };
+
+  return (
+    <>
+      <Typography
+        sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
+        variant="h5"
+      >
+        Click the button below to create a Pull Request to Github
+      </Typography>
+      <Button
+        startIcon={<GitHubIcon />}
+        disabled={isCreatingGithubPR}
+        variant="contained"
+        onClick={handleGithub}
+        sx={{ mt: 4, width: "230px" }}
+      >
+        {isCreatingGithubPR ? (
+          <CircularProgress size={24} />
+        ) : (
+          "Create Pull Request"
+        )}
+      </Button>
+
+      {/* Dialog box for acknowledgement the creation of a pull request */}
+      <Dialog open={pullRequestURL.length > 0}>
+        <DialogTitle>Your pull request has been created!</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Thank you for contributing! A maintainer will review your changes
+            soon.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClosePullRequestDialog}>Cancel</Button>
+          <Button component={MuiLink} href={pullRequestURL}>
+            Go to PR
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
 type ExportTaxonomyProps = {
   addNavLinks: ({
     branchName,
@@ -38,8 +120,6 @@ const ExportTaxonomy = ({
   taxonomyName,
   branchName,
 }: ExportTaxonomyProps) => {
-  const [isCreatingGithubPR, setIsCreatingGithubPR] = useState(false);
-  const [pullRequestURL, setPullRequestURL] = useState("");
   const [isDownloadingFile, setIsDownloadingFile] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -83,36 +163,8 @@ const ExportTaxonomy = ({
       });
   };
 
-  const handleGithub = () => {
-    setIsCreatingGithubPR(true);
-    setErrorMessage("");
-    setPullRequestURL("");
-
-    fetch(`${baseURL}githubexport`, {
-      method: "GET",
-    })
-      .then(async (response) => {
-        const responseBody = await response.json();
-        if (!response.ok) {
-          throw new Error(responseBody?.detail ?? "Unable to export to Github");
-        } else {
-          setPullRequestURL(responseBody);
-        }
-      })
-      .catch(() => {
-        setErrorMessage("Unable to export to Github");
-      })
-      .finally(() => {
-        setIsCreatingGithubPR(false);
-      });
-  };
-
   const handleCloseErrorSnackbar = () => {
     setErrorMessage("");
-  };
-
-  const handleClosePullRequestDialog = () => {
-    setPullRequestURL("");
   };
 
   return (
@@ -144,25 +196,10 @@ const ExportTaxonomy = ({
         >
           {isDownloadingFile ? <CircularProgress size={24} /> : "Download"}
         </Button>
-        <Typography
-          sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
-          variant="h5"
-        >
-          Click the button below to create a Pull Request to Github
-        </Typography>
-        <Button
-          startIcon={<GitHubIcon />}
-          disabled={isCreatingGithubPR}
-          variant="contained"
-          onClick={handleGithub}
-          sx={{ mt: 4, width: "230px" }}
-        >
-          {isCreatingGithubPR ? (
-            <CircularProgress size={24} />
-          ) : (
-            "Create Pull Request"
-          )}
-        </Button>
+        <ExportTaxonomyToGithub
+          baseURL={baseURL}
+          setErrorMessage={setErrorMessage}
+        />
       </Grid>
 
       {/* Snackbar to show errors */}
@@ -181,23 +218,6 @@ const ExportTaxonomy = ({
           {errorMessage}
         </Alert>
       </Snackbar>
-
-      {/* Dialog box for acknowledgement the creation of a pull request */}
-      <Dialog open={pullRequestURL.length > 0}>
-        <DialogTitle>Your pull request has been created!</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Thank you for contributing! A maintainer will review your changes
-            soon.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClosePullRequestDialog}>Cancel</Button>
-          <Button component={MuiLink} href={pullRequestURL}>
-            Go to PR
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
