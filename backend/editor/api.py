@@ -29,7 +29,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from . import graph_db
 
 # Controller imports
-from .controllers.project_controller import edit_project, get_project
+from .controllers.project_controller import edit_project
 from .entries import TaxonomyGraph
 
 # Custom exceptions
@@ -37,7 +37,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
 from .models.node_models import Footer, Header
-from .models.project_models import Project, ProjectEdit, ProjectStatus
+from .models.project_models import ProjectEdit, ProjectStatus
 
 # -----------------------------------------------------------------------------------#
 
