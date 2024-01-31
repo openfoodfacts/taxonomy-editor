@@ -29,6 +29,9 @@ from .graph_db import (  # Neo4J transactions context managers
     get_current_transaction,
 )
 
+from .models.project_models import ProjectEdit, ProjectStatus
+from .controllers.project_controller import edit_project
+
 
 async def async_list(async_iterable):
     return [i async for i in async_iterable]
@@ -131,11 +134,11 @@ class TaxonomyGraph:
                 )
                 await run_in_threadpool(self.parse_taxonomy, filepath)
                 async with TransactionCtx():
-                    await self.set_project_status(status="OPEN")
+                    await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.OPEN))
         except Exception as e:
             # add an error node so we can display it with errors in the app
             async with TransactionCtx():
-                await self.set_project_status(status="FAILED")
+                await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.FAILED))
             raise e
 
     async def import_taxonomy(
@@ -184,7 +187,7 @@ class TaxonomyGraph:
         # Create a new transaction context
         async with TransactionCtx():
             result = await self.export_to_github(filepath)
-            await self.set_project_status(status="CLOSED")
+            await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.CLOSED))
         return result
 
     async def export_to_github(self, filename):
@@ -257,20 +260,8 @@ class TaxonomyGraph:
             "taxonomy_name": self.taxonomy_name,
             "branch_name": self.branch_name,
             "description": description,
-            "status": "LOADING",
+            "status": ProjectStatus.LOADING,
         }
-        await get_current_transaction().run(query, params)
-
-    async def set_project_status(self, status):
-        """
-        Helper function to update a Taxonomy Editor project status
-        """
-        query = """
-            MATCH (n:PROJECT)
-            WHERE n.id = $project_name
-            SET n.status = $status
-        """
-        params = {"project_name": self.project_name, "status": status}
         await get_current_transaction().run(query, params)
 
     async def list_projects(self, status=None):

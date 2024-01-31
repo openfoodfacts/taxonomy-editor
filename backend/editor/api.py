@@ -7,7 +7,6 @@ import os
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 # FastAPI
@@ -35,7 +34,11 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models import Footer, Header
+from .models.node_models import Footer, Header
+from .models.project_models import ProjectStatus, ProjectEdit
+
+# Controller imports
+from .controllers.project_controller import edit_project
 
 # -----------------------------------------------------------------------------------#
 
@@ -113,17 +116,6 @@ def file_cleanup(filepath):
         log.warn(f"Taxonomy file {filepath} not found for deletion")
 
 
-class StatusFilter(str, Enum):
-    """
-    Enum for project status filter
-    """
-
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-    LOADING = "LOADING"
-    FAILED = "FAILED"
-
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     reformatted_errors = []
@@ -168,7 +160,7 @@ async def pong(response: Response):
 
 
 @app.get("/projects")
-async def list_all_projects(response: Response, status: Optional[StatusFilter] = None):
+async def list_all_projects(response: Response, status: Optional[ProjectStatus] = None):
     """
     List projects created in the Taxonomy Editor with a status filter
     """
@@ -180,13 +172,13 @@ async def list_all_projects(response: Response, status: Optional[StatusFilter] =
 
 @app.get("{taxonomy_name}/{branch}/set-project-status")
 async def set_project_status(
-    response: Response, branch: str, taxonomy_name: str, status: Optional[StatusFilter] = None
+    response: Response, branch: str, taxonomy_name: str, status: Optional[ProjectStatus] = None
 ):
     """
     Set the status of a Taxonomy Editor project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await taxonomy.set_project_status(status)
+    result = await edit_project(taxonomy.project_name, ProjectEdit(status=status))
     return result
 
 
