@@ -196,7 +196,7 @@ class TaxonomyGraph:
         # Close current transaction to use the session variable in unparser
         await get_current_transaction().commit()
 
-        filepath = self.dump_taxonomy(background_tasks)
+        filepath = await run_in_threadpool(self.dump_taxonomy, background_tasks)
         return filepath
 
     async def github_export(self, background_tasks: BackgroundTasks):
@@ -204,7 +204,7 @@ class TaxonomyGraph:
         # Close current transaction to use the session variable in unparser
         await get_current_transaction().commit()
 
-        filepath = self.dump_taxonomy(background_tasks)
+        filepath = await run_in_threadpool(self.dump_taxonomy, background_tasks)
         # Create a new transaction context
         async with TransactionCtx():
             pr_url = await self.export_to_github(filepath)
