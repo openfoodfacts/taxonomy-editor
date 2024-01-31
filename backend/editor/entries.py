@@ -456,9 +456,10 @@ class TaxonomyGraph:
         for key in new_node.keys():
             if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
-                # Delete tags_ids if we delete tags of a language
-                if key.startswith("tags_") and "_ids_" not in key:
+                # Delete tags_ids and comments if we delete tags of a language
+                if key.startswith("tags_") and "_ids_" not in key and not key.endswith("_comments"):
                     deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
+                    deleted_keys.add(key + "_comments")
 
         # Build query
         query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
@@ -472,18 +473,14 @@ class TaxonomyGraph:
         # Adding normalized tags ids corresponding to entry tags
         normalised_new_node = {}
         for key in set(new_node.keys()) - deleted_keys:
-            if key.startswith("tags_"):
-                if "_ids_" not in key:
-                    keys_language_code = key.split("_", 1)[1]
-                    normalised_value = []
-                    for value in new_node[key]:
-                        normalised_value.append(
-                            parser_utils.normalize_text(value, keys_language_code)
-                        )
-                    normalised_new_node[key] = new_node[key]
-                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-                else:
-                    pass  # We generate tags_ids, and ignore the one sent
+            if key.startswith("tags_") and "_ids_" not in key and not key.endswith("_comments"):
+                # Normalise tags and store them in tags_ids
+                keys_language_code = key.split("_", 1)[1]
+                normalised_value = []
+                for value in new_node[key]:
+                    normalised_value.append(parser_utils.normalize_text(value, keys_language_code))
+                normalised_new_node[key] = new_node[key]
+                normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
             else:
                 # No need to normalise
                 normalised_new_node[key] = new_node[key]
