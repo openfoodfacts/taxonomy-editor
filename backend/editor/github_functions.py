@@ -7,7 +7,12 @@ from textwrap import dedent
 from fastapi import HTTPException
 from githubkit import GitHub
 from githubkit.exception import RequestFailed
-from githubkit.versions.latest.models import BranchWithProtection, ContentFile, PullRequest
+from githubkit.versions.latest.models import (
+    BranchWithProtection,
+    ContentFile,
+    FileCommit,
+    PullRequest,
+)
 
 from . import settings
 
@@ -84,7 +89,7 @@ class GithubOperations:
             *self.repo_info, ref="refs/heads/" + self.branch_name, sha=commit_sha
         )
 
-    async def update_file(self, filename: str, file_sha: str) -> None:
+    async def update_file(self, filename: str, file_sha: str) -> FileCommit:
         """
         Update the taxonomy txt file edited by user using the Taxonomy Editor
         """
@@ -95,7 +100,7 @@ class GithubOperations:
             with open(filename, "r") as f:
                 new_file_contents = f.read()
             # Update the file
-            (
+            return (
                 await self.connection.rest.repos.async_create_or_update_file_contents(
                     *self.repo_info,
                     path=github_filepath,

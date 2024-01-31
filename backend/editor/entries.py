@@ -114,7 +114,9 @@ class TaxonomyGraph:
                 file_sha = await github_object.get_file_sha()
                 await edit_project(
                     self.project_name,
-                    ProjectEdit(github_commit_sha=commit_sha, github_file_sha=file_sha),
+                    ProjectEdit(
+                        github_checkout_commit_sha=commit_sha, github_file_latest_sha=file_sha
+                    ),
                 )
                 return filepath
             except Exception as e:
@@ -206,7 +208,6 @@ class TaxonomyGraph:
         # Create a new transaction context
         async with TransactionCtx():
             pr_url = await self.export_to_github(filepath)
-            await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.CLOSED))
         return pr_url
 
     async def export_to_github(self, filename):
@@ -214,12 +215,15 @@ class TaxonomyGraph:
         Helper function to export a taxonomy to GitHub
         """
         project = await get_project(self.project_name)
-        is_from_github, description, file_sha, commit_sha = (
+        is_from_github, status, description, commit_sha, file_sha, pr_url = (
             project.is_from_github,
+            project.status,
             project.description,
-            project.github_file_sha,
-            project.github_commit_sha,
+            project.github_checkout_commit_sha,
+            project.github_file_latest_sha,
+            project.github_pr_url,
         )
+
         if not is_from_github:
             raise HTTPException(
                 status_code=422,
@@ -229,14 +233,30 @@ class TaxonomyGraph:
             )
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+
+        if status != ProjectStatus.EXPORTED:
+            try:
+                await github_object.checkout_branch(commit_sha)
+            except Exception as e:
+                raise GithubBranchExistsError() from e
+
         try:
-            await github_object.checkout_branch(commit_sha)
-        except Exception as e:
-            raise GithubBranchExistsError() from e
-        try:
-            await github_object.update_file(filename, file_sha)
-            pr_object = await github_object.create_pr(description)
-            return pr_object.html_url
+            new_file = await github_object.update_file(filename, file_sha)
+
+            if status != ProjectStatus.EXPORTED:
+                pull_request = await github_object.create_pr(description)
+                pr_url = pull_request.html_url
+
+            await edit_project(
+                self.project_name,
+                ProjectEdit(
+                    status=ProjectStatus.EXPORTED,
+                    github_file_latest_sha=new_file.content.sha,
+                    github_pr_url=pr_url,
+                ),
+            )
+            return pr_url
+
         except Exception as e:
             raise GithubUploadError() from e
 
