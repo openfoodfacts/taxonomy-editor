@@ -452,6 +452,12 @@ class TaxonomyGraph:
         curr_node = result[0]["n"]
         deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
+        # Check for deleted keys having associated comments and delete them too
+        for key in deleted_keys:
+            comments_key = key + "_comments"
+            if new_node.get(comments_key) is not None:
+                deleted_keys.add(comments_key)
+
         # Check for keys having null/empty values
         for key in new_node.keys():
             if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
@@ -459,6 +465,9 @@ class TaxonomyGraph:
                 # Delete tags_ids and comments if we delete tags of a language
                 if key.startswith("tags_") and "_ids_" not in key and not key.endswith("_comments"):
                     deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
+                    deleted_keys.add(key + "_comments")
+                # Delete prop comments if we delete prop
+                if key.startswith("prop_") and not key.endswith("_comments"):
                     deleted_keys.add(key + "_comments")
 
         # Build query
