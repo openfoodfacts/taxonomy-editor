@@ -7,7 +7,7 @@ import base64
 from fastapi import HTTPException
 from githubkit import GitHub
 from githubkit.exception import RequestFailed
-from githubkit.versions.latest.models import BranchWithProtection, PullRequest
+from githubkit.versions.latest.models import BranchWithProtection, ContentFile, PullRequest
 from textwrap import dedent
 
 from . import settings
@@ -64,18 +64,28 @@ class GithubOperations:
             raise e
         return result.parsed_data
 
-    async def checkout_branch(self) -> None:
+    async def get_file_sha(self) -> str:
         """
-        Create a new branch in the "openfoodfacts-server" repo
+        Get the contents of a file in the "openfoodfacts-server" repo
         """
-        source_branch = (
-            await self.connection.rest.repos.async_get_branch(*self.repo_info, branch="main")
+        github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
+        file_contents: ContentFile = (
+            await self.connection.rest.repos.async_get_content(
+                *self.repo_info, path=github_filepath
+            )
         ).parsed_data
+
+        return file_contents.sha
+
+    async def checkout_branch(self, commit_sha: str) -> None:
+        """
+        Create a new branch in the "openfoodfacts-server" repo from a given sha
+        """
         await self.connection.rest.git.async_create_ref(
-            *self.repo_info, ref="refs/heads/" + self.branch_name, sha=source_branch.commit.sha
+            *self.repo_info, ref="refs/heads/" + self.branch_name, sha=commit_sha
         )
 
-    async def update_file(self, filename: str) -> None:
+    async def update_file(self, filename: str, file_sha: str) -> None:
         """
         Update the taxonomy txt file edited by user using the Taxonomy Editor
         """
@@ -83,11 +93,6 @@ class GithubOperations:
         github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
         commit_message = f"Update {self.taxonomy_name}.txt"
         try:
-            current_file = (
-                await self.connection.rest.repos.async_get_content(
-                    *self.repo_info, path=github_filepath
-                )
-            ).parsed_data
             with open(filename, "r") as f:
                 new_file_contents = f.read()
             # Update the file
@@ -97,7 +102,7 @@ class GithubOperations:
                     path=github_filepath,
                     message=commit_message,
                     content=base64.b64encode(new_file_contents.encode("utf-8")),
-                    sha=current_file.sha,
+                    sha=file_sha,
                     branch=self.branch_name,
                 )
             ).parsed_data

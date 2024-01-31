@@ -29,8 +29,8 @@ from .graph_db import (  # Neo4J transactions context managers
     get_current_transaction,
 )
 
-from .models.project_models import ProjectEdit, ProjectStatus
-from .controllers.project_controller import edit_project
+from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
+from .controllers.project_controller import create_project, edit_project, get_project
 
 
 async def async_list(async_iterable):
@@ -101,14 +101,24 @@ class TaxonomyGraph:
         return filepath
 
     async def get_github_taxonomy_file(self, tmpdir: str):
-        filename = f"{self.taxonomy_name}.txt"
-        filepath = f"{tmpdir}/{filename}"
-        base_url = "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
-        try:
-            await run_in_threadpool(urllib.request.urlretrieve, base_url + filename, filepath)
-            return filepath
-        except Exception as e:
-            raise TaxonomyImportError() from e
+        async with TransactionCtx():
+            filename = f"{self.taxonomy_name}.txt"
+            filepath = f"{tmpdir}/{filename}"
+            base_url = (
+                "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
+            )
+            try:
+                await run_in_threadpool(urllib.request.urlretrieve, base_url + filename, filepath)
+                github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+                commit_sha = (await github_object.get_branch("main")).commit.sha
+                file_sha = await github_object.get_file_sha()
+                await edit_project(
+                    self.project_name,
+                    ProjectEdit(github_commit_sha=commit_sha, github_file_sha=file_sha),
+                )
+                return filepath
+            except Exception as e:
+                raise TaxonomyImportError() from e
 
     def parse_taxonomy(self, filepath: str):
         """
@@ -150,7 +160,15 @@ class TaxonomyGraph:
         """
         Helper function to import a taxonomy from GitHub
         """
-        await self.create_project(description)
+        await create_project(
+            ProjectCreate(
+                id=self.project_name,
+                taxonomy_name=self.taxonomy_name,
+                branch_name=self.branch_name,
+                description=description,
+                is_from_github=uploadfile is None,
+            )
+        )
         background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
         return True
 
@@ -194,17 +212,20 @@ class TaxonomyGraph:
         """
         Helper function to export a taxonomy to GitHub
         """
-        query = """MATCH (n:PROJECT) WHERE n.id = $project_name RETURN n.description"""
-        result = await get_current_transaction().run(query, {"project_name": self.project_name})
-        description = (await result.data())[0]["n.description"]
+        project = await get_project(self.project_name)
+        description, file_sha, commit_sha = (
+            project.description,
+            project.github_file_sha,
+            project.github_commit_sha,
+        )
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         try:
-            await github_object.checkout_branch()
+            await github_object.checkout_branch(commit_sha)
         except Exception as e:
             raise GithubBranchExistsError() from e
         try:
-            await github_object.update_file(filename)
+            await github_object.update_file(filename, file_sha)
             pr_object = await github_object.create_pr(description)
             return (pr_object.html_url, filename)
         except Exception as e:
@@ -241,28 +262,6 @@ class TaxonomyGraph:
         Helper function to check if a branch name is valid
         """
         return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
-
-    async def create_project(self, description):
-        """
-        Helper function to create a node with label "PROJECT"
-        """
-        query = """
-            CREATE (n:PROJECT)
-            SET n.id = $project_name
-            SET n.taxonomy_name = $taxonomy_name
-            SET n.branch_name = $branch_name
-            SET n.description = $description
-            SET n.status = $status
-            SET n.created_at = datetime()
-        """
-        params = {
-            "project_name": self.project_name,
-            "taxonomy_name": self.taxonomy_name,
-            "branch_name": self.branch_name,
-            "description": description,
-            "status": ProjectStatus.LOADING,
-        }
-        await get_current_transaction().run(query, params)
 
     async def list_projects(self, status=None):
         """

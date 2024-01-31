@@ -3,7 +3,7 @@ Required pydantic models for API
 """
 from typing import List
 
-from pydantic import BaseModel
+from .base_models import BaseModel
 
 
 class Marginal(BaseModel):
