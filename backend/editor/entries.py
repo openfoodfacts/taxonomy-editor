@@ -1,13 +1,15 @@
 """
 Database helper functions for API
 """
-import contextlib
 import re
 import shutil
 import tempfile
 import urllib.request  # Sending requests
 
 from fastapi import BackgroundTasks, HTTPException, UploadFile
+from fastapi.concurrency import (
+    run_in_threadpool,
+)  # For synchronous functions that are I/O bound in async path operations/background tasks
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils  # Normalizing tags
@@ -88,58 +90,65 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
-    @contextlib.contextmanager
-    def get_taxonomy_file(self, uploadfile=None):
-        if uploadfile is None:  # taxonomy is imported
-            base_url = (
-                "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
-            )
-            filename = f"{self.taxonomy_name}.txt"
-            base_url += filename
-        else:  # taxonomy is uploaded
-            filename = uploadfile.filename
+    async def get_local_taxonomy_file(self, tmpdir: str, uploadfile: UploadFile):
+        filename = uploadfile.filename
+        filepath = f"{tmpdir}/{filename}"
+        with open(filepath, "wb") as f:
+            await run_in_threadpool(shutil.copyfileobj, uploadfile.file, f)
+        return filepath
 
-        with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
-            filepath = f"{tmpdir}/{filename}"
-            if uploadfile is None:
-                # Downloads and creates taxonomy file in current working directory
-                urllib.request.urlretrieve(base_url, filepath)
-            else:
-                with open(filepath, "wb") as f:
-                    shutil.copyfileobj(uploadfile.file, f)
-            yield filepath
+    async def get_github_taxonomy_file(self, tmpdir: str):
+        filename = f"{self.taxonomy_name}.txt"
+        filepath = f"{tmpdir}/{filename}"
+        base_url = "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
+        try:
+            await run_in_threadpool(urllib.request.urlretrieve, base_url + filename, filepath)
+            return filepath
+        except Exception as e:
+            raise TaxonomyImportError() from e
 
-    def parse_taxonomy(self, uploadfile=None):
+    def parse_taxonomy(self, filepath: str):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
+        with SyncTransactionCtx() as session:
+            # Create parser object and pass current session to it
+            parser_object = parser.Parser(session)
+            try:
+                # Parse taxonomy with given file name and branch name
+                parser_object(filepath, self.branch_name, self.taxonomy_name)
+            except Exception as e:
+                # outer exception handler will put project status to FAILED
+                raise TaxonomyParsingError() from e
+
+    async def get_and_parse_taxonomy(self, uploadfile: UploadFile | None = None):
         try:
-            with self.get_taxonomy_file(uploadfile) as filepath:
-                with SyncTransactionCtx() as session:
-                    # Create parser object and pass current session to it
-                    parser_object = parser.Parser(session)
-                    try:
-                        # Parse taxonomy with given file name and branch name
-                        parser_object(filepath, self.branch_name, self.taxonomy_name)
-                        self.set_project_status(session, status="OPEN")
-                        return True
-                    except Exception as e:
-                        # outer exception handler will put project status to FAILED
-                        raise TaxonomyParsingError() from e
+            with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
+                filepath = await (
+                    self.get_github_taxonomy_file(tmpdir)
+                    if uploadfile is None
+                    else self.get_local_taxonomy_file(tmpdir, uploadfile)
+                )
+                await run_in_threadpool(self.parse_taxonomy, filepath)
+                async with TransactionCtx():
+                    await self.set_project_status(status="OPEN")
         except Exception as e:
             # add an error node so we can display it with errors in the app
-            parser_object.create_parsing_errors_node(self.taxonomy_name, self.branch_name)
-            self.set_project_status(session, status="FAILED")
-            raise TaxonomyImportError() from e
+            async with TransactionCtx():
+                await self.set_project_status(status="FAILED")
+            raise e
 
-    async def import_from_github(
-        self, description, background_tasks: BackgroundTasks, uploadfile: UploadFile = None
+    async def import_taxonomy(
+        self,
+        description: str,
+        background_tasks: BackgroundTasks,
+        uploadfile: UploadFile | None = None,
     ):
         """
         Helper function to import a taxonomy from GitHub
         """
         await self.create_project(description)
-        background_tasks.add_task(self.parse_taxonomy, uploadfile)
+        background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
         return True
 
     def dump_taxonomy(self):
@@ -173,9 +182,9 @@ class TaxonomyGraph:
 
         filepath = self.dump_taxonomy()
         # Create a new transaction context
-        async with TransactionCtx() as (_, session):
+        async with TransactionCtx():
             result = await self.export_to_github(filepath)
-            self.set_project_status(session, status="CLOSED")
+            await self.set_project_status(status="CLOSED")
         return result
 
     async def export_to_github(self, filename):
@@ -252,7 +261,7 @@ class TaxonomyGraph:
         }
         await get_current_transaction().run(query, params)
 
-    def set_project_status(self, session, status):
+    async def set_project_status(self, status):
         """
         Helper function to update a Taxonomy Editor project status
         """
@@ -262,8 +271,7 @@ class TaxonomyGraph:
             SET n.status = $status
         """
         params = {"project_name": self.project_name, "status": status}
-        with session.begin_transaction() as tx:
-            tx.run(query, params)
+        await get_current_transaction().run(query, params)
 
     async def list_projects(self, status=None):
         """
