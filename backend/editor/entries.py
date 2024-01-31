@@ -442,14 +442,15 @@ class TaxonomyGraph:
     async def get_stopwords_dict(self):
         """
         Helper function used for getting all stopwords in a taxonomy, in the form of a dictionary
-        where the keys are the language codes and the values are the stopwords in the corresponding language
+        where the keys are the language codes, and the values are the stopwords in the
+        corresponding language
         """
         query = f"""
-            MATCH (s:{self.project_name}:STOPWORDS) 
-            WITH keys(s) AS properties, s 
-            UNWIND properties AS property 
-            WITH s, property 
-            WHERE property STARTS WITH 'tags_ids' 
+            MATCH (s:{self.project_name}:STOPWORDS)
+            WITH keys(s) AS properties, s
+            UNWIND properties AS property
+            WITH s, property
+            WHERE property STARTS WITH 'tags_ids'
             RETURN property AS tags_ids_lc, s[property] AS stopwords
         """
         result = await get_current_transaction().run(query)
