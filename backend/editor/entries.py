@@ -12,7 +12,9 @@ from fastapi.concurrency import (
 )  # For synchronous functions that are I/O bound in async path operations/background tasks
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
-from openfoodfacts_taxonomy_parser import utils as parser_utils  # Normalizing tags
+from openfoodfacts_taxonomy_parser import utils as parser_utils
+
+from .utils import file_cleanup  # Normalizing tags
 
 from . import settings
 from .exceptions import GithubBranchExistsError  # Custom exceptions
@@ -172,7 +174,7 @@ class TaxonomyGraph:
         background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
         return True
 
-    def dump_taxonomy(self):
+    def dump_taxonomy(self, background_tasks: BackgroundTasks):
         """
         Helper function to create the txt file of a taxonomy
         """
@@ -184,29 +186,30 @@ class TaxonomyGraph:
             try:
                 # Parse taxonomy with given file name and branch name
                 unparser_object(filename, self.branch_name, self.taxonomy_name)
+                background_tasks.add_task(file_cleanup, filename)
                 return filename
             except Exception as e:
                 raise TaxonomyUnparsingError() from e
 
-    async def file_export(self):
+    async def file_export(self, background_tasks: BackgroundTasks):
         """Export a taxonomy for download"""
         # Close current transaction to use the session variable in unparser
         await get_current_transaction().commit()
 
-        filepath = self.dump_taxonomy()
+        filepath = self.dump_taxonomy(background_tasks)
         return filepath
 
-    async def github_export(self):
+    async def github_export(self, background_tasks: BackgroundTasks):
         """Export a taxonomy to Github"""
         # Close current transaction to use the session variable in unparser
         await get_current_transaction().commit()
 
-        filepath = self.dump_taxonomy()
+        filepath = self.dump_taxonomy(background_tasks)
         # Create a new transaction context
         async with TransactionCtx():
-            result = await self.export_to_github(filepath)
+            pr_url = await self.export_to_github(filepath)
             await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.CLOSED))
-        return result
+        return pr_url
 
     async def export_to_github(self, filename):
         """
@@ -227,7 +230,7 @@ class TaxonomyGraph:
         try:
             await github_object.update_file(filename, file_sha)
             pr_object = await github_object.create_pr(description)
-            return (pr_object.html_url, filename)
+            return pr_object.html_url
         except Exception as e:
             raise GithubUploadError() from e
 

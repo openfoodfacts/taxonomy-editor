@@ -106,16 +106,6 @@ def check_single(id):
         raise HTTPException(status_code=500, detail="Multiple entries found")
 
 
-def file_cleanup(filepath):
-    """
-    Helper function to delete a taxonomy file from local storage
-    """
-    try:
-        os.remove(filepath)
-    except FileNotFoundError:
-        log.warn(f"Taxonomy file {filepath} not found for deletion")
-
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     reformatted_errors = []
@@ -335,10 +325,8 @@ async def export_to_text_file(
     response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks
 ):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    file = await taxonomy.file_export()
+    file = await taxonomy.file_export(background_tasks)
 
-    # Add a background task for removing exported taxonomy file
-    background_tasks.add_task(file_cleanup, file)
     return FileResponse(file)
 
 
@@ -348,9 +336,7 @@ async def export_to_github(
 ):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
-        url, file = await taxonomy.github_export()
-        # Add a background task for removing exported taxonomy file
-        background_tasks.add_task(file_cleanup, file)
+        url = await taxonomy.github_export(background_tasks)
         return url
 
     except GithubBranchExistsError:
