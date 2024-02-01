@@ -10,6 +10,7 @@ import {
   TableBody,
   TableHead,
   TableContainer,
+  Stack,
 } from "@mui/material";
 import MaterialTable from "@material-table/core";
 import { Alert, CircularProgress } from "@mui/material";
@@ -91,33 +92,46 @@ const Errors = ({ addNavLinks }) => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Alert severity="warning">
-        These errors must be fixed manually via Github!
-      </Alert>
-      <Box
-        sx={{
-          border: "solid",
-          borderWidth: 1.5,
-        }}
+      <Stack
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
       >
-        <MaterialTable
-          data={errors}
-          columns={[
-            {
-              title: "No.",
-              field: "id",
-              width: "10%",
-            },
-            { title: "Error", field: "error" },
-          ]}
-          title="Errors"
-          options={{
-            tableLayout: "fixed",
-            pageSize: 50,
-            pageSizeOptions: ["20", "50", "100", "200"],
-          }}
-        />
-      </Box>
+        {errors.length > 0 && (
+          <>
+            <Alert severity="warning">
+              These errors must be fixed manually via Github!
+            </Alert>
+            <Box
+              sx={{
+                border: "solid",
+                borderWidth: 1.5,
+              }}
+            >
+              <MaterialTable
+                data={errors}
+                columns={[
+                  {
+                    title: "No.",
+                    field: "id",
+                    width: "10%",
+                  },
+                  { title: "Error", field: "error" },
+                ]}
+                title="Errors"
+                options={{
+                  tableLayout: "fixed",
+                  pageSize: 50,
+                  pageSizeOptions: ["20", "50", "100", "200"],
+                }}
+              />
+            </Box>
+          </>
+        )}
+        {errors.length === 0 && (
+          <Typography>
+            No Error, {toTitleCase(taxonomyName)} can be edited
+          </Typography>
+        )}
+      </Stack>
     </Box>
   );
 };
