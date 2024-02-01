@@ -98,19 +98,6 @@ class TaxonomyParser:
                 line_count += 1
             yield line_count, ""  # to end the last entry if not ended
 
-    def _remove_stopwords(self, lc: str, words: str) -> str:
-        """Remove the stopwords that were read at the beginning of the file"""
-        # First check if this language has stopwords
-        if lc in self.stopwords:
-            words_to_remove = self.stopwords[lc]
-            new_words = []
-            for word in words.split("-"):
-                if word not in words_to_remove:
-                    new_words.append(word)
-            return ("-").join(new_words)
-        else:
-            return words
-
     def _add_line(self, line: str) -> str:
         """
         Get a normalized string but keeping the language code "lc:",
@@ -118,7 +105,7 @@ class TaxonomyParser:
         """
         lc, line = line.split(":", 1)
         new_line = lc + ":"
-        new_line += self._remove_stopwords(lc, normalize_text(line, lc))
+        new_line += normalize_text(line, lc, stopwords=self.stopwords)
         return new_line
 
     def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
@@ -126,7 +113,7 @@ class TaxonomyParser:
         lc, line = line.split(":", 1)
         new_line: list[str] = []
         for word in line.split(","):
-            new_line.append(self._remove_stopwords(lc, normalize_text(word, lc)))
+            new_line.append(normalize_text(word, lc, stopwords=self.stopwords))
         return lc, new_line
 
     def _set_data_id(self, data: NodeData, id: str, line_number: int) -> NodeData:
@@ -291,7 +278,7 @@ class TaxonomyParser:
                     tagsids_list = []
                     for word in line.split(","):
                         tags_list.append(word.strip())
-                        word_normalized = self._remove_stopwords(lang, normalize_text(word, lang))
+                        word_normalized = normalize_text(word, lang, stopwords=self.stopwords)
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)

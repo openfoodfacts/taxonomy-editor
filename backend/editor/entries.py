@@ -65,13 +65,14 @@ class TaxonomyGraph:
         """
         params = {"id": entry}
         query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
+        stopwords = await self.get_stopwords_dict()
 
         # Build all basic keys of a node
         if label == "ENTRY":
             # Normalizing new canonical tag
             language_code, canonical_tag = entry.split(":", 1)
             normalised_canonical_tag = parser_utils.normalize_text(
-                canonical_tag, main_language_code
+                canonical_tag, main_language_code, stopwords=stopwords
             )
 
             # Reconstructing and updation of node ID
@@ -458,6 +459,27 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
+    async def get_stopwords_dict(self) -> dict[str, list[str]]:
+        """
+        Helper function used for getting all stopwords in a taxonomy, in the form of a dictionary
+        where the keys are the language codes, and the values are the stopwords in the
+        corresponding language
+        """
+        query = f"""
+            MATCH (s:{self.project_name}:STOPWORDS)
+            WITH keys(s) AS properties, s
+            UNWIND properties AS property
+            WITH s, property
+            WHERE property STARTS WITH 'tags_ids'
+            RETURN property AS tags_ids_lc, s[property] AS stopwords
+        """
+        result = await get_current_transaction().run(query)
+        records = await async_list(result)
+        stopwords_dict = {
+            record["tags_ids_lc"].split("_")[-1]: record["stopwords"] for record in records
+        }
+        return stopwords_dict
+
     async def update_node(self, label, entry, new_node):
         """
         Helper function used for updation of node with given id and label
@@ -491,6 +513,7 @@ class TaxonomyGraph:
 
         # Adding normalized tags ids corresponding to entry tags
         normalised_new_node = {}
+        stopwords = await self.get_stopwords_dict()
         for key in set(new_node.keys()) - deleted_keys:
             if key.startswith("tags_"):
                 if "_ids_" not in key:
@@ -498,7 +521,9 @@ class TaxonomyGraph:
                     normalised_value = []
                     for value in new_node[key]:
                         normalised_value.append(
-                            parser_utils.normalize_text(value, keys_language_code)
+                            parser_utils.normalize_text(
+                                value, keys_language_code, stopwords=stopwords
+                            )
                         )
                     normalised_new_node[key] = new_node[key]
                     normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
