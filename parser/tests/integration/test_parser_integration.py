@@ -69,7 +69,8 @@ def test_calling(neo4j):
         results = session.run(query)
         expected_stopwords = {
             "id": "stopwords:0",
-            "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et"],
+            "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test normalisation"],
+            "tags_ids_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test-normalisation"],
             "preceding_lines": [],
         }
         for result in results:
