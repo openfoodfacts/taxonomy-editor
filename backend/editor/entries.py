@@ -271,20 +271,20 @@ class TaxonomyGraph:
         else:
             return True
 
-    async def is_branch_unique(self):
+    async def is_branch_unique(self, from_github: bool):
         """
-        Helper function to check uniqueness of GitHub branch
+        Helper function to check uniqueness of branch
         """
         query = """MATCH (n:PROJECT) WHERE n.branch_name = $branch_name RETURN n"""
         result = await get_current_transaction().run(query, {"branch_name": self.branch_name})
 
+        if not from_github:
+            return (await result.value()) == []
+
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
         github_branch = await github_object.get_branch(self.branch_name)
 
-        if (await result.value() == []) and (github_branch is None):
-            return True
-        else:
-            return False
+        return (await result.value() == []) and (github_branch is None)
 
     def is_valid_branch_name(self):
         """
