@@ -439,7 +439,7 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def get_stopwords_dict(self):
+    async def get_stopwords_dict(self) -> dict[str, list[str]]:
         """
         Helper function used for getting all stopwords in a taxonomy, in the form of a dictionary
         where the keys are the language codes, and the values are the stopwords in the
@@ -455,10 +455,9 @@ class TaxonomyGraph:
         """
         result = await get_current_transaction().run(query)
         records = await async_list(result)
-        stopwords_dict = {}
-        for record in records:
-            language_code = record["tags_ids_lc"].split("_")[-1]
-            stopwords_dict[language_code] = record["stopwords"]
+        stopwords_dict = {
+            record["tags_ids_lc"].split("_")[-1]: record["stopwords"] for record in records
+        }
         return stopwords_dict
 
     async def update_node(self, label, entry, new_node):

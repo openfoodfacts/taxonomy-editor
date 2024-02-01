@@ -4,8 +4,11 @@ import unicodedata
 import unidecode
 
 
-def normalize_text(line: str, lang="default", char="-", stopwords={}):
+def normalize_text(line: str, lang: str = "default", char: str = "-", stopwords: dict[str, list[str]] | None = None) -> str:
     """Normalize a string depending on the language code"""
+    if stopwords is None:
+        stopwords = {}
+
     line = unicodedata.normalize("NFC", line)
 
     # Removing accent
