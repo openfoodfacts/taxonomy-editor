@@ -36,27 +36,26 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
     let newProjects: ProjectType[] = [];
 
     if (data) {
-      const backendProjects = data
-        .map(
-          ({
-            id,
-            branch_name,
-            taxonomy_name,
-            description,
-            errors_count,
-            status,
-          }) => {
-            return {
-              id, // needed by MaterialTable as key
-              projectName: id,
-              taxonomyName: toTitleCase(taxonomy_name),
-              branchName: branch_name,
-              description: description,
-              errors_count: errors_count,
-              status: status,
-            };
-          }
-        );
+      const backendProjects = data.map(
+        ({
+          id,
+          branch_name,
+          taxonomy_name,
+          description,
+          errors_count,
+          status,
+        }) => {
+          return {
+            id, // needed by MaterialTable as key
+            projectName: id,
+            taxonomyName: toTitleCase(taxonomy_name),
+            branchName: branch_name,
+            description: description,
+            errors_count: errors_count,
+            status: status,
+          };
+        }
+      );
 
       newProjects = backendProjects;
     }
