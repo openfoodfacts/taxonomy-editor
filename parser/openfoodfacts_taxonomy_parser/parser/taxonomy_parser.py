@@ -1,3 +1,4 @@
+import collections
 import logging
 import re
 import sys
@@ -24,7 +25,7 @@ class NodeData:
     is_before: str | None = None
     main_language: str | None = None
     preceding_lines: list[str] = field(default_factory=list)
-    parent_tag: list[str] = field(default_factory=list)
+    parent_tag: list[tuple[str, int]] = field(default_factory=list)
     src_position: int | None = None
     properties: dict[str, str] = field(default_factory=dict)
     tags: dict[str, list[str]] = field(default_factory=dict)
@@ -59,6 +60,7 @@ class ChildLink(TypedDict):
     parent_id: str
     id: str
     position: int
+    line_position: int
 
 
 @dataclass(slots=True)
@@ -276,7 +278,7 @@ class TaxonomyParser:
                         data.tags["tags_ids_" + lc] = value
                 elif line[0] == "<":
                     # parent definition
-                    data.parent_tag.append(self._add_line(line[1:]))
+                    data.parent_tag.append((self._add_line(line[1:]), line_number + 1))
                 elif language_code_prefix.match(line):
                     # synonyms definition
                     if not data.id:
@@ -324,6 +326,51 @@ class TaxonomyParser:
         data.src_position = line_number + 1 - len(data.preceding_lines)
         yield data
 
+    def _get_valid_child_links(self, entry_nodes: list[NodeData], child_links: list[ChildLink]):
+        """Get only the valid child links, i.e. the child links whose the parent_id exists"""
+        node_ids = set([node.id for node in entry_nodes])
+        # we collect nodes where a synonym was used to designate the parent (unnormalised)
+        unnormalised_child_links = [
+            child_link.copy()
+            for child_link in child_links
+            if child_link["parent_id"] not in node_ids
+        ]
+
+        # we need to group them by language code of the parent id
+        lc_child_links_map = collections.defaultdict(list)
+        for child_link in unnormalised_child_links:
+            lc, parent_id = child_link["parent_id"].split(":")
+            child_link["parent_id"] = parent_id
+            lc_child_links_map[lc].append(child_link)
+
+        # we need to check if the parent id exists in the tags_ids_lc
+        missing_child_links = []
+        for lc, lc_child_links in lc_child_links_map.items():
+            # we collect all the tags_ids in a certain language
+            tags_ids = set()
+            for node in entry_nodes:
+                if "tags_ids_" + lc in node.tags:
+                    tags_ids.update(node.tags["tags_ids_" + lc])
+
+            # we check if the parent_id exists in the tags_ids
+            for child_link in lc_child_links:
+                if child_link["parent_id"] not in tags_ids:
+                    missing_child_links.append((lc, child_link))
+
+        missing_child_links_positions = set()
+        for lc, child_link in missing_child_links:
+            self.parser_logger.error(
+                f"Missing child link at line {child_link['line_position']}: "
+                f"parent id {child_link['parent_id']} not found in tags_ids_{lc}"
+            )
+            missing_child_links_positions.add(child_link["line_position"])
+
+        return [
+            child_link
+            for child_link in child_links
+            if child_link["line_position"] not in missing_child_links_positions
+        ]
+
     def _create_taxonomy(self, filename: str) -> Taxonomy:
         """Create the taxonomy from the file"""
         self.parser_logger.info(f"Parsing {filename}")
@@ -343,13 +390,21 @@ class TaxonomyParser:
             if entry.is_before:
                 previous_links.append(PreviousLink(before_id=entry.is_before, id=entry.id))
             if entry.parent_tag:
-                for position, parent in enumerate(entry.parent_tag):
-                    child_links.append(ChildLink(parent_id=parent, id=entry.id, position=position))
+                for position, (parent, line_position) in enumerate(entry.parent_tag):
+                    child_links.append(
+                        ChildLink(
+                            parent_id=parent,
+                            id=entry.id,
+                            position=position,
+                            line_position=line_position,
+                        )
+                    )
+        valid_child_links = self._get_valid_child_links(entry_nodes, child_links)
         return Taxonomy(
             entry_nodes=entry_nodes,
             other_nodes=other_nodes,
             previous_links=previous_links,
-            child_links=child_links,
+            child_links=valid_child_links,
         )
 
     def parse_file(self, filename: str, logger: ParserConsoleLogger | None = None) -> Taxonomy:
