@@ -20,14 +20,14 @@ export const API_URL = taxonomyApiUrlFromUi(window.location);
 export const ENTER_KEYCODE = 13;
 export const greyHexCode = "#808080";
 
-// List of all taxonomies in Open Food Facts
+// List of all editable taxonomies in Open Food Facts
+// Countries and Languages taxonomlies are not editable
 // https://wiki.openfoodfacts.org/Global_taxonomies#Overview
 export const TAXONOMY_NAMES = [
   "Additives",
   "Allergens",
   "Amino Acids",
   "Categories",
-  "Countries",
   "Data Quality",
   "Food Groups",
   "Improvements",
@@ -35,7 +35,6 @@ export const TAXONOMY_NAMES = [
   "Ingredients Analysis",
   "Ingredients Processing",
   "Labels",
-  "Languages",
   "Minerals",
   "Misc",
   "Nova Groups",
