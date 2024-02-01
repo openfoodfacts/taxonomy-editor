@@ -361,7 +361,7 @@ class TaxonomyParser:
         for lc, child_link in missing_child_links:
             self.parser_logger.error(
                 f"Missing child link at line {child_link['line_position']}: "
-                f"parent id {child_link['parent_id']} not found in tags_ids_{lc}"
+                f"parent_id {child_link['parent_id']} not found in tags_ids_{lc}"
             )
             missing_child_links_positions.add(child_link["line_position"])
 
