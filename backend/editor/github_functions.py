@@ -2,6 +2,7 @@
 Github helper functions for the Taxonomy Editor API
 """
 import base64
+from functools import cached_property
 from textwrap import dedent
 
 from fastapi import HTTPException
@@ -18,38 +19,32 @@ from . import settings
 
 
 class GithubOperations:
-
     """Class for Github operations"""
 
     def __init__(self, taxonomy_name: str, branch_name: str):
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
-        self.repo_info = self.get_repo_info()
-        self.connection = self.init_connection()
 
-    def get_repo_info(self) -> tuple[str, str]:
+    @cached_property
+    def repo_info(self) -> tuple[str, str]:
         repo_uri = settings.repo_uri
         if not repo_uri:
             raise HTTPException(
-                status_code=400, detail="repo_uri is not set. Please add your access token in .env"
+                status_code=400, detail="repo_uri is not set. Please add the repo URI in .env"
             )
         repo_owner, repo_name = repo_uri.split("/")
         return repo_owner, repo_name
 
-    def init_connection(self) -> GitHub:
+    @cached_property
+    def connection(self) -> GitHub:
         """
-        Initalize connection to Github with an access token
+        Get a connection to Github with an access token
         """
         access_token = settings.access_token
         if not access_token:
             raise HTTPException(
                 status_code=400,
                 detail="Access token is not set. Please add your access token in .env",
-            )
-        repo_uri = settings.repo_uri
-        if not repo_uri:
-            raise HTTPException(
-                status_code=400, detail="repo_uri is not set. Please add your access token in .env"
             )
         github = GitHub(access_token)
         return github
@@ -70,7 +65,7 @@ class GithubOperations:
 
     async def get_file_sha(self) -> str:
         """
-        Get the contents of a file in the "openfoodfacts-server" repo
+        Get the file SHA from the 'main' branch in the "openfoodfacts-server" repo
         """
         github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
         file_contents: ContentFile = (

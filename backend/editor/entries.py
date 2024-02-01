@@ -30,7 +30,7 @@ from .graph_db import (  # Neo4J transactions context managers
     get_current_transaction,
 )
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
-from .utils import file_cleanup  # Normalizing tags
+from .utils import file_cleanup
 
 
 async def async_list(async_iterable):
@@ -184,8 +184,9 @@ class TaxonomyGraph:
             # Creates a unique file for dumping the taxonomy
             filename = self.project_name + ".txt"
             try:
-                # Parse taxonomy with given file name and branch name
+                # Dump taxonomy with given file name and branch name
                 unparser_object(filename, self.branch_name, self.taxonomy_name)
+                # Program file removal in the background
                 background_tasks.add_task(file_cleanup, filename)
                 return filename
             except Exception as e:
@@ -193,21 +194,13 @@ class TaxonomyGraph:
 
     async def file_export(self, background_tasks: BackgroundTasks):
         """Export a taxonomy for download"""
-        # Close current transaction to use the session variable in unparser
-        await get_current_transaction().commit()
-
         filepath = await run_in_threadpool(self.dump_taxonomy, background_tasks)
         return filepath
 
     async def github_export(self, background_tasks: BackgroundTasks):
         """Export a taxonomy to Github"""
-        # Close current transaction to use the session variable in unparser
-        await get_current_transaction().commit()
-
         filepath = await run_in_threadpool(self.dump_taxonomy, background_tasks)
-        # Create a new transaction context
-        async with TransactionCtx():
-            pr_url = await self.export_to_github(filepath)
+        pr_url = await self.export_to_github(filepath)
         return pr_url
 
     async def export_to_github(self, filename):
