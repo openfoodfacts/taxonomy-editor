@@ -1,6 +1,14 @@
-import { Alert, Typography, Stack, Button, Box, Dialog } from "@mui/material";
+import {
+  Alert,
+  Typography,
+  Stack,
+  Button,
+  Box,
+  Dialog,
+  Checkbox,
+} from "@mui/material";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
-import { useCallback, useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import ISO6391 from "iso-639-1";
 import { TranslationTags } from "./TranslationTags";
 
@@ -25,7 +33,19 @@ export const ListTranslations = ({
     setIsDialogOpen(true);
   };
 
-  const xxLanguageExists = useCallback(() => {
+  const handleXxLanguage = () => {
+    if (shownLanguageCodes.includes("xx")) {
+      const newShownLanguagesCodes = shownLanguageCodes.filter(
+        (lang) => lang !== "xx"
+      );
+      setShownLanguageCodes(newShownLanguagesCodes);
+    } else {
+      const newShownLanguagesCodes = ["xx", ...shownLanguageCodes];
+      setShownLanguageCodes(newShownLanguagesCodes);
+    }
+  };
+
+  const xxLanguageExists = useMemo(() => {
     const exists =
       nodeObject["tags_xx"] === undefined
         ? false
@@ -39,7 +59,7 @@ export const ListTranslations = ({
       JSON.stringify(newShownLanguageCodes)
     );
 
-    if (xxLanguageExists() && !newShownLanguageCodes.includes("xx")) {
+    if (xxLanguageExists && !newShownLanguageCodes.includes("xx")) {
       newShownLanguageCodes = ["xx", ...newShownLanguageCodes];
     }
     setShownLanguageCodes(newShownLanguageCodes);
@@ -72,7 +92,7 @@ export const ListTranslations = ({
 
       if (localStorageShownLanguages) {
         // if shown languages is not empty, use it
-        if (xxLanguageExists() && !localStorageShownLanguages.includes("xx")) {
+        if (xxLanguageExists && !localStorageShownLanguages.includes("xx")) {
           localStorageShownLanguages = ["xx", ...localStorageShownLanguages];
         }
         setShownLanguageCodes(localStorageShownLanguages);
@@ -113,10 +133,10 @@ export const ListTranslations = ({
 
   const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
     const languageName =
-      languageCode === "xx"
+      (languageCode === "xx"
         ? "All languages"
-        : ISO6391.getName(languageCode) +
-          (languageCode === nodeObject.main_language ? " (main language)" : "");
+        : ISO6391.getName(languageCode)) +
+      (languageCode === nodeObject.main_language ? " (main language)" : "");
     const alertMessage =
       "Changing the first translation will modify " +
       (languageCode === nodeObject.main_language
@@ -129,13 +149,30 @@ export const ListTranslations = ({
   return (
     <Box sx={{ ml: 4 }}>
       {/* Title */}
-      <Stack direction="row" alignItems="center">
-        <Typography sx={{ mt: 4, mb: 1 }} variant="h5">
+      <Stack direction="row" alignItems="center" sx={{ mt: 4 }}>
+        <Typography sx={{ mb: 1 }} variant="h5">
           Translations
         </Typography>
-        <Button sx={{ mt: 3.5, ml: 1 }} onClick={handleOpen}>
+        <Button sx={{ ml: 1 }} onClick={handleOpen}>
           {numberOfLanguagesShownMessage}
         </Button>
+        {xxLanguageExists ? (
+          // if "xx" words exist, the "All language" is always displayed, the user can't choose
+          <>
+            <Checkbox checked={true} disabled />
+            <Typography variant="h6" sx={{ color: "#bdbdbd" }}>
+              All languages
+            </Typography>
+          </>
+        ) : (
+          <>
+            <Checkbox
+              checked={shownLanguageCodes.includes("xx")}
+              onClick={handleXxLanguage}
+            />
+            <Typography variant="h6">All languages</Typography>
+          </>
+        )}
       </Stack>
 
       {/* Render translation tags for each language to show */}
@@ -171,7 +208,6 @@ export const ListTranslations = ({
           mainLanguageCode={nodeObject.main_language}
           handleDialogConfirm={handleDialogConfirm}
           shownLanguageCodes={shownLanguageCodes}
-          isAllLanguagesDisabled={xxLanguageExists()} // if "xx" words exist, the "All language" is always displayed
         />
       </Dialog>
     </Box>

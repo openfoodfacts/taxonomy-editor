@@ -20,7 +20,6 @@ type Props = {
   mainLanguageCode: string;
   handleDialogConfirm: (newLanguageCodes: string[]) => void;
   shownLanguageCodes: string[];
-  isAllLanguagesDisabled: boolean;
 };
 
 const LanguageSelectionDialog = ({
@@ -28,7 +27,6 @@ const LanguageSelectionDialog = ({
   mainLanguageCode,
   handleDialogConfirm,
   shownLanguageCodes,
-  isAllLanguagesDisabled,
 }: Props) => {
   const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([
     ...shownLanguageCodes,
@@ -51,28 +49,21 @@ const LanguageSelectionDialog = ({
             }
             input={<OutlinedInput label="Languages" />}
             renderValue={(selected) =>
-              selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
+              selected
+                .map((langCode) => ISO6391.getName(langCode))
+                .filter(Boolean) //to ignore "xx" language
+                .join(", ")
             }
           >
-            {["All languages"]
-              .concat(ISO6391.getAllNames())
+            {ISO6391.getAllNames()
               .sort()
               .map((languageNameItem) => {
-                const languageCodeItem =
-                  languageNameItem === "All languages"
-                    ? "xx"
-                    : ISO6391.getCode(languageNameItem);
+                const languageCodeItem = ISO6391.getCode(languageNameItem);
                 return languageCodeItem === mainLanguageCode ? null : (
                   <MenuItem key={languageCodeItem} value={languageCodeItem}>
-                    {languageCodeItem === "xx" && isAllLanguagesDisabled ? (
-                      <Checkbox checked={true} disabled />
-                    ) : (
-                      <Checkbox
-                        checked={newShownLanguageCodes.includes(
-                          languageCodeItem
-                        )}
-                      />
-                    )}
+                    <Checkbox
+                      checked={newShownLanguageCodes.includes(languageCodeItem)}
+                    />
                     <ListItemText primary={languageNameItem} />
                   </MenuItem>
                 );

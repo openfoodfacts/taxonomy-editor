@@ -252,6 +252,22 @@ class TaxonomyGraph:
         }
         await get_current_transaction().run(query, params)
 
+    async def get_project_info(self):
+        """
+        Helper function to get information about a Taxonomy Editor project
+        """
+        query = """
+            MATCH (p:PROJECT {id: $project_name})
+            RETURN p AS info
+        """
+        params = {"project_name": self.project_name}
+
+        result = await get_current_transaction().run(query, params)  # returns a coroutine
+        info_record = await result.single()
+        info = info_record["info"] if info_record else None
+
+        return info
+
     def set_project_status(self, session, status):
         """
         Helper function to update a Taxonomy Editor project status

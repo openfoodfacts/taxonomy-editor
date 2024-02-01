@@ -41,7 +41,7 @@ def test_ping(client):
     assert response.json().get("ping").startswith("pong @")
 
 
-def test_import_from_github(client, github_mock, mocker):
+def test_import_taxonomy(client, github_mock, mocker):
     # We mock the TaxonomyGraph.import_taxonomy method,
     # which downloads the taxonomy file from a Github URL
     mocker.patch("editor.api.TaxonomyGraph.import_taxonomy", return_value=True)

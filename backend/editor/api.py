@@ -178,7 +178,19 @@ async def list_all_projects(response: Response, status: Optional[StatusFilter] =
     return result
 
 
-@app.get("{taxonomy_name}/{branch}/set-project-status")
+@app.get("/{taxonomy_name}/{branch}/project")
+async def get_project_info(response: Response, branch: str, taxonomy_name: str):
+    """
+    Get information about a Taxonomy Editor project
+    """
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = await taxonomy.get_project_info()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return result
+
+
+@app.get("/{taxonomy_name}/{branch}/set-project-status")
 async def set_project_status(
     response: Response, branch: str, taxonomy_name: str, status: Optional[StatusFilter] = None
 ):
