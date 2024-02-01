@@ -17,7 +17,7 @@ def get_session(uri=DEFAULT_URL):
 def dump_nodes(session, file):
     """Dump all nodes from the database to a JSON file."""
     node_count = session.run("MATCH (n) RETURN count(n)").single()[0]
-    for i, node in enumerate(session.run("MATCH (n) RETURN n")):
+    for i, node in enumerate(session.run("MATCH (n) RETURN n ORDER BY n.src_position")):
         node_dict = dict(node["n"])
         labels_list = list(node["n"].labels)
         node_dict["labels"] = labels_list
