@@ -56,11 +56,6 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
               status: status,
             };
           }
-        )
-        .filter(
-          (project) =>
-            project.taxonomyName !== "Languages" &&
-            project.taxonomyName !== "Countries"
         );
 
       newProjects = backendProjects;
