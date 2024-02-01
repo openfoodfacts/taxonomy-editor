@@ -30,11 +30,11 @@ const ExportTaxonomyToGithub = ({
   baseURL,
   setErrorMessage,
 }: ExportTaxonomyToGithubProps) => {
-  const [isCreatingGithubPR, setIsCreatingGithubPR] = useState(false);
+  const [isExportingToGithub, setIsExportingToGithub] = useState(false);
   const [pullRequestURL, setPullRequestURL] = useState("");
 
   const handleGithub = () => {
-    setIsCreatingGithubPR(true);
+    setIsExportingToGithub(true);
     setErrorMessage("");
     setPullRequestURL("");
 
@@ -53,7 +53,7 @@ const ExportTaxonomyToGithub = ({
         setErrorMessage("Unable to export to Github");
       })
       .finally(() => {
-        setIsCreatingGithubPR(false);
+        setIsExportingToGithub(false);
       });
   };
 
@@ -67,25 +67,25 @@ const ExportTaxonomyToGithub = ({
         sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
         variant="h5"
       >
-        Click the button below to create a Pull Request to Github
+        Click the button below to export to Github
       </Typography>
       <Button
         startIcon={<GitHubIcon />}
-        disabled={isCreatingGithubPR}
+        disabled={isExportingToGithub}
         variant="contained"
         onClick={handleGithub}
         sx={{ mt: 4, width: "230px" }}
       >
-        {isCreatingGithubPR ? (
+        {isExportingToGithub ? (
           <CircularProgress size={24} />
         ) : (
-          "Create Pull Request"
+          "Export to Github"
         )}
       </Button>
 
-      {/* Dialog box for acknowledgement the creation of a pull request */}
+      {/* Dialog box to the PR link */}
       <Dialog open={pullRequestURL.length > 0}>
-        <DialogTitle>Your pull request has been created!</DialogTitle>
+        <DialogTitle>Your changes have been exported to Github!</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Thank you for contributing! A maintainer will review your changes
@@ -94,7 +94,7 @@ const ExportTaxonomyToGithub = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePullRequestDialog}>Cancel</Button>
-          <Button component={MuiLink} href={pullRequestURL}>
+          <Button component={MuiLink} target="_blank" href={pullRequestURL}>
             Go to PR
           </Button>
         </DialogActions>
