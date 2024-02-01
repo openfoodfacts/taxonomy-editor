@@ -35,7 +35,7 @@ async def TransactionCtx():
             async with txn_manager as _txn:
                 txn.set(_txn)
                 session.set(_session)
-                yield txn, session
+                yield _txn, _session
     finally:
         txn.set(None)
         session.set(None)
