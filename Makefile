@@ -71,6 +71,13 @@ local_config_lint: ## Run on lint configuration files
 	npm run lint
 
 
+local_generate_sdk: ## Generate client SDK from OpenAPI spec
+	@echo "🍜 Generating client SDK from OpenAPI spec"
+	cd backend && make generate_spec
+	npm run lint
+	cd taxonomy-editor-frontend && npm run generate:api
+
+
 local_quality: local_backend_quality local_frontend_quality local_config_quality ## Run lint on local code
 
 local_backend_quality: ## Run lint on local backend code
@@ -110,6 +117,13 @@ dev: build up ## Build and run the project
 # dev tools #
 #-----------#
 
+
+# Generate client SDK from OpenAPI spec
+generate_sdk: ## Generate client SDK from OpenAPI spec
+	@echo "🍜 Generating client SDK from OpenAPI spec"
+	${DOCKER_COMPOSE} run --rm taxonomy_api python -m openapi.generate_openapi_spec
+	${DOCKER_COMPOSE} run --rm taxonomy_editor_code npm run lint
+	${DOCKER_COMPOSE} run --rm taxonomy_node npm run generate:api
 
 # lint code
 lint: backend_lint frontend_lint config_lint ## Run all linters

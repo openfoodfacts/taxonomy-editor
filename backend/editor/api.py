@@ -107,9 +107,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     for pydantic_error in exc.errors():
         # Add custom message for status filter
         if pydantic_error["loc"] == ("query", "status"):
-            pydantic_error[
-                "msg"
-            ] = "Status filter must be one of: OPEN, CLOSED or should be omitted"
+            pydantic_error["msg"] = (
+                "Status filter must be one of: OPEN, CLOSED or should be omitted"
+            )
         reformatted_errors.append(pydantic_error)
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
