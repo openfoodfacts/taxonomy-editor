@@ -3,14 +3,10 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from .graph_db import TransactionCtx
-
-
+from .controllers.project_controller import delete_project, get_projects_by_status
 from .github_functions import GithubOperations
-
+from .graph_db import TransactionCtx
 from .models.project_models import ProjectStatus
-
-from .controllers.project_controller import get_projects_by_status, delete_project
 
 log = logging.getLogger(__name__)
 

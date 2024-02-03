@@ -26,8 +26,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from .scheduler import scheduler_lifespan
-
 # DB helper imports
 from . import graph_db
 
@@ -41,6 +39,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 # Data model imports
 from .models.node_models import Footer, Header
 from .models.project_models import ProjectEdit, ProjectStatus
+from .scheduler import scheduler_lifespan
 
 # -----------------------------------------------------------------------------------#
 
@@ -163,7 +162,9 @@ async def set_project_status(
     Set the status of a Taxonomy Editor project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await project_controller.edit_project(taxonomy.project_name, ProjectEdit(status=status))
+    result = await project_controller.edit_project(
+        taxonomy.project_name, ProjectEdit(status=status)
+    )
     return result
 
 
