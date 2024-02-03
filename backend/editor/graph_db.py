@@ -41,20 +41,18 @@ async def TransactionCtx():
         session.set(None)
 
 
-def initialize_db():
+@contextlib.asynccontextmanager
+async def database_lifespan():
     """
-    Initialize Neo4J database
+    Context manager for Neo4J database
     """
     global driver
     uri = settings.uri
     driver = neo4j.AsyncGraphDatabase.driver(uri)
-
-
-async def shutdown_db():
-    """
-    Close session and driver of Neo4J database
-    """
-    await driver.close()
+    try:
+        yield
+    finally:
+        await driver.close()
 
 
 def get_current_transaction():

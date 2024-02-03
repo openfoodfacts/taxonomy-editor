@@ -1,5 +1,6 @@
+from .node_controller import delete_project_nodes
 from ..graph_db import get_current_transaction
-from ..models.project_models import Project, ProjectCreate, ProjectEdit
+from ..models.project_models import Project, ProjectCreate, ProjectEdit, ProjectStatus
 
 
 async def get_project(project_id: str) -> Project:
@@ -13,6 +14,19 @@ async def get_project(project_id: str) -> Project:
     params = {"project_id": project_id}
     result = await get_current_transaction().run(query, params)
     return Project(**(await result.single())["p"])
+
+
+async def get_projects_by_status(status: ProjectStatus) -> list[Project]:
+    """
+    Get projects by status
+    """
+    query = """
+    MATCH (p:PROJECT {status: $status})
+    RETURN p
+    """
+    params = {"status": status}
+    result = await get_current_transaction().run(query, params)
+    return [Project(**record["p"]) async for record in result]
 
 
 async def create_project(project: ProjectCreate):
@@ -39,3 +53,16 @@ async def edit_project(project_id: str, project_edit: ProjectEdit):
         "project_edit": project_edit.model_dump(exclude_unset=True),
     }
     await get_current_transaction().run(query, params)
+
+
+async def delete_project(project_id: str):
+    """
+    Delete project, its nodes and relationships
+    """
+    query = """
+    MATCH (p:PROJECT {id: $project_id})
+    DETACH DELETE p
+    """
+    params = {"project_id": project_id}
+    await get_current_transaction().run(query, params)
+    await delete_project_nodes(project_id)

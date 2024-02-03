@@ -135,3 +135,17 @@ class GithubOperations:
                 *self.repo_info, title=title, body=body, head=self.branch_name, base="main"
             )
         ).parsed_data
+
+    async def is_pr_merged(self, pr_number: int) -> bool:
+        """
+        Check if a pull request is merged
+        """
+        try:
+            await self.connection.rest.pulls.async_check_if_merged(
+                *self.repo_info, pull_number=pr_number
+            )
+            return True
+        except RequestFailed as e:
+            if e.response.status_code == 404:
+                return False
+            raise e
