@@ -2,9 +2,15 @@ import { Box, Grid, Paper, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 
+interface RenderedProperties {
+  id: string;
+  propertyName: string;
+  propertyValue: string;
+}
+
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   const collectProperties = () => {
-    let renderedProperties = [];
+    let renderedProperties: RenderedProperties[] = [];
     Object.keys(nodeObject).forEach((key) => {
       // Collecting uuids of properties
       // UUID of properties will have a "_uuid" suffix
@@ -69,42 +75,48 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                 // Add new property to rendered rows
                 const updatedRows = [
                   ...data,
-                  { id: Math.random().toString(), ...newRow },
+                  { ...newRow, id: Math.random().toString() },
                 ];
                 setData(updatedRows);
 
                 // Add new key-value pair of a property in nodeObject
                 changePropertyData(newRow.propertyName, newRow.propertyValue);
+                // @ts-ignore
                 resolve();
               }),
             onRowDelete: (selectedRow) =>
               new Promise((resolve, reject) => {
                 // Delete property from rendered rows
                 const updatedRows = [...data];
-                const index = selectedRow.id;
+                const index = parseInt(selectedRow.id);
                 updatedRows.splice(index, 1);
                 setData(updatedRows);
 
                 // Delete key-value pair of a property from nodeObject
                 deletePropertyData(selectedRow.propertyName);
+                // @ts-ignore
                 resolve();
               }),
             onRowUpdate: (updatedRow, oldRow) =>
               new Promise((resolve, reject) => {
                 // Update row in rendered rows
                 const updatedRows = data.map((el) =>
+                  // @ts-ignore
                   el.id === oldRow.id ? updatedRow : el
                 );
                 setData(updatedRows);
                 // Updation takes place by deletion + addition
                 // If property name has been changed, previous key should be removed from nodeObject
+                // @ts-ignore
                 updatedRow.propertyName !== oldRow.propertyName &&
+                  // @ts-ignore
                   deletePropertyData(oldRow.propertyName);
                 // Add new property to nodeObject
                 changePropertyData(
                   updatedRow.propertyName,
                   updatedRow.propertyValue
                 );
+                // @ts-ignore
                 resolve();
               }),
           }}

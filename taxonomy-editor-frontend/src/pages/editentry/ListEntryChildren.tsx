@@ -21,10 +21,15 @@ import ISO6391 from "iso-639-1";
 import { ENTER_KEYCODE } from "../../constants";
 import { greyHexCode } from "../../constants";
 
+interface Relations {
+  index: string;
+  child: string;
+}
+
 const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
-  const [relations, setRelations] = useState(null);
-  const [newChild, setNewChild] = useState(null);
-  const [newLanguageCode, setNewLanguageCode] = useState(null);
+  const [relations, setRelations] = useState<Relations[]>([]);
+  const [newChild, setNewChild] = useState("");
+  const [newLanguageCode, setNewLanguageCode] = useState("");
   const [openDialog, setOpenDialog] = useState(false); // Used for Dialog component
   const isValidLanguageCode = ISO6391.validate(newLanguageCode); // Used for validating a new LC
 
@@ -33,14 +38,15 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
     data: incomingData,
     isPending,
     isError,
-    __isSuccess,
     errorMessage,
   } = useFetch(url);
 
   useEffect(() => {
     if (incomingData) {
+      // @ts-ignore
       setUpdateNodeChildren(incomingData.map((el) => el?.[0]));
-      const arrayData = [];
+      const arrayData: Relations[] = [];
+      // @ts-ignore
       incomingData.map((el) =>
         arrayData.push({ index: Math.random().toString(), child: el?.[0] })
       );
@@ -95,7 +101,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
     );
   }
 
-  if (relations && !relations.length) {
+  if (!relations.length) {
     return (
       <Box>
         <Typography sx={{ ml: 4 }} variant="h5">
@@ -125,32 +131,30 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       </Stack>
 
       {/* Renders parents or children of the node */}
-      {relations && (
-        <Stack direction="row">
-          {relations.map((relationObject) => (
-            <Stack
-              key={relationObject["index"]}
-              direction="row"
-              alignItems="center"
+      <Stack direction="row">
+        {relations.map((relationObject) => (
+          <Stack
+            key={relationObject["index"]}
+            direction="row"
+            alignItems="center"
+          >
+            <Link
+              to={`${urlPrefix}/entry/${relationObject["child"]}`}
+              style={{ color: "#0064c8", display: "inline-block" }}
             >
-              <Link
-                to={`${urlPrefix}/entry/${relationObject["child"]}`}
-                style={{ color: "#0064c8", display: "inline-block" }}
-              >
-                <Typography sx={{ ml: 8 }} variant="h6">
-                  {relationObject["child"]}
-                </Typography>
-              </Link>
-              <IconButton
-                sx={{ ml: 1, color: greyHexCode }}
-                onClick={(e) => handleDeleteChild(relationObject["index"], e)}
-              >
-                <DeleteOutlineIcon />
-              </IconButton>
-            </Stack>
-          ))}
-        </Stack>
-      )}
+              <Typography sx={{ ml: 8 }} variant="h6">
+                {relationObject["child"]}
+              </Typography>
+            </Link>
+            <IconButton
+              sx={{ ml: 1, color: greyHexCode }}
+              onClick={() => handleDeleteChild(relationObject["index"])}
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+          </Stack>
+        ))}
+      </Stack>
 
       {/* Dialog box for adding translations */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -163,7 +167,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
           <Stack sx={{ mt: 2 }} direction="row" alignItems="center">
             <TextField
               onKeyPress={(e) => {
-                e.keyCode === ENTER_KEYCODE && handleAddChild(e);
+                e.keyCode === ENTER_KEYCODE && handleAddChild();
               }}
               onChange={(e) => {
                 setNewLanguageCode(e.target.value);
@@ -178,7 +182,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
             <TextField
               margin="dense"
               onKeyPress={(e) => {
-                e.keyCode === ENTER_KEYCODE && handleAddChild(e);
+                e.keyCode === ENTER_KEYCODE && handleAddChild();
               }}
               onChange={(e) => {
                 setNewChild(e.target.value);
@@ -193,12 +197,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button
-            disabled={!isValidLanguageCode}
-            onClick={(e) => {
-              handleAddChild(newChild, e);
-            }}
-          >
+          <Button disabled={!isValidLanguageCode} onClick={handleAddChild}>
             Add
           </Button>
         </DialogActions>

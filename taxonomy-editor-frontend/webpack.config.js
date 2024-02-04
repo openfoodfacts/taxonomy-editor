@@ -1,6 +1,6 @@
 module.exports = {
   entry: {
-    dev: "./src/index.js",
+    dev: "./src/index.tsx",
   },
   output: {
     filename: "./build/index.js",

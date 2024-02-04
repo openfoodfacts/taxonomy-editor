@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 
 const Errors = ({ addNavLinks }) => {
   const { taxonomyName, branchName } = useParams();
+  // @ts-ignore
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const [errors, setErrors] = useState([]);
   const {
@@ -28,6 +29,7 @@ const Errors = ({ addNavLinks }) => {
 
   useEffect(() => {
     if (!errorData) return;
+    // @ts-ignore
     const newErrors = errorData.errors.map((error, index) => ({
       id: index + 1,
       error: error,
@@ -83,7 +85,7 @@ const Errors = ({ addNavLinks }) => {
           <TableBody>
             <TableCell align="left" component="td" scope="row">
               <Typography variant="body1">
-                {toTitleCase(taxonomyName)}
+                {toTitleCase(taxonomyName || "")}
               </Typography>
             </TableCell>
             <TableCell align="left" component="td" scope="row">
@@ -120,7 +122,7 @@ const Errors = ({ addNavLinks }) => {
                 options={{
                   tableLayout: "fixed",
                   pageSize: 50,
-                  pageSizeOptions: ["20", "50", "100", "200"],
+                  pageSizeOptions: [20, 50, 100, 200],
                 }}
               />
             </Box>
@@ -128,7 +130,7 @@ const Errors = ({ addNavLinks }) => {
         )}
         {errors.length === 0 && (
           <Typography>
-            No Error, {toTitleCase(taxonomyName)} can be edited
+            No Error, {toTitleCase(taxonomyName || "")} can be edited
           </Typography>
         )}
       </Stack>

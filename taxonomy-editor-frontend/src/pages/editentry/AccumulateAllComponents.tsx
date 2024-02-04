@@ -60,16 +60,16 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
       !equal(updateChildren, previousUpdateChildren);
 
   const createNodeObject = (node) => {
-    let duplicateNode = null;
-    if (node) {
-      duplicateNode = { ...node };
-      // Adding UUIDs for properties
-      Object.keys(node).forEach((key) => {
-        if (key.startsWith("prop")) {
-          duplicateNode[key + "_uuid"] = [Math.random().toString()];
-        }
-      });
-    }
+    if (!node) return null;
+
+    const duplicateNode = { ...node };
+    // Adding UUIDs for properties
+    Object.keys(node).forEach((key) => {
+      if (key.startsWith("prop")) {
+        duplicateNode[key + "_uuid"] = [Math.random().toString()];
+      }
+    });
+
     return duplicateNode;
   };
 
