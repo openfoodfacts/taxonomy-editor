@@ -7,16 +7,9 @@ import timeit
 import iso639
 from neo4j import GraphDatabase, Session, Transaction
 
-from .logger import ParserConsoleLogger
 from ..utils import get_project_name, normalize_text
-from .taxonomy_parser import (
-    NodeType,
-    PreviousLink,
-    Taxonomy,
-    TaxonomyParser,
-    NodeData,
-    ChildLink,
-)
+from .logger import ParserConsoleLogger
+from .taxonomy_parser import ChildLink, NodeData, NodeType, PreviousLink, Taxonomy, TaxonomyParser
 
 
 class Parser:
@@ -135,9 +128,7 @@ class Parser:
                 f"Created {count} 'is_before' links, {len(previous_links)} links expected"
             )
 
-    def _create_child_links(
-        self, child_links: list[ChildLink], project_label: str
-    ):
+    def _create_child_links(self, child_links: list[ChildLink], project_label: str):
         """Create the 'is_child_of' relations between nodes"""
         self.parser_logger.info("Creating 'is_child_of' links")
         start_time = timeit.default_timer()
@@ -158,9 +149,7 @@ class Parser:
             """
         )
 
-        normalised_result = self.session.run(
-            query, child_links=child_links
-        )
+        normalised_result = self.session.run(query, child_links=child_links)
         count = normalised_result.value()[0]
 
         self.parser_logger.info(

@@ -3,13 +3,13 @@ import logging
 import re
 import sys
 import timeit
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Iterator, TypedDict
 
-from .logger import ParserConsoleLogger
-from .exception import DuplicateIDError
 from ..utils import normalize_filename, normalize_text
+from .exception import DuplicateIDError
+from .logger import ParserConsoleLogger
 
 
 class NodeType(str, Enum):
