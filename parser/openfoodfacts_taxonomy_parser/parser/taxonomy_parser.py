@@ -1,3 +1,4 @@
+import copy
 import logging
 import re
 import sys
@@ -29,6 +30,10 @@ class NodeData:
     properties: dict[str, str] = field(default_factory=dict)
     tags: dict[str, list[str]] = field(default_factory=dict)
     comments: dict[str, list[str]] = field(default_factory=dict)
+    # comments_stack is a list of tuples (line_number, comment),
+    # to keep track of comments just above the current line
+    # during parsing of an entry, to be able to add them
+    # to the right property or tag when possible
     comments_stack: list[(int, str)] = field(default_factory=list)
 
     def to_dict(self):
@@ -199,22 +204,43 @@ class TaxonomyParser:
                 # it's an entry block, there is always a separating line
                 data.preceding_lines.pop(0)
         return data
-    
-    def _get_comments_above(self, data: NodeData, line_number: int) -> list[str]:
-        """Get comments just above the current line"""
-        comments = []
+
+    def _get_node_data_with_comments_above_key(
+        self, data: NodeData, line_number: int, key: str
+    ) -> NodeData:
+        """Returns the updated node data with comments above the given
+        key stored in the {key}_comments property."""
+        new_data = copy.deepcopy(data)
+
+        # Get comments just above the given line
+        comments_above = []
         current_line = line_number - 1
-        while data.comments_stack and data.comments_stack[-1][0] == current_line:
-            comments.append(data.comments_stack.pop()[1])
+        while new_data.comments_stack and new_data.comments_stack[-1][0] == current_line:
+            comments_above.append(new_data.comments_stack.pop()[1])
             current_line -= 1
-        return comments[::-1]
-    
-    def _get_parent_comments(self, data: NodeData) -> list[str]:
-        """Get comments just above the current line"""
+        if comments_above:
+            new_data.comments[key + "_comments"] = comments_above[::-1]
+
+        return new_data
+
+    def _get_node_data_with_parent_and_end_comments(self, data: NodeData) -> NodeData:
+        """Returns the updated node data with parent and end comments"""
+        new_data = copy.deepcopy(data)
+
+        # Get parent comments (part of an entry block and just above/between the parents lines)
         parent_comments = []
-        while data.preceding_lines and data.preceding_lines[-1] != "":
-            parent_comments.append(data.preceding_lines.pop())
-        return parent_comments[::-1]
+        while new_data.preceding_lines and new_data.preceding_lines[-1] != "":
+            parent_comments.append(new_data.preceding_lines.pop())
+        if parent_comments:
+            new_data.comments["parent_comments"] = parent_comments[::-1]
+
+        # Get end comments (part of an entry block after the last tag/prop
+        # and before the separating blank line)
+        end_comments = [comment[1] for comment in new_data.comments_stack]
+        if end_comments:
+            new_data.comments["end_comments"] = end_comments
+
+        return new_data
 
     def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
@@ -246,12 +272,7 @@ class TaxonomyParser:
                 else:
                     data = self._remove_separating_line(data)
                     if data.get_node_type() == NodeType.ENTRY:
-                        parent_comments = self._get_parent_comments(data)
-                        if parent_comments:
-                            data.comments["parent_comments"] = parent_comments
-                        end_comments = [comment[1] for comment in data.comments_stack]
-                        if end_comments:
-                            data.comments["end_comments"] = end_comments
+                        data = self._get_node_data_with_parent_and_end_comments(data)
                     yield data  # another function will use this dictionary to create a node
                     saved_nodes.append(data.id)
                 data = NodeData(is_before=data.id)
@@ -330,9 +351,9 @@ class TaxonomyParser:
                             tagsids_list.append(word_normalized)
                     data.tags["tags_" + lang] = tags_list
                     data.tags["tags_ids_" + lang] = tagsids_list
-                    tags_comments = self._get_comments_above(data, line_number)
-                    if tags_comments:
-                        data.comments["tags_" + lang + "_comments"] = tags_comments
+                    data = self._get_node_data_with_comments_above_key(
+                        data, line_number, "tags_" + lang
+                    )
                 else:
                     # property definition
                     property_name = None
@@ -355,9 +376,9 @@ class TaxonomyParser:
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
                             data.properties[prop_key] = property_value
-                            prop_comments = self._get_comments_above(data, line_number)
-                            if prop_comments:
-                                data.comments[prop_key + "_comments"] = prop_comments
+                            data = self._get_node_data_with_comments_above_key(
+                                data, line_number, prop_key
+                            )
 
         data.id = "__footer__"
         data.preceding_lines.pop(0)

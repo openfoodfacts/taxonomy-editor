@@ -230,6 +230,12 @@ class TaxonomyGraph:
         """
         return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
+    def is_tag_key(self, key):
+        """
+        Helper function to check if a key is a tag key (tags_XX)
+        """
+        return key.startswith("tags_") and not ("_ids_" in key or key.endswith("_comments"))
+
     async def create_project(self, description):
         """
         Helper function to create a node with label "PROJECT"
@@ -462,13 +468,10 @@ class TaxonomyGraph:
         for key in new_node.keys():
             if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
-                # Delete tags_ids and comments if we delete tags of a language
-                if key.startswith("tags_") and "_ids_" not in key and not key.endswith("_comments"):
+                deleted_keys.add(key + "_comments")
+                # Delete tags_ids if we delete tags of a language
+                if self.is_tag_key(key):
                     deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
-                    deleted_keys.add(key + "_comments")
-                # Delete prop comments if we delete prop
-                if key.startswith("prop_") and not key.endswith("_comments"):
-                    deleted_keys.add(key + "_comments")
 
         # Build query
         query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
@@ -482,7 +485,7 @@ class TaxonomyGraph:
         # Adding normalized tags ids corresponding to entry tags
         normalised_new_node = {}
         for key in set(new_node.keys()) - deleted_keys:
-            if key.startswith("tags_") and "_ids_" not in key and not key.endswith("_comments"):
+            if self.is_tag_key(key):
                 # Normalise tags and store them in tags_ids
                 keys_language_code = key.split("_", 1)[1]
                 normalised_value = []
