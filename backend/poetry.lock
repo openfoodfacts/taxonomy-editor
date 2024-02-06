@@ -218,13 +218,13 @@ pyflakes = ">=3.1.0,<3.2.0"
 
 [[package]]
 name = "githubkit"
-version = "0.11.0a4"
+version = "0.11.1"
 description = "GitHub SDK for Python"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "githubkit-0.11.0a4-py3-none-any.whl", hash = "sha256:50891e52acb9ea9f436fea97d53d5ca605c0524aeab9034a4a0ce300056b7d87"},
-    {file = "githubkit-0.11.0a4.tar.gz", hash = "sha256:8263ed628bb89b23458fe0eb9688708b04142d58d037d93b6d411878d8da62ca"},
+    {file = "githubkit-0.11.1-py3-none-any.whl", hash = "sha256:1f67c1973fbb2c6ec21efe93b904888f3e0fdfb10bcdf046884d7726fccf3880"},
+    {file = "githubkit-0.11.1.tar.gz", hash = "sha256:1604b86ca7135c0b971a2b048b86c13eedad16271c8134c81c4da660a3de7a29"},
 ]
 
 [package.dependencies]
