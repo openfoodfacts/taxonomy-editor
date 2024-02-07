@@ -86,7 +86,6 @@ const RootNodes = ({
   } = useQuery<RootEntriesAPIResponse>({
     queryKey: [rootNodesUrl],
     queryFn: async () => {
-      console.log("finally fetched !");
       const response = await fetch(rootNodesUrl);
       if (!response.ok) {
         throw new Error("Failed to fetch project info");
