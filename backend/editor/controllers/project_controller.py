@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from ..graph_db import get_current_transaction
 from ..models.project_models import Project, ProjectCreate, ProjectEdit, ProjectStatus
 from .node_controller import delete_project_nodes
@@ -13,7 +15,10 @@ async def get_project(project_id: str) -> Project:
     """
     params = {"project_id": project_id}
     result = await get_current_transaction().run(query, params)
-    return Project(**(await result.single())["p"])
+    project = await result.single()
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return Project(**project["p"])
 
 
 async def get_projects_by_status(status: ProjectStatus) -> list[Project]:

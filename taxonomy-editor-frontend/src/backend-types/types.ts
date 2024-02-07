@@ -35,3 +35,13 @@ export type RootEntriesAPIResponse = Array<NodeType[]>;
 export type SearchAPIResponse = string[];
 
 export type ParentsAPIResponse = string[];
+
+export type ProjectInfoAPIResponse = ProjectType;
+
+export enum ProjectStatus {
+  FAILED = "FAILED",
+  OPEN = "OPEN",
+  LOADING = "LOADING",
+  EXPORTED = "EXPORTED",
+  CLOSED = "CLOSED",
+}

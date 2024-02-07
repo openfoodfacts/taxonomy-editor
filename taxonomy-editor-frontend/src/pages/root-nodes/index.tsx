@@ -20,12 +20,16 @@ import Dialog from "@mui/material/Dialog";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
-import useFetch from "../../components/useFetch";
 import { toTitleCase, createBaseURL } from "../../utils";
 import { greyHexCode } from "../../constants";
-import type { RootEntriesAPIResponse } from "../../backend-types/types";
+import {
+  type ProjectInfoAPIResponse,
+  type RootEntriesAPIResponse,
+  ProjectStatus,
+} from "../../backend-types/types";
 import NodesTableBody from "../../components/NodesTableBody";
-import WarningParsingErrors from "../../components/Alerts";
+import WarningParsingErrors from "../../components/WarningParsingErrors";
+import { useQuery } from "@tanstack/react-query";
 
 type RootNodesProps = {
   addNavLinks: ({
@@ -49,13 +53,52 @@ const RootNodes = ({
     useState(false);
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
+  const projectInfoUrl = `${baseUrl}project`;
+  const rootNodesUrl = `${baseUrl}rootentries`;
+
+  const {
+    data: info,
+    isPending: infoPending,
+    isError: infoIsError,
+    error: infoError,
+  } = useQuery<ProjectInfoAPIResponse>({
+    queryKey: [projectInfoUrl],
+    queryFn: async () => {
+      const response = await fetch(projectInfoUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch project info");
+      }
+      return response.json();
+    },
+    refetchInterval: (d) => {
+      return d.state.status === "success" &&
+        d.state.data?.status === ProjectStatus.LOADING
+        ? 1000
+        : false;
+    },
+  });
 
   const {
     data: nodes,
     isPending,
     isError,
-    errorMessage,
-  } = useFetch<RootEntriesAPIResponse>(`${baseUrl}rootentries`);
+    error,
+  } = useQuery<RootEntriesAPIResponse>({
+    queryKey: [rootNodesUrl],
+    queryFn: async () => {
+      const response = await fetch(rootNodesUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch root nodes");
+      }
+      return response.json();
+    },
+    // fetch root nodes after receiving project status
+    enabled:
+      !!info &&
+      [ProjectStatus.OPEN, ProjectStatus.CLOSED].includes(
+        info.status as ProjectStatus
+      ),
+  });
 
   let nodeIds: string[] = [];
   if (nodes && nodes.length > 0) {
@@ -77,15 +120,25 @@ const RootNodes = ({
     setCreateNodeOpenSuccessSnackbar(false);
   };
 
-  if (isError || !branchName || !taxonomyName) {
+  if (isError || infoIsError || !branchName || !taxonomyName) {
     return (
       <Box>
-        <Typography variant="h5">{errorMessage}</Typography>
+        <Typography variant="h5">
+          {error?.message ?? infoError?.message}
+        </Typography>
       </Box>
     );
   }
 
-  if (isPending || !nodes || nodes.length === 0) {
+  if (info && info["status"] === ProjectStatus.FAILED) {
+    return (
+      <Typography variant="h5">
+        Parsing of the project has failed, rendering it uneditable.
+      </Typography>
+    );
+  }
+
+  if (isPending || infoPending || !nodes) {
     return (
       <Box
         sx={{
@@ -94,12 +147,12 @@ const RootNodes = ({
         }}
       >
         <CircularProgress />
-        <Typography sx={{ m: 5 }} variant="h6">
-          Taxonomy parsing may take several minutes, depending on the complexity
-          of the taxonomy being imported.
-          <br />
-          Kindly refresh the page to view the updated status of the project.
-        </Typography>
+        {info && info["status"] === ProjectStatus.LOADING && (
+          <Typography sx={{ m: 5 }} variant="h6">
+            Taxonomy parsing may take several minutes, depending on the
+            complexity of the taxonomy being imported.
+          </Typography>
+        )}
       </Box>
     );
   }

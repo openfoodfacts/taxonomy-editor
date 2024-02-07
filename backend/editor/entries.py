@@ -1,6 +1,7 @@
 """
 Database helper functions for API
 """
+
 import re
 import shutil
 import tempfile
@@ -38,7 +39,6 @@ async def async_list(async_iterable):
 
 
 class TaxonomyGraph:
-
     """Class for database operations"""
 
     def __init__(self, branch_name, taxonomy_name):
@@ -161,7 +161,7 @@ class TaxonomyGraph:
         uploadfile: UploadFile | None = None,
     ):
         """
-        Helper function to import a taxonomy from GitHub
+        Helper function to import a taxonomy
         """
         await create_project(
             ProjectCreate(

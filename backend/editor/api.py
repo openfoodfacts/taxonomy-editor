@@ -1,6 +1,7 @@
 """
 Taxonomy Editor Backend API
 """
+
 import contextlib
 import logging
 
@@ -38,7 +39,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
 from .models.node_models import Footer, Header
-from .models.project_models import ProjectEdit, ProjectStatus
+from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .scheduler import scheduler_lifespan
 
 # -----------------------------------------------------------------------------------#
@@ -154,7 +155,17 @@ async def list_all_projects(response: Response, status: Optional[ProjectStatus] 
     return result
 
 
-@app.get("{taxonomy_name}/{branch}/set-project-status")
+@app.get("/{taxonomy_name}/{branch}/project")
+async def get_project_info(branch: str, taxonomy_name: str) -> Project:
+    """
+    Get information about a Taxonomy Editor project
+    """
+    taxonomy = TaxonomyGraph(branch, taxonomy_name)
+    result = await project_controller.get_project(taxonomy.project_name)
+    return result
+
+
+@app.get("/{taxonomy_name}/{branch}/set-project-status")
 async def set_project_status(
     response: Response, branch: str, taxonomy_name: str, status: Optional[ProjectStatus] = None
 ):
