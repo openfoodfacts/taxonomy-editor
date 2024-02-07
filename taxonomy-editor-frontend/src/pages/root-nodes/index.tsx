@@ -74,7 +74,7 @@ const RootNodes = ({
       return d.state.status === "success" &&
         d.state.data?.status === ProjectStatus.LOADING
         ? 1000
-        : undefined;
+        : false;
     },
   });
 

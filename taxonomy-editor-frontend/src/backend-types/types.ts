@@ -42,5 +42,6 @@ export enum ProjectStatus {
   FAILED = "FAILED",
   OPEN = "OPEN",
   LOADING = "LOADING",
+  EXPORTED = "EXPORTED",
   CLOSED = "CLOSED",
 }
