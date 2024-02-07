@@ -63,7 +63,7 @@ A typescript migration is in progress, and we are also trying to simplify the AP
 
 <details><summary><h2> Weekly meetings </h2></summary>
 
-- We e-meet [Wednesdays at 09:00 Paris Time](https://dateful.com/convert/paris-france?t=9am) weekly.
+- We e-meet [Thursdays at 09:00 Paris Time](https://dateful.com/convert/paris-france?t=9am) weekly.
 - ![Google Meet](https://img.shields.io/badge/Google%20Meet-00897B?logo=google-meet&logoColor=white) Video call link: https://meet.google.com/kdq-mkqd-jrm
 - Add the Event to your Calendar by [adding the Open Food Facts community calendar to your calendar](https://wiki.openfoodfacts.org/Events)
 - [Agenda](https://docs.google.com/document/d/1tdYkUmoRU8BxFPdCwtewoUi7PV8PmDlXtExOcPYyu-I): please add the Agenda items as early as you can. Make sure to check the Agenda items in advance of the meeting, so that we have the most informed discussions possible.
