@@ -14,7 +14,11 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
       // UUID of properties will have a "_uuid" suffix
       // Ex: prop_vegan_en_uuid
 
-      if (key.startsWith("prop") && key.endsWith("uuid")) {
+      if (
+        key.startsWith("prop") &&
+        key.endsWith("uuid") &&
+        !key.endsWith("_comments_uuid")
+      ) {
         const uuid = nodeObject[key][0]; // UUID
         // Removing "prop_" prefix from key to render only the name
         const property_name = key.split("_").slice(1, -1).join("_");

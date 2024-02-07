@@ -501,10 +501,12 @@ class TaxonomyGraph:
         deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
         # Check for deleted keys having associated comments and delete them too
+        comments_keys_to_delete = set()
         for key in deleted_keys:
             comments_key = key + "_comments"
             if new_node.get(comments_key) is not None:
-                deleted_keys.add(comments_key)
+                comments_keys_to_delete.add(comments_key)
+        deleted_keys = deleted_keys.union(comments_keys_to_delete)
 
         # Check for keys having null/empty values
         for key in new_node.keys():
