@@ -57,13 +57,6 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
     setRenderedNonEntryInfo(tagsExtracted);
   }, [nodeObject]);
 
-  // Helper function used for changing state of "preceding_lines"
-  const changeDataComment = (value) => {
-    const newNodeObject = { ...nodeObject };
-    newNodeObject["preceding_lines"] = value.split("\n");
-    setNodeObject(newNodeObject);
-  };
-
   // Helper function used for changing state of properties
   const changeData = (index, value) => {
     const updatedTagObject = { index: index, tag: value };
@@ -115,23 +108,6 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
 
   return (
     <Box>
-      {/* Comments */}
-      <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
-        Comments
-      </Typography>
-      {nodeObject && (
-        <TextField
-          sx={{ ml: 8, mt: 1, width: 250 }}
-          minRows={4}
-          multiline
-          onChange={(event) => {
-            changeDataComment(event.target.value);
-          }}
-          value={nodeObject.preceding_lines}
-          variant="outlined"
-        />
-      )}
-
       {/* Main Language */}
       {(IDType === "Synonyms" || IDType === "Stopwords") && (
         <Box>

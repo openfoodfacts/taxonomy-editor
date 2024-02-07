@@ -1,6 +1,7 @@
 """
 Database helper functions for API
 """
+
 import re
 import shutil
 import tempfile
@@ -38,7 +39,6 @@ async def async_list(async_iterable):
 
 
 class TaxonomyGraph:
-
     """Class for database operations"""
 
     def __init__(self, branch_name, taxonomy_name):
@@ -286,56 +286,11 @@ class TaxonomyGraph:
         """
         return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
-    async def create_project(self, description):
+    def is_tag_key(self, key):
         """
-        Helper function to create a node with label "PROJECT"
+        Helper function to check if a key is a tag key (tags_XX)
         """
-        query = """
-            CREATE (n:PROJECT)
-            SET n.id = $project_name
-            SET n.taxonomy_name = $taxonomy_name
-            SET n.branch_name = $branch_name
-            SET n.description = $description
-            SET n.status = $status
-            SET n.created_at = datetime()
-        """
-        params = {
-            "project_name": self.project_name,
-            "taxonomy_name": self.taxonomy_name,
-            "branch_name": self.branch_name,
-            "description": description,
-            "status": "LOADING",
-        }
-        await get_current_transaction().run(query, params)
-
-    async def get_project_info(self):
-        """
-        Helper function to get information about a Taxonomy Editor project
-        """
-        query = """
-            MATCH (p:PROJECT {id: $project_name})
-            RETURN p AS info
-        """
-        params = {"project_name": self.project_name}
-
-        result = await get_current_transaction().run(query, params)  # returns a coroutine
-        info_record = await result.single()
-        info = info_record["info"] if info_record else None
-
-        return info
-
-    def set_project_status(self, session, status):
-        """
-        Helper function to update a Taxonomy Editor project status
-        """
-        query = """
-            MATCH (n:PROJECT)
-            WHERE n.id = $project_name
-            SET n.status = $status
-        """
-        params = {"project_name": self.project_name, "status": status}
-        with session.begin_transaction() as tx:
-            tx.run(query, params)
+        return key.startswith("tags_") and not ("_ids_" in key or key.endswith("_comments"))
 
     async def list_projects(self, status=None):
         """
@@ -545,12 +500,21 @@ class TaxonomyGraph:
         curr_node = result[0]["n"]
         deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
+        # Check for deleted keys having associated comments and delete them too
+        comments_keys_to_delete = set()
+        for key in deleted_keys:
+            comments_key = key + "_comments"
+            if new_node.get(comments_key) is not None:
+                comments_keys_to_delete.add(comments_key)
+        deleted_keys = deleted_keys.union(comments_keys_to_delete)
+
         # Check for keys having null/empty values
         for key in new_node.keys():
             if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
+                deleted_keys.add(key + "_comments")
                 # Delete tags_ids if we delete tags of a language
-                if key.startswith("tags_") and "_ids_" not in key:
+                if self.is_tag_key(key):
                     deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
 
         # Build query
@@ -566,20 +530,16 @@ class TaxonomyGraph:
         normalised_new_node = {}
         stopwords = await self.get_stopwords_dict()
         for key in set(new_node.keys()) - deleted_keys:
-            if key.startswith("tags_"):
-                if "_ids_" not in key:
-                    keys_language_code = key.split("_", 1)[1]
-                    normalised_value = []
-                    for value in new_node[key]:
-                        normalised_value.append(
-                            parser_utils.normalize_text(
-                                value, keys_language_code, stopwords=stopwords
-                            )
-                        )
-                    normalised_new_node[key] = new_node[key]
-                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-                else:
-                    pass  # We generate tags_ids, and ignore the one sent
+            if self.is_tag_key(key):
+                # Normalise tags and store them in tags_ids
+                keys_language_code = key.split("_", 1)[1]
+                normalised_value = []
+                for value in new_node[key]:
+                    normalised_value.append(
+                        parser_utils.normalize_text(value, keys_language_code, stopwords=stopwords)
+                    )
+                normalised_new_node[key] = new_node[key]
+                normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
             else:
                 # No need to normalise
                 normalised_new_node[key] = new_node[key]
@@ -737,19 +697,3 @@ class TaxonomyGraph:
         _result = await get_current_transaction().run(query, params)
         result = [record["node"] for record in await _result.data()]
         return result
-
-    async def delete_taxonomy_project(self, branch, taxonomy_name):
-        """
-        Delete taxonomy projects
-        """
-
-        delete_query = """
-            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch_name: $branch_name})
-            DELETE n
-        """
-        result = await get_current_transaction().run(
-            delete_query, taxonomy_name=taxonomy_name, branch_name=branch
-        )
-        summary = await result.consume()
-        count = summary.counters.nodes_deleted
-        return count

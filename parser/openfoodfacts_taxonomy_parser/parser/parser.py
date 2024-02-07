@@ -7,16 +7,9 @@ import timeit
 import iso639
 from neo4j import GraphDatabase, Session, Transaction
 
-from .logger import ParserConsoleLogger
 from ..utils import get_project_name, normalize_text
-from .taxonomy_parser import (
-    NodeType,
-    PreviousLink,
-    Taxonomy,
-    TaxonomyParser,
-    NodeData,
-    ChildLink,
-)
+from .logger import ParserConsoleLogger
+from .taxonomy_parser import ChildLink, NodeData, NodeType, PreviousLink, Taxonomy, TaxonomyParser
 
 
 class Parser:
@@ -73,16 +66,17 @@ class Parser:
         # we don't know in advance which properties and tags
         # we will encounter in the batch
         # so we accumulate them in this set
-        seen_properties_and_tags = set()
+        seen_properties_and_tags_and_comments = set()
 
         for entry_node in entry_nodes:
             if entry_node.get_node_type() != NodeType.ENTRY:
                 raise ValueError(f"Only ENTRY nodes should be passed to this function")
-            seen_properties_and_tags.update(entry_node.tags)
-            seen_properties_and_tags.update(entry_node.properties)
+            seen_properties_and_tags_and_comments.update(entry_node.tags)
+            seen_properties_and_tags_and_comments.update(entry_node.properties)
+            seen_properties_and_tags_and_comments.update(entry_node.comments)
 
         additional_properties_queries = [
-            f"{key} : entry_node.{key}" for key in seen_properties_and_tags
+            f"{key} : entry_node.{key}" for key in seen_properties_and_tags_and_comments
         ]
 
         base_properties_query = f"""
@@ -135,28 +129,14 @@ class Parser:
                 f"Created {count} 'is_before' links, {len(previous_links)} links expected"
             )
 
-    def _create_child_links(
-        self, child_links: list[ChildLink], entry_nodes: list[NodeData], project_label: str
-    ):
+    def _create_child_links(self, child_links: list[ChildLink], project_label: str):
         """Create the 'is_child_of' relations between nodes"""
         self.parser_logger.info("Creating 'is_child_of' links")
         start_time = timeit.default_timer()
 
-        node_ids = set([node.id for node in entry_nodes])
-        # we collect nodes with a parent id which is the id of an entry (normalised)
-        # and nodes where a synonym was used to designate the parent (unnormalised)
-        normalised_child_links = []
-        unnormalised_child_links = []
-        for child_link in child_links:
-            if child_link["parent_id"] in node_ids:
-                normalised_child_links.append(child_link)
-            else:
-                unnormalised_child_links.append(child_link)
-
-        # adding normalised links is easy as we can directly match parent entries
-        normalised_query = (
+        query = (
             f"""
-                UNWIND $normalised_child_links as child_link
+                UNWIND $child_links as child_link
                 MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
                 WHERE p.id = child_link.parent_id
                 MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
@@ -170,45 +150,8 @@ class Parser:
             """
         )
 
-        # for unnormalised links, we need to group them by language code of the parent id
-        lc_child_links_map = collections.defaultdict(list)
-        for child_link in unnormalised_child_links:
-            lc, parent_id = child_link["parent_id"].split(":")
-            child_link["parent_id"] = parent_id
-            lc_child_links_map[lc].append(child_link)
-
-        # we create a query for each language code
-        lc_queries = []
-        for lc, lc_child_links in lc_child_links_map.items():
-            lc_query = (
-                f"""
-                    UNWIND $lc_child_links as child_link
-                    MATCH (p:{project_label})
-                    WHERE child_link.parent_id IN p.tags_ids_{lc}
-                    MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
-                """
-                + """
-                    WHERE c.id = child_link.id
-                    CREATE (c)-[relations:is_child_of {position: child_link.position}]->(p)
-                    WITH relations
-                    UNWIND relations AS relation
-                    RETURN COUNT(relation)
-                """
-            )
-            lc_queries.append((lc_query, lc_child_links))
-
-        count = 0
-
-        if normalised_child_links:
-            normalised_result = self.session.run(
-                normalised_query, normalised_child_links=normalised_child_links
-            )
-            count += normalised_result.value()[0]
-
-        if lc_queries:
-            for lc_query, lc_child_links in lc_queries:
-                lc_result = self.session.run(lc_query, lc_child_links=lc_child_links)
-                count += lc_result.value()[0]
+        normalised_result = self.session.run(query, child_links=child_links)
+        count = normalised_result.value()[0]
 
         self.parser_logger.info(
             f"Created {count} 'is_child_of' links in {timeit.default_timer() - start_time} seconds"
@@ -288,7 +231,7 @@ class Parser:
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self._create_node_indexes(project_label)
-        self._create_child_links(taxonomy.child_links, taxonomy.entry_nodes, project_label)
+        self._create_child_links(taxonomy.child_links, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
 
     def __call__(self, filename: str, branch_name: str, taxonomy_name: str):

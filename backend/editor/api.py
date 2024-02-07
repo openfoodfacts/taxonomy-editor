@@ -1,6 +1,8 @@
 """
 Taxonomy Editor Backend API
 """
+
+import contextlib
 import logging
 
 # Required imports
@@ -29,7 +31,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from . import graph_db
 
 # Controller imports
-from .controllers.project_controller import edit_project
+from .controllers import project_controller
 from .entries import TaxonomyGraph
 
 # Custom exceptions
@@ -37,7 +39,8 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
 from .models.node_models import Footer, Header
-from .models.project_models import ProjectEdit, ProjectStatus
+from .models.project_models import Project, ProjectEdit, ProjectStatus
+from .scheduler import scheduler_lifespan
 
 # -----------------------------------------------------------------------------------#
 
@@ -49,7 +52,16 @@ logging.basicConfig(
 
 log = logging.getLogger(__name__)
 
-app = FastAPI(title="Open Food Facts Taxonomy Editor API")
+
+# Setup FastAPI app lifespan
+@contextlib.asynccontextmanager
+async def app_lifespan(app: FastAPI):
+    async with graph_db.database_lifespan():
+        with scheduler_lifespan():
+            yield
+
+
+app = FastAPI(title="Open Food Facts Taxonomy Editor API", lifespan=app_lifespan)
 
 # Allow anyone to call the API from their own apps
 app.add_middleware(
@@ -67,22 +79,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup():
-    """
-    Initialize database
-    """
-    graph_db.initialize_db()
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    """
-    Shutdown database
-    """
-    await graph_db.shutdown_db()
 
 
 @app.middleware("http")
@@ -160,14 +156,12 @@ async def list_all_projects(response: Response, status: Optional[ProjectStatus] 
 
 
 @app.get("/{taxonomy_name}/{branch}/project")
-async def get_project_info(response: Response, branch: str, taxonomy_name: str):
+async def get_project_info(branch: str, taxonomy_name: str) -> Project:
     """
     Get information about a Taxonomy Editor project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await taxonomy.get_project_info()
-    if result is None:
-        raise HTTPException(status_code=404, detail="Project not found")
+    result = await project_controller.get_project(taxonomy.project_name)
     return result
 
 
@@ -179,7 +173,9 @@ async def set_project_status(
     Set the status of a Taxonomy Editor project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await edit_project(taxonomy.project_name, ProjectEdit(status=status))
+    result = await project_controller.edit_project(
+        taxonomy.project_name, ProjectEdit(status=status)
+    )
     return result
 
 
@@ -517,11 +513,10 @@ async def delete_node(request: Request, branch: str, taxonomy_name: str):
     await taxonomy.delete_node(taxonomy.get_label(id), id)
 
 
-@app.delete("/{taxonomy_name}/{branch}/delete")
-async def delete_project(response: Response, branch: str, taxonomy_name: str):
+@app.delete("/{taxonomy_name}/{branch}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_project(branch: str, taxonomy_name: str):
     """
     Delete a project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result_data = await taxonomy.delete_taxonomy_project(branch, taxonomy_name)
-    return {"message": "Deleted {} projects".format(result_data)}
+    await project_controller.delete_project(taxonomy.project_name)

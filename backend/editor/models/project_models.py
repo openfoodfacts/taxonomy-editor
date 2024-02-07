@@ -1,6 +1,7 @@
 from enum import Enum
 
 from neo4j.time import DateTime
+from pydantic import field_serializer
 
 from .base_models import BaseModel
 
@@ -29,6 +30,10 @@ class Project(ProjectCreate):
     github_checkout_commit_sha: str | None = None
     github_file_latest_sha: str | None = None
     github_pr_url: str | None = None
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: DateTime):
+        return created_at.iso_format()
 
 
 class ProjectEdit(BaseModel):

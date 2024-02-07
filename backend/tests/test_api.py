@@ -74,10 +74,9 @@ def test_add_taxonomy_duplicate_project_name(client):
 def test_delete_project(client):
     test_upload_taxonomy(client)
 
-    response = client.delete("/test_taxonomy/test_branch/delete")
+    response = client.delete("/test_taxonomy/test_branch")
 
-    assert response.status_code == 200
-    assert response.json() == {"message": "Deleted 1 projects"}
+    assert response.status_code == 204
 
 
 def test_load_and_dump():
