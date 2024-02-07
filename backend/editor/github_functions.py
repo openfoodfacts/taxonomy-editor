@@ -1,6 +1,7 @@
 """
 Github helper functions for the Taxonomy Editor API
 """
+
 import base64
 from functools import cached_property
 from textwrap import dedent
@@ -146,6 +147,8 @@ class GithubOperations:
             )
             return True
         except RequestFailed as e:
+            # The API returns 404 if pull request has not been merged
             if e.response.status_code == 404:
                 return False
+            # re-raise in case of unexpected status code
             raise e
