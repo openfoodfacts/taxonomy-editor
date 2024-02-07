@@ -88,7 +88,7 @@ const RootNodes = ({
     queryFn: async () => {
       const response = await fetch(rootNodesUrl);
       if (!response.ok) {
-        throw new Error("Failed to fetch project info");
+        throw new Error("Failed to fetch root nodes");
       }
       return response.json();
     },
