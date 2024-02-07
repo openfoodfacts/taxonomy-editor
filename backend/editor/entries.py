@@ -286,6 +286,12 @@ class TaxonomyGraph:
         """
         return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
+    def is_tag_key(self, key):
+        """
+        Helper function to check if a key is a tag key (tags_XX)
+        """
+        return key.startswith("tags_") and not ("_ids_" in key or key.endswith("_comments"))
+
     async def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
@@ -494,12 +500,21 @@ class TaxonomyGraph:
         curr_node = result[0]["n"]
         deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
+        # Check for deleted keys having associated comments and delete them too
+        comments_keys_to_delete = set()
+        for key in deleted_keys:
+            comments_key = key + "_comments"
+            if new_node.get(comments_key) is not None:
+                comments_keys_to_delete.add(comments_key)
+        deleted_keys = deleted_keys.union(comments_keys_to_delete)
+
         # Check for keys having null/empty values
         for key in new_node.keys():
             if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
+                deleted_keys.add(key + "_comments")
                 # Delete tags_ids if we delete tags of a language
-                if key.startswith("tags_") and "_ids_" not in key:
+                if self.is_tag_key(key):
                     deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
 
         # Build query
@@ -515,20 +530,16 @@ class TaxonomyGraph:
         normalised_new_node = {}
         stopwords = await self.get_stopwords_dict()
         for key in set(new_node.keys()) - deleted_keys:
-            if key.startswith("tags_"):
-                if "_ids_" not in key:
-                    keys_language_code = key.split("_", 1)[1]
-                    normalised_value = []
-                    for value in new_node[key]:
-                        normalised_value.append(
-                            parser_utils.normalize_text(
-                                value, keys_language_code, stopwords=stopwords
-                            )
-                        )
-                    normalised_new_node[key] = new_node[key]
-                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-                else:
-                    pass  # We generate tags_ids, and ignore the one sent
+            if self.is_tag_key(key):
+                # Normalise tags and store them in tags_ids
+                keys_language_code = key.split("_", 1)[1]
+                normalised_value = []
+                for value in new_node[key]:
+                    normalised_value.append(
+                        parser_utils.normalize_text(value, keys_language_code, stopwords=stopwords)
+                    )
+                normalised_new_node[key] = new_node[key]
+                normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
             else:
                 # No need to normalise
                 normalised_new_node[key] = new_node[key]

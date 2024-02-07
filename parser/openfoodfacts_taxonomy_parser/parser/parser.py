@@ -66,16 +66,17 @@ class Parser:
         # we don't know in advance which properties and tags
         # we will encounter in the batch
         # so we accumulate them in this set
-        seen_properties_and_tags = set()
+        seen_properties_and_tags_and_comments = set()
 
         for entry_node in entry_nodes:
             if entry_node.get_node_type() != NodeType.ENTRY:
                 raise ValueError(f"Only ENTRY nodes should be passed to this function")
-            seen_properties_and_tags.update(entry_node.tags)
-            seen_properties_and_tags.update(entry_node.properties)
+            seen_properties_and_tags_and_comments.update(entry_node.tags)
+            seen_properties_and_tags_and_comments.update(entry_node.properties)
+            seen_properties_and_tags_and_comments.update(entry_node.comments)
 
         additional_properties_queries = [
-            f"{key} : entry_node.{key}" for key in seen_properties_and_tags
+            f"{key} : entry_node.{key}" for key in seen_properties_and_tags_and_comments
         ]
 
         base_properties_query = f"""
