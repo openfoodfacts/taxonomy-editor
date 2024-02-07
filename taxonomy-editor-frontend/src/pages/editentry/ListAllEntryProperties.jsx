@@ -1,13 +1,9 @@
 import { Box, Grid, Paper, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
-  const [data, setData] = useState([]);
-
-  // Changes the properties to be rendered
-  // Dependent on changes occuring in "nodeObject"
-  useEffect(() => {
+  const collectProperties = () => {
     let renderedProperties = [];
     Object.keys(nodeObject).forEach((key) => {
       // Collecting uuids of properties
@@ -34,8 +30,10 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
         });
       }
     });
-    setData(renderedProperties);
-  }, [nodeObject]);
+    return renderedProperties;
+  };
+
+  const [data, setData] = useState(collectProperties());
 
   // Helper function used for changing properties of node
   const changePropertyData = (key, value) => {
@@ -58,7 +56,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   return (
     <Box>
       {/* Properties */}
-      <Box sx={{ width: "50%", ml: 4 }}>
+      <Box sx={{ width: "90%", ml: 4, maxWidth: "1000px", m: "auto", mb: 3 }}>
         <MaterialTable
           data={data}
           columns={[
@@ -82,8 +80,9 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             onRowDelete: (selectedRow) =>
               new Promise((resolve, reject) => {
                 // Delete property from rendered rows
-                const index = selectedRow.tableData.id;
-                const updatedRows = data.filter((obj) => !(index === obj.id));
+                const updatedRows = [...data];
+                const index = selectedRow.id;
+                updatedRows.splice(index, 1);
                 setData(updatedRows);
 
                 // Delete key-value pair of a property from nodeObject
@@ -97,7 +96,6 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                   el.id === oldRow.id ? updatedRow : el
                 );
                 setData(updatedRows);
-
                 // Updation takes place by deletion + addition
                 // If property name has been changed, previous key should be removed from nodeObject
                 updatedRow.propertyName !== oldRow.propertyName &&
@@ -113,6 +111,8 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
           options={{
             actionsColumnIndex: -1,
             addRowPosition: "last",
+            tableLayout: "fixed",
+            paging: false,
           }}
           components={{
             Toolbar: (props) => {
