@@ -59,38 +59,38 @@ class TaxonomyGraph:
         else:
             return "ENTRY"
 
-    async def create_node(self, label, entry, main_language_code):
+    async def create_node(self, label, id, main_language_code) -> str:
         """
         Helper function used for creating a node with given id and label
         """
-        params = {"id": entry}
+        params = {"id": id}
         query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
         stopwords = await self.get_stopwords_dict()
 
-        # Build all basic keys of a node
+        # Build all basic properties of a node
         if label == "ENTRY":
             # Normalizing new canonical tag
-            language_code, canonical_tag = entry.split(":", 1)
+            language_code, canonical_tag = id.split(":", 1)
             normalised_canonical_tag = parser_utils.normalize_text(
                 canonical_tag, main_language_code, stopwords=stopwords
             )
 
-            # Reconstructing and updation of node ID
+            # Update node id and add params
             params["id"] = language_code + ":" + normalised_canonical_tag
             params["main_language_code"] = main_language_code
+            params["canonical_tag"] = canonical_tag
+            params["normalised_canonical_tag"] = normalised_canonical_tag
 
             query.append(
                 """ SET n.main_language = $main_language_code """
-            )  # Required for only an entry
-        else:
-            canonical_tag = ""
+            )  # Required only for an entry
+            query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
+            query.append(f""" SET n.tags_ids_{main_language_code} = [$normalised_canonical_tag] """)
 
         query.append(""" SET n.id = $id """)
-        query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
         query.append(""" SET n.preceding_lines = [] """)
         query.append(""" RETURN n.id """)
 
-        params["canonical_tag"] = canonical_tag
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
