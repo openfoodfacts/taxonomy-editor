@@ -2,12 +2,10 @@
 Taxonomy Editor Backend API
 """
 import logging
-import os
 
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 # FastAPI
@@ -29,13 +27,17 @@ from fastapi.responses import FileResponse, JSONResponse
 
 # DB helper imports
 from . import graph_db
+
+# Controller imports
+from .controllers.project_controller import edit_project
 from .entries import TaxonomyGraph
 
 # Custom exceptions
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models import Footer, Header
+from .models.node_models import Footer, Header
+from .models.project_models import ProjectEdit, ProjectStatus
 
 # -----------------------------------------------------------------------------------#
 
@@ -103,27 +105,6 @@ def check_single(id):
         raise HTTPException(status_code=500, detail="Multiple entries found")
 
 
-def file_cleanup(filepath):
-    """
-    Helper function to delete a taxonomy file from local storage
-    """
-    try:
-        os.remove(filepath)
-    except FileNotFoundError:
-        log.warn(f"Taxonomy file {filepath} not found for deletion")
-
-
-class StatusFilter(str, Enum):
-    """
-    Enum for project status filter
-    """
-
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-    LOADING = "LOADING"
-    FAILED = "FAILED"
-
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     reformatted_errors = []
@@ -168,7 +149,7 @@ async def pong(response: Response):
 
 
 @app.get("/projects")
-async def list_all_projects(response: Response, status: Optional[StatusFilter] = None):
+async def list_all_projects(response: Response, status: Optional[ProjectStatus] = None):
     """
     List projects created in the Taxonomy Editor with a status filter
     """
@@ -180,13 +161,13 @@ async def list_all_projects(response: Response, status: Optional[StatusFilter] =
 
 @app.get("{taxonomy_name}/{branch}/set-project-status")
 async def set_project_status(
-    response: Response, branch: str, taxonomy_name: str, status: Optional[StatusFilter] = None
+    response: Response, branch: str, taxonomy_name: str, status: Optional[ProjectStatus] = None
 ):
     """
     Set the status of a Taxonomy Editor project
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await taxonomy.set_project_status(status)
+    result = await edit_project(taxonomy.project_name, ProjectEdit(status=status))
     return result
 
 
@@ -343,10 +324,8 @@ async def export_to_text_file(
     response: Response, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks
 ):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    file = await taxonomy.file_export()
+    file = await taxonomy.file_export(background_tasks)
 
-    # Add a background task for removing exported taxonomy file
-    background_tasks.add_task(file_cleanup, file)
     return FileResponse(file)
 
 
@@ -356,9 +335,7 @@ async def export_to_github(
 ):
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     try:
-        url, file = await taxonomy.github_export()
-        # Add a background task for removing exported taxonomy file
-        background_tasks.add_task(file_cleanup, file)
+        url = await taxonomy.github_export(background_tasks)
         return url
 
     except GithubBranchExistsError:
@@ -387,10 +364,10 @@ async def import_from_github(
         raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
-    if not await taxonomy.is_branch_unique():
+    if not await taxonomy.is_branch_unique(from_github=True):
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    status = await taxonomy.import_from_github(description, background_tasks)
+    status = await taxonomy.import_taxonomy(description, background_tasks)
     return status
 
 
@@ -410,10 +387,10 @@ async def upload_taxonomy(
         raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
-    if not await taxonomy.is_branch_unique():
+    if not await taxonomy.is_branch_unique(from_github=False):
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    result = await taxonomy.import_from_github(description, background_tasks, file)
+    result = await taxonomy.import_taxonomy(description, background_tasks, file)
 
     return result
 

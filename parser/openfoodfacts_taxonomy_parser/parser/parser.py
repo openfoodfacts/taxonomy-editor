@@ -220,10 +220,12 @@ class Parser:
                 f"Created {count} 'is_child_of' links, {len(child_links)} links expected"
             )
 
-    def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str, project_label: str):
+    def _create_parsing_errors_node(self, taxonomy_name: str, branch_name: str):
         """Create node to list parsing errors"""
         self.parser_logger.info("Creating 'ERRORS' node")
         start_time = timeit.default_timer()
+
+        project_label = get_project_name(taxonomy_name, branch_name)
 
         query = f"""
             CREATE (n:{project_label}:ERRORS)
@@ -289,8 +291,6 @@ class Parser:
         self._create_node_indexes(project_label)
         self._create_child_links(taxonomy.child_links, taxonomy.entry_nodes, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
-        # Lastly create the parsing errors node
-        self._create_parsing_errors_node(taxonomy_name, branch_name, project_label)
 
     def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
         """Process the file"""
@@ -298,12 +298,15 @@ class Parser:
 
         branch_name = normalize_text(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
-        taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
-        self._write_to_database(taxonomy, taxonomy_name, branch_name)
+        try:
+            taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
+            self._write_to_database(taxonomy, taxonomy_name, branch_name)
 
-        self.parser_logger.info(
-            f"Finished parsing {taxonomy_name} in {timeit.default_timer() - start_time} seconds"
-        )
+            self.parser_logger.info(
+                f"Finished parsing {taxonomy_name} in {timeit.default_timer() - start_time} seconds"
+            )
+        finally:
+            self._create_parsing_errors_node(taxonomy_name, branch_name)
 
 
 if __name__ == "__main__":
