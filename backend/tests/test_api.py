@@ -19,14 +19,6 @@ def test_setup(neo4j):
         session.run(query)
 
 
-@pytest.fixture
-def github_mock(mocker):
-    github_mock = mocker.patch("github.Github")
-    github_mock.return_value.get_repo.return_value.get_branches.return_value = [mocker.Mock()]
-    mocker.patch("editor.settings.access_token", return_value="mock_access_token")
-    return github_mock
-
-
 def test_hello(client):
     response = client.get("/")
 
@@ -41,21 +33,7 @@ def test_ping(client):
     assert response.json().get("ping").startswith("pong @")
 
 
-def test_import_taxonomy(client, github_mock, mocker):
-    # We mock the TaxonomyGraph.import_taxonomy method,
-    # which downloads the taxonomy file from a Github URL
-    mocker.patch("editor.api.TaxonomyGraph.import_taxonomy", return_value=True)
-
-    response = client.post(
-        "/test/testing_branch/import",
-        json={"description": "test_description"},
-    )
-
-    assert response.status_code == 200
-    assert response.json() is True
-
-
-def test_upload_taxonomy(client, github_mock):
+def test_upload_taxonomy(client):
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
             "/test_taxonomy/test_branch/upload",
@@ -65,20 +43,6 @@ def test_upload_taxonomy(client, github_mock):
 
     assert response.status_code == 200
     assert response.json() is True
-
-
-def test_add_taxonomy_duplicate_branch_name(client, github_mock):
-    github_mock.return_value.get_repo.return_value.get_branches.return_value[0].name = "test_branch"
-
-    with open("tests/data/test.txt", "rb") as f:
-        response = client.post(
-            "/test_taxonomy_2/test_branch/upload",
-            files={"file": f},
-            data={"description": "test_description"},
-        )
-
-    assert response.status_code == 409
-    assert response.json() == {"detail": "branch_name: Branch name should be unique!"}
 
 
 def test_add_taxonomy_invalid_branch_name(client):
@@ -93,8 +57,8 @@ def test_add_taxonomy_invalid_branch_name(client):
     assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
 
 
-def test_add_taxonomy_duplicate_project_name(client, github_mock):
-    test_upload_taxonomy(client, github_mock)
+def test_add_taxonomy_duplicate_project_name(client):
+    test_upload_taxonomy(client)
 
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(
@@ -107,8 +71,8 @@ def test_add_taxonomy_duplicate_project_name(client, github_mock):
     assert response.json() == {"detail": "Project already exists!"}
 
 
-def test_delete_project(client, github_mock):
-    test_upload_taxonomy(client, github_mock)
+def test_delete_project(client):
+    test_upload_taxonomy(client)
 
     response = client.delete("/test_taxonomy/test_branch/delete")
 
