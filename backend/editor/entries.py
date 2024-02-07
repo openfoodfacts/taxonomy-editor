@@ -528,31 +528,16 @@ class TaxonomyGraph:
         normalised_new_node = {}
         stopwords = await self.get_stopwords_dict()
         for key in set(new_node.keys()) - deleted_keys:
-<<<<<<< HEAD
             if self.is_tag_key(key):
                 # Normalise tags and store them in tags_ids
                 keys_language_code = key.split("_", 1)[1]
                 normalised_value = []
                 for value in new_node[key]:
-                    normalised_value.append(parser_utils.normalize_text(value, keys_language_code))
+                    normalised_value.append(
+                        parser_utils.normalize_text(value, keys_language_code, stopwords=stopwords)
+                    )
                 normalised_new_node[key] = new_node[key]
                 normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-=======
-            if key.startswith("tags_"):
-                if "_ids_" not in key:
-                    keys_language_code = key.split("_", 1)[1]
-                    normalised_value = []
-                    for value in new_node[key]:
-                        normalised_value.append(
-                            parser_utils.normalize_text(
-                                value, keys_language_code, stopwords=stopwords
-                            )
-                        )
-                    normalised_new_node[key] = new_node[key]
-                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-                else:
-                    pass  # We generate tags_ids, and ignore the one sent
->>>>>>> main
             else:
                 # No need to normalise
                 normalised_new_node[key] = new_node[key]
