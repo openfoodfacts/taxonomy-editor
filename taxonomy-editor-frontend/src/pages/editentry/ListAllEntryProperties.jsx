@@ -74,7 +74,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
       />
 
       {/* Properties */}
-      <Box sx={{ width: "90%", ml: 4, maxWidth: "1000px", m: "auto", mb:3}}>
+      <Box sx={{ width: "90%", ml: 4, maxWidth: "1000px", m: "auto", mb: 3 }}>
         <MaterialTable
           data={data}
           columns={[
