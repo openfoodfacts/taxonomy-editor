@@ -1,4 +1,4 @@
-import { Box, Grid, Paper, Typography } from "@mui/material";
+import { Alert, Box, Grid, Paper, Snackbar, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 import ISO6391, { LanguageCode } from "iso-639-1";
@@ -68,22 +68,37 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
 
   const LanguageCodes = ISO6391.getAllCodes();
 
-  const validatePropertyName = (propertyName:string) : boolean => {
+  const validatePropertyName = (propertyName: string): boolean => {
     // Every property name should be in the form property_name:lang_code
     if (propertyName) {
-        const [, langCode] = propertyName.split(':');
+      const [, langCode] = propertyName.split(":");
       if (!LanguageCodes.includes(langCode as LanguageCode)) {
-          return false; 
+        return false;
       }
       // Property name should not include special caracters
       const pattern = /^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+$/;
       if (!pattern.test(propertyName)) {
-          return false; 
+        return false;
       }
       return true;
     }
     return false;
-  }
+  };
+
+  const isPropertyNameUnique = (
+    propertyName: string,
+    otherProperties: RenderedPropertyType[]
+  ): boolean => {
+    for (const prop of otherProperties) {
+      if (prop.propertyName === propertyName) return false;
+    }
+    return true;
+  };
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleCloseErrorSnackbar = () => {
+    setErrorMessage("");
+  };
 
   return (
     <Box>
@@ -92,25 +107,41 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
         <MaterialTable
           data={data}
           columns={[
-            { title: "Name", field: "propertyName", validate: rowData => validatePropertyName(rowData.propertyName) ? true : { isValid: false, helperText: 'Property name should not contain special caracters and should follow the format : property_name:lang_code' } , },
+            {
+              title: "Name",
+              field: "propertyName",
+              validate: (rowData) =>
+                validatePropertyName(rowData.propertyName)
+                  ? true
+                  : {
+                      isValid: false,
+                      helperText:
+                        "Property name should not contain special caracters and should follow the format : property_name:lang_code",
+                    },
+            },
             { title: "Value", field: "propertyValue" },
           ]}
           editable={{
             onRowAdd: (newRow: RowType) =>
-              new Promise<void>((resolve) => {
-                // Add new property to rendered rows
-                const updatedRows = [
-                  ...data,
-                  { id: Math.random().toString(), ...newRow },
-                ];
-                setData(updatedRows);
+              new Promise<void>((resolve, reject) => {
+                if (!isPropertyNameUnique(newRow.propertyName, data)) {
+                  setErrorMessage(`${newRow.propertyName} already exists`);
+                  reject();
+                } else {
+                  // Add new property to rendered rows
+                  const updatedRows = [
+                    ...data,
+                    { id: Math.random().toString(), ...newRow },
+                  ];
+                  setData(updatedRows);
 
-                // Add new key-value pair of a property in nodeObject
-                changePropertyData(
-                  normalizeNameToDb(newRow.propertyName),
-                  newRow.propertyValue
-                );
-                resolve();
+                  // Add new key-value pair of a property in nodeObject
+                  changePropertyData(
+                    normalizeNameToDb(newRow.propertyName),
+                    newRow.propertyValue
+                  );
+                  resolve();
+                }
               }),
             onRowDelete: (selectedRow: RenderedPropertyType) =>
               new Promise<void>((resolve, reject) => {
@@ -130,21 +161,34 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
               oldRow: RenderedPropertyType
             ) =>
               new Promise<void>((resolve, reject) => {
-                // Update row in rendered rows
-                const updatedRows = data.map((el) =>
-                  el.id === oldRow.id ? updatedRow : el
-                );
-                setData(updatedRows);
-                // Updation takes place by deletion + addition
-                // If property name has been changed, previous key should be removed from nodeObject
-                updatedRow.propertyName !== oldRow.propertyName &&
-                  deletePropertyData(oldRow.propertyName);
-                // Add new property to nodeObject
-                changePropertyData(
-                  normalizeNameToDb(updatedRow.propertyName),
-                  updatedRow.propertyValue
-                );
-                resolve();
+                const index = data.findIndex((row) => row.id === updatedRow.id);
+                const otherProperties = [...data];
+                otherProperties.splice(index, 1);
+                if (
+                  !isPropertyNameUnique(
+                    updatedRow.propertyName,
+                    otherProperties
+                  )
+                ) {
+                  setErrorMessage(`${updatedRow.propertyName} already exists`);
+                  reject();
+                } else {
+                  // Update row in rendered rows
+                  const updatedRows = data.map((el) =>
+                    el.id === oldRow.id ? updatedRow : el
+                  );
+                  setData(updatedRows);
+                  // Updation takes place by deletion + addition
+                  // If property name has been changed, previous key should be removed from nodeObject
+                  updatedRow.propertyName !== oldRow.propertyName &&
+                    deletePropertyData(oldRow.propertyName);
+                  // Add new property to nodeObject
+                  changePropertyData(
+                    normalizeNameToDb(updatedRow.propertyName),
+                    updatedRow.propertyValue
+                  );
+                  resolve();
+                }
               }),
           }}
           options={{
@@ -176,6 +220,21 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
           }}
         />
       </Box>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={!!errorMessage}
+        autoHideDuration={3000}
+        onClose={handleCloseErrorSnackbar}
+      >
+        <Alert
+          elevation={6}
+          variant="filled"
+          onClose={handleCloseErrorSnackbar}
+          severity="error"
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
