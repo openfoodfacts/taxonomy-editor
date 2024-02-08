@@ -2,35 +2,42 @@ import { Box, Grid, Paper, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 
-const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
+type RowType = {
+  propertyName: string;
+  propertyValue: string;
+};
 
-  function replaceAll(str, find, replace) {
-    return str.replace(new RegExp(find, 'g'), replace);
+type RenderedPropertyType = RowType & {
+  id: string;
+};
+
+const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
+  function replaceAll(str: string, find: string, replace: string) {
+    return str.replace(new RegExp(find, "g"), replace);
   }
 
-  const normalizeNameToFrontend = (name) => {
+  const normalizeNameToFrontend = (name: string) => {
     // Use the replace() method with a regular expression to replace underscores with colons
-    return replaceAll(name,"_",":")
+    return replaceAll(name, "_", ":");
   };
 
-  const normalizeNameToDb = (name) => {
+  const normalizeNameToDb = (name: string) => {
     // Use the replace() method with a regular expression to replace underscores with colons
-    return replaceAll(name,":","_")
+    return replaceAll(name, ":", "_");
   };
 
-  const collectProperties = () => {
-    let renderedProperties = [];
-    Object.keys(nodeObject).forEach((key) => {
+  const collectProperties = (): RenderedPropertyType[] => {
+    let renderedProperties: RenderedPropertyType[] = [];
+    Object.keys(nodeObject).forEach((key: string) => {
       // Collecting uuids of properties
       // UUID of properties will have a "_uuid" suffix
       // Ex: prop_vegan_en_uuid
-
       if (
         key.startsWith("prop") &&
         key.endsWith("uuid") &&
         !key.endsWith("_comments_uuid")
       ) {
-        const uuid = nodeObject[key][0]; // UUID
+        const uuid: string = nodeObject[key][0]; // UUID
         // Removing "prop_" prefix from key to render only the name
         const property_name = key.split("_").slice(1, -1).join("_");
 
@@ -51,7 +58,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   const [data, setData] = useState(collectProperties());
 
   // Helper function used for changing properties of node
-  const changePropertyData = (key, value) => {
+  const changePropertyData = (key: string, value: string) => {
     setNodeObject((prevState) => {
       const newNodeObject = { ...prevState };
       newNodeObject["prop_" + key] = value;
@@ -60,7 +67,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   };
 
   // Helper function used for deleting properties of node
-  const deletePropertyData = (key) => {
+  const deletePropertyData = (key: string) => {
     setNodeObject((prevState) => {
       const toRemove = normalizeNameToDb("prop_" + key);
       const { [toRemove]: _, ...newNodeObject } = prevState;
@@ -79,8 +86,8 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             { title: "Value", field: "propertyValue" },
           ]}
           editable={{
-            onRowAdd: (newRow) =>
-              new Promise((resolve, reject) => {
+            onRowAdd: (newRow: RowType) =>
+              new Promise<void>((resolve) => {
                 // Add new property to rendered rows
                 const updatedRows = [
                   ...data,
@@ -90,24 +97,29 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
 
                 // Add new key-value pair of a property in nodeObject
                 changePropertyData(
-                  normalizeNameToDb(newRow.propertyName), 
+                  normalizeNameToDb(newRow.propertyName),
                   newRow.propertyValue
                 );
                 resolve();
               }),
-            onRowDelete: (selectedRow) =>
-              new Promise((resolve, reject) => {
+            onRowDelete: (selectedRow: RenderedPropertyType) =>
+              new Promise<void>((resolve, reject) => {
                 // Delete property from rendered rows
                 const updatedRows = [...data];
-                const index = updatedRows.findIndex(row => row.id === selectedRow.id);
+                const index = updatedRows.findIndex(
+                  (row) => row.id === selectedRow.id
+                );
                 updatedRows.splice(index, 1);
                 setData(updatedRows);
                 // Delete key-value pair of a property from nodeObject
                 deletePropertyData(selectedRow.propertyName);
                 resolve();
               }),
-            onRowUpdate: (updatedRow, oldRow) =>
-              new Promise((resolve, reject) => {
+            onRowUpdate: (
+              updatedRow: RenderedPropertyType,
+              oldRow: RenderedPropertyType
+            ) =>
+              new Promise<void>((resolve, reject) => {
                 // Update row in rendered rows
                 const updatedRows = data.map((el) =>
                   el.id === oldRow.id ? updatedRow : el
