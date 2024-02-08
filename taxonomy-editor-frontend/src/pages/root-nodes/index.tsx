@@ -169,7 +169,7 @@ const RootNodes = ({
           <Table style={{ border: "solid", borderWidth: 1.5 }}>
             <TableHead>
               <TableCell align="left">
-                <Typography variant="h6">Taxonony Name</Typography>
+                <Typography variant="h6">Taxonomy Name</Typography>
               </TableCell>
               <TableCell align="left">
                 <Typography variant="h6">Branch Name</Typography>
