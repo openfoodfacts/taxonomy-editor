@@ -27,10 +27,14 @@ async def create_entry_node(
     normalized_name = parser_utils.normalize_text(name, language_code, stopwords=stopwords)
 
     # Create params dict
-    params = {"entry_node": {"main_language": language_code, "preceding_lines": []}}
-    params["entry_node"]["id"] = language_code + ":" + normalized_name
-    params["entry_node"][f"tags_{language_code}"] = [name]
-    params["entry_node"][f"tags_ids_{language_code}"] = [normalized_name]
+    entry_node_data = {
+        "main_language": language_code,
+        "preceding_lines": [],
+        "id": language_code + ":" + normalized_name,
+        f"tags_{language_code}": [name],
+        f"tags_ids_{language_code}": [normalized_name],
+    }
+    params = {"entry_node": entry_node_data}
 
     query = f"""
     CREATE (n:{project_id}:ENTRY $entry_node)

@@ -1,7 +1,16 @@
 """
 Required pydantic models for API
 """
+from enum import Enum
+
 from .base_models import BaseModel
+
+
+class NodeType(str, Enum):
+    TEXT = "TEXT"
+    SYNONYMS = "SYNONYMS"
+    STOPWORDS = "STOPWORDS"
+    ENTRY = "ENTRY"
 
 
 class Header(BaseModel):

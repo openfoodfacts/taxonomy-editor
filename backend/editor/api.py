@@ -38,7 +38,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import Footer, Header
+from .models.node_models import EntryNodeCreate, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .scheduler import scheduler_lifespan
 
@@ -403,22 +403,18 @@ async def upload_taxonomy(
     return result
 
 
-@app.post("/{taxonomy_name}/{branch}/entry")
-async def create_entry_node(request: Request, branch: str, taxonomy_name: str):
+@app.post("/{taxonomy_name}/{branch}/entry", status_code=status.HTTP_201_CREATED)
+async def create_entry_node(
+    branch: str, taxonomy_name: str, new_entry_node: EntryNodeCreate
+) -> None:
     """
     Creating a new entry node in a taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incoming_data = await request.json()
-    name = incoming_data["name"]
-    main_language = incoming_data["main_language"]
-    if name is None:
-        raise HTTPException(status_code=400, detail="Invalid node name")
-    if main_language is None:
-        raise HTTPException(status_code=400, detail="Invalid main language code")
-
-    normalized_id = await taxonomy.create_entry_node(name, main_language)
-    await taxonomy.add_node_to_end("ENTRY", normalized_id)
+    normalized_id = await taxonomy.create_entry_node(
+        new_entry_node.name, new_entry_node.main_language_code
+    )
+    await taxonomy.add_node_to_end(NodeType.ENTRY, normalized_id)
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
