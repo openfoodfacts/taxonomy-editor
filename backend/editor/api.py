@@ -403,26 +403,22 @@ async def upload_taxonomy(
     return result
 
 
-@app.post("/{taxonomy_name}/{branch}/nodes")
-async def create_node(request: Request, branch: str, taxonomy_name: str):
+@app.post("/{taxonomy_name}/{branch}/entry")
+async def create_entry_node(request: Request, branch: str, taxonomy_name: str):
     """
-    Creating a new node in a taxonomy
+    Creating a new entry node in a taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    id = incoming_data["id"]
+    name = incoming_data["name"]
     main_language = incoming_data["main_language"]
-    if id is None:
-        raise HTTPException(status_code=400, detail="Invalid id")
+    if name is None:
+        raise HTTPException(status_code=400, detail="Invalid node name")
     if main_language is None:
         raise HTTPException(status_code=400, detail="Invalid main language code")
 
-    label = taxonomy.get_label(id)
-    normalized_id = await taxonomy.create_node(label, id, main_language)
-    if label == "ENTRY":
-        await taxonomy.add_node_to_end(label, normalized_id)
-    else:
-        await taxonomy.add_node_to_beginning(label, normalized_id)
+    normalized_id = await taxonomy.create_entry_node(name, main_language)
+    await taxonomy.add_node_to_end("ENTRY", normalized_id)
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")

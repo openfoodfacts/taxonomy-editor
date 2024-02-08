@@ -30,15 +30,12 @@ const CreateNodeDialogContent = ({
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
 
-  const handleAddNode = () => {
+  const handleAddEntryNode = () => {
     setIsFailedSubmit(false);
 
-    //  TODO: Add support for synonyms and stopwords
+    const data = { name: newNodeName, main_language: newLanguageCode };
 
-    const newNodeID = newLanguageCode + ":" + newNodeName; // Reconstructing node ID
-    const data = { id: newNodeID, main_language: newLanguageCode };
-
-    fetch(`${baseUrl}nodes`, {
+    fetch(`${baseUrl}entry`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -95,7 +92,7 @@ const CreateNodeDialogContent = ({
         <Button onClick={onCloseDialog}>Cancel</Button>
         <Button
           disabled={!newLanguageCode || !newNodeName}
-          onClick={handleAddNode}
+          onClick={handleAddEntryNode}
         >
           Create
         </Button>

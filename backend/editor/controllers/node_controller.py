@@ -23,23 +23,14 @@ async def create_entry_node(
     """
     Creates a new entry node in the database
     """
+    name, language_code = entry_node.name, entry_node.main_language_code
+    normalized_name = parser_utils.normalize_text(name, language_code, stopwords=stopwords)
+
     # Create params dict
-    params = {"entry_node": {"main_language": entry_node.main_language_code, "preceding_lines": []}}
-
-    # Add tags and normalized tags for each language
-    for language_code, tags in entry_node.tags.items():
-        normalized_tags = [
-            parser_utils.normalize_text(tag, language_code, stopwords=stopwords) for tag in tags
-        ]
-        params["entry_node"][f"tags_{language_code}"] = tags
-        params["entry_node"][f"tags_ids_{language_code}"] = normalized_tags
-
-    # Add node id
-    params["entry_node"]["id"] = (
-        entry_node.main_language_code
-        + ":"
-        + params["entry_node"][f"tags_ids_{entry_node.main_language_code}"][0]
-    )
+    params = {"entry_node": {"main_language": language_code, "preceding_lines": []}}
+    params["entry_node"]["id"] = language_code + ":" + normalized_name
+    params["entry_node"][f"tags_{language_code}"] = [name]
+    params["entry_node"][f"tags_ids_{language_code}"] = [normalized_name]
 
     query = f"""
     CREATE (n:{project_id}:ENTRY $entry_node)

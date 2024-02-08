@@ -61,28 +61,17 @@ class TaxonomyGraph:
         else:
             return "ENTRY"
 
-    async def create_node(self, label, id, main_language_code) -> str:
+    async def create_entry_node(self, name, main_language_code) -> str:
         """
-        Helper function used for creating a node with given id and label
+        Helper function used to create an entry node with given name and main language
         """
         stopwords = await self.get_stopwords_dict()
 
-        if label == "ENTRY":
-            tags = {main_language_code: [id.split(":", 1)[1]]}
-            return await create_entry_node(
-                self.project_name,
-                EntryNodeCreate(main_language_code=main_language_code, tags=tags),
-                stopwords,
-            )
-
-        # TODO: This part is not used currently as we don't create synonyms and stopwords
-        params = {"id": id}
-        query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
-        query.append(""" SET n.id = $id """)
-        query.append(""" SET n.preceding_lines = [] """)
-        query.append(""" RETURN n.id """)
-        result = await get_current_transaction().run(" ".join(query), params)
-        return (await result.data())[0]["n.id"]
+        return await create_entry_node(
+            self.project_name,
+            EntryNodeCreate(name=name, main_language_code=main_language_code),
+            stopwords,
+        )
 
     async def get_local_taxonomy_file(self, tmpdir: str, uploadfile: UploadFile):
         filename = uploadfile.filename
@@ -335,6 +324,7 @@ class TaxonomyGraph:
         """
         await get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
 
+    # UNUSED FOR NOW
     async def add_node_to_beginning(self, label, entry):
         """
         Helper function which adds an existing node to beginning of taxonomy
@@ -599,8 +589,8 @@ class TaxonomyGraph:
         created_child_ids = []
 
         for child in to_create:
-            main_language_code = child.split(":", 1)[0]
-            created_node_id = await self.create_node("ENTRY", child, main_language_code)
+            main_language_code, child_name = child.split(":", 1)
+            created_node_id = await self.create_entry_node(child_name, main_language_code)
             created_child_ids.append(created_node_id)
 
             # TODO: We would prefer to add the node just after its parent entry
