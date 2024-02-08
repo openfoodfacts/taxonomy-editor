@@ -16,6 +16,7 @@ from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from . import settings
+from .controllers.node_controller import create_entry_node
 from .controllers.project_controller import create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
@@ -30,6 +31,7 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
+from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
 from .utils import file_cleanup
 
@@ -63,34 +65,22 @@ class TaxonomyGraph:
         """
         Helper function used for creating a node with given id and label
         """
-        params = {"id": id}
-        query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
         stopwords = await self.get_stopwords_dict()
 
-        # Build all basic properties of a node
         if label == "ENTRY":
-            # Normalizing new canonical tag
-            language_code, canonical_tag = id.split(":", 1)
-            normalised_canonical_tag = parser_utils.normalize_text(
-                canonical_tag, main_language_code, stopwords=stopwords
+            tags = {main_language_code: [id.split(":", 1)[1]]}
+            return await create_entry_node(
+                self.project_name,
+                EntryNodeCreate(main_language_code=main_language_code, tags=tags),
+                stopwords,
             )
 
-            # Update node id and add params
-            params["id"] = language_code + ":" + normalised_canonical_tag
-            params["main_language_code"] = main_language_code
-            params["canonical_tag"] = canonical_tag
-            params["normalised_canonical_tag"] = normalised_canonical_tag
-
-            query.append(
-                """ SET n.main_language = $main_language_code """
-            )  # Required only for an entry
-            query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
-            query.append(f""" SET n.tags_ids_{main_language_code} = [$normalised_canonical_tag] """)
-
+        # TODO: This part is not used currently as we don't create synonyms and stopwords
+        params = {"id": id}
+        query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
         query.append(""" SET n.id = $id """)
         query.append(""" SET n.preceding_lines = [] """)
         query.append(""" RETURN n.id """)
-
         result = await get_current_transaction().run(" ".join(query), params)
         return (await result.data())[0]["n.id"]
 
