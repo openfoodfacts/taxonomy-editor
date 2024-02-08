@@ -3,6 +3,21 @@ import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
+
+  function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(find, 'g'), replace);
+  }
+
+  const normalizeNameToFrontend = (name) => {
+    // Use the replace() method with a regular expression to replace underscores with colons
+    return replaceAll(name,"_",":")
+  };
+
+  const normalizeNameToDb = (name) => {
+    // Use the replace() method with a regular expression to replace underscores with colons
+    return replaceAll(name,":","_")
+  };
+
   const collectProperties = () => {
     let renderedProperties = [];
     Object.keys(nodeObject).forEach((key) => {
@@ -25,7 +40,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
 
         renderedProperties.push({
           id: uuid,
-          propertyName: property_name,
+          propertyName: normalizeNameToFrontend(property_name),
           propertyValue: nodeObject[property_key],
         });
       }
@@ -47,7 +62,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   // Helper function used for deleting properties of node
   const deletePropertyData = (key) => {
     setNodeObject((prevState) => {
-      const toRemove = "prop_" + key;
+      const toRemove = normalizeNameToDb("prop_" + key);
       const { [toRemove]: _, ...newNodeObject } = prevState;
       return newNodeObject;
     });
@@ -74,17 +89,19 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                 setData(updatedRows);
 
                 // Add new key-value pair of a property in nodeObject
-                changePropertyData(newRow.propertyName, newRow.propertyValue);
+                changePropertyData(
+                  normalizeNameToDb(newRow.propertyName), 
+                  newRow.propertyValue
+                );
                 resolve();
               }),
             onRowDelete: (selectedRow) =>
               new Promise((resolve, reject) => {
                 // Delete property from rendered rows
                 const updatedRows = [...data];
-                const index = selectedRow.id;
+                const index = updatedRows.findIndex(row => row.id === selectedRow.id);
                 updatedRows.splice(index, 1);
                 setData(updatedRows);
-
                 // Delete key-value pair of a property from nodeObject
                 deletePropertyData(selectedRow.propertyName);
                 resolve();
@@ -102,7 +119,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                   deletePropertyData(oldRow.propertyName);
                 // Add new property to nodeObject
                 changePropertyData(
-                  updatedRow.propertyName,
+                  normalizeNameToDb(updatedRow.propertyName),
                   updatedRow.propertyValue
                 );
                 resolve();
@@ -113,6 +130,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             addRowPosition: "last",
             tableLayout: "fixed",
             paging: false,
+            showTitle: false,
           }}
           components={{
             Toolbar: (props) => {
