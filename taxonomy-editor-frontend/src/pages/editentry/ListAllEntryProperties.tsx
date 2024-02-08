@@ -71,14 +71,17 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   const validatePropertyName = (propertyName: string): boolean => {
     // Every property name should be in the form property_name:lang_code
     if (propertyName) {
-      const [, langCode] = propertyName.split(":");
+      const words = propertyName.split(":");
+      const langCode = words[words.length - 1];
       if (!LanguageCodes.includes(langCode as LanguageCode)) {
         return false;
       }
       // Property name should not include special caracters
-      const pattern = /^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+$/;
-      if (!pattern.test(propertyName)) {
-        return false;
+      for (const word of words) {
+        const pattern = /^[a-zA-Z0-9_]+$/;
+        if (!pattern.test(word)) {
+          return false;
+        }
       }
       return true;
     }
