@@ -29,26 +29,16 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   const collectProperties = (): RenderedPropertyType[] => {
     let renderedProperties: RenderedPropertyType[] = [];
     Object.keys(nodeObject).forEach((key: string) => {
-      // Collecting uuids of properties
-      // UUID of properties will have a "_uuid" suffix
-      // Ex: prop_vegan_en_uuid
-      if (
-        key.startsWith("prop") &&
-        key.endsWith("uuid") &&
-        !key.endsWith("_comments_uuid")
-      ) {
-        const uuid: string = nodeObject[key][0]; // UUID
+      // Collecting properties (begin with prop_)
+      // Ex: prop_vegan_en
+      if (key.startsWith("prop") && !key.endsWith("_comments")) {
         // Removing "prop_" prefix from key to render only the name
-        const property_name = key.split("_").slice(1, -1).join("_");
-
-        // Properties have a prefix "prop_" followed by their name
-        // Getting key for accessing property value
-        const property_key = "prop_" + property_name;
+        const property_name = key.replace(/^prop_/, "");
 
         renderedProperties.push({
-          id: uuid,
+          id: Math.random().toString(),
           propertyName: normalizeNameToFrontend(property_name),
-          propertyValue: nodeObject[property_key],
+          propertyValue: nodeObject[key],
         });
       }
     });
