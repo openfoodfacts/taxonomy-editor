@@ -1,6 +1,7 @@
 import { Box, Grid, Paper, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
+import ISO6391, { LanguageCode } from "iso-639-1";
 
 type RowType = {
   propertyName: string;
@@ -65,6 +66,25 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
     });
   };
 
+  const LanguageCodes = ISO6391.getAllCodes();
+
+  const validatePropertyName = (propertyName:string) : boolean => {
+    // Every property name should be in the form property_name:lang_code
+    if (propertyName) {
+        const [, langCode] = propertyName.split(':');
+      if (!LanguageCodes.includes(langCode as LanguageCode)) {
+          return false; 
+      }
+      // Property name should not include special caracters
+      const pattern = /^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+$/;
+      if (!pattern.test(propertyName)) {
+          return false; 
+      }
+      return true;
+    }
+    return false;
+  }
+
   return (
     <Box>
       {/* Properties */}
@@ -72,7 +92,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
         <MaterialTable
           data={data}
           columns={[
-            { title: "Name", field: "propertyName" },
+            { title: "Name", field: "propertyName", validate: rowData => validatePropertyName(rowData.propertyName) ? true : { isValid: false, helperText: 'Property name should not contain special caracters and should follow the format : property_name:lang_code' } , },
             { title: "Value", field: "propertyValue" },
           ]}
           editable={{
