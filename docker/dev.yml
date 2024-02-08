@@ -63,7 +63,7 @@ services:
       - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
       - ./taxonomy-editor-frontend/src:/opt/taxonomy-editor/src
       - ./taxonomy-editor-frontend/tsconfig.js:/opt/taxonomy-editor/tsconfig.js
-      - ./taxonomy-editor-frontend/webpack.config.js:/opt/taxonomy-editor/webpack.config.js
+      - ./taxonomy-editor-frontend/craco.config.js:/opt/taxonomy-editor/craco.config.js
   taxonomy_frontend:
     image: taxonomy-editor/taxonomy_frontend:dev
     # instruction to build locally

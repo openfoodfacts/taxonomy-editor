@@ -22,10 +22,9 @@
     "web-vitals": "^3.5.0"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "GENERATE_SOURCEMAP=false craco start",
+    "build": "craco build",
+    "test": "craco test",
     "prepare": "cd .. && husky install taxonomy-editor-frontend/.husky",
     "lint": "prettier --write .",
     "lint:check": "prettier --check ."
@@ -50,6 +49,8 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "@craco/types": "^7.1.0",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.5.1",
