@@ -251,20 +251,24 @@ class TaxonomyParser:
         for line_number, line in self._file_iter(filename, entries_start_line):
             # yield data if block ended
             if self._entry_end(line, data):
+                data = self._remove_separating_line(data)
+                if data.get_node_type() == NodeType.ENTRY:
+                    data = self._get_node_data_with_parent_and_end_comments(data)
                 if data.id in saved_nodes:
+                    # this duplicate node will be merged with the first one
+                    data.is_before = None
                     msg = (
-                        f"Entry with same id {data.id} already created, "
+                        f"WARNING: Entry with same id {data.id} already exists, "
                         f"duplicate id in file at line {data.src_position}. "
-                        "Node creation cancelled."
+                        "The two nodes will be merged, keeping the last "
+                        "values in case of conflicts."
                     )
                     self.parser_logger.error(msg)
                 else:
-                    data = self._remove_separating_line(data)
-                    if data.get_node_type() == NodeType.ENTRY:
-                        data = self._get_node_data_with_parent_and_end_comments(data)
-                    yield data  # another function will use this dictionary to create a node
                     saved_nodes.append(data.id)
-                data = NodeData(is_before=data.id)
+                    is_before = data.id
+                yield data  # another function will use this dictionary to create a node
+                data = NodeData(is_before=is_before)
 
             # harvest the line
             if not (line) or line[0] == "#":
@@ -404,7 +408,9 @@ class TaxonomyParser:
 
         return normalised_child_links, missing_child_links
 
-    def _get_valid_child_links(self, entry_nodes: list[NodeData], raw_child_links: list[ChildLink]):
+    def _get_valid_child_links(
+        self, entry_nodes: list[NodeData], raw_child_links: list[ChildLink]
+    ) -> list[ChildLink]:
         """Get only the valid child links, i.e. the child links whose the parent_id exists"""
         node_ids = set([node.id for node in entry_nodes])
 
@@ -438,6 +444,17 @@ class TaxonomyParser:
 
         return valid_child_links
 
+    def _remove_duplicate_child_links(self, child_links: list[ChildLink]) -> list[ChildLink]:
+        """Remove duplicate child links (i.e child links with the same parent_id and id)"""
+        unique_child_links = []
+        children_to_parents = collections.defaultdict(set)
+        for child_link in child_links:
+            parent_id, child_id = child_link.parent_id, child_link.id
+            if parent_id not in children_to_parents[child_id]:
+                children_to_parents[child_id].add(parent_id)
+                unique_child_links.append(child_link)
+        return unique_child_links
+
     def _create_taxonomy(self, filename: str) -> Taxonomy:
         """Create the taxonomy from the file"""
         self.parser_logger.info(f"Parsing {filename}")
@@ -467,11 +484,12 @@ class TaxonomyParser:
                         )
                     )
         valid_child_links = self._get_valid_child_links(entry_nodes, raw_child_links)
+        child_links = self._remove_duplicate_child_links(valid_child_links)
         return Taxonomy(
             entry_nodes=entry_nodes,
             other_nodes=other_nodes,
             previous_links=previous_links,
-            child_links=valid_child_links,
+            child_links=child_links,
         )
 
     def parse_file(self, filename: str, logger: ParserConsoleLogger | None = None) -> Taxonomy:
