@@ -51,12 +51,10 @@ const EditEntry = ({
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    })
-      .then(() => {
-        setOpenDeleteDialog(false);
-        setOpenSuccessDialog(true);
-      })
-      .catch(() => {});
+    }).then(() => {
+      setOpenDeleteDialog(false);
+      setOpenSuccessDialog(true);
+    });
   };
 
   return (

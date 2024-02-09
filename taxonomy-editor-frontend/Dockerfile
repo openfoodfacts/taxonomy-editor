@@ -32,8 +32,9 @@ ENV PATH /opt/taxonomy-editor/node_modules/.bin:$PATH
 # copy files
 COPY --chown=node:node src /opt/taxonomy-editor/src
 COPY --chown=node:node public /opt/taxonomy-editor/public
-COPY --chown=node:node tsconfig.json /opt/taxonomy-editor/tsconfig.json
+COPY --chown=node:node .eslintrc.json /opt/taxonomy-editor/.eslintrc.json
 COPY --chown=node:node craco.config.js /opt/taxonomy-editor/craco.config.js
+COPY --chown=node:node tsconfig.json /opt/taxonomy-editor/tsconfig.json
 # build for production
 # no need of a public url, we are at the root
 RUN npm run build

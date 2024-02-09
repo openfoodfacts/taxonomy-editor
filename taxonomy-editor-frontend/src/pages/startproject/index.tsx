@@ -42,7 +42,7 @@ const StartProject = ({ clearNavBarLinks }) => {
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
     const dataToBeSent = { description: description };
-    let errorMessage: string = "Unable to import";
+    let errorMessage = "Unable to import";
 
     fetch(`${baseUrl}import`, {
       method: "POST",
