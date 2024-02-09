@@ -23,7 +23,7 @@
   },
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false craco start",
-    "build": "craco build",
+    "build": "NODE_ENV=production craco build",
     "test": "craco test",
     "prepare": "cd .. && husky install taxonomy-editor-frontend/.husky",
     "lint": "prettier --write .",
