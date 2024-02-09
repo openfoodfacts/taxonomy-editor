@@ -18,7 +18,8 @@ import { useState, useEffect } from "react";
 
 const Errors = ({ addNavLinks }) => {
   const { taxonomyName, branchName } = useParams();
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const [errors, setErrors] = useState([]);
   const {
@@ -29,7 +30,8 @@ const Errors = ({ addNavLinks }) => {
 
   useEffect(() => {
     if (!errorData) return;
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     const newErrors = errorData.errors.map((error, index) => ({
       id: index + 1,
       error: error,

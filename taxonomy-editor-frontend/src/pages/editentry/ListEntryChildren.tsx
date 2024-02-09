@@ -43,10 +43,12 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
 
   useEffect(() => {
     if (incomingData) {
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       setUpdateNodeChildren(incomingData.map((el) => el?.[0]));
       const arrayData: Relations[] = [];
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       incomingData.map((el) =>
         arrayData.push({ index: Math.random().toString(), child: el?.[0] })
       );
@@ -161,7 +163,8 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         <DialogTitle>Add a child</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Enter the name of the child in the format "LC:child_tag_id"
+            Enter the name of the child in the format
+            &quot;LC:child_tag_id&quot;
           </DialogContentText>
           <DialogContentText>Example - en:yogurts</DialogContentText>
           <Stack sx={{ mt: 2 }} direction="row" alignItems="center">

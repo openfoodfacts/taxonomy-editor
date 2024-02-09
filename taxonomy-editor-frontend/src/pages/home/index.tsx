@@ -7,6 +7,8 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
+import logoUrl from "../../assets/logo.png";
+import classificationImgUrl from "../../assets/classification.png";
 
 type Props = {
   clearNavBarLinks: () => void;
@@ -34,7 +36,7 @@ const Home = ({ clearNavBarLinks }: Props) => {
           component="img"
           height={140}
           width={700}
-          src={require("../../assets/logo.png")}
+          src={logoUrl}
           alt="Open Food Facts Logo"
         />
         <Box sx={{ mt: 1 }} />
@@ -42,7 +44,7 @@ const Home = ({ clearNavBarLinks }: Props) => {
           component="img"
           width={128}
           height={128}
-          src={require("../../assets/classification.png")}
+          src={classificationImgUrl}
           alt="Classification Logo"
         />
         <Typography sx={{ mt: 4, mb: 6 }} variant="h2">

@@ -67,7 +67,7 @@ const EditEntry = ({
         <Box>
           <Stack direction="row" alignItems="center">
             <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
-              You are now editing "{id}"
+              You are now editing &quot;{id}&quot;
             </Typography>
             <IconButton
               sx={{ ml: 1, color: greyHexCode }}

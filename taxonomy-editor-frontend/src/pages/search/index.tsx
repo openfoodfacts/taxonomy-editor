@@ -15,6 +15,7 @@ import SearchResults from "./SearchResults";
 import { ENTER_KEYCODE } from "../../constants";
 import WarningParsingErrors from "../../components/WarningParsingErrors";
 import { createBaseURL } from "../../utils";
+import classificationImgUrl from "../../assets/classification.png";
 
 type SearchNodeProps = {
   addNavLinks: ({
@@ -62,7 +63,7 @@ const SearchNode = ({
             component="img"
             width={100}
             height={100}
-            src={require("../../assets/classification.png")}
+            src={classificationImgUrl}
             alt="Classification Logo"
           />
           <form

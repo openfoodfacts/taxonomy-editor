@@ -15,8 +15,7 @@ import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useTranslation } from "react-i18next";
-
-const logo = require("../assets/logosmall.jpg");
+import logoUrl from "../assets/logosmall.jpg";
 
 type ResponsiveAppBarProps = {
   displayedPages: Array<{ translationKey: string; url: string }>;
@@ -130,7 +129,7 @@ const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
                 target="_blank"
               >
                 <img
-                  src={logo}
+                  src={logoUrl}
                   width="50px"
                   height="50px"
                   alt="OpenFoodFacts logo"

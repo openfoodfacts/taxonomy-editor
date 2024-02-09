@@ -74,7 +74,9 @@ const CreateNodeDialogContent = ({
             }}
           >
             {[...ISO6391.getAllNames()].sort().map((languageNameItem) => (
-              <MenuItem value={languageNameItem}>{languageNameItem}</MenuItem>
+              <MenuItem key={languageNameItem} value={languageNameItem}>
+                {languageNameItem}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>

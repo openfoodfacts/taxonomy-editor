@@ -10,7 +10,7 @@ interface RenderedProperties {
 
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   const collectProperties = () => {
-    let renderedProperties: RenderedProperties[] = [];
+    const renderedProperties: RenderedProperties[] = [];
     Object.keys(nodeObject).forEach((key) => {
       // Collecting uuids of properties
       // UUID of properties will have a "_uuid" suffix
@@ -53,8 +53,8 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   // Helper function used for deleting properties of node
   const deletePropertyData = (key) => {
     setNodeObject((prevState) => {
-      const toRemove = "prop_" + key;
-      const { [toRemove]: _, ...newNodeObject } = prevState;
+      const keyToRemove = "prop_" + key;
+      const { [keyToRemove]: _propToRemove, ...newNodeObject } = prevState;
       return newNodeObject;
     });
   };
@@ -71,7 +71,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
           ]}
           editable={{
             onRowAdd: (newRow) =>
-              new Promise((resolve, reject) => {
+              new Promise((resolve) => {
                 // Add new property to rendered rows
                 const updatedRows = [
                   ...data,
@@ -81,11 +81,12 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
 
                 // Add new key-value pair of a property in nodeObject
                 changePropertyData(newRow.propertyName, newRow.propertyValue);
-                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 resolve();
               }),
             onRowDelete: (selectedRow) =>
-              new Promise((resolve, reject) => {
+              new Promise((resolve) => {
                 // Delete property from rendered rows
                 const updatedRows = [...data];
                 const index = parseInt(selectedRow.id);
@@ -94,29 +95,34 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
 
                 // Delete key-value pair of a property from nodeObject
                 deletePropertyData(selectedRow.propertyName);
-                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 resolve();
               }),
             onRowUpdate: (updatedRow, oldRow) =>
-              new Promise((resolve, reject) => {
+              new Promise((resolve) => {
                 // Update row in rendered rows
                 const updatedRows = data.map((el) =>
-                  // @ts-ignore
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-expect-error
                   el.id === oldRow.id ? updatedRow : el
                 );
                 setData(updatedRows);
                 // Updation takes place by deletion + addition
                 // If property name has been changed, previous key should be removed from nodeObject
-                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 updatedRow.propertyName !== oldRow.propertyName &&
-                  // @ts-ignore
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-expect-error
                   deletePropertyData(oldRow.propertyName);
                 // Add new property to nodeObject
                 changePropertyData(
                   updatedRow.propertyName,
                   updatedRow.propertyValue
                 );
-                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 resolve();
               }),
           }}
