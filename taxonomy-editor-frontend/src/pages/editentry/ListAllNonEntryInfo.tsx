@@ -7,11 +7,11 @@ import {
   Button,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { getNodeType } from "../../utils";
+import { getNodeType } from "@/utils";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
-import { greyHexCode } from "../../constants";
+import { greyHexCode } from "@/constants";
 
 /**
  * Parent component used for rendering info on a stopword, synonym, header or footer

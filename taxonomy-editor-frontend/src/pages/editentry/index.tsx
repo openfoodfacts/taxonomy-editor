@@ -10,9 +10,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AccumulateAllComponents from "./AccumulateAllComponents";
 
-import { createBaseURL } from "../../utils";
-import { greyHexCode } from "../../constants";
-import WarningParsingErrors from "../../components/WarningParsingErrors";
+import { createBaseURL } from "@/utils";
+import { greyHexCode } from "@/constants";
+import WarningParsingErrors from "@/components/WarningParsingErrors";
 
 type EditEntryProps = {
   addNavLinks: ({

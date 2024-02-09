@@ -1,4 +1,4 @@
-import useFetch from "../../components/useFetch";
+import useFetch from "@/components/useFetch";
 import {
   Typography,
   TextField,
@@ -18,8 +18,8 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CircularProgress from "@mui/material/CircularProgress";
 import ISO6391 from "iso-639-1";
-import { ENTER_KEYCODE } from "../../constants";
-import { greyHexCode } from "../../constants";
+import { ENTER_KEYCODE } from "@/constants";
+import { greyHexCode } from "@/constants";
 
 interface Relations {
   index: string;

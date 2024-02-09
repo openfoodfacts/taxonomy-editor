@@ -7,8 +7,8 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
-import logoUrl from "../../assets/logo.png";
-import classificationImgUrl from "../../assets/classification.png";
+import logoUrl from "@/assets/logo.png";
+import classificationImgUrl from "@/assets/classification.png";
 
 type Props = {
   clearNavBarLinks: () => void;

@@ -19,16 +19,16 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
-import { toTitleCase, createBaseURL } from "../../utils";
-import { greyHexCode } from "../../constants";
+import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
+import { toTitleCase, createBaseURL } from "@/utils";
+import { greyHexCode } from "@/constants";
 import {
   type ProjectInfoAPIResponse,
   type RootEntriesAPIResponse,
   ProjectStatus,
-} from "../../backend-types/types";
-import NodesTableBody from "../../components/NodesTableBody";
-import WarningParsingErrors from "../../components/WarningParsingErrors";
+} from "@/backend-types/types";
+import NodesTableBody from "@/components/NodesTableBody";
+import WarningParsingErrors from "@/components/WarningParsingErrors";
 import { useQuery } from "@tanstack/react-query";
 
 type RootNodesProps = {

@@ -12,10 +12,10 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 import SearchResults from "./SearchResults";
-import { ENTER_KEYCODE } from "../../constants";
-import WarningParsingErrors from "../../components/WarningParsingErrors";
-import { createBaseURL } from "../../utils";
-import classificationImgUrl from "../../assets/classification.png";
+import { ENTER_KEYCODE } from "@/constants";
+import WarningParsingErrors from "@/components/WarningParsingErrors";
+import { createBaseURL } from "@/utils";
+import classificationImgUrl from "@/assets/classification.png";
 
 type SearchNodeProps = {
   addNavLinks: ({

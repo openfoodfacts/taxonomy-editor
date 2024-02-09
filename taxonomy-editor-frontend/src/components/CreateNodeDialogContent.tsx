@@ -9,7 +9,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import DialogTitle from "@mui/material/DialogTitle";
 
-import { createBaseURL } from "../utils";
+import { createBaseURL } from "@/utils";
 
 type Props = {
   onCloseDialog: () => void;

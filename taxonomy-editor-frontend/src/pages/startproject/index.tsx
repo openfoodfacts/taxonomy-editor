@@ -16,8 +16,8 @@ import {
   MenuItem,
 } from "@mui/material";
 
-import { TAXONOMY_NAMES } from "../../constants";
-import { createBaseURL, toSnakeCase } from "../../utils";
+import { TAXONOMY_NAMES } from "@/constants";
+import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
