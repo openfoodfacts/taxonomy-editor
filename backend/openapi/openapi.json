@@ -65,6 +65,45 @@
         }
       }
     },
+    "/{taxonomy_name}/{branch}/project": {
+      "get": {
+        "summary": "Get Project Info",
+        "description": "Get information about a Taxonomy Editor project",
+        "operationId": "get_project_info__taxonomy_name___branch__project_get",
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Branch" }
+          },
+          {
+            "name": "taxonomy_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Taxonomy Name" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Project" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/{taxonomy_name}/{branch}/set-project-status": {
       "get": {
         "summary": "Set Project Status",
@@ -1089,11 +1128,11 @@
         }
       }
     },
-    "/{taxonomy_name}/{branch}/delete": {
+    "/{taxonomy_name}/{branch}": {
       "delete": {
         "summary": "Delete Project",
         "description": "Delete a project",
-        "operationId": "delete_project__taxonomy_name___branch__delete_delete",
+        "operationId": "delete_project__taxonomy_name___branch__delete",
         "parameters": [
           {
             "name": "branch",
@@ -1109,10 +1148,7 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
+          "204": { "description": "Successful Response" },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1170,6 +1206,46 @@
         "type": "object",
         "required": ["preceding_lines"],
         "title": "Header"
+      },
+      "Project": {
+        "properties": {
+          "id": { "type": "string", "title": "Id" },
+          "status": {
+            "allOf": [{ "$ref": "#/components/schemas/ProjectStatus" }],
+            "default": "LOADING"
+          },
+          "taxonomy_name": { "type": "string", "title": "Taxonomy Name" },
+          "branch_name": { "type": "string", "title": "Branch Name" },
+          "description": { "type": "string", "title": "Description" },
+          "is_from_github": { "type": "boolean", "title": "Is From Github" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "github_checkout_commit_sha": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Github Checkout Commit Sha"
+          },
+          "github_file_latest_sha": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Github File Latest Sha"
+          },
+          "github_pr_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Github Pr Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "taxonomy_name",
+          "branch_name",
+          "description",
+          "is_from_github",
+          "created_at"
+        ],
+        "title": "Project"
       },
       "ProjectStatus": {
         "type": "string",

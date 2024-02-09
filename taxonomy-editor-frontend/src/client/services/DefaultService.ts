@@ -5,6 +5,7 @@
 import type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from '../models/Body_upload_taxonomy__taxonomy_name___branch__upload_post';
 import type { Footer } from '../models/Footer';
 import type { Header } from '../models/Header';
+import type { Project } from '../models/Project';
 import type { ProjectStatus } from '../models/ProjectStatus';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -48,6 +49,30 @@ export class DefaultService {
             url: '/projects',
             query: {
                 'status': status,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Get Project Info
+     * Get information about a Taxonomy Editor project
+     * @param branch
+     * @param taxonomyName
+     * @returns Project Successful Response
+     * @throws ApiError
+     */
+    public static getProjectInfoTaxonomyNameBranchProjectGet(
+        branch: string,
+        taxonomyName: string,
+    ): CancelablePromise<Project> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/{taxonomy_name}/{branch}/project',
+            path: {
+                'branch': branch,
+                'taxonomy_name': taxonomyName,
             },
             errors: {
                 422: `Validation Error`,
@@ -761,16 +786,16 @@ export class DefaultService {
      * Delete a project
      * @param branch
      * @param taxonomyName
-     * @returns any Successful Response
+     * @returns void
      * @throws ApiError
      */
-    public static deleteProjectTaxonomyNameBranchDeleteDelete(
+    public static deleteProjectTaxonomyNameBranchDelete(
         branch: string,
         taxonomyName: string,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/{taxonomy_name}/{branch}/delete',
+            url: '/{taxonomy_name}/{branch}',
             path: {
                 'branch': branch,
                 'taxonomy_name': taxonomyName,

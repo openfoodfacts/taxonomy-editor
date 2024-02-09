@@ -11,6 +11,7 @@ export type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from '
 export type { Footer } from './models/Footer';
 export type { Header } from './models/Header';
 export type { HTTPValidationError } from './models/HTTPValidationError';
+export type { Project } from './models/Project';
 export { ProjectStatus } from './models/ProjectStatus';
 export type { ValidationError } from './models/ValidationError';
 
