@@ -24,7 +24,6 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
   const urlPrefix = `/${taxonomyName}/${branchName}`;
   const isEntry = getNodeType(id) === "entry";
 
-  /* eslint no-unused-vars: ["error", { varsIgnorePattern: "^__" }] */
   const {
     data: node,
     isPending,

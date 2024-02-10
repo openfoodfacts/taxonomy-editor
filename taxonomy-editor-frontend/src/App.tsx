@@ -5,14 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
-import RootNodes from "./pages/root-nodes";
-import EditEntry from "./pages/editentry";
-import ExportTaxonomy from "./pages/export";
+import RootNodes from "./pages/project/root-nodes";
+import EditEntry from "./pages/project/editentry";
+import ExportTaxonomy from "./pages/project/export";
 import GoToProject from "./pages/go-to-project";
 import Home from "./pages/home";
-import SearchNode from "./pages/search";
+import SearchNode from "./pages/project/search";
 import StartProject from "./pages/startproject";
-import Errors from "./pages/errors";
+import Errors from "./pages/project/errors";
 
 const theme = createTheme({
   typography: {
