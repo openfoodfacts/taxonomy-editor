@@ -48,7 +48,7 @@ githubkit = { version = "^0.11.0a4", allow-prereleases = true }
 uvicorn = { extras = ["standard"], version = "^0.23.2" }
 neo4j = "^5.14.0"
 openfoodfacts_taxonomy_parser = { path = "../parser", develop = true }
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.7"
 apscheduler = "^3.10.4"
 
 [tool.poetry.group.dev.dependencies]
