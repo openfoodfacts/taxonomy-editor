@@ -16,10 +16,13 @@ import MaterialTable from "@material-table/core";
 import { Alert, CircularProgress } from "@mui/material";
 import { useState, useEffect } from "react";
 
+interface ErrorParams {
+  taxonomyName: string;
+  branchName: string;
+}
+
 const Errors = ({ addNavLinks }) => {
-  const { taxonomyName, branchName } = useParams();
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
+  const { taxonomyName, branchName } = useParams() as unknown as ErrorParams;
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const [errors, setErrors] = useState([]);
   const {
