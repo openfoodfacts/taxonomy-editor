@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export enum ProjectStatus {
-    OPEN = 'OPEN',
-    EXPORTED = 'EXPORTED',
-    LOADING = 'LOADING',
-    FAILED = 'FAILED',
+  OPEN = "OPEN",
+  EXPORTED = "EXPORTED",
+  LOADING = "LOADING",
+  FAILED = "FAILED",
 }

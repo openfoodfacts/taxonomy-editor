@@ -3,6 +3,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Header = {
-    preceding_lines: Array<any>;
+  preceding_lines: Array<any>;
 };
-

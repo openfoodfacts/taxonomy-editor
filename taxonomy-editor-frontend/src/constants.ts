@@ -13,7 +13,7 @@ const taxonomyApiUrlFromUi = (location: Location): string => {
     // this is a default for simple dev setup
     return process.env.REACT_APP_API_URL as string;
   }
-}
+};
 
 export const API_URL = taxonomyApiUrlFromUi(window.location);
 
