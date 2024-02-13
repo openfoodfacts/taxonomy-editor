@@ -29,7 +29,7 @@
     "prepare": "cd .. && husky install taxonomy-editor-frontend/.husky",
     "lint": "prettier --write .",
     "lint:check": "prettier --check .",
-    "generate:api": "openapi --input ../backend/openapi/openapi.json --output ./src/client --client axios"
+    "generate:api": "openapi --input ../backend/openapi/openapi.json --output ./src/client --client axios && prettier --write ./src/client"
   },
   "proxy": "http://localhost:80",
   "browserslist": {
