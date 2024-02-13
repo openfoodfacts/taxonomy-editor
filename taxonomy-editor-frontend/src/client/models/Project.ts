@@ -5,7 +5,7 @@
 import type { ProjectStatus } from './ProjectStatus';
 export type Project = {
     id: string;
-    status?: ProjectStatus;
+    status: ProjectStatus;
     taxonomy_name: string;
     branch_name: string;
     description: string;
