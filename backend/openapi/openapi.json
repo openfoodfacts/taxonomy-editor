@@ -185,39 +185,6 @@
           }
         }
       },
-      "post": {
-        "summary": "Create Node",
-        "description": "Creating a new node in a taxonomy",
-        "operationId": "create_node__taxonomy_name___branch__nodes_post",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "summary": "Delete Node",
         "description": "Deleting given node from a taxonomy",
@@ -509,6 +476,47 @@
         ],
         "responses": {
           "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Entry Node",
+        "description": "Creating a new entry node in a taxonomy",
+        "operationId": "create_entry_node__taxonomy_name___branch__entry_post",
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Branch" }
+          },
+          {
+            "name": "taxonomy_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Taxonomy Name" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EntryNodeCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": "Successful Response",
             "content": { "application/json": { "schema": {} } }
           },
@@ -1172,18 +1180,19 @@
         "required": ["file", "description"],
         "title": "Body_upload_taxonomy__taxonomy_name___branch__upload_post"
       },
-      "Footer": {
+      "EntryNodeCreate": {
         "properties": {
-          "preceding_lines": {
-            "items": {},
-            "type": "array",
-            "title": "Preceding Lines"
+          "name": { "type": "string", "title": "Name" },
+          "main_language_code": {
+            "type": "string",
+            "title": "Main Language Code"
           }
         },
         "type": "object",
-        "required": ["preceding_lines"],
-        "title": "Footer"
+        "required": ["name", "main_language_code"],
+        "title": "EntryNodeCreate"
       },
+      "Footer": { "properties": {}, "type": "object", "title": "Footer" },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1195,18 +1204,7 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "Header": {
-        "properties": {
-          "preceding_lines": {
-            "items": {},
-            "type": "array",
-            "title": "Preceding Lines"
-          }
-        },
-        "type": "object",
-        "required": ["preceding_lines"],
-        "title": "Header"
-      },
+      "Header": { "properties": {}, "type": "object", "title": "Header" },
       "Project": {
         "properties": {
           "id": { "type": "string", "title": "Id" },

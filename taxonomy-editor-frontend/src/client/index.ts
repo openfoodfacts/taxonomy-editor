@@ -8,6 +8,7 @@ export { OpenAPI } from "./core/OpenAPI";
 export type { OpenAPIConfig } from "./core/OpenAPI";
 
 export type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from "./models/Body_upload_taxonomy__taxonomy_name___branch__upload_post";
+export type { EntryNodeCreate } from "./models/EntryNodeCreate";
 export type { Footer } from "./models/Footer";
 export type { Header } from "./models/Header";
 export type { HTTPValidationError } from "./models/HTTPValidationError";

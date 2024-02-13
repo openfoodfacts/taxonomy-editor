@@ -2,6 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Footer = {
-  preceding_lines: Array<any>;
-};
+export type Footer = {};

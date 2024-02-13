@@ -2,4 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Header = {};
+export type EntryNodeCreate = {
+  name: string;
+  main_language_code: string;
+};

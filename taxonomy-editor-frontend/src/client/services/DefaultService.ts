@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from "../models/Body_upload_taxonomy__taxonomy_name___branch__upload_post";
+import type { EntryNodeCreate } from "../models/EntryNodeCreate";
 import type { Footer } from "../models/Footer";
 import type { Header } from "../models/Header";
 import type { Project } from "../models/Project";
@@ -122,30 +123,6 @@ export class DefaultService {
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/{taxonomy_name}/{branch}/nodes",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
-   * Create Node
-   * Creating a new node in a taxonomy
-   * @param branch
-   * @param taxonomyName
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static createNodeTaxonomyNameBranchNodesPost(
-    branch: string,
-    taxonomyName: string
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "POST",
       url: "/{taxonomy_name}/{branch}/nodes",
       path: {
         branch: branch,
@@ -362,6 +339,34 @@ export class DefaultService {
         branch: branch,
         taxonomy_name: taxonomyName,
       },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+  /**
+   * Create Entry Node
+   * Creating a new entry node in a taxonomy
+   * @param branch
+   * @param taxonomyName
+   * @param requestBody
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public static createEntryNodeTaxonomyNameBranchEntryPost(
+    branch: string,
+    taxonomyName: string,
+    requestBody: EntryNodeCreate
+  ): CancelablePromise<any> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/{taxonomy_name}/{branch}/entry",
+      path: {
+        branch: branch,
+        taxonomy_name: taxonomyName,
+      },
+      body: requestBody,
+      mediaType: "application/json",
       errors: {
         422: `Validation Error`,
       },
