@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
@@ -18,31 +18,13 @@ import { createBaseURL } from "@/utils";
 import classificationImgUrl from "@/assets/classification.png";
 
 type SearchNodeProps = {
-  addNavLinks: ({
-    branchName,
-    taxonomyName,
-  }: {
-    branchName: string;
-    taxonomyName: string;
-  }) => void;
   taxonomyName: string;
   branchName: string;
 };
 
-const SearchNode = ({
-  addNavLinks,
-  taxonomyName,
-  branchName,
-}: SearchNodeProps) => {
+const SearchNode = ({ taxonomyName, branchName }: SearchNodeProps) => {
   const [searchInput, setSearchInput] = useState("");
   const [queryFetchString, setQueryFetchString] = useState("");
-
-  useEffect(
-    function defineMainNavLinks() {
-      addNavLinks({ branchName, taxonomyName });
-    },
-    [taxonomyName, branchName, addNavLinks]
-  );
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
 
@@ -110,17 +92,7 @@ const SearchNode = ({
   );
 };
 
-type SearchNodeWrapperProps = {
-  addNavLinks: ({
-    branchName,
-    taxonomyName,
-  }: {
-    branchName: string;
-    taxonomyName: string;
-  }) => void;
-};
-
-const SearchNodeWrapper = ({ addNavLinks }: SearchNodeWrapperProps) => {
+export const SearchNodeWrapper = () => {
   const { taxonomyName, branchName } = useParams();
 
   if (!taxonomyName || !branchName)
@@ -130,13 +102,5 @@ const SearchNodeWrapper = ({ addNavLinks }: SearchNodeWrapperProps) => {
       </Typography>
     );
 
-  return (
-    <SearchNode
-      addNavLinks={addNavLinks}
-      taxonomyName={taxonomyName}
-      branchName={branchName}
-    />
-  );
+  return <SearchNode taxonomyName={taxonomyName} branchName={branchName} />;
 };
-
-export default SearchNodeWrapper;

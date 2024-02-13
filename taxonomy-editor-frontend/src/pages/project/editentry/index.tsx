@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
@@ -15,35 +15,16 @@ import { greyHexCode } from "@/constants";
 import WarningParsingErrors from "@/components/WarningParsingErrors";
 
 type EditEntryProps = {
-  addNavLinks: ({
-    branchName,
-    taxonomyName,
-  }: {
-    branchName: string;
-    taxonomyName: string;
-  }) => void;
   taxonomyName: string;
   branchName: string;
   id: string;
 };
 
-const EditEntry = ({
-  addNavLinks,
-  taxonomyName,
-  branchName,
-  id,
-}: EditEntryProps) => {
+const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
   const baseUrl: string = createBaseURL(taxonomyName, branchName);
-
-  useEffect(
-    function defineMainNavLinks() {
-      addNavLinks({ branchName, taxonomyName });
-    },
-    [taxonomyName, branchName, addNavLinks]
-  );
 
   const handleDeleteNode = (baseUrl: string) => {
     const data = { id: id };
@@ -131,17 +112,7 @@ const EditEntry = ({
   );
 };
 
-type EditEntryWrapperProps = {
-  addNavLinks: ({
-    branchName,
-    taxonomyName,
-  }: {
-    branchName: string;
-    taxonomyName: string;
-  }) => void;
-};
-
-const EditEntryWrapper = ({ addNavLinks }: EditEntryWrapperProps) => {
+export const EditEntryWrapper = () => {
   const { taxonomyName, branchName, id } = useParams();
 
   if (!taxonomyName || !branchName || !id)
@@ -152,13 +123,6 @@ const EditEntryWrapper = ({ addNavLinks }: EditEntryWrapperProps) => {
     );
 
   return (
-    <EditEntry
-      addNavLinks={addNavLinks}
-      taxonomyName={taxonomyName}
-      branchName={branchName}
-      id={id}
-    />
+    <EditEntry taxonomyName={taxonomyName} branchName={branchName} id={id} />
   );
 };
-
-export default EditEntryWrapper;

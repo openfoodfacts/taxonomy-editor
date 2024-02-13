@@ -21,7 +21,7 @@ type ResponsiveAppBarProps = {
   displayedPages: Array<{ translationKey: string; url: string }>;
 };
 
-const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
+export const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
   const { t } = useTranslation();
   const menuAnchorRef = useRef();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -181,5 +181,3 @@ const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
     </AppBar>
   );
 };
-
-export default ResponsiveAppBar;

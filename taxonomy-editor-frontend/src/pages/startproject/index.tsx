@@ -22,7 +22,7 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
-const StartProject = ({ clearNavBarLinks }) => {
+export const StartProject = () => {
   const [ownerName, setOwnerName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
   const [description, setDescription] = useState("");
@@ -38,13 +38,6 @@ const StartProject = ({ clearNavBarLinks }) => {
   }, [ownerName, taxonomyName]);
 
   const [branchName, setBranchName] = useState(findDefaultBranchName());
-
-  useEffect(
-    function cleanMainNavLinks() {
-      clearNavBarLinks();
-    },
-    [clearNavBarLinks]
-  );
 
   useEffect(() => {
     setBranchName(findDefaultBranchName());
@@ -73,8 +66,8 @@ const StartProject = ({ clearNavBarLinks }) => {
       })
       .catch(() => {
         setErrorMessage(errorMessage);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
   };
 
   const handleCloseErrorSnackbar = () => {
@@ -218,5 +211,3 @@ const StartProject = ({ clearNavBarLinks }) => {
     </Box>
   );
 };
-
-export default StartProject;

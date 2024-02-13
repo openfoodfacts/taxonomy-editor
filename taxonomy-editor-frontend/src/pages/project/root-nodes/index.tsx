@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
@@ -32,22 +32,11 @@ import WarningParsingErrors from "@/components/WarningParsingErrors";
 import { useQuery } from "@tanstack/react-query";
 
 type RootNodesProps = {
-  addNavLinks: ({
-    taxonomyName,
-    branchName,
-  }: {
-    taxonomyName: string;
-    branchName: string;
-  }) => void;
   taxonomyName: string;
   branchName: string;
 };
 
-const RootNodes = ({
-  addNavLinks,
-  taxonomyName,
-  branchName,
-}: RootNodesProps) => {
+const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
   const [openCreateNodeDialog, setOpenCreateNodeDialog] = useState(false);
   const [openCreateNodeSuccessSnackbar, setCreateNodeOpenSuccessSnackbar] =
     useState(false);
@@ -106,13 +95,6 @@ const RootNodes = ({
   if (nodes && nodes.length > 0) {
     nodeIds = nodes.map((node) => node[0].id);
   }
-
-  useEffect(
-    function defineMainNavLinks() {
-      addNavLinks({ branchName, taxonomyName });
-    },
-    [taxonomyName, branchName, addNavLinks]
-  );
 
   const handleCloseAddDialog = () => {
     setOpenCreateNodeDialog(false);
@@ -259,17 +241,7 @@ const RootNodes = ({
   );
 };
 
-type RootNodesWrapperProps = {
-  addNavLinks: ({
-    taxonomyName,
-    branchName,
-  }: {
-    taxonomyName: string;
-    branchName: string;
-  }) => void;
-};
-
-const RootNodesWrapper = ({ addNavLinks }: RootNodesWrapperProps) => {
+export const RootNodesWrapper = () => {
   const { taxonomyName, branchName } = useParams();
   if (!taxonomyName || !branchName)
     return (
@@ -278,13 +250,5 @@ const RootNodesWrapper = ({ addNavLinks }: RootNodesWrapperProps) => {
       </Typography>
     );
 
-  return (
-    <RootNodes
-      addNavLinks={addNavLinks}
-      taxonomyName={taxonomyName}
-      branchName={branchName}
-    />
-  );
+  return <RootNodes taxonomyName={taxonomyName} branchName={branchName} />;
 };
-
-export default RootNodesWrapper;
