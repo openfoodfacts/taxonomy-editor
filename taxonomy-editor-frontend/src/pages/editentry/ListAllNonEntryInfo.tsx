@@ -7,11 +7,11 @@ import {
   Button,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { getNodeType } from "../../utils";
+import { getNodeType } from "@/utils";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ISO6391 from "iso-639-1";
-import { greyHexCode } from "../../constants";
+import { greyHexCode } from "@/constants";
 
 /**
  * Parent component used for rendering info on a stopword, synonym, header or footer
@@ -19,16 +19,23 @@ import { greyHexCode } from "../../constants";
  * If node is "header/footer": Only comments are rendered
  */
 
+interface NonEntryInfo {
+  index: string;
+  tag: string;
+}
+
 const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
   // Stores ID type of node object
   const IDType = getNodeType(id);
   // Stores 2 letter language code (LC) of the tags
   const [languageCode, setLanguageCode] = useState("");
   // Storing tags that need to be rendered for editing
-  const [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState([]);
+  const [renderedNonEntryInfo, setRenderedNonEntryInfo] = useState<
+    NonEntryInfo[]
+  >([]);
 
   useEffect(() => {
-    const tagsExtracted = [];
+    const tagsExtracted: NonEntryInfo[] = [];
     let extractedLanguageCode = "";
     if (nodeObject) {
       Object.keys(nodeObject).forEach((key) => {
@@ -109,7 +116,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
   return (
     <Box>
       {/* Main Language */}
-      {(IDType === "Synonyms" || IDType === "Stopwords") && (
+      {(IDType === "synonyms" || IDType === "stopwords") && (
         <Box>
           <Typography sx={{ ml: 4, mt: 2 }} variant="h5">
             Language
@@ -121,7 +128,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
       )}
 
       {/* Stopwords or Synonyms */}
-      {(IDType === "Synonyms" || IDType === "Stopwords") && (
+      {(IDType === "synonyms" || IDType === "stopwords") && (
         <Box>
           <Stack direction="row" alignItems="center">
             <Typography sx={{ ml: 4, mt: 1, mb: 1.3 }} variant="h5">
@@ -155,7 +162,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
                 </Paper>
                 <Button
                   sx={{ ml: -1, mt: 1, color: greyHexCode }}
-                  onClick={(e) => handleDelete(index, e)}
+                  onClick={() => handleDelete(index)}
                 >
                   <DeleteOutlineIcon />
                 </Button>

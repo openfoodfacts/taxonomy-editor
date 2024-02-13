@@ -13,7 +13,7 @@ type ProjectType = {
       _Time__minute: number;
       _Time__second: number;
       _Time__nanosecond: number;
-      _Time__tzinfo: {};
+      _Time__tzinfo: any;
     };
   };
   description: string;

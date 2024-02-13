@@ -70,7 +70,7 @@ export const ListTranslations = ({
   useEffect(() => {
     // get shown languages from local storage if it exists else use main language
     try {
-      let rawLocalStorageShownLanguages =
+      const rawLocalStorageShownLanguages =
         localStorage.getItem(SHOWN_LANGUAGES_KEY);
       let localStorageShownLanguages: string[] | null =
         rawLocalStorageShownLanguages

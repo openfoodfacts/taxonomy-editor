@@ -2,9 +2,15 @@ import { Box, Grid, Paper, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 
+interface RenderedProperties {
+  id: string;
+  propertyName: string;
+  propertyValue: string;
+}
+
 const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   const collectProperties = () => {
-    let renderedProperties = [];
+    const renderedProperties: RenderedProperties[] = [];
     Object.keys(nodeObject).forEach((key) => {
       // Collecting uuids of properties
       // UUID of properties will have a "_uuid" suffix
@@ -47,8 +53,8 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   // Helper function used for deleting properties of node
   const deletePropertyData = (key) => {
     setNodeObject((prevState) => {
-      const toRemove = "prop_" + key;
-      const { [toRemove]: _, ...newNodeObject } = prevState;
+      const keyToRemove = "prop_" + key;
+      const { [keyToRemove]: _propToRemove, ...newNodeObject } = prevState;
       return newNodeObject;
     });
   };
@@ -64,49 +70,49 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             { title: "Value", field: "propertyValue" },
           ]}
           editable={{
-            onRowAdd: (newRow) =>
-              new Promise((resolve, reject) => {
-                // Add new property to rendered rows
-                const updatedRows = [
-                  ...data,
-                  { id: Math.random().toString(), ...newRow },
-                ];
-                setData(updatedRows);
+            onRowAdd: async (newRow) => {
+              // Add new property to rendered rows
+              const updatedRows = [
+                ...data,
+                { ...newRow, id: Math.random().toString() },
+              ];
+              setData(updatedRows);
 
-                // Add new key-value pair of a property in nodeObject
-                changePropertyData(newRow.propertyName, newRow.propertyValue);
-                resolve();
-              }),
-            onRowDelete: (selectedRow) =>
-              new Promise((resolve, reject) => {
-                // Delete property from rendered rows
-                const updatedRows = [...data];
-                const index = selectedRow.id;
-                updatedRows.splice(index, 1);
-                setData(updatedRows);
+              // Add new key-value pair of a property in nodeObject
+              changePropertyData(newRow.propertyName, newRow.propertyValue);
+            },
+            onRowDelete: async (selectedRow) => {
+              // Delete property from rendered rows
+              const updatedRows = [...data];
+              const index = parseInt(selectedRow.id);
+              updatedRows.splice(index, 1);
+              setData(updatedRows);
 
-                // Delete key-value pair of a property from nodeObject
-                deletePropertyData(selectedRow.propertyName);
-                resolve();
-              }),
-            onRowUpdate: (updatedRow, oldRow) =>
-              new Promise((resolve, reject) => {
-                // Update row in rendered rows
-                const updatedRows = data.map((el) =>
-                  el.id === oldRow.id ? updatedRow : el
-                );
-                setData(updatedRows);
-                // Updation takes place by deletion + addition
-                // If property name has been changed, previous key should be removed from nodeObject
-                updatedRow.propertyName !== oldRow.propertyName &&
-                  deletePropertyData(oldRow.propertyName);
-                // Add new property to nodeObject
-                changePropertyData(
-                  updatedRow.propertyName,
-                  updatedRow.propertyValue
-                );
-                resolve();
-              }),
+              // Delete key-value pair of a property from nodeObject
+              deletePropertyData(selectedRow.propertyName);
+            },
+            onRowUpdate: async (updatedRow, oldRow) => {
+              // Update row in rendered rows
+              const updatedRows = data.map((el) =>
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                el.id === oldRow.id ? updatedRow : el
+              );
+              setData(updatedRows);
+              // Updation takes place by deletion + addition
+              // If property name has been changed, previous key should be removed from nodeObject
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              updatedRow.propertyName !== oldRow.propertyName &&
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                deletePropertyData(oldRow.propertyName);
+              // Add new property to nodeObject
+              changePropertyData(
+                updatedRow.propertyName,
+                updatedRow.propertyValue
+              );
+            },
           }}
           options={{
             actionsColumnIndex: -1,

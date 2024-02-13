@@ -16,8 +16,8 @@ import {
   MenuItem,
 } from "@mui/material";
 
-import { TAXONOMY_NAMES } from "../../constants";
-import { createBaseURL, toSnakeCase } from "../../utils";
+import { TAXONOMY_NAMES } from "@/constants";
+import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
@@ -42,7 +42,7 @@ const StartProject = ({ clearNavBarLinks }) => {
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
     const dataToBeSent = { description: description };
-    let errorMessage: string = "Unable to import";
+    let errorMessage = "Unable to import";
 
     fetch(`${baseUrl}import`, {
       method: "POST",
