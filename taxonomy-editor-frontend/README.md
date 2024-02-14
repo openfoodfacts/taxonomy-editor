@@ -15,7 +15,6 @@ This is the main user interface developed in React, which works in conjunction w
 
 This project was initially setup using [Create React App](https://github.com/facebook/create-react-app), [the documentation](https://create-react-app.dev/) might be useful.
 
-
 ## Setup Dev Environment
 
 See [this guide](../doc/introduction/setup-dev.md) for more information.
