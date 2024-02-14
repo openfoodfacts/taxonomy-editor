@@ -65,9 +65,7 @@ export const Errors = () => {
   }
 
   return (
-    <Box
-      sx={{ display: "flex", flexDirection: "column", my: 4, mx: 6, gap: 2 }}
-    >
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <TableContainer sx={{ width: 375, mb: 2 }}>
         <Table style={{ border: "solid", borderWidth: 1.5 }}>
           <TableHead>

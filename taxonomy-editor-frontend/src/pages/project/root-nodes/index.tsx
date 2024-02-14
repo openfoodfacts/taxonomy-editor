@@ -28,7 +28,6 @@ import {
   ProjectStatus,
 } from "@/backend-types/types";
 import NodesTableBody from "@/components/NodesTableBody";
-import WarningParsingErrors from "@/components/WarningParsingErrors";
 import { useQuery } from "@tanstack/react-query";
 
 type RootNodesProps = {
@@ -142,71 +141,68 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
   }
 
   return (
-    <>
-      <WarningParsingErrors baseUrl={baseUrl} />
-      <div>
-        <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
-          Root Nodes:
-        </Typography>
+    <Box>
+      <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
+        Root Nodes:
+      </Typography>
 
-        <TableContainer sx={{ ml: 2, width: 375 }}>
-          <Table style={{ border: "solid", borderWidth: 1.5 }}>
-            <TableHead>
-              <TableCell align="left">
-                <Typography variant="h6">Taxonomy Name</Typography>
-              </TableCell>
-              <TableCell align="left">
-                <Typography variant="h6">Branch Name</Typography>
-              </TableCell>
-            </TableHead>
-            <TableBody>
-              <TableCell align="left" component="td" scope="row">
-                <Typography variant="body1">
-                  {toTitleCase(taxonomyName ?? "")}
-                </Typography>
-              </TableCell>
-              <TableCell align="left" component="td" scope="row">
-                <Typography variant="body1">{branchName}</Typography>
-              </TableCell>
-            </TableBody>
-          </Table>
-        </TableContainer>
+      <TableContainer sx={{ ml: 2 }}>
+        <Table style={{ border: "solid", borderWidth: 1.5 }}>
+          <TableHead>
+            <TableCell align="left">
+              <Typography variant="h6">Taxonomy Name</Typography>
+            </TableCell>
+            <TableCell align="left">
+              <Typography variant="h6">Branch Name</Typography>
+            </TableCell>
+          </TableHead>
+          <TableBody>
+            <TableCell align="left" component="td" scope="row">
+              <Typography variant="body1">
+                {toTitleCase(taxonomyName ?? "")}
+              </Typography>
+            </TableCell>
+            <TableCell align="left" component="td" scope="row">
+              <Typography variant="body1">{branchName}</Typography>
+            </TableCell>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <Typography variant="h6" sx={{ mt: 2, ml: 2, mb: 1 }}>
-          Number of root nodes in taxonomy: {nodes.length}
-        </Typography>
+      <Typography variant="h6" sx={{ mt: 2, ml: 2, mb: 1 }}>
+        Number of root nodes in taxonomy: {nodes.length}
+      </Typography>
 
-        {/* Table for listing all nodes in taxonomy */}
-        <TableContainer sx={{ ml: 2, width: 375 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <Stack direction="row" alignItems="center">
-                  <TableCell align="left">
-                    <Typography variant="h6">Nodes</Typography>
-                  </TableCell>
-                  <IconButton
-                    sx={{ ml: 1, color: greyHexCode }}
-                    onClick={() => {
-                      setOpenCreateNodeDialog(true);
-                    }}
-                  >
-                    <AddBoxIcon />
-                  </IconButton>
-                </Stack>
+      {/* Table for listing all nodes in taxonomy */}
+      <TableContainer sx={{ ml: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <Stack direction="row" alignItems="center">
                 <TableCell align="left">
-                  <Typography variant="h6">Action</Typography>
+                  <Typography variant="h6">Nodes</Typography>
                 </TableCell>
-              </TableRow>
-            </TableHead>
-            <NodesTableBody
-              nodeIds={nodeIds}
-              taxonomyName={taxonomyName}
-              branchName={branchName}
-            />
-          </Table>
-        </TableContainer>
-      </div>
+                <IconButton
+                  sx={{ ml: 1, color: greyHexCode }}
+                  onClick={() => {
+                    setOpenCreateNodeDialog(true);
+                  }}
+                >
+                  <AddBoxIcon />
+                </IconButton>
+              </Stack>
+              <TableCell align="left">
+                <Typography variant="h6">Action</Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <NodesTableBody
+            nodeIds={nodeIds}
+            taxonomyName={taxonomyName}
+            branchName={branchName}
+          />
+        </Table>
+      </TableContainer>
 
       {/* Dialog box for adding nodes */}
       <Dialog open={openCreateNodeDialog} onClose={handleCloseAddDialog}>
@@ -237,7 +233,7 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
           The node has been successfully added!
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 };
 

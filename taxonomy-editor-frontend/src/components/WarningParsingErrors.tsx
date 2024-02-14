@@ -1,7 +1,6 @@
-import React from "react";
-import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import useFetch from "./useFetch";
+import { Alert, AlertTitle } from "@mui/material";
+import { DefaultService } from "@/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface CustomAlertProps {
   severity: "error" | "warning" | "info" | "success";
@@ -10,11 +9,8 @@ interface CustomAlertProps {
 }
 
 interface WarningParsingErrorsProps {
-  baseUrl: string;
-}
-
-interface ParsingErrorsType {
-  errors: string[];
+  taxonomyName: string;
+  branchName: string;
 }
 
 const CustomAlert: React.FC<CustomAlertProps> = ({
@@ -32,27 +28,34 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
 
 // warning users the taxonomy had parsing errors, so should not edit it
 export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
-  baseUrl,
+  taxonomyName,
+  branchName,
 }) => {
-  const { data: parsingErrors, isPending: isPendingParsingErrors } =
-    useFetch<ParsingErrorsType>(`${baseUrl}parsing_errors`);
-  if (!isPendingParsingErrors) {
-    return (
-      <>
-        {parsingErrors && parsingErrors.errors.length !== 0 && (
-          <CustomAlert
-            severity="warning"
-            title="Parsing errors"
-            message="This taxonomy has encountered parsing errors. 
-            Please review and fix errors on the 'Errors' page, so that the 
-            taxonomy can then be edited."
-          />
-        )}
-      </>
-    );
-  } else {
-    return null;
-  }
-};
+  const { data: errorNode } = useQuery({
+    queryKey: [
+      "findAllErrorsTaxonomyNameBranchParsingErrorsGet",
+      taxonomyName,
+      branchName,
+    ],
+    queryFn: async () => {
+      return await DefaultService.findAllErrorsTaxonomyNameBranchParsingErrorsGet(
+        branchName,
+        taxonomyName
+      );
+    },
+  });
 
-export default WarningParsingErrors;
+  if (errorNode?.errors.length !== 0) {
+    return (
+      <CustomAlert
+        severity="warning"
+        title="Parsing errors"
+        message="This taxonomy has encountered parsing errors. 
+        Please review and fix errors on the 'Errors' page, so that the 
+        taxonomy can then be edited."
+      />
+    );
+  }
+
+  return null;
+};

@@ -162,10 +162,7 @@ const ExportTaxonomy = ({ taxonomyName, branchName }: ExportTaxonomyProps) => {
         alignItems="center"
         justifyContent="center"
       >
-        <Typography
-          sx={{ mt: 4, flexGrow: 1, textAlign: "center" }}
-          variant="h3"
-        >
+        <Typography sx={{ flexGrow: 1, textAlign: "center" }} variant="h3">
           Export Taxonomy
         </Typography>
         <Typography

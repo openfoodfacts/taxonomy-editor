@@ -8,6 +8,7 @@ import { DefaultService, Project, ProjectStatus } from "@/client";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { ResponsiveAppBar } from "@/components/ResponsiveAppBar";
+import { WarningParsingErrors } from "@/components/WarningParsingErrors";
 
 interface ProjectParams {
   taxonomyName: string;
@@ -15,7 +16,11 @@ interface ProjectParams {
 }
 
 const getProjectQuery = (taxonomyName: string, branchName: string) => ({
-  queryKey: [taxonomyName, branchName],
+  queryKey: [
+    "getProjectInfoTaxonomyNameBranchProjectGet",
+    taxonomyName,
+    branchName,
+  ],
   queryFn: async () => {
     return await DefaultService.getProjectInfoTaxonomyNameBranchProjectGet(
       branchName,
@@ -78,7 +83,21 @@ export const ProjectPage = () => {
       {project.status === ProjectStatus.LOADING ? (
         <ProjectLoading />
       ) : (
-        <Outlet />
+        <>
+          <WarningParsingErrors
+            taxonomyName={taxonomyName}
+            branchName={branchName}
+          />
+          <Box
+            sx={{
+              mt: 4,
+              mx: 6,
+              mb: 8,
+            }}
+          >
+            <Outlet />
+          </Box>
+        </>
       )}
     </>
   );
