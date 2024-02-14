@@ -1,4 +1,4 @@
-import { API_URL } from "./constants.js";
+import { API_URL } from "./constants";
 
 /**
  * @returns snake cased string converted into title case. Example: 'hello_friend' to 'Hello Friend'

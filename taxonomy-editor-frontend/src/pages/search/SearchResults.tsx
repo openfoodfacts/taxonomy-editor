@@ -20,12 +20,12 @@ import TableRow from "@mui/material/TableRow";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Dialog from "@mui/material/Dialog";
 
-import useFetch from "../../components/useFetch";
-import { createBaseURL } from "../../utils";
-import { greyHexCode } from "../../constants";
-import type { SearchAPIResponse } from "../../backend-types/types";
-import CreateNodeDialogContent from "../../components/CreateNodeDialogContent";
-import NodesTableBody from "../../components/NodesTableBody";
+import useFetch from "@/components/useFetch";
+import { createBaseURL } from "@/utils";
+import { greyHexCode } from "@/constants";
+import type { SearchAPIResponse } from "@/backend-types/types";
+import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
+import NodesTableBody from "@/components/NodesTableBody";
 
 type Props = {
   query: string;

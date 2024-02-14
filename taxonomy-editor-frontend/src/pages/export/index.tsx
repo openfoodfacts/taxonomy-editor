@@ -19,7 +19,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DownloadIcon from "@mui/icons-material/Download";
 import GitHubIcon from "@mui/icons-material/GitHub";
 
-import { createBaseURL } from "../../utils";
+import { createBaseURL } from "@/utils";
 
 interface ExportTaxonomyToGithubProps {
   baseURL: string;
