@@ -108,15 +108,15 @@ class TaxonomyParser:
                 line_count += 1
             yield line_count, ""  # to end the last entry if not ended
 
-    def _add_line(self, line: str) -> str:
+    def _normalize_entry_id(self, raw_id: str) -> str:
         """
         Get a normalized string but keeping the language code "lc:",
         used for id and parent tag
         """
-        lc, line = line.split(":", 1)
-        new_line = lc + ":"
-        new_line += normalize_text(line, lc, stopwords=self.stopwords)
-        return new_line
+        lc, main_tag = raw_id.split(":", 1)
+        normalized_id = lc + ":"
+        normalized_id += normalize_text(main_tag, lc, stopwords=self.stopwords)
+        return normalized_id
 
     def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
         """Get the language code "lc" and a list of normalized values"""
@@ -323,11 +323,11 @@ class TaxonomyParser:
                         data.tags["tags_ids_" + lc] = value
                 elif line[0] == "<":
                     # parent definition
-                    data.parent_tags.append((self._add_line(line[1:]), line_number + 1))
+                    data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
                 elif language_code_prefix.match(line):
                     # synonyms definition
                     if not data.id:
-                        data.id = self._add_line(line.split(",", 1)[0])
+                        data.id = self._normalize_entry_id(line.split(",", 1)[0])
                         # first 2-3 characters before ":" are the language code
                         data.main_language = data.id.split(":", 1)[0]
                     # add tags and tagsid
@@ -449,11 +449,48 @@ class TaxonomyParser:
         unique_child_links = []
         children_to_parents = collections.defaultdict(set)
         for child_link in child_links:
-            parent_id, child_id = child_link.parent_id, child_link.id
+            parent_id, child_id = child_link["parent_id"], child_link["id"]
             if parent_id not in children_to_parents[child_id]:
                 children_to_parents[child_id].add(parent_id)
                 unique_child_links.append(child_link)
         return unique_child_links
+
+    def _merge_duplicate_entry_nodes(self, entry_nodes: list[NodeData]) -> list[NodeData]:
+        """Merge entry nodes with the same id:
+        - merge their tags (union)
+        - merge their properties (union, and in case of conflict, keep the last value)"""
+        unique_entry_nodes = []
+        ids_to_nodes = dict()
+        for node in entry_nodes:
+            if node.id in ids_to_nodes:
+                first_node = ids_to_nodes[node.id]
+                for key, value in node.tags.items():
+                    if not key.startswith("tags_ids_"):
+                        # union of the tags
+                        first_node.tags[key] = list(
+                            dict.fromkeys(first_node.tags.get(key, []) + value)
+                        )
+                        # we have to re-normalize the tags_ids and can't just do a union,
+                        # because two tags can have the same normalized value
+                        language_code = key.split("_")[1]
+                        first_node.tags[f"tags_ids_{language_code}"] = [
+                            normalize_text(tag, language_code, stopwords=self.stopwords)
+                            for tag in first_node.tags[key]
+                        ]
+                for key, value in node.properties.items():
+                    # overwrite the value if the property already exists in the first node
+                    first_node.properties[key] = value
+                for key, value in node.comments.items():
+                    # union of the comments
+                    first_node.comments[key] = list(
+                        dict.fromkeys(first_node.comments.get(key, []) + value)
+                    )
+                # union of the preceding_lines comments
+                first_node.preceding_lines.extend(node.preceding_lines)
+            else:
+                unique_entry_nodes.append(node)
+                ids_to_nodes[node.id] = node
+        return unique_entry_nodes
 
     def _create_taxonomy(self, filename: str) -> Taxonomy:
         """Create the taxonomy from the file"""
@@ -485,6 +522,7 @@ class TaxonomyParser:
                     )
         valid_child_links = self._get_valid_child_links(entry_nodes, raw_child_links)
         child_links = self._remove_duplicate_child_links(valid_child_links)
+        entry_nodes = self._merge_duplicate_entry_nodes(entry_nodes)
         return Taxonomy(
             entry_nodes=entry_nodes,
             other_nodes=other_nodes,
