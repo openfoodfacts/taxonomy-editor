@@ -1,5 +1,5 @@
 generate_spec: ## Generate swagger spec
-	poetry run python -m openapi.generate_openapi_spec
+	poetry run python -m openapi.generate_openapi_spec && cd .. && npm run lint
 
 
 #------------#

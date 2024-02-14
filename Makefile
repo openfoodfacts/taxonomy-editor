@@ -74,7 +74,6 @@ local_config_lint: ## Run on lint configuration files
 local_generate_sdk: ## Generate client SDK from OpenAPI spec
 	@echo "🍜 Generating client SDK from OpenAPI spec"
 	cd backend && make generate_spec
-	npm run lint
 	cd taxonomy-editor-frontend && npm run generate:api
 
 
@@ -117,8 +116,6 @@ dev: build up ## Build and run the project
 # dev tools #
 #-----------#
 
-
-# Generate client SDK from OpenAPI spec
 generate_sdk: ## Generate client SDK from OpenAPI spec
 	@echo "🍜 Generating client SDK from OpenAPI spec"
 	${DOCKER_COMPOSE} run --rm taxonomy_api python -m openapi.generate_openapi_spec
