@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Box, Stack, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import useFetch from "../../components/useFetch";
-import type { ParentsAPIResponse } from "../../backend-types/types";
+import useFetch from "@/components/useFetch";
+import type { ParentsAPIResponse } from "@/backend-types/types";
 
 type Props = {
   fetchUrl: string;

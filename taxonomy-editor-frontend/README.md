@@ -13,6 +13,9 @@ This is the main user interface developed in React, which works in conjunction w
 - [Material-UI](https://mui.com/)
 - [iso-639-1](https://www.npmjs.com/package/iso-639-1)
 
+This project was initially setup using [Create React App](https://github.com/facebook/create-react-app), [the documentation](https://create-react-app.dev/) might be useful.
+
+
 ## Setup Dev Environment
 
 See [this guide](../doc/introduction/setup-dev.md) for more information.

@@ -4,7 +4,7 @@
  * @returns string
  */
 function taxonomyApiUrlFromUi(location) {
-  let components = location.host.split(".");
+  const components = location.host.split(".");
   if (components[0] === "ui") {
     // we build api url by just replacing ui by api
     components[0] = "api";
