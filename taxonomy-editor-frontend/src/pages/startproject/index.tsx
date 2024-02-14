@@ -22,12 +22,21 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 const branchNameRegEx = /[^a-z0-9_]+/;
 
 const StartProject = ({ clearNavBarLinks }) => {
-  const [branchName, setBranchName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
+  const findDefaultBranchName = () => {
+    if (taxonomyName === "" || ownerName === "") return "";
+    return `${taxonomyName.toLowerCase()}_${ownerName
+      .replace(" ", "")
+      .toLowerCase()}_${Math.floor(Date.now() / 1000)}`;
+  };
+
+  const [branchName, setBranchName] = useState(findDefaultBranchName());
 
   useEffect(
     function cleanMainNavLinks() {
@@ -36,12 +45,16 @@ const StartProject = ({ clearNavBarLinks }) => {
     [clearNavBarLinks]
   );
 
+  useEffect(() => {
+    setBranchName(findDefaultBranchName());
+  }, [ownerName, taxonomyName]);
+
   const handleSubmit = () => {
-    if (!taxonomyName || !branchName) return;
+    if (!taxonomyName || !branchName || !ownerName) return;
 
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
-    const dataToBeSent = { description: description };
+    const dataToBeSent = { description: description, ownerName: ownerName };
     let errorMessage = "Unable to import";
 
     fetch(`${baseUrl}import`, {
@@ -68,6 +81,15 @@ const StartProject = ({ clearNavBarLinks }) => {
   };
 
   const isInvalidBranchName = branchNameRegEx.test(branchName);
+
+  const isOwnerNameInvalid = (name: string) => {
+    if (name === "") return false;
+    const pattern = /^[a-zA-Z0-9 _]+$/;
+    if (!pattern.test(name)) {
+      return true;
+    }
+    return false;
+  };
 
   return (
     <Box>
@@ -99,37 +121,51 @@ const StartProject = ({ clearNavBarLinks }) => {
           </FormControl>
         </div>
 
-        <div>
-          <TextField
-            error={isInvalidBranchName}
-            helperText={
-              isInvalidBranchName &&
-              "Special characters, capital letters and white spaces are not allowed"
-            }
-            size="small"
-            sx={{ width: 265, mt: 2 }}
-            onChange={(event) => {
-              setBranchName(event.target.value);
-            }}
-            value={branchName}
-            variant="outlined"
-            label="Branch Name"
-          />
-        </div>
+        <TextField
+          error={isOwnerNameInvalid(ownerName)}
+          helperText={
+            isOwnerNameInvalid(ownerName) &&
+            "Special characters are not allowed"
+          }
+          size="small"
+          sx={{ width: 265, mt: 2 }}
+          onChange={(event) => {
+            setOwnerName(event.target.value);
+          }}
+          value={ownerName}
+          variant="outlined"
+          label="Your Name"
+          required={true}
+        />
 
-        <div>
-          <TextField
-            sx={{ width: 265, mt: 2 }}
-            minRows={4}
-            multiline
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
-            value={description}
-            variant="outlined"
-            label="Description"
-          />
-        </div>
+        <TextField
+          error={isInvalidBranchName}
+          helperText={
+            isInvalidBranchName &&
+            "Special characters, capital letters and white spaces are not allowed"
+          }
+          size="small"
+          sx={{ width: 265, mt: 2 }}
+          onChange={(event) => {
+            setBranchName(event.target.value);
+          }}
+          value={branchName}
+          variant="outlined"
+          label="Branch Name"
+          required={true}
+        />
+
+        <TextField
+          sx={{ width: 265, mt: 2 }}
+          minRows={4}
+          multiline
+          onChange={(event) => {
+            setDescription(event.target.value);
+          }}
+          value={description}
+          variant="outlined"
+          label="Description"
+        />
 
         <Button
           variant="contained"

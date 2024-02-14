@@ -117,7 +117,7 @@ class GithubOperations:
             # Handle any other unexpected exceptions
             raise Exception(f"An error occurred: {e}") from e
 
-    async def create_pr(self, description) -> PullRequest:
+    async def create_pr(self, description, owner_name) -> PullRequest:
         """
         Create a pull request to "openfoodfacts-server" repo
         """
@@ -129,6 +129,9 @@ class GithubOperations:
 
         ### Description
         {description}
+
+        ### Author
+        {owner_name}
         """
         )
         return (

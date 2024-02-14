@@ -19,6 +19,7 @@ type ProjectType = {
   description: string;
   id: string;
   taxonomy_name: string;
+  owner_name: string;
   errors_count: number;
   status: string;
 };

@@ -22,6 +22,7 @@ class ProjectCreate(BaseModel):
     taxonomy_name: str
     branch_name: str
     description: str
+    owner_name: str
     is_from_github: bool
 
 
