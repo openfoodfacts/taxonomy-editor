@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from "../models/Body_upload_taxonomy__taxonomy_name___branch__upload_post";
 import type { EntryNodeCreate } from "../models/EntryNodeCreate";
+import type { ErrorNode } from "../models/ErrorNode";
 import type { Footer } from "../models/Footer";
 import type { Header } from "../models/Header";
 import type { Project } from "../models/Project";
@@ -641,13 +642,13 @@ export class DefaultService {
    * Get all errors within taxonomy
    * @param branch
    * @param taxonomyName
-   * @returns any Successful Response
+   * @returns ErrorNode Successful Response
    * @throws ApiError
    */
   public static findAllErrorsTaxonomyNameBranchParsingErrorsGet(
     branch: string,
     taxonomyName: string
-  ): CancelablePromise<any> {
+  ): CancelablePromise<ErrorNode> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/{taxonomy_name}/{branch}/parsing_errors",

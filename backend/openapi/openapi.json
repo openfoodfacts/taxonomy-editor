@@ -935,7 +935,11 @@
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorNode" }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1191,6 +1195,38 @@
         "type": "object",
         "required": ["name", "main_language_code"],
         "title": "EntryNodeCreate"
+      },
+      "ErrorNode": {
+        "properties": {
+          "id": { "type": "string", "title": "Id" },
+          "taxonomy_name": { "type": "string", "title": "Taxonomy Name" },
+          "branch_name": { "type": "string", "title": "Branch Name" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "warnings": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "errors": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "taxonomy_name",
+          "branch_name",
+          "created_at",
+          "warnings",
+          "errors"
+        ],
+        "title": "ErrorNode"
       },
       "Footer": { "properties": {}, "type": "object", "title": "Footer" },
       "HTTPValidationError": {

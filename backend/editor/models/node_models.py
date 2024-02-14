@@ -1,9 +1,11 @@
 """
 Required pydantic models for API
 """
+
 from enum import Enum
 
 from .base_models import BaseModel
+from .types.datetime import DateTime
 
 
 class NodeType(str, Enum):
@@ -24,3 +26,12 @@ class Footer(BaseModel):
 class EntryNodeCreate(BaseModel):
     name: str
     main_language_code: str
+
+
+class ErrorNode(BaseModel):
+    id: str
+    taxonomy_name: str
+    branch_name: str
+    created_at: DateTime
+    warnings: list[str]
+    errors: list[str]
