@@ -6,10 +6,10 @@ import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import useFetch from "../../components/useFetch";
-import { API_URL } from "../../constants";
-import { toSnakeCase, toTitleCase } from "../../utils";
-import type { ProjectsAPIResponse } from "../../backend-types/types";
+import useFetch from "@/components/useFetch";
+import { API_URL } from "@/constants";
+import { toSnakeCase, toTitleCase } from "@/utils";
+import type { ProjectsAPIResponse } from "@/backend-types/types";
 
 type ProjectType = {
   id: string;

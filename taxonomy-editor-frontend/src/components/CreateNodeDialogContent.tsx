@@ -9,7 +9,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import DialogTitle from "@mui/material/DialogTitle";
 
-import { createBaseURL } from "../utils";
+import { createBaseURL } from "@/utils";
 
 type Props = {
   onCloseDialog: () => void;
@@ -30,15 +30,12 @@ const CreateNodeDialogContent = ({
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
 
-  const handleAddNode = () => {
+  const handleAddEntryNode = () => {
     setIsFailedSubmit(false);
 
-    //  TODO: Add support for synonyms and stopwords
+    const data = { name: newNodeName, main_language_code: newLanguageCode };
 
-    const newNodeID = newLanguageCode + ":" + newNodeName; // Reconstructing node ID
-    const data = { id: newNodeID, main_language: newLanguageCode };
-
-    fetch(`${baseUrl}nodes`, {
+    fetch(`${baseUrl}entry`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -74,7 +71,9 @@ const CreateNodeDialogContent = ({
             }}
           >
             {[...ISO6391.getAllNames()].sort().map((languageNameItem) => (
-              <MenuItem value={languageNameItem}>{languageNameItem}</MenuItem>
+              <MenuItem key={languageNameItem} value={languageNameItem}>
+                {languageNameItem}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -95,7 +94,7 @@ const CreateNodeDialogContent = ({
         <Button onClick={onCloseDialog}>Cancel</Button>
         <Button
           disabled={!newLanguageCode || !newNodeName}
-          onClick={handleAddNode}
+          onClick={handleAddEntryNode}
         >
           Create
         </Button>

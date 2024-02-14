@@ -28,7 +28,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
   };
 
   const collectProperties = (): RenderedPropertyType[] => {
-    let renderedProperties: RenderedPropertyType[] = [];
+    const renderedProperties: RenderedPropertyType[] = [];
     Object.keys(nodeObject).forEach((key: string) => {
       // Collecting properties (begin with prop_)
       // Ex: prop_vegan_en
@@ -147,7 +147,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
                 }
               }),
             onRowDelete: (selectedRow: RenderedPropertyType) =>
-              new Promise<void>((resolve, reject) => {
+              new Promise<void>((resolve) => {
                 // Delete property from rendered rows
                 const updatedRows = [...data];
                 const index = updatedRows.findIndex(

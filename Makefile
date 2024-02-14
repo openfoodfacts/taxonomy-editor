@@ -121,6 +121,7 @@ backend_lint: ## Run lint on backend code
 
 frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"
+	${DOCKER_COMPOSE} run --rm taxonomy_node npx eslint --fix src/
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -w src/
 
 config_lint: ## Run on lint configuration files
@@ -139,6 +140,7 @@ backend_quality: ## Run quality checks on backend code
 
 frontend_quality: ## Run quality checks on frontend code
 	@echo "🍜 Quality checks JS"
+	${DOCKER_COMPOSE} run --rm taxonomy_node npx eslint --no-fix src/
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -c src/
 	${DOCKER_COMPOSE} run --rm -e CI=true taxonomy_node npm run build
 # restore the .empty file (if possible)

@@ -8,7 +8,7 @@ import { ListTranslations } from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import equal from "fast-deep-equal";
-import { createURL, getNodeType, toSnakeCase } from "../../utils";
+import { createURL, getNodeType, toSnakeCase } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
