@@ -114,8 +114,8 @@ class TaxonomyParser:
         used for id and parent tag
         """
         lc, main_tag = raw_id.split(":", 1)
-        normalized_id = lc + ":"
-        normalized_id += normalize_text(main_tag, lc, stopwords=self.stopwords)
+        normalized_main_tag = normalize_text(main_tag, lc, stopwords=self.stopwords)
+        normalized_id = f"{lc}:{normalized_main_tag}"
         return normalized_id
 
     def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
@@ -468,6 +468,8 @@ class TaxonomyParser:
                     if not key.startswith("tags_ids_"):
                         # union of the tags
                         first_node.tags[key] = list(
+                            # we use a dict to remove duplicates
+                            # while keeping the order of the tags
                             dict.fromkeys(first_node.tags.get(key, []) + value)
                         )
                         # we have to re-normalize the tags_ids and can't just do a union,
@@ -483,6 +485,8 @@ class TaxonomyParser:
                 for key, value in node.comments.items():
                     # union of the comments
                     first_node.comments[key] = list(
+                        # we use a dict to remove duplicates
+                        # while keeping the order of the tags
                         dict.fromkeys(first_node.comments.get(key, []) + value)
                     )
                 # union of the preceding_lines comments
