@@ -18,6 +18,7 @@ services:
       - ./backend/editor:/code/editor
       - ./backend/sample:/code/sample
       - ./backend/tests:/code/tests
+      - ./backend/openapi:/code/openapi
       - ./parser:/parser
       # for linting / checks purpose
       - ./backend/pyproject.toml:/code/pyproject.toml
@@ -65,6 +66,7 @@ services:
       - ./taxonomy-editor-frontend/.eslintrc.json:/opt/taxonomy-editor/.eslintrc.json
       - ./taxonomy-editor-frontend/craco.config.js:/opt/taxonomy-editor/craco.config.js
       - ./taxonomy-editor-frontend/tsconfig.js:/opt/taxonomy-editor/tsconfig.js
+      - ./backend/openapi/openapi.json:/opt/backend/openapi/openapi.json
   taxonomy_frontend:
     image: taxonomy-editor/taxonomy_frontend:dev
     # instruction to build locally

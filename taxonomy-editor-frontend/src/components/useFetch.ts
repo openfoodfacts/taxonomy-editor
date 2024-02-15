@@ -57,6 +57,9 @@ type ReturnedType<DataType> = {
   errorMessage: string | null;
 };
 
+/**
+ * @deprecated Tanstack Query should be used for data fetching (https://tanstack.com/query/latest/docs/framework/react/overview) combined with the DefaultService methods
+ */
 const useFetch = <DataType>(url: string): ReturnedType<DataType> => {
   const [fetchInfo, dispatch] = useReducer<
     Reducer<ReducerStateType<DataType | null>, ActionsType<DataType>>
