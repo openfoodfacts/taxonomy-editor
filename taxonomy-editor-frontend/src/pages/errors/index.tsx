@@ -105,7 +105,7 @@ const Errors = ({ addNavLinks }) => {
         {errors.length > 0 && (
           <>
             <Alert severity="warning">
-              These errors must be fixed manually first, by creating a cleaup PR on GitHub.
+              These errors must be fixed manually first, by creating a cleanup PR on GitHub: https://github.com/openfoodfacts/openfoodfacts-server/tree/main/taxonomies
             </Alert>
             <Box
               sx={{
