@@ -95,9 +95,11 @@ const RootNodes = ({
     // fetch root nodes after receiving project status
     enabled:
       !!info &&
-      [ProjectStatus.OPEN, ProjectStatus.CLOSED].includes(
-        info.status as ProjectStatus
-      ),
+      [
+        ProjectStatus.OPEN,
+        ProjectStatus.CLOSED,
+        ProjectStatus.EXPORTED,
+      ].includes(info.status as ProjectStatus),
   });
 
   let nodeIds: string[] = [];
