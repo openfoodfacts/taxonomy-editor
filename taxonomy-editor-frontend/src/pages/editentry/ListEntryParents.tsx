@@ -53,7 +53,7 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
       <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
         Parents
       </Typography>
-      <Stack direction="row">
+      <Stack direction="row" flexWrap="wrap">
         {relations.map((relation) => (
           <Link
             key={relation}
