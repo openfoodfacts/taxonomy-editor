@@ -43,9 +43,9 @@ export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
           <CustomAlert
             severity="warning"
             title="Parsing errors"
-            message="This taxonomy has encountered parsing errors, preventing further editing. 
-            Please review the errors on the dedicated Errors page for resolution, ensuring the 
-            taxonomy can be edited once the issues are addressed."
+            message="This taxonomy has encountered parsing errors. 
+            Please review and fix errors on the 'Errors' page, so that the 
+            taxonomy can then be edited."
           />
         )}
       </>
