@@ -1,18 +1,26 @@
 """
 Required pydantic models for API
 """
-from typing import List
+from enum import Enum
 
 from .base_models import BaseModel
 
 
-class Marginal(BaseModel):
-    preceding_lines: List
+class NodeType(str, Enum):
+    TEXT = "TEXT"
+    SYNONYMS = "SYNONYMS"
+    STOPWORDS = "STOPWORDS"
+    ENTRY = "ENTRY"
 
 
-class Header(Marginal):
+class Header(BaseModel):
     pass
 
 
-class Footer(Marginal):
+class Footer(BaseModel):
     pass
+
+
+class EntryNodeCreate(BaseModel):
+    name: str
+    main_language_code: str

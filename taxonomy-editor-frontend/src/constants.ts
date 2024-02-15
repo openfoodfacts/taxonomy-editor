@@ -3,17 +3,17 @@
  * @param URL location
  * @returns string
  */
-function taxonomyApiUrlFromUi(location) {
-  let components = location.host.split(".");
+const taxonomyApiUrlFromUi = (location: Location): string => {
+  const components = location.host.split(".");
   if (components[0] === "ui") {
     // we build api url by just replacing ui by api
     components[0] = "api";
     return location.protocol + "//" + components.join(".") + "/";
   } else {
     // this is a default for simple dev setup
-    return process.env.REACT_APP_API_URL;
+    return process.env.REACT_APP_API_URL as string;
   }
-}
+};
 
 export const API_URL = taxonomyApiUrlFromUi(window.location);
 

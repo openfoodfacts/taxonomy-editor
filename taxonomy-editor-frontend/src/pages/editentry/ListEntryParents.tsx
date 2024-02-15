@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Box, Stack, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import useFetch from "../../components/useFetch";
-import type { ParentsAPIResponse } from "../../backend-types/types";
+import useFetch from "@/components/useFetch";
+import type { ParentsAPIResponse } from "@/backend-types/types";
 
 type Props = {
   fetchUrl: string;
@@ -53,7 +53,7 @@ const ListEntryParents = ({ fetchUrl, linkHrefPrefix }: Props) => {
       <Typography sx={{ ml: 4, mb: 1 }} variant="h5">
         Parents
       </Typography>
-      <Stack direction="row">
+      <Stack direction="row" flexWrap="wrap">
         {relations.map((relation) => (
           <Link
             key={relation}

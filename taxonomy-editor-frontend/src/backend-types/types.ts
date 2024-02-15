@@ -13,7 +13,7 @@ type ProjectType = {
       _Time__minute: number;
       _Time__second: number;
       _Time__nanosecond: number;
-      _Time__tzinfo: {};
+      _Time__tzinfo: any;
     };
   };
   description: string;
@@ -35,3 +35,13 @@ export type RootEntriesAPIResponse = Array<NodeType[]>;
 export type SearchAPIResponse = string[];
 
 export type ParentsAPIResponse = string[];
+
+export type ProjectInfoAPIResponse = ProjectType;
+
+export enum ProjectStatus {
+  FAILED = "FAILED",
+  OPEN = "OPEN",
+  LOADING = "LOADING",
+  EXPORTED = "EXPORTED",
+  CLOSED = "CLOSED",
+}

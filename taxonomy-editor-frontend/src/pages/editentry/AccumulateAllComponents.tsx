@@ -1,14 +1,14 @@
 import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import ListEntryParents from "./ListEntryParents";
 import ListEntryChildren from "./ListEntryChildren";
 import { ListTranslations } from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import equal from "fast-deep-equal";
-import { createURL, getNodeType, toSnakeCase } from "../../utils";
+import { createURL, getNodeType, toSnakeCase } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
@@ -59,28 +59,12 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     : !equal(nodeObject, originalNodeObject) ||
       !equal(updateChildren, previousUpdateChildren);
 
-  const createNodeObject = (node) => {
-    let duplicateNode = null;
-    if (node) {
-      duplicateNode = { ...node };
-      // Adding UUIDs for properties
-      Object.keys(node).forEach((key) => {
-        if (key.startsWith("prop")) {
-          duplicateNode[key + "_uuid"] = [Math.random().toString()];
-        }
-      });
-    }
-    return duplicateNode;
-  };
-
-  const nodeObj = useMemo(() => createNodeObject(node), [node]);
-
   if (
-    (!nodeObject && nodeObj) ||
-    (originalNodeObject && !equal(nodeObj, originalNodeObject))
+    (!nodeObject && node) ||
+    (originalNodeObject && !equal(node, originalNodeObject))
   ) {
-    setNodeObject(nodeObj);
-    setOriginalNodeObject(nodeObj);
+    setNodeObject(node);
+    setOriginalNodeObject(node);
   }
 
   // Displaying error messages if any

@@ -49,7 +49,10 @@ const LanguageSelectionDialog = ({
             }
             input={<OutlinedInput label="Languages" />}
             renderValue={(selected) =>
-              selected.map((langCode) => ISO6391.getName(langCode)).join(", ")
+              selected
+                .map((langCode) => ISO6391.getName(langCode))
+                .filter(Boolean) //to ignore "xx" language
+                .join(", ")
             }
           >
             {ISO6391.getAllNames()

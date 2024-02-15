@@ -71,6 +71,12 @@ local_config_lint: ## Run on lint configuration files
 	npm run lint
 
 
+local_generate_sdk: ## Generate client SDK from OpenAPI spec
+	@echo "🍜 Generating client SDK from OpenAPI spec"
+	cd backend && make generate_spec
+	cd taxonomy-editor-frontend && npm run generate:api
+
+
 local_quality: local_backend_quality local_frontend_quality local_config_quality ## Run lint on local code
 
 local_backend_quality: ## Run lint on local backend code
@@ -110,6 +116,11 @@ dev: build up ## Build and run the project
 # dev tools #
 #-----------#
 
+generate_sdk: ## Generate client SDK from OpenAPI spec
+	@echo "🍜 Generating client SDK from OpenAPI spec"
+	${DOCKER_COMPOSE} run --rm taxonomy_api python -m openapi.generate_openapi_spec
+	${DOCKER_COMPOSE} run --rm taxonomy_editor_code npm run lint
+	${DOCKER_COMPOSE} run --rm taxonomy_node npm run generate:api
 
 # lint code
 lint: backend_lint frontend_lint config_lint ## Run all linters
@@ -121,6 +132,7 @@ backend_lint: ## Run lint on backend code
 
 frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"
+	${DOCKER_COMPOSE} run --rm taxonomy_node npx eslint --fix src/
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -w src/
 
 config_lint: ## Run on lint configuration files
@@ -139,6 +151,7 @@ backend_quality: ## Run quality checks on backend code
 
 frontend_quality: ## Run quality checks on frontend code
 	@echo "🍜 Quality checks JS"
+	${DOCKER_COMPOSE} run --rm taxonomy_node npx eslint --no-fix src/
 	${DOCKER_COMPOSE} run --rm taxonomy_node npx prettier -c src/
 	${DOCKER_COMPOSE} run --rm -e CI=true taxonomy_node npm run build
 # restore the .empty file (if possible)

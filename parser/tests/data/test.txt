@@ -23,8 +23,8 @@ fr:yaourts au fruit de la passion allégés
 # meat
 
 en:meat
-vegan:en:no
 carbon_footprint_fr_foodges_value:fr:10
+vegan:en:no
 
 <en:meat
 en:fake-meat

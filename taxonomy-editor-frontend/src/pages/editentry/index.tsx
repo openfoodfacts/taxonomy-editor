@@ -10,9 +10,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AccumulateAllComponents from "./AccumulateAllComponents";
 
-import { createBaseURL } from "../../utils";
-import { greyHexCode } from "../../constants";
-import WarningParsingErrors from "../../components/Alerts";
+import { createBaseURL } from "@/utils";
+import { greyHexCode } from "@/constants";
+import WarningParsingErrors from "@/components/WarningParsingErrors";
 
 type EditEntryProps = {
   addNavLinks: ({
@@ -51,12 +51,10 @@ const EditEntry = ({
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    })
-      .then(() => {
-        setOpenDeleteDialog(false);
-        setOpenSuccessDialog(true);
-      })
-      .catch(() => {});
+    }).then(() => {
+      setOpenDeleteDialog(false);
+      setOpenSuccessDialog(true);
+    });
   };
 
   return (
@@ -67,7 +65,7 @@ const EditEntry = ({
         <Box>
           <Stack direction="row" alignItems="center">
             <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
-              You are now editing "{id}"
+              You are now editing &quot;{id}&quot;
             </Typography>
             <IconButton
               sx={{ ml: 1, color: greyHexCode }}

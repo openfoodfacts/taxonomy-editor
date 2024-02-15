@@ -1,6 +1,7 @@
 """
 Database helper functions for API
 """
+
 import re
 import shutil
 import tempfile
@@ -15,6 +16,7 @@ from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from . import settings
+from .controllers.node_controller import create_entry_node
 from .controllers.project_controller import create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
@@ -29,6 +31,7 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
+from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
 from .utils import file_cleanup
 
@@ -38,7 +41,6 @@ async def async_list(async_iterable):
 
 
 class TaxonomyGraph:
-
     """Class for database operations"""
 
     def __init__(self, branch_name, taxonomy_name):
@@ -59,40 +61,17 @@ class TaxonomyGraph:
         else:
             return "ENTRY"
 
-    async def create_node(self, label, entry, main_language_code):
+    async def create_entry_node(self, name, main_language_code) -> str:
         """
-        Helper function used for creating a node with given id and label
+        Helper function used to create an entry node with given name and main language
         """
-        params = {"id": entry}
-        query = [f"""CREATE (n:{self.project_name}:{label})\n"""]
         stopwords = await self.get_stopwords_dict()
 
-        # Build all basic keys of a node
-        if label == "ENTRY":
-            # Normalizing new canonical tag
-            language_code, canonical_tag = entry.split(":", 1)
-            normalised_canonical_tag = parser_utils.normalize_text(
-                canonical_tag, main_language_code, stopwords=stopwords
-            )
-
-            # Reconstructing and updation of node ID
-            params["id"] = language_code + ":" + normalised_canonical_tag
-            params["main_language_code"] = main_language_code
-
-            query.append(
-                """ SET n.main_language = $main_language_code """
-            )  # Required for only an entry
-        else:
-            canonical_tag = ""
-
-        query.append(""" SET n.id = $id """)
-        query.append(f""" SET n.tags_{main_language_code} = [$canonical_tag] """)
-        query.append(""" SET n.preceding_lines = [] """)
-        query.append(""" RETURN n.id """)
-
-        params["canonical_tag"] = canonical_tag
-        result = await get_current_transaction().run(" ".join(query), params)
-        return (await result.data())[0]["n.id"]
+        return await create_entry_node(
+            self.project_name,
+            EntryNodeCreate(name=name, main_language_code=main_language_code),
+            stopwords,
+        )
 
     async def get_local_taxonomy_file(self, tmpdir: str, uploadfile: UploadFile):
         filename = uploadfile.filename
@@ -161,7 +140,7 @@ class TaxonomyGraph:
         uploadfile: UploadFile | None = None,
     ):
         """
-        Helper function to import a taxonomy from GitHub
+        Helper function to import a taxonomy
         """
         await create_project(
             ProjectCreate(
@@ -286,6 +265,12 @@ class TaxonomyGraph:
         """
         return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
+    def is_tag_key(self, key):
+        """
+        Helper function to check if a key is a tag key (tags_XX)
+        """
+        return key.startswith("tags_") and not ("_ids_" in key or key.endswith("_comments"))
+
     async def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
@@ -339,6 +324,7 @@ class TaxonomyGraph:
         """
         await get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
 
+    # UNUSED FOR NOW
     async def add_node_to_beginning(self, label, entry):
         """
         Helper function which adds an existing node to beginning of taxonomy
@@ -494,12 +480,21 @@ class TaxonomyGraph:
         curr_node = result[0]["n"]
         deleted_keys = set(curr_node.keys()) - set(new_node.keys())
 
+        # Check for deleted keys having associated comments and delete them too
+        comments_keys_to_delete = set()
+        for key in deleted_keys:
+            comments_key = key + "_comments"
+            if new_node.get(comments_key) is not None:
+                comments_keys_to_delete.add(comments_key)
+        deleted_keys = deleted_keys.union(comments_keys_to_delete)
+
         # Check for keys having null/empty values
         for key in new_node.keys():
             if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
                 deleted_keys.add(key)
+                deleted_keys.add(key + "_comments")
                 # Delete tags_ids if we delete tags of a language
-                if key.startswith("tags_") and "_ids_" not in key:
+                if self.is_tag_key(key):
                     deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
 
         # Build query
@@ -515,20 +510,16 @@ class TaxonomyGraph:
         normalised_new_node = {}
         stopwords = await self.get_stopwords_dict()
         for key in set(new_node.keys()) - deleted_keys:
-            if key.startswith("tags_"):
-                if "_ids_" not in key:
-                    keys_language_code = key.split("_", 1)[1]
-                    normalised_value = []
-                    for value in new_node[key]:
-                        normalised_value.append(
-                            parser_utils.normalize_text(
-                                value, keys_language_code, stopwords=stopwords
-                            )
-                        )
-                    normalised_new_node[key] = new_node[key]
-                    normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-                else:
-                    pass  # We generate tags_ids, and ignore the one sent
+            if self.is_tag_key(key):
+                # Normalise tags and store them in tags_ids
+                keys_language_code = key.split("_", 1)[1]
+                normalised_value = []
+                for value in new_node[key]:
+                    normalised_value.append(
+                        parser_utils.normalize_text(value, keys_language_code, stopwords=stopwords)
+                    )
+                normalised_new_node[key] = new_node[key]
+                normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
             else:
                 # No need to normalise
                 normalised_new_node[key] = new_node[key]
@@ -598,8 +589,8 @@ class TaxonomyGraph:
         created_child_ids = []
 
         for child in to_create:
-            main_language_code = child.split(":", 1)[0]
-            created_node_id = await self.create_node("ENTRY", child, main_language_code)
+            main_language_code, child_name = child.split(":", 1)
+            created_node_id = await self.create_entry_node(child_name, main_language_code)
             created_child_ids.append(created_node_id)
 
             # TODO: We would prefer to add the node just after its parent entry
@@ -686,19 +677,3 @@ class TaxonomyGraph:
         _result = await get_current_transaction().run(query, params)
         result = [record["node"] for record in await _result.data()]
         return result
-
-    async def delete_taxonomy_project(self, branch, taxonomy_name):
-        """
-        Delete taxonomy projects
-        """
-
-        delete_query = """
-            MATCH (n:PROJECT {taxonomy_name: $taxonomy_name, branch_name: $branch_name})
-            DELETE n
-        """
-        result = await get_current_transaction().run(
-            delete_query, taxonomy_name=taxonomy_name, branch_name=branch
-        )
-        summary = await result.consume()
-        count = summary.counters.nodes_deleted
-        return count
