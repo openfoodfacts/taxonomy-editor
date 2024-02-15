@@ -234,14 +234,25 @@ class Parser:
         self._create_child_links(taxonomy.child_links, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
 
-    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
+    def __call__(self, filenames: list[str], branch_name: str, taxonomy_name: str):
         """Process the file"""
         start_time = timeit.default_timer()
 
         branch_name = normalize_text(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
         try:
-            taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
+            # parse main taxonomy file
+            taxonomy = taxonomy_parser.parse_file(filenames[0], self.parser_logger)
+            # parse external taxonomies files if any, and add their entry nodes to the main taxonomy
+            for filename in filenames[1:]:
+                external_taxonomy_parser = TaxonomyParser()
+                external_taxonomy = external_taxonomy_parser.parse_file(
+                    filename, self.parser_logger
+                )
+                taxonomy.entry_nodes.extend(external_taxonomy.entry_nodes)
+                taxonomy.entry_nodes = taxonomy_parser._merge_duplicate_entry_nodes(
+                    taxonomy.entry_nodes
+                )
             self._write_to_database(taxonomy, taxonomy_name, branch_name)
 
             self.parser_logger.info(

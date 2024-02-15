@@ -80,29 +80,30 @@ class TaxonomyGraph:
             await run_in_threadpool(shutil.copyfileobj, uploadfile.file, f)
         return filepath
 
-    async def get_github_taxonomy_file(self, tmpdir: str):
+    async def get_github_taxonomy_file(self, tmpdir: str, taxonomy_name: str):
         async with TransactionCtx():
-            filename = f"{self.taxonomy_name}.txt"
+            filename = f"{taxonomy_name}.txt"
             filepath = f"{tmpdir}/{filename}"
             base_url = (
                 "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
             )
             try:
                 await run_in_threadpool(urllib.request.urlretrieve, base_url + filename, filepath)
-                github_object = GithubOperations(self.taxonomy_name, self.branch_name)
-                commit_sha = (await github_object.get_branch("main")).commit.sha
-                file_sha = await github_object.get_file_sha()
-                await edit_project(
-                    self.project_name,
-                    ProjectEdit(
-                        github_checkout_commit_sha=commit_sha, github_file_latest_sha=file_sha
-                    ),
-                )
+                if taxonomy_name == self.taxonomy_name:
+                    github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+                    commit_sha = (await github_object.get_branch("main")).commit.sha
+                    file_sha = await github_object.get_file_sha()
+                    await edit_project(
+                        self.project_name,
+                        ProjectEdit(
+                            github_checkout_commit_sha=commit_sha, github_file_latest_sha=file_sha
+                        ),
+                    )
                 return filepath
             except Exception as e:
                 raise TaxonomyImportError() from e
 
-    def parse_taxonomy(self, filepath: str):
+    def parse_taxonomy(self, main_filepath: str, other_filepaths: list[str] | None = None):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
@@ -110,8 +111,11 @@ class TaxonomyGraph:
             # Create parser object and pass current session to it
             parser_object = parser.Parser(session)
             try:
+                all_filepaths = [main_filepath]
+                if other_filepaths is not None:
+                    all_filepaths.extend(other_filepaths)
                 # Parse taxonomy with given file name and branch name
-                parser_object(filepath, self.branch_name, self.taxonomy_name)
+                parser_object(all_filepaths, self.branch_name, self.taxonomy_name)
             except Exception as e:
                 # outer exception handler will put project status to FAILED
                 raise TaxonomyParsingError() from e
@@ -120,11 +124,26 @@ class TaxonomyGraph:
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
                 filepath = await (
-                    self.get_github_taxonomy_file(tmpdir)
+                    self.get_github_taxonomy_file(tmpdir, self.taxonomy_name)
                     if uploadfile is None
                     else self.get_local_taxonomy_file(tmpdir, uploadfile)
                 )
-                await run_in_threadpool(self.parse_taxonomy, filepath)
+                other_filepaths = None
+                if self.taxonomy_name == "ingredients":
+                    other_filepaths = []
+                    for external_taxonomy in (
+                        "additives_classes",
+                        "additives",
+                        "minerals",
+                        "vitamins",
+                        "nucleotides",
+                        "other_nutritional_substances",
+                    ):
+                        external_filepath = await self.get_github_taxonomy_file(
+                            tmpdir, external_taxonomy
+                        )
+                        other_filepaths.append(external_filepath)
+                await run_in_threadpool(self.parse_taxonomy, filepath, other_filepaths)
                 async with TransactionCtx():
                     await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.OPEN))
         except Exception as e:

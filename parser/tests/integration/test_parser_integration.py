@@ -26,7 +26,7 @@ def test_setup(neo4j):
 def test_calling(neo4j):
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
-        test_parser(TEST_TAXONOMY_TXT, "branch", "test")
+        test_parser([TEST_TAXONOMY_TXT], "branch", "test")
 
         # total number of nodes (TEXT, ENTRY, SYNONYMS, STOPWORDS) + 1 ERROR node
         query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
@@ -187,7 +187,7 @@ def test_error_log(neo4j, tmp_path, caplog):
 
         # parse
         with caplog.at_level(logging.ERROR):
-            test_parser(str(taxonomy_path), "branch", "test")
+            test_parser([str(taxonomy_path)], "branch", "test")
 
         # only the 2 nodes imported, not the duplicate
         query = "MATCH (n:p_test_branch:ENTRY) RETURN COUNT(*)"
