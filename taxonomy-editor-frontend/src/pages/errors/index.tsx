@@ -81,10 +81,10 @@ const Errors = ({ addNavLinks }) => {
         <Table style={{ border: "solid", borderWidth: 1.5 }}>
           <TableHead>
             <TableCell align="left">
-              <Typography variant="h6">Taxonomy Name</Typography>
+              <Typography variant="h6">Taxonomy name</Typography>
             </TableCell>
             <TableCell align="left">
-              <Typography variant="h6">Branch Name</Typography>
+              <Typography variant="h6">Branch name</Typography>
             </TableCell>
           </TableHead>
           <TableBody>
@@ -105,7 +105,7 @@ const Errors = ({ addNavLinks }) => {
         {errors.length > 0 && (
           <>
             <Alert severity="warning">
-              These errors must be fixed manually via Github!
+              These errors must be fixed manually first, by creating a cleaup PR on GitHub.
             </Alert>
             <Box
               sx={{
@@ -135,7 +135,7 @@ const Errors = ({ addNavLinks }) => {
         )}
         {errors.length === 0 && (
           <Typography>
-            No Error, {toTitleCase(taxonomyName || "")} can be edited
+            ✅ Well done ! No errors: {toTitleCase(taxonomyName || "")} can be edited
           </Typography>
         )}
       </Stack>
