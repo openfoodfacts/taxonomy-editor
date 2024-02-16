@@ -49,13 +49,11 @@ services:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
     environment:
-      - REACT_APP_API_URL=//api.${TAXONOMY_EDITOR_DOMAIN}${PUBLIC_TAXONOMY_EDITOR_PORT:-80}/
-      - WDS_SOCKET_HOST=ui.${TAXONOMY_EDITOR_DOMAIN}
-      - WDS_SOCKET_PORT=${WDS_SOCKET_PORT:-80}
+      - VITE_APP_API_URL=//api.${TAXONOMY_EDITOR_DOMAIN}${PUBLIC_TAXONOMY_EDITOR_PORT:-80}/
+      - VITE_SERVER_HOST=ui.${TAXONOMY_EDITOR_DOMAIN}
+      - VITE_SERVER_PORT=${VITE_SERVER_PORT:-80}
       - TAXONOMY_EDITOR_DOMAIN
       - NODE_ENV=development
-      # avoid host check in dev
-      - DANGEROUSLY_DISABLE_HOST_CHECK=true
     # this is the command to run dev server
     command: ["npm", "start"]
     volumes:
@@ -64,8 +62,10 @@ services:
       - ./taxonomy-editor-frontend/public:/opt/taxonomy-editor/public
       - ./taxonomy-editor-frontend/src:/opt/taxonomy-editor/src
       - ./taxonomy-editor-frontend/.eslintrc.json:/opt/taxonomy-editor/.eslintrc.json
-      - ./taxonomy-editor-frontend/craco.config.js:/opt/taxonomy-editor/craco.config.js
+      - ./taxonomy-editor-frontend/.prettierrc.json:/opt/taxonomy-editor/.prettierrc.json
+      - ./taxonomy-editor-frontend/index.html:/opt/taxonomy-editor/index.html
       - ./taxonomy-editor-frontend/tsconfig.js:/opt/taxonomy-editor/tsconfig.js
+      - ./taxonomy-editor-frontend/vite.config.ts:/opt/taxonomy-editor/vite.config.ts
       - ./backend/openapi/openapi.json:/opt/backend/openapi/openapi.json
   taxonomy_frontend:
     image: taxonomy-editor/taxonomy_frontend:dev
