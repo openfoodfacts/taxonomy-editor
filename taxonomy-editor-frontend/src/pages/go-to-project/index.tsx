@@ -95,10 +95,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
         justifyContent="center"
       >
         <Typography sx={{ mt: 4 }} variant="h3">
-          Existing Project?
-        </Typography>
-        <Typography sx={{ mt: 2 }} variant="h6">
-          List of open projects
+          List of current projects
         </Typography>
         <MaterialTable
           data={projectData}
