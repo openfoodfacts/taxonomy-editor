@@ -125,7 +125,8 @@ const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
             >
               <MuiLink
                 sx={{ mr: 2, display: "flex", alignSelf: "center" }}
-                href="https://ui.taxonomy.openfoodfacts.net/"
+                component={Link}
+                to="/"
                 target="_blank"
               >
                 <img
