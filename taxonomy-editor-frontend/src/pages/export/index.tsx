@@ -88,8 +88,8 @@ const ExportTaxonomyToGithub = ({
         <DialogTitle>Your changes have been exported to GitHub!</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Thank you for contributing! A community member will review your changes
-            soon.
+            Thank you for contributing! A community member will review your
+            changes soon.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
