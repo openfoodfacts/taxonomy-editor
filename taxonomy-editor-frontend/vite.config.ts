@@ -10,6 +10,5 @@ export default defineConfig({
   server: {
     port: parseInt(process.env.VITE_SERVER_PORT || "3000"),
     host: process.env.VITE_SERVER_HOST || "localhost",
-    open: true,
   },
 });
