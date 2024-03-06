@@ -31,7 +31,7 @@ const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
   };
 
   return (
-    <AppBar position="sticky" sx={{ background: "#ff8714" }}>
+    <AppBar position="sticky" sx={{ textColor: "#000", background: "#f2e9e4" }}>
       <Container maxWidth={false}>
         <Toolbar disableGutters>
           {/* Mobile content */}
@@ -125,7 +125,7 @@ const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
             >
               <MuiLink
                 sx={{ mr: 2, display: "flex", alignSelf: "center" }}
-                href="https://world.openfoodfacts.org/"
+                href="https://ui.taxonomy.openfoodfacts.net/"
                 target="_blank"
               >
                 <img

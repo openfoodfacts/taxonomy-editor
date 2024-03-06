@@ -195,15 +195,17 @@ def test_error_log(neo4j, tmp_path, caplog):
         number_of_nodes = result.value()[0]
         assert number_of_nodes == 2
         # error logged
-        assert "Entry with same id en:fake-meat already created" in caplog.text
+        assert "WARNING: Entry with same id en:fake-meat already exists," in caplog.text
         assert "duplicate id in file at line 12" in caplog.text
-        assert "Node creation cancelled." in caplog.text
+        assert "The two nodes will be merged, keeping the last" in caplog.text
+        assert "values in case of conflicts." in caplog.text
         # and present on project
         query = "MATCH (n:ERRORS) WHERE n.id = 'p_test_branch' RETURN n"
         results = session.run(query).value()
         node = results[0]
         assert len(node["errors"]) == 1
         error = node["errors"][0]
-        assert "Entry with same id en:fake-meat already created" in error
+        assert "WARNING: Entry with same id en:fake-meat already exists," in error
         assert "duplicate id in file at line 12" in error
-        assert "Node creation cancelled." in error
+        assert "The two nodes will be merged, keeping the last" in error
+        assert "values in case of conflicts." in error

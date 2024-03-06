@@ -103,21 +103,11 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
     );
   }
 
-  if (!relations.length) {
-    return (
-      <Box>
-        <Typography sx={{ ml: 4 }} variant="h5">
-          No children
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box>
       <Stack direction="row" alignItems="center">
         <Typography sx={{ ml: 4 }} variant="h5">
-          Children
+          {!relations.length ? "No children" : "Children"}
         </Typography>
         {!incomingData && (
           <Box sx={{ textAlign: "left", m: 3 }}>
@@ -133,7 +123,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       </Stack>
 
       {/* Renders parents or children of the node */}
-      <Stack direction="row">
+      <Stack direction="row" flexWrap="wrap">
         {relations.map((relationObject) => (
           <Stack
             key={relationObject["index"]}

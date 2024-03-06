@@ -44,13 +44,13 @@ const ExportTaxonomyToGithub = ({
       .then(async (response) => {
         const responseBody = await response.json();
         if (!response.ok) {
-          throw new Error(responseBody?.detail ?? "Unable to export to Github");
+          throw new Error(responseBody?.detail ?? "Unable to export to GitHub");
         } else {
           setPullRequestURL(responseBody);
         }
       })
       .catch(() => {
-        setErrorMessage("Unable to export to Github");
+        setErrorMessage("Unable to export to GitHub");
       })
       .finally(() => {
         setIsExportingToGithub(false);
@@ -67,7 +67,7 @@ const ExportTaxonomyToGithub = ({
         sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
         variant="h5"
       >
-        Click the button below to export to Github
+        Click the button below to export to GitHub
       </Typography>
       <Button
         startIcon={<GitHubIcon />}
@@ -79,23 +79,23 @@ const ExportTaxonomyToGithub = ({
         {isExportingToGithub ? (
           <CircularProgress size={24} />
         ) : (
-          "Export to Github"
+          "Export to GitHub"
         )}
       </Button>
 
       {/* Dialog box to the PR link */}
       <Dialog open={pullRequestURL.length > 0}>
-        <DialogTitle>Your changes have been exported to Github!</DialogTitle>
+        <DialogTitle>Your changes have been exported to GitHub!</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Thank you for contributing! A maintainer will review your changes
-            soon.
+            Thank you for contributing! A community member will review your
+            changes soon.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClosePullRequestDialog}>Cancel</Button>
+          <Button onClick={handleClosePullRequestDialog}>Close</Button>
           <Button component={MuiLink} target="_blank" href={pullRequestURL}>
-            Go to PR
+            View your pull request
           </Button>
         </DialogActions>
       </Dialog>

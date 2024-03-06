@@ -50,6 +50,7 @@ COPY parser /parser
 USER off:off
 COPY --chown=off:off ./backend/editor /code/editor
 COPY --chown=off:off ./backend/sample /code/sample
+COPY --chown=off:off ./backend/openapi /code/openapi
 RUN find /code/sample -type f -name '*.py' -exec chmod +x {} \;
 
 CMD ["uvicorn", "editor.api:app", "--host", "0.0.0.0", "--port", "80"]

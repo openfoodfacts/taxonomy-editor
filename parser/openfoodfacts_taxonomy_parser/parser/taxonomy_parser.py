@@ -108,15 +108,15 @@ class TaxonomyParser:
                 line_count += 1
             yield line_count, ""  # to end the last entry if not ended
 
-    def _add_line(self, line: str) -> str:
+    def _normalize_entry_id(self, raw_id: str) -> str:
         """
         Get a normalized string but keeping the language code "lc:",
         used for id and parent tag
         """
-        lc, line = line.split(":", 1)
-        new_line = lc + ":"
-        new_line += normalize_text(line, lc, stopwords=self.stopwords)
-        return new_line
+        lc, main_tag = raw_id.split(":", 1)
+        normalized_main_tag = normalize_text(main_tag, lc, stopwords=self.stopwords)
+        normalized_id = f"{lc}:{normalized_main_tag}"
+        return normalized_id
 
     def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
         """Get the language code "lc" and a list of normalized values"""
@@ -251,20 +251,24 @@ class TaxonomyParser:
         for line_number, line in self._file_iter(filename, entries_start_line):
             # yield data if block ended
             if self._entry_end(line, data):
+                data = self._remove_separating_line(data)
+                if data.get_node_type() == NodeType.ENTRY:
+                    data = self._get_node_data_with_parent_and_end_comments(data)
                 if data.id in saved_nodes:
+                    # this duplicate node will be merged with the first one
+                    data.is_before = None
                     msg = (
-                        f"Entry with same id {data.id} already created, "
+                        f"WARNING: Entry with same id {data.id} already exists, "
                         f"duplicate id in file at line {data.src_position}. "
-                        "Node creation cancelled."
+                        "The two nodes will be merged, keeping the last "
+                        "values in case of conflicts."
                     )
                     self.parser_logger.error(msg)
                 else:
-                    data = self._remove_separating_line(data)
-                    if data.get_node_type() == NodeType.ENTRY:
-                        data = self._get_node_data_with_parent_and_end_comments(data)
-                    yield data  # another function will use this dictionary to create a node
                     saved_nodes.append(data.id)
-                data = NodeData(is_before=data.id)
+                    is_before = data.id
+                yield data  # another function will use this dictionary to create a node
+                data = NodeData(is_before=is_before)
 
             # harvest the line
             if not (line) or line[0] == "#":
@@ -319,11 +323,11 @@ class TaxonomyParser:
                         data.tags["tags_ids_" + lc] = value
                 elif line[0] == "<":
                     # parent definition
-                    data.parent_tags.append((self._add_line(line[1:]), line_number + 1))
+                    data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
                 elif language_code_prefix.match(line):
                     # synonyms definition
                     if not data.id:
-                        data.id = self._add_line(line.split(",", 1)[0])
+                        data.id = self._normalize_entry_id(line.split(",", 1)[0])
                         # first 2-3 characters before ":" are the language code
                         data.main_language = data.id.split(":", 1)[0]
                     # add tags and tagsid
@@ -404,7 +408,9 @@ class TaxonomyParser:
 
         return normalised_child_links, missing_child_links
 
-    def _get_valid_child_links(self, entry_nodes: list[NodeData], raw_child_links: list[ChildLink]):
+    def _get_valid_child_links(
+        self, entry_nodes: list[NodeData], raw_child_links: list[ChildLink]
+    ) -> list[ChildLink]:
         """Get only the valid child links, i.e. the child links whose the parent_id exists"""
         node_ids = set([node.id for node in entry_nodes])
 
@@ -438,6 +444,58 @@ class TaxonomyParser:
 
         return valid_child_links
 
+    def _remove_duplicate_child_links(self, child_links: list[ChildLink]) -> list[ChildLink]:
+        """Remove duplicate child links (i.e child links with the same parent_id and id)"""
+        unique_child_links = []
+        children_to_parents = collections.defaultdict(set)
+        for child_link in child_links:
+            parent_id, child_id = child_link["parent_id"], child_link["id"]
+            if parent_id not in children_to_parents[child_id]:
+                children_to_parents[child_id].add(parent_id)
+                unique_child_links.append(child_link)
+        return unique_child_links
+
+    def _merge_duplicate_entry_nodes(self, entry_nodes: list[NodeData]) -> list[NodeData]:
+        """Merge entry nodes with the same id:
+        - merge their tags (union)
+        - merge their properties (union, and in case of conflict, keep the last value)"""
+        unique_entry_nodes = []
+        ids_to_nodes = dict()
+        for node in entry_nodes:
+            if node.id in ids_to_nodes:
+                first_node = ids_to_nodes[node.id]
+                for key, value in node.tags.items():
+                    if not key.startswith("tags_ids_"):
+                        # union of the tags
+                        first_node.tags[key] = list(
+                            # we use a dict to remove duplicates
+                            # while keeping the order of the tags
+                            dict.fromkeys(first_node.tags.get(key, []) + value)
+                        )
+                        # we have to re-normalize the tags_ids and can't just do a union,
+                        # because two tags can have the same normalized value
+                        language_code = key.split("_")[1]
+                        first_node.tags[f"tags_ids_{language_code}"] = [
+                            normalize_text(tag, language_code, stopwords=self.stopwords)
+                            for tag in first_node.tags[key]
+                        ]
+                for key, value in node.properties.items():
+                    # overwrite the value if the property already exists in the first node
+                    first_node.properties[key] = value
+                for key, value in node.comments.items():
+                    # union of the comments
+                    first_node.comments[key] = list(
+                        # we use a dict to remove duplicates
+                        # while keeping the order of the tags
+                        dict.fromkeys(first_node.comments.get(key, []) + value)
+                    )
+                # union of the preceding_lines comments
+                first_node.preceding_lines.extend(node.preceding_lines)
+            else:
+                unique_entry_nodes.append(node)
+                ids_to_nodes[node.id] = node
+        return unique_entry_nodes
+
     def _create_taxonomy(self, filename: str) -> Taxonomy:
         """Create the taxonomy from the file"""
         self.parser_logger.info(f"Parsing {filename}")
@@ -467,11 +525,13 @@ class TaxonomyParser:
                         )
                     )
         valid_child_links = self._get_valid_child_links(entry_nodes, raw_child_links)
+        child_links = self._remove_duplicate_child_links(valid_child_links)
+        entry_nodes = self._merge_duplicate_entry_nodes(entry_nodes)
         return Taxonomy(
             entry_nodes=entry_nodes,
             other_nodes=other_nodes,
             previous_links=previous_links,
-            child_links=valid_child_links,
+            child_links=child_links,
         )
 
     def parse_file(self, filename: str, logger: ParserConsoleLogger | None = None) -> Taxonomy:
