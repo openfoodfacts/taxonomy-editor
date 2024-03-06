@@ -40,7 +40,6 @@ export const TAXONOMY_NAMES = [
   "Nova Groups",
   "Nucleotides",
   "Nutrients",
-  "Origins",
   "Other Nutritional Substances",
   "Packaging Materials",
   "Packaging Recycling",

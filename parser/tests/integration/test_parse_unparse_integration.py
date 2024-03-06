@@ -39,7 +39,7 @@ def test_round_trip(neo4j):
         test_parser = parser.Parser(session)
 
         # parse taxonomy
-        test_parser(TEST_TAXONOMY_TXT, "branch", "test")
+        test_parser(TEST_TAXONOMY_TXT, None, "branch", "test")
         # just quick check it runs ok with total number of nodes
         query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
         result = session.run(query)
@@ -72,9 +72,9 @@ def test_two_branch_round_trip(neo4j):
         test_parser = parser.Parser(session)
 
         # parse taxonomy with branch1
-        test_parser(TEST_TAXONOMY_TXT, "branch1", "test")
+        test_parser(TEST_TAXONOMY_TXT, None, "branch1", "test")
         # parse taxonomy with branch2
-        test_parser(TEST_TAXONOMY_TXT, "branch2", "test")
+        test_parser(TEST_TAXONOMY_TXT, None, "branch2", "test")
 
         # just quick check it runs ok with total number of nodes
         query = "MATCH (n:p_test_branch1) RETURN COUNT(*)"

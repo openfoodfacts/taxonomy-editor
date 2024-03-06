@@ -83,7 +83,8 @@ class Parser:
             id: entry_node.id,
             preceding_lines: entry_node.preceding_lines,
             src_position: entry_node.src_position,
-            main_language: entry_node.main_language
+            main_language: entry_node.main_language,
+            is_external: entry_node.is_external
         """
 
         properties_query = ",\n".join([base_properties_query, *additional_properties_queries])
@@ -234,14 +235,37 @@ class Parser:
         self._create_child_links(taxonomy.child_links, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
 
-    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
+    def __call__(
+        self,
+        main_filename: str,
+        external_filenames: list[str] | None,
+        branch_name: str,
+        taxonomy_name: str,
+    ):
         """Process the file"""
         start_time = timeit.default_timer()
 
         branch_name = normalize_text(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
         try:
-            taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
+            if external_filenames is None:
+                taxonomy = taxonomy_parser.parse_file(main_filename, self.parser_logger)
+            else:
+                # parse external taxonomies files if any, and add their entry nodes to the main taxonomy
+                external_entry_nodes = []
+                for filename in external_filenames:
+                    external_taxonomy_parser = TaxonomyParser()
+                    external_taxonomy = external_taxonomy_parser.parse_file(
+                        filename, self.parser_logger
+                    )
+                    external_entry_nodes.extend(external_taxonomy.entry_nodes)
+                for entry_node in external_entry_nodes:
+                    entry_node.is_external = True
+                # parse main taxonomy file
+                taxonomy = taxonomy_parser.parse_file(
+                    main_filename, self.parser_logger, external_entry_nodes
+                )
+
             self._write_to_database(taxonomy, taxonomy_name, branch_name)
 
             self.parser_logger.info(
