@@ -14,6 +14,7 @@ import {
   FormControl,
   Select,
   MenuItem,
+  FormHelperText,
 } from "@mui/material";
 
 import { TAXONOMY_NAMES } from "@/constants";
@@ -138,6 +139,13 @@ const StartProject = ({ clearNavBarLinks }) => {
           required={true}
         />
 
+        <FormHelperText
+          sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
+        >
+          Please use your Github account username if possible, or eventually
+          your id on open food facts slack (so that we can contact you)
+        </FormHelperText>
+
         <TextField
           error={isInvalidBranchName}
           helperText={
@@ -166,6 +174,14 @@ const StartProject = ({ clearNavBarLinks }) => {
           variant="outlined"
           label="Description"
         />
+
+        <FormHelperText
+          sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
+        >
+          Explain what is your goal with this new project, what changes are you
+          going to bring. Remember to privilege small projects (do big project
+          as a succession of small one).
+        </FormHelperText>
 
         <Button
           variant="contained"
