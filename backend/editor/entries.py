@@ -217,10 +217,10 @@ class TaxonomyGraph:
                 raise GithubBranchExistsError() from e
 
         try:
-            new_file = await github_object.update_file(filename, file_sha)
+            new_file = await github_object.update_file(filename, file_sha, owner_name)
 
             if status != ProjectStatus.EXPORTED:
-                pull_request = await github_object.create_pr(description, owner_name)
+                pull_request = await github_object.create_pr(description)
                 pr_url = pull_request.html_url
 
             await edit_project(

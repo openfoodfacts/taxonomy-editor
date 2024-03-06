@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -29,12 +29,12 @@ const StartProject = ({ clearNavBarLinks }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
-  const findDefaultBranchName = () => {
+  const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
     return `${taxonomyName.toLowerCase()}_${ownerName
       .replace(" ", "")
       .toLowerCase()}_${Math.floor(Date.now() / 1000)}`;
-  };
+  }, [ownerName, taxonomyName]);
 
   const [branchName, setBranchName] = useState(findDefaultBranchName());
 
@@ -47,7 +47,7 @@ const StartProject = ({ clearNavBarLinks }) => {
 
   useEffect(() => {
     setBranchName(findDefaultBranchName());
-  }, [ownerName, taxonomyName]);
+  }, [ownerName, taxonomyName, findDefaultBranchName]);
 
   const handleSubmit = () => {
     if (!taxonomyName || !branchName || !ownerName) return;

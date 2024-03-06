@@ -85,13 +85,14 @@ class GithubOperations:
             *self.repo_info, ref="refs/heads/" + self.branch_name, sha=commit_sha
         )
 
-    async def update_file(self, filename: str, file_sha: str) -> FileCommit:
+    async def update_file(self, filename: str, file_sha: str, author_name) -> FileCommit:
         """
         Update the taxonomy txt file edited by user using the Taxonomy Editor
         """
         # Find taxonomy text file to be updated
         github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
         commit_message = f"Update {self.taxonomy_name}.txt"
+        author = {"name": author_name, "email": f"{author_name}@example.com"}
         try:
             with open(filename, "r") as f:
                 new_file_contents = f.read()
@@ -104,6 +105,7 @@ class GithubOperations:
                     content=base64.b64encode(new_file_contents.encode("utf-8")),
                     sha=file_sha,
                     branch=self.branch_name,
+                    committer=author,
                 )
             ).parsed_data
         except RequestFailed as e:
@@ -117,7 +119,7 @@ class GithubOperations:
             # Handle any other unexpected exceptions
             raise Exception(f"An error occurred: {e}") from e
 
-    async def create_pr(self, description, owner_name) -> PullRequest:
+    async def create_pr(self, description) -> PullRequest:
         """
         Create a pull request to "openfoodfacts-server" repo
         """
@@ -130,8 +132,6 @@ class GithubOperations:
         ### Description
         {description}
 
-        ### Author
-        {owner_name}
         """
         )
         return (
