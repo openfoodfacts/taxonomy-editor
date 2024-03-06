@@ -38,7 +38,7 @@ def test_upload_taxonomy(client):
         response = client.post(
             "/test_taxonomy/test_branch/upload",
             files={"file": f},
-            data={"description": "test_description", "owner_name": "testName"},
+            data={"description": "test_description"},
         )
 
     assert response.status_code == 200
@@ -50,7 +50,7 @@ def test_add_taxonomy_invalid_branch_name(client):
         response = client.post(
             "/test_taxonomy/invalid-branch-name/upload",
             files={"file": f},
-            data={"description": "test_description", "owner_name": "testName"},
+            data={"description": "test_description"},
         )
 
     assert response.status_code == 422
@@ -64,7 +64,7 @@ def test_add_taxonomy_duplicate_project_name(client):
         response = client.post(
             "/test_taxonomy/test_branch/upload",
             files={"file": f},
-            data={"description": "test_description", "owner_name": "testName"},
+            data={"description": "test_description"},
         )
 
     assert response.status_code == 409
