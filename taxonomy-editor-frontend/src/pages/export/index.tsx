@@ -88,8 +88,13 @@ const ExportTaxonomyToGithub = ({
         <DialogTitle>Your changes have been exported to GitHub!</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Thank you for contributing! A community member will review your
-            changes soon.
+            Thank you for your contribution! <br />
+            Please check your pull request (PR) to ensure everything looks good.
+            Feel free to add a quick description of your changes for better
+            context.
+            <br />
+            Additionnally, it&apos;s also important to monitor the PR to respond
+            to any comments from other contributors.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
