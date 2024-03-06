@@ -385,6 +385,7 @@ async def upload_taxonomy(
     branch: str,
     taxonomy_name: str,
     file: UploadFile,
+    owner_name: str,
     background_tasks: BackgroundTasks,
     description: str = Form(...),
 ):
@@ -399,7 +400,7 @@ async def upload_taxonomy(
     if not await taxonomy.is_branch_unique(from_github=False):
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    result = await taxonomy.import_taxonomy(description, background_tasks, file)
+    result = await taxonomy.import_taxonomy(description, owner_name, background_tasks, file)
 
     return result
 
