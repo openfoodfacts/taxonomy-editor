@@ -12,7 +12,7 @@ import { SearchNodeWrapper } from "./pages/project/search";
 import { StartProject } from "./pages/startproject";
 import { Errors } from "./pages/project/errors";
 import { ProjectPage, projectLoader } from "./pages/project";
-import { ProjectNonFound } from "./pages/project/ProjectNotFound";
+import { ProjectNotFound } from "./pages/project/ProjectNotFound";
 import { PageNotFound } from "./pages/PageNotFound";
 import { RootLayout } from "./pages/RootLayout";
 
@@ -42,7 +42,7 @@ const router = createBrowserRouter([
         path: ":taxonomyName/:branchName",
         element: <ProjectPage />,
         loader: projectLoader(queryClient),
-        errorElement: <ProjectNonFound />,
+        errorElement: <ProjectNotFound />,
         children: [
           {
             path: "export",
