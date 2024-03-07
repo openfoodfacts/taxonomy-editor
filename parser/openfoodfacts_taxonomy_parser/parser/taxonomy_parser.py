@@ -466,6 +466,10 @@ class TaxonomyParser:
         for node in entry_nodes:
             if node.id in ids_to_nodes:
                 first_node = ids_to_nodes[node.id]
+                # if we merge a node from the taxonomy with an external node,
+                # the merged node is not external anymore
+                if first_node.is_external and not node.is_external:
+                    first_node.is_external = False
                 for key, value in node.tags.items():
                     if not key.startswith("tags_ids_"):
                         # union of the tags
