@@ -152,6 +152,7 @@ class TaxonomyGraph:
     async def import_taxonomy(
         self,
         description: str,
+        owner_name: str,
         background_tasks: BackgroundTasks,
         uploadfile: UploadFile | None = None,
     ):
@@ -164,6 +165,7 @@ class TaxonomyGraph:
                 taxonomy_name=self.taxonomy_name,
                 branch_name=self.branch_name,
                 description=description,
+                owner_name=owner_name,
                 is_from_github=uploadfile is None,
             )
         )
@@ -204,8 +206,9 @@ class TaxonomyGraph:
         Helper function to export a taxonomy to GitHub
         """
         project = await get_project(self.project_name)
-        is_from_github, status, description, commit_sha, file_sha, pr_url = (
+        is_from_github, owner_name, status, description, commit_sha, file_sha, pr_url = (
             project.is_from_github,
+            project.owner_name,
             project.status,
             project.description,
             project.github_checkout_commit_sha,
@@ -230,7 +233,7 @@ class TaxonomyGraph:
                 raise GithubBranchExistsError() from e
 
         try:
-            new_file = await github_object.update_file(filename, file_sha)
+            new_file = await github_object.update_file(filename, file_sha, owner_name)
 
             if status != ProjectStatus.EXPORTED:
                 pull_request = await github_object.create_pr(description)

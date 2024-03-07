@@ -365,6 +365,7 @@ async def import_from_github(
     """
     incoming_data = await request.json()
     description = incoming_data["description"]
+    ownerName = incoming_data["ownerName"]
 
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
 
@@ -375,7 +376,7 @@ async def import_from_github(
     if not await taxonomy.is_branch_unique(from_github=True):
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    status = await taxonomy.import_taxonomy(description, background_tasks)
+    status = await taxonomy.import_taxonomy(description, ownerName, background_tasks)
     return status
 
 
@@ -398,7 +399,7 @@ async def upload_taxonomy(
     if not await taxonomy.is_branch_unique(from_github=False):
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
-    result = await taxonomy.import_taxonomy(description, background_tasks, file)
+    result = await taxonomy.import_taxonomy(description, "unknown", background_tasks, file)
 
     return result
 
