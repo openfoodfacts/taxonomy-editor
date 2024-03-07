@@ -37,7 +37,7 @@ const Home = ({ clearNavBarLinks }: Props) => {
           height={140}
           width={700}
           src={logoUrl}
-          alt="Open Food Facts Logo"
+          alt="Open Food Facts Logo Vite"
         />
         <Box sx={{ mt: 1 }} />
         <Box
