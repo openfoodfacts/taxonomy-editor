@@ -45,7 +45,7 @@ export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
     },
   });
 
-  if (errorNode?.errors.length !== 0) {
+  if (errorNode && errorNode?.errors.length !== 0) {
     return (
       <CustomAlert
         severity="warning"

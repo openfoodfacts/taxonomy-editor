@@ -142,11 +142,11 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
 
   return (
     <Box>
-      <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
+      <Typography sx={{ mb: 2, mt: 2 }} variant="h4">
         Root Nodes:
       </Typography>
 
-      <TableContainer sx={{ ml: 2 }}>
+      <TableContainer>
         <Table style={{ border: "solid", borderWidth: 1.5 }}>
           <TableHead>
             <TableCell align="left">
@@ -169,12 +169,12 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
         </Table>
       </TableContainer>
 
-      <Typography variant="h6" sx={{ mt: 2, ml: 2, mb: 1 }}>
+      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
         Number of root nodes in taxonomy: {nodes.length}
       </Typography>
 
       {/* Table for listing all nodes in taxonomy */}
-      <TableContainer sx={{ ml: 2 }}>
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
