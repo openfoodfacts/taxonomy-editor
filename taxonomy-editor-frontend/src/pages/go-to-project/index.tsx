@@ -21,11 +21,7 @@ type ProjectType = {
   errors_count: number;
 };
 
-type Props = {
-  clearNavBarLinks: () => void;
-};
-
-const GoToProject = ({ clearNavBarLinks }: Props) => {
+export const GoToProject = () => {
   const [projectData, setProjectData] = useState<ProjectType[]>([]);
   const navigate = useNavigate();
 
@@ -66,13 +62,6 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
     setProjectData(newProjects);
   }, [data]);
 
-  useEffect(
-    function cleanMainNavLinks() {
-      clearNavBarLinks();
-    },
-    [clearNavBarLinks]
-  );
-
   if (isError) {
     return (
       <Typography variant="h5">
@@ -97,7 +86,7 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
         alignItems="center"
         justifyContent="center"
       >
-        <Typography sx={{ mt: 4 }} variant="h3">
+        <Typography sx={{ mt: 2 }} variant="h6">
           List of current projects
         </Typography>
         <MaterialTable
@@ -151,5 +140,3 @@ const GoToProject = ({ clearNavBarLinks }: Props) => {
     </Box>
   );
 };
-
-export default GoToProject;
