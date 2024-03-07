@@ -11,7 +11,7 @@ const taxonomyApiUrlFromUi = (location: Location): string => {
     return location.protocol + "//" + components.join(".") + "/";
   } else {
     // this is a default for simple dev setup
-    return process.env.REACT_APP_API_URL as string;
+    return import.meta.env.VITE_APP_API_URL;
   }
 };
 
