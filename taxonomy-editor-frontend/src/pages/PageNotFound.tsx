@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export const PageNotFound = () => {
   return (
     <>
-      <ResponsiveAppBar displayedPages={[]} />
+      <ResponsiveAppBar />
       <Box
         sx={{
           textAlign: "center",

@@ -7,7 +7,6 @@ import {
 import { DefaultService, Project, ProjectStatus } from "@/client";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { ResponsiveAppBar } from "@/components/ResponsiveAppBar";
 import { WarningParsingErrors } from "@/components/WarningParsingErrors";
 
 interface ProjectParams {
@@ -69,36 +68,23 @@ export const ProjectPage = () => {
     },
   });
 
-  const navUrlPrefix = `${taxonomyName}/${branchName}/`;
-  const navLink = [
-    { url: navUrlPrefix + "entry", translationKey: "Nodes" },
-    { url: navUrlPrefix + "search", translationKey: "Search" },
-    { url: navUrlPrefix + "export", translationKey: "Export" },
-    { url: navUrlPrefix + "errors", translationKey: "Errors" },
-  ];
-
-  return (
+  return project.status === ProjectStatus.LOADING ? (
+    <ProjectLoading />
+  ) : (
     <>
-      <ResponsiveAppBar displayedPages={navLink} />
-      {project.status === ProjectStatus.LOADING ? (
-        <ProjectLoading />
-      ) : (
-        <>
-          <WarningParsingErrors
-            taxonomyName={taxonomyName}
-            branchName={branchName}
-          />
-          <Box
-            sx={{
-              mt: 4,
-              mx: 6,
-              mb: 8,
-            }}
-          >
-            <Outlet />
-          </Box>
-        </>
-      )}
+      <WarningParsingErrors
+        taxonomyName={taxonomyName}
+        branchName={branchName}
+      />
+      <Box
+        sx={{
+          mt: 4,
+          mx: 6,
+          mb: 8,
+        }}
+      >
+        <Outlet />
+      </Box>
     </>
   );
 };

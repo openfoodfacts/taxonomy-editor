@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useMemo } from "react";
+import { Link, useParams, Params } from "react-router-dom";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -17,11 +17,26 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { useTranslation } from "react-i18next";
 import logoUrl from "@/assets/logosmall.jpg";
 
-type ResponsiveAppBarProps = {
-  displayedPages: Array<{ translationKey: string; url: string }>;
+const getDisplayedPages = (
+  params: Params<string>
+): Array<{ translationKey: string; url: string }> => {
+  if (!params.taxonomyName || !params.branchName) {
+    return [];
+  }
+
+  const navUrlPrefix = `${params.taxonomyName}/${params.branchName}/`;
+  return [
+    { url: navUrlPrefix + "entry", translationKey: "Nodes" },
+    { url: navUrlPrefix + "search", translationKey: "Search" },
+    { url: navUrlPrefix + "export", translationKey: "Export" },
+    { url: navUrlPrefix + "errors", translationKey: "Errors" },
+  ];
 };
 
-export const ResponsiveAppBar = ({ displayedPages }: ResponsiveAppBarProps) => {
+export const ResponsiveAppBar = () => {
+  const params = useParams();
+  const displayedPages = useMemo(() => getDisplayedPages(params), [params]);
+
   const { t } = useTranslation();
   const menuAnchorRef = useRef();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

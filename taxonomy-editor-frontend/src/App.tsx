@@ -14,6 +14,7 @@ import { Errors } from "./pages/project/errors";
 import { ProjectPage, projectLoader } from "./pages/project";
 import { ProjectNonFound } from "./pages/project/ProjectNotFound";
 import { PageNotFound } from "./pages/PageNotFound";
+import { RootLayout } from "./pages/RootLayout";
 
 const theme = createTheme({
   typography: {
@@ -30,34 +31,40 @@ const queryClient = new QueryClient({
 });
 
 const router = createBrowserRouter([
-  { path: "/", element: <Home />, errorElement: <PageNotFound /> },
-  { path: "startproject", element: <StartProject /> },
-  { path: "gotoproject", element: <GoToProject /> },
   {
-    path: ":taxonomyName/:branchName",
-    element: <ProjectPage />,
-    loader: projectLoader(queryClient),
-    errorElement: <ProjectNonFound />,
+    element: <RootLayout />,
+    errorElement: <PageNotFound />,
     children: [
+      { path: "/", element: <Home /> },
+      { path: "startproject", element: <StartProject /> },
+      { path: "gotoproject", element: <GoToProject /> },
       {
-        path: "export",
-        element: <ExportTaxonomyWrapper />,
-      },
-      {
-        path: "entry",
-        element: <RootNodesWrapper />,
-      },
-      {
-        path: "entry/:id",
-        element: <EditEntryWrapper />,
-      },
-      {
-        path: "search",
-        element: <SearchNodeWrapper />,
-      },
-      {
-        path: "errors",
-        element: <Errors />,
+        path: ":taxonomyName/:branchName",
+        element: <ProjectPage />,
+        loader: projectLoader(queryClient),
+        errorElement: <ProjectNonFound />,
+        children: [
+          {
+            path: "export",
+            element: <ExportTaxonomyWrapper />,
+          },
+          {
+            path: "entry",
+            element: <RootNodesWrapper />,
+          },
+          {
+            path: "entry/:id",
+            element: <EditEntryWrapper />,
+          },
+          {
+            path: "search",
+            element: <SearchNodeWrapper />,
+          },
+          {
+            path: "errors",
+            element: <Errors />,
+          },
+        ],
       },
     ],
   },

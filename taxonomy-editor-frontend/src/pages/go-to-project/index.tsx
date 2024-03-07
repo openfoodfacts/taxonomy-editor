@@ -10,7 +10,6 @@ import useFetch from "@/components/useFetch";
 import { API_URL } from "@/constants";
 import { toSnakeCase, toTitleCase } from "@/utils";
 import type { ProjectsAPIResponse } from "@/backend-types/types";
-import { ResponsiveAppBar } from "@/components/ResponsiveAppBar";
 
 type ProjectType = {
   id: string;
@@ -80,67 +79,64 @@ export const GoToProject = () => {
   }
 
   return (
-    <>
-      <ResponsiveAppBar displayedPages={[]} />
-      <Box sx={{ overflowY: "scroll" }}>
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Typography sx={{ mt: 2 }} variant="h6">
-            List of current projects
-          </Typography>
-          <MaterialTable
-            data={projectData}
-            columns={[
-              { title: "Project", field: "projectName" },
-              { title: "Taxonomy", field: "taxonomyName" },
-              { title: "Branch", field: "branchName" },
-              { title: "owner", field: "ownerName" },
-              { title: "Description", field: "description", width: "10vw" },
-              {
-                title: "Errors",
-                field: "errors_count",
-                render: (rowData) => {
-                  if (rowData["errors_count"] > 0) {
-                    return (
-                      <MuiLink
-                        color="error"
-                        href={`/${toSnakeCase(rowData["taxonomyName"])}/${
-                          rowData["branchName"]
-                        }/errors`}
-                      >
-                        {rowData["errors_count"] + " errors"}
-                      </MuiLink>
-                    );
-                  }
-                },
-              },
-              { title: "Status", field: "status" },
-            ]}
-            options={{
-              actionsColumnIndex: -1,
-              addRowPosition: "last",
-              showTitle: false,
-            }}
-            actions={[
-              {
-                icon: () => <EditIcon />,
-                tooltip: "Edit project",
-                onClick: (event, rowData) => {
-                  navigate(
-                    `/${toSnakeCase(rowData["taxonomyName"])}/${
-                      rowData["branchName"]
-                    }/entry`
+    <Box sx={{ overflowY: "scroll" }}>
+      <Grid
+        container
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Typography sx={{ mt: 2 }} variant="h6">
+          List of current projects
+        </Typography>
+        <MaterialTable
+          data={projectData}
+          columns={[
+            { title: "Project", field: "projectName" },
+            { title: "Taxonomy", field: "taxonomyName" },
+            { title: "Branch", field: "branchName" },
+            { title: "owner", field: "ownerName" },
+            { title: "Description", field: "description", width: "10vw" },
+            {
+              title: "Errors",
+              field: "errors_count",
+              render: (rowData) => {
+                if (rowData["errors_count"] > 0) {
+                  return (
+                    <MuiLink
+                      color="error"
+                      href={`/${toSnakeCase(rowData["taxonomyName"])}/${
+                        rowData["branchName"]
+                      }/errors`}
+                    >
+                      {rowData["errors_count"] + " errors"}
+                    </MuiLink>
                   );
-                },
+                }
               },
-            ]}
-          />
-        </Grid>
-      </Box>
-    </>
+            },
+            { title: "Status", field: "status" },
+          ]}
+          options={{
+            actionsColumnIndex: -1,
+            addRowPosition: "last",
+            showTitle: false,
+          }}
+          actions={[
+            {
+              icon: () => <EditIcon />,
+              tooltip: "Edit project",
+              onClick: (event, rowData) => {
+                navigate(
+                  `/${toSnakeCase(rowData["taxonomyName"])}/${
+                    rowData["branchName"]
+                  }/entry`
+                );
+              },
+            },
+          ]}
+        />
+      </Grid>
+    </Box>
   );
 };
