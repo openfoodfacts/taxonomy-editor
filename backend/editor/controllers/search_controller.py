@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from ..models.node_models import EntryNode
+import math
+from ..models.node_models import EntryNode, EntryNodeSearchResult
 from ..graph_db import get_current_transaction
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
@@ -230,7 +231,7 @@ def build_cypher_filter_search_term(
             return None
 
 
-def build_cypher_query(query: Query) -> tuple[str, dict[str, str]] | None:
+def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, dict[str, str]] | None:
     cypher_name_search_term = (
         build_cypher_name_search_term(query.project_id, query.name_search_term)
         if query.name_search_term is not None
@@ -262,29 +263,64 @@ def build_cypher_query(query: Query) -> tuple[str, dict[str, str]] | None:
         else ""
     )
 
-    query = f"""
+    base_query = f"""
     {full_text_search_query}
     MATCH (n:{query.project_id}:ENTRY)
     {combined_filter_query}
-    RETURN n
     """
 
-    return query, query_params
+    page_subquery = f"""
+    WITH collect(n) AS nodeList, count(n) AS nodeCount
+    UNWIND nodeList AS node 
+    WITH node, nodeCount 
+    SKIP {skip} LIMIT {limit}
+    WITH collect(node) AS nodeList, nodeCount
+    RETURN nodeList, nodeCount;
+    """
+
+    count_subquery = """
+    RETURN count(n) AS nodeCount;
+    """
+
+    page_query = base_query + page_subquery
+    count_query = base_query + count_subquery
+
+    return page_query, count_query, query_params
 
 
-async def search_entry_nodes(project_id: str, raw_query: str) -> list[EntryNode]:
+async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> EntryNodeSearchResult:
     """
     Search for entry nodes in the database
     """
     query = validate_query(project_id, raw_query)
 
     if query is None:
-        return []
+        return EntryNodeSearchResult()
 
-    cypher_query = build_cypher_query(query)
+    PAGE_LENGTH = 50
+    skip = max(0, (page - 1) * PAGE_LENGTH)
+
+    cypher_query = build_cypher_query(query, skip, PAGE_LENGTH)
 
     if cypher_query is None:
-        return []
+        return EntryNodeSearchResult()
 
-    result = await get_current_transaction().run(*cypher_query)
-    return [EntryNode(**node["n"]) async for node in result]
+    page_query, count_query, query_params = cypher_query
+
+    result = await get_current_transaction().run(page_query, query_params)
+    search_result = await result.single()
+    if search_result is None:
+        count_result = await get_current_transaction().run(count_query, query_params)
+        node_count = (await count_result.single())["nodeCount"]
+        return EntryNodeSearchResult(
+            node_count=node_count,
+            page_count=math.ceil(node_count / PAGE_LENGTH),
+            nodes=[],
+        )
+
+    node_count, nodes = search_result["nodeCount"], search_result["nodeList"]
+    return EntryNodeSearchResult(
+        node_count=node_count,
+        page_count=math.ceil(node_count / PAGE_LENGTH),
+        nodes=[EntryNode(**node) for node in nodes],
+    )

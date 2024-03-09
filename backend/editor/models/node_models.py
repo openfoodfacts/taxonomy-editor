@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from .base_models import BaseModel
 from .types.datetime import DateTime
@@ -65,6 +65,12 @@ class EntryNode(BaseModel):
                 parsed_data["properties"][key] = value
 
         return parsed_data
+
+
+class EntryNodeSearchResult(BaseModel):
+    node_count: int = 0
+    page_count: int = 0
+    nodes: list[EntryNode] = Field(default_factory=list)
 
 
 class ErrorNode(BaseModel):
