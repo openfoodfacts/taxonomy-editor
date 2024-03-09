@@ -15,21 +15,21 @@ def test_setup(neo4j):
     neo4j.session().run(query)
     query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
     neo4j.session().run(query)
-    query = "DROP INDEX p_test_branch_SearchTags IF EXISTS"
+    query = "DROP INDEX p_test_branch_SearchTagsIds IF EXISTS"
     neo4j.session().run(query)
 
     query1 = "MATCH (n:p_test_branch1) DETACH DELETE n"
     neo4j.session().run(query1)
     query1 = "DROP INDEX p_test_branch1_SearchIds IF EXISTS"
     neo4j.session().run(query1)
-    query1 = "DROP INDEX p_test_branch1_SearchTags IF EXISTS"
+    query1 = "DROP INDEX p_test_branch1_SearchTagsIds IF EXISTS"
     neo4j.session().run(query1)
 
     query2 = "MATCH (n:p_test_branch2) DETACH DELETE n"
     neo4j.session().run(query2)
     query2 = "DROP INDEX p_test_branch2_SearchIds IF EXISTS"
     neo4j.session().run(query2)
-    query2 = "DROP INDEX p_test_branch2_SearchTags IF EXISTS"
+    query2 = "DROP INDEX p_test_branch2_SearchTagsIds IF EXISTS"
     neo4j.session().run(query2)
 
 
