@@ -19,7 +19,7 @@ def test_setup(neo4j):
     neo4j.session().run(query)
     query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
     neo4j.session().run(query)
-    query = "DROP INDEX p_test_branch_SearchTags IF EXISTS"
+    query = "DROP INDEX p_test_branch_SearchTagsIds IF EXISTS"
     neo4j.session().run(query)
 
 

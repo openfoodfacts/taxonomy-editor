@@ -209,9 +209,9 @@ class Parser:
         self.session.run(query)
 
         language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
-        tags_prefixed_lc = ["n.tags_" + lc for lc in language_codes]
+        tags_prefixed_lc = ["n.tags_ids_" + lc for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
-        query = f"""CREATE FULLTEXT INDEX {project_label+'_SearchTags'} IF NOT EXISTS
+        query = f"""CREATE FULLTEXT INDEX {project_label+'_SearchTagsIds'} IF NOT EXISTS
             FOR (n:{project_label}) ON EACH [{tags_prefixed_lc}]"""
         self.session.run(query)
 
