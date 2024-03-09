@@ -38,7 +38,14 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import EntryNode, EntryNodeCreate, ErrorNode, Footer, Header, NodeType
+from .models.node_models import (
+    EntryNodeCreate,
+    EntryNodeSearchResult,
+    ErrorNode,
+    Footer,
+    Header,
+    NodeType,
+)
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .scheduler import scheduler_lifespan
 
@@ -234,16 +241,6 @@ async def find_one_entry_children(response: Response, branch: str, taxonomy_name
     return one_entry_children
 
 
-@app.get("/{taxonomy_name}/{branch}/entry")
-async def find_all_entries(response: Response, branch: str, taxonomy_name: str):
-    """
-    Get all entries within taxonomy
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    all_entries = await taxonomy.get_all_nodes("ENTRY")
-    return all_entries
-
-
 @app.get("/{taxonomy_name}/{branch}/synonym/{synonym}")
 async def find_one_synonym(response: Response, branch: str, taxonomy_name: str, synonym: str):
     """
@@ -320,10 +317,12 @@ async def find_all_errors(branch: str, taxonomy_name: str) -> ErrorNode:
     return result
 
 
-@app.get("/{taxonomy_name}/{branch}/search")
-async def search_entry_nodes(branch: str, taxonomy_name: str, query: str) -> list[EntryNode]:
+@app.get("/{taxonomy_name}/{branch}/nodes/entry")
+async def search_entry_nodes(
+    branch: str, taxonomy_name: str, q: str = "", page: int = 1
+) -> EntryNodeSearchResult:
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await search_controller.search_entry_nodes(taxonomy.project_name, query)
+    result = await search_controller.search_entry_nodes(taxonomy.project_name, q, page)
     return result
 
 
