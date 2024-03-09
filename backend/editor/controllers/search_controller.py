@@ -125,7 +125,7 @@ def validate_query(project_id: str, query: str) -> Query | None:
 
 def build_cypher_name_search_term(
     project_id: str, search_value: str
-) -> tuple[str, str, dict[str, str]] | None:
+) -> tuple[str, str, str, dict[str, str]] | None:
     """
     The name search term can trigger two types of searches:
     - if the search value is in the format `language_code:search_value`, it triggers a fuzzy search on the tags_ids_{language_code} index with the normalized search value
@@ -133,7 +133,7 @@ def build_cypher_name_search_term(
     """
     language_code = None
 
-    if search_value[2] == ":" and search_value[0:2].isalpha():
+    if len(search_value) > 2 and search_value[2] == ":" and search_value[0:2].isalpha():
         language_code, search_value = search_value.split(":", maxsplit=1)
         language_code = language_code.lower()
         normalized_text = parser_utils.normalize_text(search_value, language_code)
@@ -159,13 +159,15 @@ def build_cypher_name_search_term(
             CALL db.index.fulltext.queryNodes($tags_ids_index, $fuzzy_query)
             YIELD node, score
             WHERE score > 0.1
-            WITH node.id AS nodeId 
+            WITH node.id AS nodeId
             WITH COLLECT(nodeId) AS nodeIds
         """
 
     where_clause = "n.id IN nodeIds"
 
-    return query, where_clause, query_params
+    order_clause = "WITH n, apoc.coll.indexOf(nodeIds, n.id) AS index ORDER BY index"
+
+    return query, where_clause, order_clause, query_params
 
 
 def get_query_param_name(index: int) -> str:
@@ -245,11 +247,13 @@ def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, dict[s
     if None in cypher_filter_search_terms:
         return None
 
-    full_text_search_query = ""
+    full_text_search_query, order_clause = "", ""
     query_params = {}
 
     if cypher_name_search_term is not None:
-        full_text_search_query, name_filter_search_term, query_params = cypher_name_search_term
+        full_text_search_query, name_filter_search_term, order_clause, query_params = (
+            cypher_name_search_term
+        )
         cypher_filter_search_terms.append((name_filter_search_term, None))
 
     query_params |= {
@@ -270,6 +274,7 @@ def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, dict[s
     """
 
     page_subquery = f"""
+    {order_clause}
     WITH collect(n) AS nodeList, count(n) AS nodeCount
     UNWIND nodeList AS node 
     WITH node, nodeCount 
