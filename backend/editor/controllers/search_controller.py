@@ -128,8 +128,10 @@ def build_cypher_name_search_term(
 ) -> tuple[str, str, str, dict[str, str]] | None:
     """
     The name search term can trigger two types of searches:
-    - if the search value is in the format `language_code:search_value`, it triggers a fuzzy search on the tags_ids_{language_code} index with the normalized search value
-    - else it triggers a fuzzy search on the tags_ids index with the normalized search value
+    - if the search value is in the format `language_code:search_value`, it triggers a search on the tags_ids_{language_code} index with the normalized search value
+    - else it triggers a search on the tags_ids index with the normalized search value
+
+    Moreover, the search is fuzzy when the search value is longer than 4 characters (the edit distance depends of the length of the search value)
     """
     language_code = None
 
@@ -145,18 +147,30 @@ def build_cypher_name_search_term(
         return None
 
     tags_ids_index = project_id + "_SearchTagsIds"
-    fuzzy_query = normalized_text + "~"
+
+    tokens = normalized_text.split("-")
+
+    def get_token_query(token: str) -> str:
+        token = "+" + token
+        if len(token) > 10:
+            return token + "~2"
+        elif len(token) > 4:
+            return token + "~1"
+        else:
+            return token
+
+    search_query = "(" + " ".join(map(get_token_query, tokens)) + ")"
 
     if language_code is not None:
-        fuzzy_query = f"tags_ids_{language_code}:{fuzzy_query}"
+        search_query = f"tags_ids_{language_code}:{search_query}"
 
     query_params = {
         "tags_ids_index": tags_ids_index,
-        "fuzzy_query": fuzzy_query,
+        "search_query": search_query,
     }
 
     query = """
-            CALL db.index.fulltext.queryNodes($tags_ids_index, $fuzzy_query)
+            CALL db.index.fulltext.queryNodes($tags_ids_index, $search_query)
             YIELD node, score
             WHERE score > 0.1
             WITH node.id AS nodeId
