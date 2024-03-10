@@ -1,21 +1,95 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import math
+from typing import Literal
 from ..models.node_models import EntryNode, EntryNodeSearchResult
 from ..graph_db import get_current_transaction
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 
+def get_query_param_name(index: int) -> str:
+    return f"value_{index}"
+
+
+class FilterSearchTerm(ABC):
+    @abstractmethod
+    def build_cypher_query(self, index: int) -> tuple[str, str | None]:
+        pass
+
+
 @dataclass
-class FilterSearchTerm:
-    filter_name: str
+class IsFilterSearchTerm(FilterSearchTerm):
+    filter_value: Literal["root"]
+
+    def build_cypher_query(self, _index: int) -> tuple[str, None]:
+        match self.filter_value:
+            case "root":
+                return "NOT (n)-[:is_child_of]->()", None
+            case _:
+                raise ValueError("Invalid filter value")
+
+
+@dataclass
+class LanguageFilterSearchTerm(FilterSearchTerm):
     filter_value: str
+    negated: bool = False
+
+    def build_cypher_query(self, _index: int) -> tuple[str, None]:
+        if self.negated:
+            return f"n.tags_ids_{self.filter_value} IS NULL", None
+        else:
+            return f"n.tags_ids_{self.filter_value} IS NOT NULL", None
+
+
+@dataclass
+class ParentFilterSearchTerm(FilterSearchTerm):
+    filter_value: str
+
+    def build_cypher_query(self, index: int) -> tuple[str, str]:
+        return (
+            "(n)<-[:is_child_of]-(:ENTRY {id: $" + get_query_param_name(index) + "})",
+            self.filter_value,
+        )
+
+
+@dataclass
+class ChildFilterSearchTerm(FilterSearchTerm):
+    filter_value: str
+
+    def build_cypher_query(self, index: int) -> tuple[str, str]:
+        return (
+            "(n)-[:is_child_of]->(:ENTRY {id: $" + get_query_param_name(index) + "})",
+            self.filter_value,
+        )
+
+
+@dataclass
+class AncestorFilterSearchTerm(FilterSearchTerm):
+    filter_value: str
+
+    def build_cypher_query(self, index: int) -> tuple[str, str]:
+        return (
+            "(n)<-[:is_child_of*]-(:ENTRY {id: $" + get_query_param_name(index) + "})",
+            self.filter_value,
+        )
+
+
+@dataclass
+class DescendantFilterSearchTerm(FilterSearchTerm):
+    filter_value: str
+
+    def build_cypher_query(self, index: int) -> tuple[str, str]:
+        return (
+            "(n)-[:is_child_of*]->(:ENTRY {id: $" + get_query_param_name(index) + "})",
+            self.filter_value,
+        )
 
 
 @dataclass
 class Query:
     project_id: str
-    name_search_term: str | None
+    name_search_terms: list[str]
     filter_search_terms: list[FilterSearchTerm]
 
 
@@ -43,24 +117,7 @@ def split_query_into_search_terms(query: str) -> list[str]:
     return search_terms
 
 
-def is_name_search_term(search_term: str) -> bool:
-    """
-    Check if search term is a name
-    """
-    return search_term.startswith('"') or ":" not in search_term
-
-
-def validate_name_search_term(search_term: str) -> str | None:
-    if search_term.startswith('"') and search_term.endswith('"'):
-        search_term = search_term[1:-1]
-
-    if '"' in search_term:
-        return None
-
-    return search_term
-
-
-def validate_filter_search_term(search_term: str) -> FilterSearchTerm | None:
+def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
     if ":" not in search_term:
         return None
 
@@ -72,7 +129,29 @@ def validate_filter_search_term(search_term: str) -> FilterSearchTerm | None:
     if '"' in filter_value:
         return None
 
-    return FilterSearchTerm(filter_name, filter_value)
+    match filter_name:
+        case "is":
+            if filter_value == "root":
+                return IsFilterSearchTerm(filter_value)
+        case "language" | "not(language)":
+            if len(filter_value) != 2 and filter_value.isalpha():
+                return None
+
+            return (
+                LanguageFilterSearchTerm(filter_value)
+                if filter_name == "language"
+                else LanguageFilterSearchTerm(filter_value, negated=True)
+            )
+        case "parent":
+            return ParentFilterSearchTerm(filter_value)
+        case "child":
+            return ChildFilterSearchTerm(filter_value)
+        case "ancestor":
+            return AncestorFilterSearchTerm(filter_value)
+        case "descendant":
+            return DescendantFilterSearchTerm(filter_value)
+        case _:
+            return None
 
 
 def validate_query(project_id: str, query: str) -> Query | None:
@@ -80,11 +159,12 @@ def validate_query(project_id: str, query: str) -> Query | None:
     A query is composed of search terms separated by whitespaces.
     A search term is either a name search term or a filter search term.
 
-    A name search term is unique and is surrounded by quotes if it contains whitespaces or semi-colons. It cannot contain quotes.
-    The name search term allows for a text search on a node's tags.
-
-    A filter search term is of the format `filter:value`. Some filters can sometimes be negated with the format `not(filter):value`.
+    A filter search term is of the format `filter:value` where `filter` is a valid filter value and `value` is a valid search value for the particular filter.
+    Some filters can sometimes be negated with the format `not(filter):value`.
     The `value` is surrounded by quotes if it contains whitespaces. The value cannot contain quotes.
+
+    All other terms are considered name search terms.
+    The name search term allows for a text search on a node's tags.
 
     The possible filters are:
       - `is`: `root` is the only possible value. It allows to filter on the root nodes. It cannot be negated.
@@ -101,76 +181,73 @@ def validate_query(project_id: str, query: str) -> Query | None:
 
     search_terms = split_query_into_search_terms(query)
 
-    name_search_term = None
+    name_search_terms = []
     filter_search_terms = []
 
     for search_term in search_terms:
-        if is_name_search_term(search_term):
-            if name_search_term is not None:
-                return None
-
-            name_search_term = validate_name_search_term(search_term)
-            if name_search_term is None:
-                return None
-
-        else:
-            filter_search_term = validate_filter_search_term(search_term)
-            if filter_search_term is None:
-                return None
-
+        if (filter_search_term := parse_filter_search_term(search_term)) is not None:
             filter_search_terms.append(filter_search_term)
+        else:
+            name_search_terms.append(search_term)
 
-    return Query(project_id, name_search_term, filter_search_terms)
+    return Query(project_id, name_search_terms, filter_search_terms)
 
 
-def build_cypher_name_search_term(
-    project_id: str, search_value: str
-) -> tuple[str, str, str, dict[str, str]] | None:
+def build_lucene_name_search_query(search_value: str) -> str | None:
     """
     The name search term can trigger two types of searches:
-    - if the search value is in the format `language_code:search_value`, it triggers a search on the tags_ids_{language_code} index with the normalized search value
-    - else it triggers a search on the tags_ids index with the normalized search value
+    - if the search value is in the format `language_code:raw_search_value`, it triggers a search on the tags_ids_{language_code} index
+    - else it triggers a search on the tags_ids index
 
-    Moreover, the search is fuzzy when the search value is longer than 4 characters (the edit distance depends of the length of the search value)
+    If the `raw_search_value` is surrounded by quotes, the search will be exact.
+    Otherwise, the search is fuzzy when the search value is longer than 4 characters (the edit distance depends of the length of the search value)
     """
     language_code = None
 
     if len(search_value) > 2 and search_value[2] == ":" and search_value[0:2].isalpha():
         language_code, search_value = search_value.split(":", maxsplit=1)
         language_code = language_code.lower()
-        normalized_text = parser_utils.normalize_text(search_value, language_code)
-    else:
-        normalized_text = parser_utils.normalize_text(search_value)
 
-    # If normalized text is empty, no searches are found
-    if normalized_text.strip() == "":
-        return None
+    def get_search_query() -> str | None:
+        if search_value.startswith('"') and search_value.endswith('"'):
+            return search_value if len(search_value) > 2 else None
 
-    tags_ids_index = project_id + "_SearchTagsIds"
-
-    tokens = normalized_text.split("-")
-
-    def get_token_query(token: str) -> str:
-        token = "+" + token
-        if len(token) > 10:
-            return token + "~2"
-        elif len(token) > 4:
-            return token + "~1"
+        if language_code is not None:
+            normalized_text = parser_utils.normalize_text(search_value, language_code)
         else:
-            return token
+            normalized_text = parser_utils.normalize_text(search_value)
 
-    search_query = "(" + " ".join(map(get_token_query, tokens)) + ")"
+        # If normalized text is empty, no searches are found
+        if normalized_text.strip() == "":
+            return None
+
+        tokens = normalized_text.split("-")
+
+        def get_token_query(token: str) -> str:
+            token = "+" + token
+            if len(token) > 10:
+                return token + "~2"
+            elif len(token) > 4:
+                return token + "~1"
+            else:
+                return token
+
+        return "(" + " ".join(map(get_token_query, tokens)) + ")"
+
+    search_query = get_search_query()
+
+    if search_query is None:
+        return None
 
     if language_code is not None:
         search_query = f"tags_ids_{language_code}:{search_query}"
 
-    query_params = {
-        "tags_ids_index": tags_ids_index,
-        "search_query": search_query,
-    }
+    return search_query
 
-    query = """
-            CALL db.index.fulltext.queryNodes($tags_ids_index, $search_query)
+
+def build_cypher_name_search_term(project_id: str) -> tuple[str, str, str]:
+    query = f"""
+            CALL db.index.fulltext.queryNodes("{project_id}_SearchTagsIds", $search_query)
             YIELD node, score
             WHERE score > 0.1
             WITH node.id AS nodeId
@@ -181,93 +258,30 @@ def build_cypher_name_search_term(
 
     order_clause = "WITH n, apoc.coll.indexOf(nodeIds, n.id) AS index ORDER BY index"
 
-    return query, where_clause, order_clause, query_params
+    return query, where_clause, order_clause
 
 
-def get_query_param_name(index: int) -> str:
-    return f"value_{index}"
-
-
-def build_cypher_is_search_term(search_value: str) -> tuple[str, None] | None:
-    match search_value:
-        case "root":
-            return "NOT (n)-[:is_child_of]->()", None
-        case _:
-            return None
-
-
-def build_cypher_language_search_term(
-    search_value: str, negated: bool = False
-) -> tuple[str, None] | None:
-    if len(search_value) != 2 and search_value.isalpha():
-        return None
-
-    if negated:
-        return f"n.tags_ids_{search_value} IS NULL", None
-    else:
-        return f"n.tags_ids_{search_value} IS NOT NULL", None
-
-
-def build_cypher_parent_search_term(index: int, search_value: str) -> tuple[str, str]:
-    return "(n)<-[:is_child_of]-(:ENTRY {id: $" + get_query_param_name(index) + "})", search_value
-
-
-def build_cypher_child_search_term(index: int, search_value: str) -> tuple[str, str]:
-    return "(n)-[:is_child_of]->(:ENTRY {id: $" + get_query_param_name(index) + "})", search_value
-
-
-def build_cypher_ancestor_search_term(index: int, search_value: str) -> tuple[str, str]:
-    return "(n)<-[:is_child_of*]-(:ENTRY {id: $" + get_query_param_name(index) + "})", search_value
-
-
-def build_cypher_descendant_search_term(index: int, search_value: str) -> tuple[str, str]:
-    return "(n)-[:is_child_of*]->(:ENTRY {id: $" + get_query_param_name(index) + "})", search_value
-
-
-def build_cypher_filter_search_term(
-    enumerate_pair: tuple[int, FilterSearchTerm]
-) -> tuple[str, str | None] | None:
-    index, search_term = enumerate_pair
-    match search_term.filter_name:
-        case "is":
-            return build_cypher_is_search_term(search_term.filter_value)
-        case "language":
-            return build_cypher_language_search_term(search_term.filter_value)
-        case "not(language)":
-            return build_cypher_language_search_term(search_term.filter_value, negated=True)
-        case "parent":
-            return build_cypher_parent_search_term(index, search_term.filter_value)
-        case "child":
-            return build_cypher_child_search_term(index, search_term.filter_value)
-        case "ancestor":
-            return build_cypher_ancestor_search_term(index, search_term.filter_value)
-        case "descendant":
-            return build_cypher_descendant_search_term(index, search_term.filter_value)
-        case _:
-            return None
-
-
-def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, dict[str, str]] | None:
-    cypher_name_search_term = (
-        build_cypher_name_search_term(query.project_id, query.name_search_term)
-        if query.name_search_term is not None
-        else None
+def build_cypher_query(
+    query: Query, skip: int, limit: int
+) -> tuple[str, str, dict[str, str]] | None:
+    lucene_name_search_queries = list(
+        filter(
+            lambda q: q is not None, map(build_lucene_name_search_query, query.name_search_terms)
+        )
     )
 
-    cypher_filter_search_terms = list(
-        map(build_cypher_filter_search_term, enumerate(query.filter_search_terms))
-    )
-
-    if None in cypher_filter_search_terms:
-        return None
+    cypher_filter_search_terms = [
+        term.build_cypher_query(index) for index, term in enumerate(query.filter_search_terms)
+    ]
 
     full_text_search_query, order_clause = "", ""
     query_params = {}
 
-    if cypher_name_search_term is not None:
-        full_text_search_query, name_filter_search_term, order_clause, query_params = (
-            cypher_name_search_term
+    if lucene_name_search_queries:
+        full_text_search_query, name_filter_search_term, order_clause = (
+            build_cypher_name_search_term(query.project_id)
         )
+        query_params["search_query"] = " AND ".join(lucene_name_search_queries)
         cypher_filter_search_terms.append((name_filter_search_term, None))
 
     query_params |= {
@@ -328,6 +342,7 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
 
     result = await get_current_transaction().run(page_query, query_params)
     search_result = await result.single()
+
     if search_result is None:
         count_result = await get_current_transaction().run(count_query, query_params)
         node_count = (await count_result.single())["nodeCount"]
