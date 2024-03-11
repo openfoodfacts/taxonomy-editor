@@ -17,6 +17,7 @@ from githubkit.versions.latest.models import (
 )
 
 from . import settings
+from . import utils
 
 
 class GithubOperations:
@@ -25,6 +26,10 @@ class GithubOperations:
     def __init__(self, taxonomy_name: str, branch_name: str):
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
+
+    @property
+    def taxonomy_path_in_repository(self):
+        return utils.taxonomy_path_in_repository(self.taxonomy_name)
 
     @cached_property
     def repo_info(self) -> tuple[str, str]:
@@ -68,10 +73,9 @@ class GithubOperations:
         """
         Get the file SHA from the 'main' branch in the "openfoodfacts-server" repo
         """
-        github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
         file_contents: ContentFile = (
             await self.connection.rest.repos.async_get_content(
-                *self.repo_info, path=github_filepath
+                *self.repo_info, path=self.taxonomy_path_in_repository
             )
         ).parsed_data
 
@@ -90,8 +94,7 @@ class GithubOperations:
         Update the taxonomy txt file edited by user using the Taxonomy Editor
         """
         # Find taxonomy text file to be updated
-        github_filepath = f"taxonomies/{self.taxonomy_name}.txt"
-        commit_message = f"Update {self.taxonomy_name}.txt"
+        commit_message = f"Update {self.taxonomy_path_in_repository}"
         author = {"name": author_name, "email": "contact@openfoodfacts.org"}
         try:
             with open(filename, "r") as f:
@@ -103,7 +106,7 @@ class GithubOperations:
             return (
                 await self.connection.rest.repos.async_create_or_update_file_contents(
                     *self.repo_info,
-                    path=github_filepath,
+                    path=self.taxonomy_path_in_repository,
                     message=commit_message,
                     content=base64.b64encode(new_file_contents.encode("utf-8")),
                     sha=file_sha,

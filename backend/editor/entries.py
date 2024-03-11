@@ -2,6 +2,7 @@
 Database helper functions for API
 """
 
+import logging
 import re
 import shutil
 import tempfile
@@ -33,7 +34,10 @@ from .graph_db import (  # Neo4J transactions context managers
 )
 from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
-from .utils import file_cleanup
+from . import utils
+
+
+log = logging.getLogger(__name__)
 
 
 async def async_list(async_iterable):
@@ -80,15 +84,18 @@ class TaxonomyGraph:
             await run_in_threadpool(shutil.copyfileobj, uploadfile.file, f)
         return filepath
 
+    @property
+    def taxonomy_path_in_repository(self):
+        return utils.taxonomy_path_in_repository(self.taxonomy_name)
+
     async def get_github_taxonomy_file(self, tmpdir: str):
         async with TransactionCtx():
-            filename = f"{self.taxonomy_name}.txt"
-            filepath = f"{tmpdir}/{filename}"
-            base_url = (
-                "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
+            filepath = f"{tmpdir}/{self.taxonomy_name}.txt"
+            target_url = (
+                f"https://raw.githubusercontent.com/{settings.repo_uri}/main/{self.taxonomy_path_in_repository}"
             )
             try:
-                await run_in_threadpool(urllib.request.urlretrieve, base_url + filename, filepath)
+                await run_in_threadpool(urllib.request.urlretrieve, target_url, filepath)
                 github_object = GithubOperations(self.taxonomy_name, self.branch_name)
                 commit_sha = (await github_object.get_branch("main")).commit.sha
                 file_sha = await github_object.get_file_sha()
@@ -131,6 +138,7 @@ class TaxonomyGraph:
             # add an error node so we can display it with errors in the app
             async with TransactionCtx():
                 await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.FAILED))
+            log.exception(e)
             raise e
 
     async def import_taxonomy(
@@ -169,9 +177,10 @@ class TaxonomyGraph:
                 # Dump taxonomy with given file name and branch name
                 unparser_object(filename, self.branch_name, self.taxonomy_name)
                 # Program file removal in the background
-                background_tasks.add_task(file_cleanup, filename)
+                background_tasks.add_task(utils.file_cleanup, filename)
                 return filename
             except Exception as e:
+                log.exception(e)
                 raise TaxonomyUnparsingError() from e
 
     async def file_export(self, background_tasks: BackgroundTasks):
