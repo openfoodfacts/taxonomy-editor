@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
 import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useQuery } from "@tanstack/react-query";
 
-import useFetch from "@/components/useFetch";
-import { API_URL } from "@/constants";
 import { toSnakeCase, toTitleCase } from "@/utils";
-import type { ProjectsAPIResponse } from "@/backend-types/types";
+import { DefaultService } from "@/client";
 
 type ProjectType = {
   id: string;
@@ -22,44 +21,39 @@ type ProjectType = {
 };
 
 export const GoToProject = () => {
-  const [projectData, setProjectData] = useState<ProjectType[]>([]);
   const navigate = useNavigate();
 
-  const { data, isPending, isError } = useFetch<ProjectsAPIResponse>(
-    `${API_URL}projects`
-  );
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["getAllProjectsProjectsGet"],
+    queryFn: async () => {
+      return await DefaultService.getAllProjectsProjectsGet();
+    },
+  });
 
-  useEffect(() => {
-    let newProjects: ProjectType[] = [];
-
-    if (data) {
-      const backendProjects = data.map(
-        ({
-          id,
-          branch_name,
-          taxonomy_name,
-          owner_name,
-          description,
-          errors_count,
-          status,
-        }) => {
-          return {
-            id, // needed by MaterialTable as key
-            projectName: id,
-            taxonomyName: toTitleCase(taxonomy_name),
-            ownerName: owner_name ? owner_name : "unknown",
-            branchName: branch_name,
-            description: description,
-            errors_count: errors_count,
-            status: status,
-          };
-        }
-      );
-
-      newProjects = backendProjects;
-    }
-
-    setProjectData(newProjects);
+  const projectData: ProjectType[] = useMemo(() => {
+    if (!data) return [];
+    return data.map(
+      ({
+        id,
+        branch_name,
+        taxonomy_name,
+        owner_name,
+        description,
+        errors_count,
+        status,
+      }) => {
+        return {
+          id, // needed by MaterialTable as key
+          projectName: id,
+          taxonomyName: toTitleCase(taxonomy_name),
+          ownerName: owner_name ? owner_name : "unknown",
+          branchName: branch_name,
+          description: description,
+          errors_count: errors_count,
+          status: status,
+        };
+      }
+    );
   }, [data]);
 
   if (isError) {
