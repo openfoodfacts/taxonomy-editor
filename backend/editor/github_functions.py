@@ -16,8 +16,7 @@ from githubkit.versions.latest.models import (
     PullRequest,
 )
 
-from . import settings
-from . import utils
+from . import settings, utils
 
 
 class GithubOperations:

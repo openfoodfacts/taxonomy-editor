@@ -16,7 +16,7 @@ from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
-from . import settings
+from . import settings, utils
 from .controllers.node_controller import create_entry_node
 from .controllers.project_controller import create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
@@ -34,8 +34,6 @@ from .graph_db import (  # Neo4J transactions context managers
 )
 from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
-from . import utils
-
 
 log = logging.getLogger(__name__)
 
@@ -92,7 +90,8 @@ class TaxonomyGraph:
         async with TransactionCtx():
             filepath = f"{tmpdir}/{self.taxonomy_name}.txt"
             target_url = (
-                f"https://raw.githubusercontent.com/{settings.repo_uri}/main/{self.taxonomy_path_in_repository}"
+                f"https://raw.githubusercontent.com/{settings.repo_uri}"
+                f"/main/{self.taxonomy_path_in_repository}"
             )
             try:
                 await run_in_threadpool(urllib.request.urlretrieve, target_url, filepath)
