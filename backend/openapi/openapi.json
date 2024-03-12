@@ -1187,24 +1187,21 @@
       "EntryNodeCreate": {
         "properties": {
           "name": { "type": "string", "title": "Name" },
-          "main_language_code": {
-            "type": "string",
-            "title": "Main Language Code"
-          }
+          "mainLanguageCode": { "type": "string", "title": "Mainlanguagecode" }
         },
         "type": "object",
-        "required": ["name", "main_language_code"],
+        "required": ["name", "mainLanguageCode"],
         "title": "EntryNodeCreate"
       },
       "ErrorNode": {
         "properties": {
           "id": { "type": "string", "title": "Id" },
-          "taxonomy_name": { "type": "string", "title": "Taxonomy Name" },
-          "branch_name": { "type": "string", "title": "Branch Name" },
-          "created_at": {
+          "taxonomyName": { "type": "string", "title": "Taxonomyname" },
+          "branchName": { "type": "string", "title": "Branchname" },
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Createdat"
           },
           "warnings": {
             "items": { "type": "string" },
@@ -1220,9 +1217,9 @@
         "type": "object",
         "required": [
           "id",
-          "taxonomy_name",
-          "branch_name",
-          "created_at",
+          "taxonomyName",
+          "branchName",
+          "createdAt",
           "warnings",
           "errors"
         ],
@@ -1248,36 +1245,38 @@
             "allOf": [{ "$ref": "#/components/schemas/ProjectStatus" }],
             "default": "LOADING"
           },
-          "taxonomy_name": { "type": "string", "title": "Taxonomy Name" },
-          "branch_name": { "type": "string", "title": "Branch Name" },
+          "taxonomyName": { "type": "string", "title": "Taxonomyname" },
+          "branchName": { "type": "string", "title": "Branchname" },
           "description": { "type": "string", "title": "Description" },
-          "is_from_github": { "type": "boolean", "title": "Is From Github" },
-          "created_at": {
+          "ownerName": { "type": "string", "title": "Ownername" },
+          "isFromGithub": { "type": "boolean", "title": "Isfromgithub" },
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Createdat"
           },
-          "github_checkout_commit_sha": {
+          "githubCheckoutCommitSha": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Github Checkout Commit Sha"
+            "title": "Githubcheckoutcommitsha"
           },
-          "github_file_latest_sha": {
+          "githubFileLatestSha": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Github File Latest Sha"
+            "title": "Githubfilelatestsha"
           },
-          "github_pr_url": {
+          "githubPrUrl": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Github Pr Url"
+            "title": "Githubprurl"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "taxonomy_name",
-          "branch_name",
+          "taxonomyName",
+          "branchName",
           "description",
-          "is_from_github",
-          "created_at"
+          "ownerName",
+          "isFromGithub",
+          "createdAt"
         ],
         "title": "Project"
       },
