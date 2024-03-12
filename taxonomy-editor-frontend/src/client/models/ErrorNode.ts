@@ -4,9 +4,9 @@
 /* eslint-disable */
 export type ErrorNode = {
   id: string;
-  taxonomy_name: string;
-  branch_name: string;
-  created_at: string;
+  taxonomyName: string;
+  branchName: string;
+  createdAt: string;
   warnings: Array<string>;
   errors: Array<string>;
 };

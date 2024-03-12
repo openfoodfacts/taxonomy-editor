@@ -33,7 +33,7 @@ const CreateNodeDialogContent = ({
   const handleAddEntryNode = () => {
     setIsFailedSubmit(false);
 
-    const data = { name: newNodeName, main_language_code: newLanguageCode };
+    const data = { name: newNodeName, mainLanguageCode: newLanguageCode };
 
     fetch(`${baseUrl}entry`, {
       method: "POST",
