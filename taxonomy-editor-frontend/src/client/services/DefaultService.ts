@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from "../models/Body_upload_taxonomy__taxonomy_name___branch__upload_post";
 import type { EntryNodeCreate } from "../models/EntryNodeCreate";
+import type { EntryNodeSearchResult } from "../models/EntryNodeSearchResult";
 import type { ErrorNode } from "../models/ErrorNode";
 import type { Footer } from "../models/Footer";
 import type { Header } from "../models/Header";
@@ -322,58 +323,6 @@ export class DefaultService {
     });
   }
   /**
-   * Find All Entries
-   * Get all entries within taxonomy
-   * @param branch
-   * @param taxonomyName
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static findAllEntriesTaxonomyNameBranchEntryGet(
-    branch: string,
-    taxonomyName: string
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/{taxonomy_name}/{branch}/entry",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
-   * Create Entry Node
-   * Creating a new entry node in a taxonomy
-   * @param branch
-   * @param taxonomyName
-   * @param requestBody
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static createEntryNodeTaxonomyNameBranchEntryPost(
-    branch: string,
-    taxonomyName: string,
-    requestBody: EntryNodeCreate
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/{taxonomy_name}/{branch}/entry",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-      },
-      body: requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
    * Find One Synonym
    * Get synonym corresponding to id within taxonomy
    * @param branch
@@ -662,27 +611,30 @@ export class DefaultService {
     });
   }
   /**
-   * Search Node
+   * Search Entry Nodes
    * @param branch
    * @param taxonomyName
-   * @param query
-   * @returns any Successful Response
+   * @param q
+   * @param page
+   * @returns EntryNodeSearchResult Successful Response
    * @throws ApiError
    */
-  public static searchNodeTaxonomyNameBranchSearchGet(
+  public static searchEntryNodesTaxonomyNameBranchNodesEntryGet(
     branch: string,
     taxonomyName: string,
-    query: string
-  ): CancelablePromise<any> {
+    q: string = "",
+    page: number = 1
+  ): CancelablePromise<EntryNodeSearchResult> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/{taxonomy_name}/{branch}/search",
+      url: "/{taxonomy_name}/{branch}/nodes/entry",
       path: {
         branch: branch,
         taxonomy_name: taxonomyName,
       },
       query: {
-        query: query,
+        q: q,
+        page: page,
       },
       errors: {
         422: `Validation Error`,
@@ -782,6 +734,34 @@ export class DefaultService {
       },
       formData: formData,
       mediaType: "multipart/form-data",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+  /**
+   * Create Entry Node
+   * Creating a new entry node in a taxonomy
+   * @param branch
+   * @param taxonomyName
+   * @param requestBody
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public static createEntryNodeTaxonomyNameBranchEntryPost(
+    branch: string,
+    taxonomyName: string,
+    requestBody: EntryNodeCreate
+  ): CancelablePromise<any> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/{taxonomy_name}/{branch}/entry",
+      path: {
+        branch: branch,
+        taxonomy_name: taxonomyName,
+      },
+      body: requestBody,
+      mediaType: "application/json",
       errors: {
         422: `Validation Error`,
       },
