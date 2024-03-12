@@ -23,6 +23,10 @@ type SearchNodeProps = {
 const SearchNode = ({ taxonomyName, branchName }: SearchNodeProps) => {
   const [searchInput, setSearchInput] = useState("");
   const [queryFetchString, setQueryFetchString] = useState("");
+  const [pageInput, setPageInput] = useState("1");
+  const [pageFetchString, setPageFetchString] = useState("1");
+  // !reload is used to force a reload of the SearchResults component. This is a temporary solution.
+  const [reload, setReload] = useState(false);
 
   return (
     <Box>
@@ -46,17 +50,23 @@ const SearchNode = ({ taxonomyName, branchName }: SearchNodeProps) => {
           onSubmit={(event) => {
             event.preventDefault();
             setQueryFetchString(searchInput.trim());
+            setPageFetchString(pageInput);
+            setReload(!reload);
           }}
         >
+          <TextField
+            sx={{ width: 350 }}
+            onChange={(event) => {
+              setPageInput(event.target.value);
+            }}
+            value={pageInput}
+          />
           <TextField
             sx={{ width: 350 }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    disabled={searchInput.trim().length === 0}
-                    type="submit"
-                  >
+                  <IconButton type="submit">
                     <SearchIcon />
                   </IconButton>
                 </InputAdornment>
@@ -65,6 +75,8 @@ const SearchNode = ({ taxonomyName, branchName }: SearchNodeProps) => {
             onKeyDown={(e) => {
               if (e.keyCode === ENTER_KEYCODE && searchInput.length !== 0) {
                 setQueryFetchString(searchInput.trim());
+                setPageFetchString(pageInput);
+                setReload(!reload);
               }
             }}
             onChange={(event) => {
@@ -77,6 +89,8 @@ const SearchNode = ({ taxonomyName, branchName }: SearchNodeProps) => {
       {queryFetchString !== "" && (
         <SearchResults
           query={queryFetchString}
+          page={pageFetchString}
+          reload={reload}
           taxonomyName={taxonomyName}
           branchName={branchName}
         />
