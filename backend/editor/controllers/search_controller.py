@@ -1,11 +1,12 @@
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import math
 from typing import Literal
-from ..models.node_models import EntryNode, EntryNodeSearchResult
-from ..graph_db import get_current_transaction
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
+
+from ..graph_db import get_current_transaction
+from ..models.node_models import EntryNode, EntryNodeSearchResult
 
 
 def get_query_param_name(index: int) -> str:
@@ -106,7 +107,8 @@ def split_query_into_search_terms(query: str) -> list[str]:
     for term_end in range(len(query)):
         if query[term_end] == '"':
             inside_quotes = not inside_quotes
-        # If we are not inside quotes and we encounter a whitespace, we are at the end of the current search term
+        # If we are not inside quotes and we encounter a whitespace
+        # we are at the end of the current search term
         elif query[term_end] == " " and not inside_quotes:
             search_term = query[term_start:term_end]
             search_terms.append(search_term)
@@ -159,20 +161,28 @@ def validate_query(project_id: str, query: str) -> Query | None:
     A query is composed of search terms separated by whitespaces.
     A search term is either a name search term or a filter search term.
 
-    A filter search term is of the format `filter:value` where `filter` is a valid filter value and `value` is a valid search value for the particular filter.
+    A filter search term is of the format `filter:value` where `filter` is a valid filter value
+    and `value` is a valid search value for the particular filter.
     Some filters can sometimes be negated with the format `not(filter):value`.
-    The `value` is surrounded by quotes if it contains whitespaces. The value cannot contain quotes.
+    The `value` is surrounded by quotes if it contains whitespaces.
+    The value cannot contain quotes.
 
     All other terms are considered name search terms.
     The name search term allows for a text search on a node's tags.
 
     The possible filters are:
-      - `is`: `root` is the only possible value. It allows to filter on the root nodes. It cannot be negated.
-      - `language`: the value is a language code. It allows to filter on if the language exists on the node. It can be negated.
-      - `parent`: the value is a node's id. It allows to filter on if the node is a parent of the node with the given id. It cannot be negated.
-      - `child`: the value is a node's id. It allows to filter on if the node is a child of the node with the given id. It cannot be negated.
-      - `ancestor`: the value is a node's id. It allows to filter on if the node is an ancestor of the node with the given id. It cannot be negated.
-      - `descendant`: the value is a node's id. It allows to filter on if the node is a descendant of the node with the given id. It cannot be negated.
+      - `is`: `root` is the only possible value. It allows to filter on the root nodes.
+        It cannot be negated.
+      - `language`: the value is a language code. It allows to filter on if the language exists
+        on the node. It can be negated.
+      - `parent`: the value is a node's id. It allows to filter on if the node is a
+        parent of the node with the given id. It cannot be negated.
+      - `child`: the value is a node's id. It allows to filter on if the node is a child of
+        the node with the given id. It cannot be negated.
+      - `ancestor`: the value is a node's id. It allows to filter on if the node is an ancestor
+        of the node with the given id. It cannot be negated.
+      - `descendant`: the value is a node's id. It allows to filter on if the node is a descendant
+        of the node with the given id. It cannot be negated.
 
     Examples:
     - "is:root language:en not(language):fr"
@@ -196,11 +206,13 @@ def validate_query(project_id: str, query: str) -> Query | None:
 def build_lucene_name_search_query(search_value: str) -> str | None:
     """
     The name search term can trigger two types of searches:
-    - if the search value is in the format `language_code:raw_search_value`, it triggers a search on the tags_ids_{language_code} index
+    - if the search value is in the format `language_code:raw_search_value`,
+      it triggers a search on the tags_ids_{language_code} index
     - else it triggers a search on the tags_ids index
 
     If the `raw_search_value` is surrounded by quotes, the search will be exact.
-    Otherwise, the search is fuzzy when the search value is longer than 4 characters (the edit distance depends of the length of the search value)
+    Otherwise, the search is fuzzy when the search value is longer than 4 characters
+    (the edit distance depends of the length of the search value)
     """
     language_code = None
 
@@ -278,9 +290,11 @@ def build_cypher_query(
     query_params = {}
 
     if lucene_name_search_queries:
-        full_text_search_query, name_filter_search_term, order_clause = (
-            build_cypher_name_search_term(query.project_id)
-        )
+        (
+            full_text_search_query,
+            name_filter_search_term,
+            order_clause,
+        ) = build_cypher_name_search_term(query.project_id)
         query_params["search_query"] = " AND ".join(lucene_name_search_queries)
         cypher_filter_search_terms.append((name_filter_search_term, None))
 
@@ -304,8 +318,8 @@ def build_cypher_query(
     page_subquery = f"""
     {order_clause}
     WITH collect(n) AS nodeList, count(n) AS nodeCount
-    UNWIND nodeList AS node 
-    WITH node, nodeCount 
+    UNWIND nodeList AS node
+    WITH node, nodeCount
     SKIP {skip} LIMIT {limit}
     WITH collect(node) AS nodeList, nodeCount
     RETURN nodeList, nodeCount;
