@@ -31,9 +31,17 @@ type Props = {
   query: string;
   taxonomyName: string;
   branchName: string;
+  reload: boolean;
+  page: string;
 };
 
-const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
+const SearchResults = ({
+  query,
+  taxonomyName,
+  branchName,
+  reload,
+  page,
+}: Props) => {
   const [openNewNodeDialog, setOpenNewNodeDialog] = useState(false);
   const [showNewNodeSuccess, setShowNewNodeSuccess] = useState(false);
 
@@ -44,7 +52,9 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
     isError,
     errorMessage,
   } = useFetch<SearchAPIResponse>(
-    `${baseUrl}nodes/entry?q=${encodeURI(query)}`
+    `${baseUrl}nodes/entry?q=${encodeURI(query)}&page=${page}${
+      reload ? " " : ""
+    }`
   );
 
   const nodes = result?.nodes;
