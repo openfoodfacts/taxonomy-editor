@@ -455,82 +455,6 @@
         }
       }
     },
-    "/{taxonomy_name}/{branch}/entry": {
-      "get": {
-        "summary": "Find All Entries",
-        "description": "Get all entries within taxonomy",
-        "operationId": "find_all_entries__taxonomy_name___branch__entry_get",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create Entry Node",
-        "description": "Creating a new entry node in a taxonomy",
-        "operationId": "create_entry_node__taxonomy_name___branch__entry_post",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/EntryNodeCreate" }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      }
-    },
     "/{taxonomy_name}/{branch}/synonym/{synonym}": {
       "get": {
         "summary": "Find One Synonym",
@@ -952,10 +876,10 @@
         }
       }
     },
-    "/{taxonomy_name}/{branch}/search": {
+    "/{taxonomy_name}/{branch}/nodes/entry": {
       "get": {
-        "summary": "Search Node",
-        "operationId": "search_node__taxonomy_name___branch__search_get",
+        "summary": "Search Entry Nodes",
+        "operationId": "search_entry_nodes__taxonomy_name___branch__nodes_entry_get",
         "parameters": [
           {
             "name": "branch",
@@ -970,16 +894,28 @@
             "schema": { "type": "string", "title": "Taxonomy Name" }
           },
           {
-            "name": "query",
+            "name": "q",
             "in": "query",
-            "required": true,
-            "schema": { "type": "string", "title": "Query" }
+            "required": false,
+            "schema": { "type": "string", "default": "", "title": "Q" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1, "title": "Page" }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryNodeSearchResult"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1140,6 +1076,49 @@
         }
       }
     },
+    "/{taxonomy_name}/{branch}/entry": {
+      "post": {
+        "summary": "Create Entry Node",
+        "description": "Creating a new entry node in a taxonomy",
+        "operationId": "create_entry_node__taxonomy_name___branch__entry_post",
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Branch" }
+          },
+          {
+            "name": "taxonomy_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Taxonomy Name" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EntryNodeCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/{taxonomy_name}/{branch}": {
       "delete": {
         "summary": "Delete Project",
@@ -1184,6 +1163,50 @@
         "required": ["file", "description"],
         "title": "Body_upload_taxonomy__taxonomy_name___branch__upload_post"
       },
+      "EntryNode": {
+        "properties": {
+          "id": { "type": "string", "title": "Id" },
+          "precedingLines": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Precedinglines"
+          },
+          "srcPosition": { "type": "integer", "title": "Srcposition" },
+          "mainLanguage": { "type": "string", "title": "Mainlanguage" },
+          "tags": {
+            "additionalProperties": {
+              "items": { "type": "string" },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Tags"
+          },
+          "properties": {
+            "additionalProperties": { "type": "string" },
+            "type": "object",
+            "title": "Properties"
+          },
+          "comments": {
+            "additionalProperties": {
+              "items": { "type": "string" },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Comments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "precedingLines",
+          "srcPosition",
+          "mainLanguage",
+          "tags",
+          "properties",
+          "comments"
+        ],
+        "title": "EntryNode"
+      },
       "EntryNodeCreate": {
         "properties": {
           "name": { "type": "string", "title": "Name" },
@@ -1192,6 +1215,27 @@
         "type": "object",
         "required": ["name", "mainLanguageCode"],
         "title": "EntryNodeCreate"
+      },
+      "EntryNodeSearchResult": {
+        "properties": {
+          "nodeCount": {
+            "type": "integer",
+            "title": "Nodecount",
+            "default": 0
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount",
+            "default": 0
+          },
+          "nodes": {
+            "items": { "$ref": "#/components/schemas/EntryNode" },
+            "type": "array",
+            "title": "Nodes"
+          }
+        },
+        "type": "object",
+        "title": "EntryNodeSearchResult"
       },
       "ErrorNode": {
         "properties": {
