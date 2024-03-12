@@ -39,11 +39,16 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const {
-    data: nodeIds,
+    data: result,
     isPending,
     isError,
     errorMessage,
-  } = useFetch<SearchAPIResponse>(`${baseUrl}search?query=${encodeURI(query)}`);
+  } = useFetch<SearchAPIResponse>(
+    `${baseUrl}nodes/entry?q=${encodeURI(query)}`
+  );
+
+  const nodes = result?.nodes;
+  const nodeIds = nodes?.map((node) => node.id);
 
   const handleCloseAddDialog = () => {
     setOpenNewNodeDialog(false);
@@ -108,7 +113,8 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
           <Typography variant="h4">Search Results</Typography>
         </Grid>
         <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-          Number of nodes found: {(nodeIds ?? []).length}
+          Number of nodes found:{" "}
+          {`${result?.nodeCount} | pages: ${result?.pageCount}`}
         </Typography>
         {/* Table for listing all nodes in taxonomy */}
         <TableContainer sx={{ width: 375 }} component={Paper}>
