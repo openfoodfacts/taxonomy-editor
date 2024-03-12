@@ -33,7 +33,11 @@ type NodeType = {
 
 export type RootEntriesAPIResponse = Array<NodeType[]>;
 
-export type SearchAPIResponse = string[];
+export type SearchAPIResponse = {
+  pageCount: number;
+  nodeCount: number;
+  nodes: NodeType[];
+};
 
 export type ParentsAPIResponse = string[];
 
