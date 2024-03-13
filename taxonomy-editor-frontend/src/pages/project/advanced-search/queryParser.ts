@@ -26,7 +26,7 @@ export function splitQueryIntoSearchTerms(query: string): string[] {
     return searchTerms;
 }
 
-export function parseFilterSearchTerm(searchTerm: string): OneFilterType<boolean> | null {
+export function parseFilterSearchTerm(searchTerm: string): OneFilterType<boolean> | OneFilterType<string[]> | null {
     if (!searchTerm.includes(":")) {
         console.log("null because does not include : ", searchTerm);
         return null;
@@ -54,7 +54,8 @@ export function parseFilterSearchTerm(searchTerm: string): OneFilterType<boolean
                 return {is_modified: true};
             }
             break;
-        // case "language":
+        case "language":
+            return {with_languages: [filterValue]}
         // case "not(language)":
         //     if (filterValue.length !== 2 || !filterValue.match(/^[a-zA-Z]+$/)) {
         //         return null;
