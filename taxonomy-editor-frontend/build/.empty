@@ -1,1 +1,1 @@
-# keep this folder to avoid having docker-compose create it with root owner
+# This file is used to ensure that the build folder is included in git and in the docker image (to avoid having docker-compose create the build folder with root owner)

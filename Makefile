@@ -41,7 +41,7 @@ install: ## Install dependencies
 
 local_frontend: ## Run the frontend locally
 	@echo "🍜 Running frontend (ctrl+C to stop)"
-	cd taxonomy-editor-frontend && REACT_APP_API_URL="http://localhost:8080/" npm start
+	cd taxonomy-editor-frontend && VITE_APP_API_URL="http://localhost:8080/" npm start
 
 local_backend: ## Run the backend locally
 	@echo "🍜 Running backend (ctrl+C to stop)"

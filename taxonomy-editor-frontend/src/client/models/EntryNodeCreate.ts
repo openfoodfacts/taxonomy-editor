@@ -4,5 +4,5 @@
 /* eslint-disable */
 export type EntryNodeCreate = {
   name: string;
-  main_language_code: string;
+  mainLanguageCode: string;
 };

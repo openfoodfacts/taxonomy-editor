@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
@@ -109,33 +109,15 @@ const ExportTaxonomyToGithub = ({
 };
 
 type ExportTaxonomyProps = {
-  addNavLinks: ({
-    branchName,
-    taxonomyName,
-  }: {
-    branchName: string;
-    taxonomyName: string;
-  }) => void;
   taxonomyName: string;
   branchName: string;
 };
 
-const ExportTaxonomy = ({
-  addNavLinks,
-  taxonomyName,
-  branchName,
-}: ExportTaxonomyProps) => {
+const ExportTaxonomy = ({ taxonomyName, branchName }: ExportTaxonomyProps) => {
   const [isDownloadingFile, setIsDownloadingFile] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const baseURL = createBaseURL(taxonomyName, branchName);
-
-  useEffect(
-    function defineMainNavLinks() {
-      addNavLinks({ branchName, taxonomyName });
-    },
-    [taxonomyName, branchName, addNavLinks]
-  );
 
   const handleDownload = () => {
     setIsDownloadingFile(true);
@@ -180,10 +162,7 @@ const ExportTaxonomy = ({
         alignItems="center"
         justifyContent="center"
       >
-        <Typography
-          sx={{ mt: 4, flexGrow: 1, textAlign: "center" }}
-          variant="h3"
-        >
+        <Typography sx={{ flexGrow: 1, textAlign: "center" }} variant="h3">
           Export Taxonomy
         </Typography>
         <Typography
@@ -227,17 +206,7 @@ const ExportTaxonomy = ({
   );
 };
 
-type ExportTaxonomyWrapperProps = {
-  addNavLinks: ({
-    branchName,
-    taxonomyName,
-  }: {
-    branchName: string;
-    taxonomyName: string;
-  }) => void;
-};
-
-const ExportTaxonomyWrapper = ({ addNavLinks }: ExportTaxonomyWrapperProps) => {
+export const ExportTaxonomyWrapper = () => {
   const { taxonomyName, branchName } = useParams();
 
   if (!taxonomyName || !branchName)
@@ -247,12 +216,5 @@ const ExportTaxonomyWrapper = ({ addNavLinks }: ExportTaxonomyWrapperProps) => {
       </Typography>
     );
 
-  return (
-    <ExportTaxonomy
-      addNavLinks={addNavLinks}
-      taxonomyName={taxonomyName}
-      branchName={branchName}
-    />
-  );
+  return <ExportTaxonomy taxonomyName={taxonomyName} branchName={branchName} />;
 };
-export default ExportTaxonomyWrapper;

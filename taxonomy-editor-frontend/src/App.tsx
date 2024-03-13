@@ -1,18 +1,20 @@
-import { useState, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
-import ResponsiveAppBar from "./components/ResponsiveAppBar";
-import RootNodes from "./pages/root-nodes";
-import EditEntry from "./pages/editentry";
-import ExportTaxonomy from "./pages/export";
-import GoToProject from "./pages/go-to-project";
-import Home from "./pages/home";
-import SearchNode from "./pages/search";
-import StartProject from "./pages/startproject";
-import Errors from "./pages/errors";
+import { RootNodesWrapper } from "./pages/project/root-nodes";
+import { EditEntryWrapper } from "./pages/project/editentry";
+import { ExportTaxonomyWrapper } from "./pages/project/export";
+import { GoToProject } from "./pages/go-to-project";
+import { Home } from "./pages/home";
+import { SearchNodeWrapper } from "./pages/project/search";
+import { StartProject } from "./pages/startproject";
+import { Errors } from "./pages/project/errors";
+import { ProjectPage, projectLoader } from "./pages/project";
+import { ProjectNotFound } from "./pages/project/ProjectNotFound";
+import { PageNotFound } from "./pages/PageNotFound";
+import { RootLayout } from "./pages/RootLayout";
 
 const theme = createTheme({
   typography: {
@@ -24,80 +26,56 @@ const theme = createTheme({
   },
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    errorElement: <PageNotFound />,
+    children: [
+      { path: "/", element: <Home /> },
+      { path: "startproject", element: <StartProject /> },
+      { path: "gotoproject", element: <GoToProject /> },
+      {
+        path: ":taxonomyName/:branchName",
+        element: <ProjectPage />,
+        loader: projectLoader(queryClient),
+        errorElement: <ProjectNotFound />,
+        children: [
+          {
+            path: "export",
+            element: <ExportTaxonomyWrapper />,
+          },
+          {
+            path: "entry",
+            element: <RootNodesWrapper />,
+          },
+          {
+            path: "entry/:id",
+            element: <EditEntryWrapper />,
+          },
+          {
+            path: "search",
+            element: <SearchNodeWrapper />,
+          },
+          {
+            path: "errors",
+            element: <Errors />,
+          },
+        ],
+      },
+    ],
+  },
+]);
 
 function App() {
-  const [navLinks, setNavLinks] = useState<
-    Array<{ translationKey: string; url: string }>
-  >([]);
-
-  const resetNavLinks = useCallback(() => setNavLinks([]), []);
-
-  const addTaxonomyBranchNavLinks = useCallback(
-    ({
-      taxonomyName,
-      branchName,
-    }: {
-      taxonomyName: string;
-      branchName: string;
-    }) => {
-      const urlPrefix = `${taxonomyName}/${branchName}/`;
-
-      const newNavLinks = [
-        { url: urlPrefix + "entry", translationKey: "Nodes" },
-        { url: urlPrefix + "search", translationKey: "Search" },
-        { url: urlPrefix + "export", translationKey: "Export" },
-        { url: urlPrefix + "errors", translationKey: "Errors" },
-      ];
-
-      setNavLinks(newNavLinks);
-    },
-    []
-  );
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Router>
-          <ResponsiveAppBar displayedPages={navLinks} />
-          <Routes>
-            <Route
-              path="/"
-              element={<Home clearNavBarLinks={resetNavLinks} />}
-            />
-            <Route
-              path="startproject"
-              element={<StartProject clearNavBarLinks={resetNavLinks} />}
-            />
-            <Route
-              path="gotoproject"
-              element={<GoToProject clearNavBarLinks={resetNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/export"
-              element={
-                <ExportTaxonomy addNavLinks={addTaxonomyBranchNavLinks} />
-              }
-            />
-            <Route
-              path=":taxonomyName/:branchName/entry"
-              element={<RootNodes addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/entry/:id"
-              element={<EditEntry addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/search"
-              element={<SearchNode addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-            <Route
-              path=":taxonomyName/:branchName/errors"
-              element={<Errors addNavLinks={addTaxonomyBranchNavLinks} />}
-            />
-          </Routes>
-        </Router>
+        <RouterProvider router={router} />
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
@@ -28,26 +28,14 @@ import {
   ProjectStatus,
 } from "@/backend-types/types";
 import NodesTableBody from "@/components/NodesTableBody";
-import WarningParsingErrors from "@/components/WarningParsingErrors";
 import { useQuery } from "@tanstack/react-query";
 
 type RootNodesProps = {
-  addNavLinks: ({
-    taxonomyName,
-    branchName,
-  }: {
-    taxonomyName: string;
-    branchName: string;
-  }) => void;
   taxonomyName: string;
   branchName: string;
 };
 
-const RootNodes = ({
-  addNavLinks,
-  taxonomyName,
-  branchName,
-}: RootNodesProps) => {
+const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
   const [openCreateNodeDialog, setOpenCreateNodeDialog] = useState(false);
   const [openCreateNodeSuccessSnackbar, setCreateNodeOpenSuccessSnackbar] =
     useState(false);
@@ -107,13 +95,6 @@ const RootNodes = ({
     nodeIds = nodes.map((node) => node[0].id);
   }
 
-  useEffect(
-    function defineMainNavLinks() {
-      addNavLinks({ branchName, taxonomyName });
-    },
-    [taxonomyName, branchName, addNavLinks]
-  );
-
   const handleCloseAddDialog = () => {
     setOpenCreateNodeDialog(false);
   };
@@ -160,71 +141,68 @@ const RootNodes = ({
   }
 
   return (
-    <>
-      <WarningParsingErrors baseUrl={baseUrl} />
-      <div>
-        <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
-          Root Nodes:
-        </Typography>
+    <Box>
+      <Typography sx={{ mb: 2, mt: 2 }} variant="h4">
+        Root Nodes:
+      </Typography>
 
-        <TableContainer sx={{ ml: 2, width: 375 }}>
-          <Table style={{ border: "solid", borderWidth: 1.5 }}>
-            <TableHead>
-              <TableCell align="left">
-                <Typography variant="h6">Taxonomy Name</Typography>
-              </TableCell>
-              <TableCell align="left">
-                <Typography variant="h6">Branch Name</Typography>
-              </TableCell>
-            </TableHead>
-            <TableBody>
-              <TableCell align="left" component="td" scope="row">
-                <Typography variant="body1">
-                  {toTitleCase(taxonomyName ?? "")}
-                </Typography>
-              </TableCell>
-              <TableCell align="left" component="td" scope="row">
-                <Typography variant="body1">{branchName}</Typography>
-              </TableCell>
-            </TableBody>
-          </Table>
-        </TableContainer>
+      <TableContainer>
+        <Table style={{ border: "solid", borderWidth: 1.5 }}>
+          <TableHead>
+            <TableCell align="left">
+              <Typography variant="h6">Taxonomy Name</Typography>
+            </TableCell>
+            <TableCell align="left">
+              <Typography variant="h6">Branch Name</Typography>
+            </TableCell>
+          </TableHead>
+          <TableBody>
+            <TableCell align="left" component="td" scope="row">
+              <Typography variant="body1">
+                {toTitleCase(taxonomyName ?? "")}
+              </Typography>
+            </TableCell>
+            <TableCell align="left" component="td" scope="row">
+              <Typography variant="body1">{branchName}</Typography>
+            </TableCell>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <Typography variant="h6" sx={{ mt: 2, ml: 2, mb: 1 }}>
-          Number of root nodes in taxonomy: {nodes.length}
-        </Typography>
+      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+        Number of root nodes in taxonomy: {nodes.length}
+      </Typography>
 
-        {/* Table for listing all nodes in taxonomy */}
-        <TableContainer sx={{ ml: 2, width: 375 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <Stack direction="row" alignItems="center">
-                  <TableCell align="left">
-                    <Typography variant="h6">Nodes</Typography>
-                  </TableCell>
-                  <IconButton
-                    sx={{ ml: 1, color: greyHexCode }}
-                    onClick={() => {
-                      setOpenCreateNodeDialog(true);
-                    }}
-                  >
-                    <AddBoxIcon />
-                  </IconButton>
-                </Stack>
+      {/* Table for listing all nodes in taxonomy */}
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <Stack direction="row" alignItems="center">
                 <TableCell align="left">
-                  <Typography variant="h6">Action</Typography>
+                  <Typography variant="h6">Nodes</Typography>
                 </TableCell>
-              </TableRow>
-            </TableHead>
-            <NodesTableBody
-              nodeIds={nodeIds}
-              taxonomyName={taxonomyName}
-              branchName={branchName}
-            />
-          </Table>
-        </TableContainer>
-      </div>
+                <IconButton
+                  sx={{ ml: 1, color: greyHexCode }}
+                  onClick={() => {
+                    setOpenCreateNodeDialog(true);
+                  }}
+                >
+                  <AddBoxIcon />
+                </IconButton>
+              </Stack>
+              <TableCell align="left">
+                <Typography variant="h6">Action</Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <NodesTableBody
+            nodeIds={nodeIds}
+            taxonomyName={taxonomyName}
+            branchName={branchName}
+          />
+        </Table>
+      </TableContainer>
 
       {/* Dialog box for adding nodes */}
       <Dialog open={openCreateNodeDialog} onClose={handleCloseAddDialog}>
@@ -255,21 +233,11 @@ const RootNodes = ({
           The node has been successfully added!
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 };
 
-type RootNodesWrapperProps = {
-  addNavLinks: ({
-    taxonomyName,
-    branchName,
-  }: {
-    taxonomyName: string;
-    branchName: string;
-  }) => void;
-};
-
-const RootNodesWrapper = ({ addNavLinks }: RootNodesWrapperProps) => {
+export const RootNodesWrapper = () => {
   const { taxonomyName, branchName } = useParams();
   if (!taxonomyName || !branchName)
     return (
@@ -278,13 +246,5 @@ const RootNodesWrapper = ({ addNavLinks }: RootNodesWrapperProps) => {
       </Typography>
     );
 
-  return (
-    <RootNodes
-      addNavLinks={addNavLinks}
-      taxonomyName={taxonomyName}
-      branchName={branchName}
-    />
-  );
+  return <RootNodes taxonomyName={taxonomyName} branchName={branchName} />;
 };
-
-export default RootNodesWrapper;

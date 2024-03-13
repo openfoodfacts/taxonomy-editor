@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import Button from "@mui/material/Button";
@@ -10,18 +9,7 @@ import Container from "@mui/material/Container";
 import logoUrl from "@/assets/logo.png";
 import classificationImgUrl from "@/assets/classification.png";
 
-type Props = {
-  clearNavBarLinks: () => void;
-};
-
-const Home = ({ clearNavBarLinks }: Props) => {
-  useEffect(
-    function cleanMainNavLinks() {
-      clearNavBarLinks();
-    },
-    [clearNavBarLinks]
-  );
-
+export const Home = () => {
   return (
     <Container component="main" maxWidth="md">
       <Box
@@ -85,5 +73,3 @@ const Home = ({ clearNavBarLinks }: Props) => {
     </Container>
   );
 };
-
-export default Home;

@@ -38,7 +38,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import EntryNodeCreate, Footer, Header, NodeType
+from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .scheduler import scheduler_lifespan
 
@@ -311,7 +311,7 @@ async def find_footer(response: Response, branch: str, taxonomy_name: str):
 
 
 @app.get("/{taxonomy_name}/{branch}/parsing_errors")
-async def find_all_errors(request: Request, branch: str, taxonomy_name: str):
+async def find_all_errors(branch: str, taxonomy_name: str) -> ErrorNode:
     """
     Get all errors within taxonomy
     """
@@ -358,7 +358,11 @@ async def export_to_github(
 
 @app.post("/{taxonomy_name}/{branch}/import")
 async def import_from_github(
-    request: Request, branch: str, taxonomy_name: str, background_tasks: BackgroundTasks
+    request: Request,
+    response: Response,
+    branch: str,
+    taxonomy_name: str,
+    background_tasks: BackgroundTasks,
 ):
     """
     Get taxonomy from Product Opener GitHub repository
@@ -377,6 +381,8 @@ async def import_from_github(
         raise HTTPException(status_code=409, detail="branch_name: Branch name should be unique!")
 
     status = await taxonomy.import_taxonomy(description, ownerName, background_tasks)
+    # TODO: temporary fix - https://github.com/openfoodfacts/taxonomy-editor/issues/401
+    response.headers["Connection"] = "close"
     return status
 
 
