@@ -12,12 +12,6 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { parseFilterSearchTerm, splitQueryIntoSearchTerms } from "./queryParser";
 
-// type AdvancedResearchFormProps = {
-//     taxonomyName: string;
-//     branchName: string;
-//   };
-//   { taxonomyName, branchName }: AdvancedResearchFormProps
-
 const checkboxTheme = {
     color: "#201a17",
     '&.Mui-checked': {
@@ -66,12 +60,11 @@ const AdvancedResearchForm = () => {
         return newExpression;
     }
 
+    // Fetch URL parameters to retrieve previously selected filters
+    // Build search expression from these filters
     const initFilters = initializeFilters();
     const initExpression = findExpressionFromFilters(initFilters);
 
-
-
-    console.log("initFilters() = ",initFilters);
     const [filters,setFilters] = useState<FiltersType>(initFilters);
     const [searchExpression,setSearchExpression] = useState<string>(initExpression);
     const [isRootNodesChecked,setIsRootNodesChecked] = useState<boolean>(initFilters.is_root);
@@ -82,47 +75,7 @@ const AdvancedResearchForm = () => {
         setSearchExpression(newExpression);
     }
 
-    const handleRootNodesCheckbox = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const updatedFilters = {...filters, is_root: event.target.checked};
-        setIsRootNodesChecked(!isRootNodesChecked);
-        setFilters(updatedFilters);
-        updateSearchExpression(updatedFilters);
-        updateURL(updatedFilters);
-      };
-
-    const handleModifiedCheckbox = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const updatedFilters = {...filters, is_modified: event.target.checked};
-        setIsModifiedChecked(!isModifiedChecked);
-        setFilters(updatedFilters);
-        updateSearchExpression(updatedFilters);
-        updateURL(updatedFilters);
-    };
-
-    const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchExpression(event.target.value);
-    };
-
-    const handleEnterKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter') {
-            // Update URL when Enter key is pressed
-            const searchTerms = splitQueryIntoSearchTerms(searchExpression);
-            let updatedFilters = emptyFilters;
-            console.log("searchTerms = ",searchTerms);
-            for (const searchTerm of searchTerms) {
-                const filterToUpdate = parseFilterSearchTerm(searchTerm);
-                console.log("filterToUpdate : ",filterToUpdate);
-                if (filterToUpdate!==null) {
-                    updatedFilters = {...updatedFilters,...filterToUpdate};
-                }
-            }
-            setFilters(updatedFilters);
-            console.log("enter was pressed");
-            console.log("filters = ", updatedFilters);
-            event.preventDefault();
-            updateURL(updatedFilters);
-        }
-    };
-
+    //Update the page url on the expression in the searchbar
     const updateURL = (filters: FiltersType) => {
         const queryParams = new URLSearchParams();
 
@@ -136,8 +89,40 @@ const AdvancedResearchForm = () => {
         }
 
         const newUrl = `?${queryParams.toString()}`;
-        console.log("newUrl = ",newUrl);
         navigate(newUrl);
+    };
+
+    const handleCheckbox = (
+        event: React.ChangeEvent<HTMLInputElement>,
+        filterKey: keyof FiltersType,
+        setChecked: React.Dispatch<React.SetStateAction<boolean>>,
+    ) => {
+        const updatedFilters = { ...filters, [filterKey]: event.target.checked };
+        setChecked(event.target.checked);
+        setFilters(updatedFilters);
+        updateSearchExpression(updatedFilters);
+        updateURL(updatedFilters);
+    }
+
+    const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchExpression(event.target.value);
+    };
+
+    const handleEnterKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            // Update URL when Enter key is pressed
+            const searchTerms = splitQueryIntoSearchTerms(searchExpression);
+            let updatedFilters = emptyFilters;
+            for (const searchTerm of searchTerms) {
+                const filterToUpdate = parseFilterSearchTerm(searchTerm);
+                if (filterToUpdate!==null) {
+                    updatedFilters = {...updatedFilters,...filterToUpdate};
+                }
+            }
+            setFilters(updatedFilters);
+            event.preventDefault();
+            updateURL(updatedFilters);
+        }
     };
 
     return (
@@ -164,8 +149,8 @@ const AdvancedResearchForm = () => {
                 pr:2,
                 }}
             >
-                <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={handleRootNodesCheckbox} checked={isRootNodesChecked} />} label="Root nodes" />
-                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={handleModifiedCheckbox} checked={isModifiedChecked} />} label="Modified" /> 
+                <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_root",setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
+                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_modified",setIsModifiedChecked)} checked={isModifiedChecked} />} label="Modified" /> 
             </Box>
         </Box>
     )
