@@ -12,13 +12,23 @@ import { createURL, getNodeType, toSnakeCase } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
+interface AccumulateAllComponentsProps {
+  id: string;
+  taxonomyName: string;
+  branchName: string;
+}
+
 /**
  * Component used for rendering node information
  * If node is an "entry": Relations, translations, comments and properties are rendered
  * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
  * If node is "header/footer": Comments are rendered
  */
-const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
+const AccumulateAllComponents = ({
+  id,
+  taxonomyName,
+  branchName,
+}: AccumulateAllComponentsProps) => {
   // Finding URL to send requests
   const url = createURL(taxonomyName, branchName, id);
   const urlPrefix = `/${taxonomyName}/${branchName}`;

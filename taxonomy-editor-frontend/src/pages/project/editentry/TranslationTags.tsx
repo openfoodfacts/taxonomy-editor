@@ -8,11 +8,13 @@ import { useMemo, useRef } from "react";
 type TranslationTagsProps = {
   translations: string[];
   saveTranslations: (translations: string[]) => void;
+  isExternalNode: boolean;
 };
 
 export const TranslationTags = ({
   translations,
   saveTranslations,
+  isExternalNode,
 }: TranslationTagsProps) => {
   const tagifyRefDragSort = useRef<typeof Tags>(null);
 
@@ -38,6 +40,10 @@ export const TranslationTags = ({
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagifyRefDragSort.current]);
+
+  if (isExternalNode) {
+    return <Tags value={translations} readOnly />;
+  }
 
   return (
     <Tags

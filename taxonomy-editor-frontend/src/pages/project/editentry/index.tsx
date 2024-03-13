@@ -10,8 +10,10 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AccumulateAllComponents from "./AccumulateAllComponents";
 
-import { createBaseURL } from "@/utils";
+import { createBaseURL, createURL } from "@/utils";
 import { greyHexCode } from "@/constants";
+import { useQuery } from "@tanstack/react-query";
+import { CustomAlert } from "@/components/CustomAlert";
 
 type EditEntryProps = {
   taxonomyName: string;
@@ -22,6 +24,21 @@ type EditEntryProps = {
 const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+
+  const url = createURL(taxonomyName, branchName, id);
+
+  const { data: node } = useQuery({
+    queryKey: [url],
+    queryFn: async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch node");
+      }
+      return response.json();
+    },
+  });
+
+  const isExternalNode = node?.is_external === true;
 
   const baseUrl: string = createBaseURL(taxonomyName, branchName);
 
@@ -45,13 +62,22 @@ const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
           <Typography sx={{ mb: 2, mt: 2, ml: 2 }} variant="h4">
             You are now editing &quot;{id}&quot;
           </Typography>
-          <IconButton
-            sx={{ ml: 1, color: greyHexCode }}
-            onClick={() => setOpenDeleteDialog(true)}
-          >
-            <DeleteOutlineIcon />
-          </IconButton>
+          {!isExternalNode && (
+            <IconButton
+              sx={{ ml: 1, color: greyHexCode }}
+              onClick={() => setOpenDeleteDialog(true)}
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+          )}
         </Stack>
+        {isExternalNode && (
+          <CustomAlert
+            message="This node has been imported from another taxonomy to extend the current taxonomy. You can only add children from the current taxonomy to it."
+            severity="info"
+            sx={{ ml: 4, mb: 2, width: "fit-content" }}
+          />
+        )}
       </Box>
 
       {/* Renders node info based on id */}

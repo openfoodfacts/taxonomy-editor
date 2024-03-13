@@ -35,7 +35,7 @@ class NodeData:
     # to keep track of comments just above the current line
     # during parsing of an entry, to be able to add them
     # to the right property or tag when possible
-    comments_stack: list[(int, str)] = field(default_factory=list)
+    comments_stack: list[tuple[int, str]] = field(default_factory=list)
     is_external: bool = False  # True if the node comes from another taxonomy
 
     def to_dict(self):
