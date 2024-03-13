@@ -34,6 +34,7 @@ const ProjectsTable = ({ projects }: { projects: Project[] }) => {
           <MuiLink
             color="error"
             href={`/${toSnakeCase(row.taxonomyName)}/${row.branchName}/errors`}
+            onClick={(event) => event.stopPropagation()}
           >
             {row.errorsCount + " errors"}
           </MuiLink>
@@ -112,7 +113,7 @@ export const GoToProject = () => {
         <Typography sx={{ mt: 2 }} variant="h6">
           List of current projects
         </Typography>
-        <Box sx={{ width: "90%" }}>
+        <Box sx={{ width: "90%", mb: 6 }}>
           <ProjectsTable projects={data} />
         </Box>
       </Grid>
