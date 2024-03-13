@@ -1,60 +1,88 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
-import MaterialTable from "@material-table/core";
-import EditIcon from "@mui/icons-material/Edit";
+import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useQuery } from "@tanstack/react-query";
 
 import { toSnakeCase, toTitleCase } from "@/utils";
-import { DefaultService } from "@/client";
+import { DefaultService, Project, ProjectStatus } from "@/client";
 
-type ProjectType = {
-  id: string;
-  projectName: string;
-  taxonomyName: string;
-  ownerName: string;
-  branchName: string;
-  description: string;
-  errors_count: number;
+const ProjectsTable = ({ projects }: { projects: Project[] }) => {
+  const navigate = useNavigate();
+
+  const columns: GridColDef<Project>[] = [
+    { headerName: "Project", field: "id", flex: 3 },
+    {
+      headerName: "Taxonomy",
+      field: "taxonomyName",
+      flex: 2,
+      valueFormatter: ({ value }) => toTitleCase(value),
+    },
+    { headerName: "Branch", field: "branchName", flex: 3 },
+    { headerName: "Owner", field: "ownerName", flex: 2 },
+    { headerName: "Description", field: "description", flex: 3 },
+    {
+      headerName: "Errors",
+      field: "errorsCount",
+      renderCell: ({ row }) => {
+        if (row.errorsCount == 0) {
+          return null;
+        }
+
+        return (
+          <MuiLink
+            color="error"
+            href={`/${toSnakeCase(row.taxonomyName)}/${row.branchName}/errors`}
+          >
+            {row.errorsCount + " errors"}
+          </MuiLink>
+        );
+      },
+    },
+    {
+      headerName: "Status",
+      field: "status",
+      renderCell: ({ row }) => {
+        if (row.status === ProjectStatus.EXPORTED) {
+          return (
+            <MuiLink
+              target="_blank"
+              rel="noopener"
+              href={row.githubPrUrl as string}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {row.status}
+            </MuiLink>
+          );
+        }
+      },
+    },
+  ];
+
+  const onRowClick = (params: GridRowParams<Project>) => {
+    navigate(
+      `/${toSnakeCase(params.row.taxonomyName)}/${params.row.branchName}/entry`
+    );
+  };
+
+  return (
+    <DataGrid
+      rows={projects}
+      columns={columns}
+      onRowClick={onRowClick}
+      pageSizeOptions={[25]}
+    />
+  );
 };
 
 export const GoToProject = () => {
-  const navigate = useNavigate();
-
   const { data, isPending, isError } = useQuery({
     queryKey: ["getAllProjectsProjectsGet"],
     queryFn: async () => {
       return await DefaultService.getAllProjectsProjectsGet();
     },
   });
-
-  const projectData: ProjectType[] = useMemo(() => {
-    if (!data) return [];
-    return data.map(
-      ({
-        id,
-        branch_name,
-        taxonomy_name,
-        owner_name,
-        description,
-        errors_count,
-        status,
-      }) => {
-        return {
-          id, // needed by MaterialTable as key
-          projectName: id,
-          taxonomyName: toTitleCase(taxonomy_name),
-          ownerName: owner_name ? owner_name : "unknown",
-          branchName: branch_name,
-          description: description,
-          errors_count: errors_count,
-          status: status,
-        };
-      }
-    );
-  }, [data]);
 
   if (isError) {
     return (
@@ -79,57 +107,14 @@ export const GoToProject = () => {
         direction="column"
         alignItems="center"
         justifyContent="center"
+        gap={2}
       >
         <Typography sx={{ mt: 2 }} variant="h6">
           List of current projects
         </Typography>
-        <MaterialTable
-          data={projectData}
-          columns={[
-            { title: "Project", field: "projectName" },
-            { title: "Taxonomy", field: "taxonomyName" },
-            { title: "Branch", field: "branchName" },
-            { title: "owner", field: "ownerName" },
-            { title: "Description", field: "description", width: "10vw" },
-            {
-              title: "Errors",
-              field: "errors_count",
-              render: (rowData) => {
-                if (rowData["errors_count"] > 0) {
-                  return (
-                    <MuiLink
-                      color="error"
-                      href={`/${toSnakeCase(rowData["taxonomyName"])}/${
-                        rowData["branchName"]
-                      }/errors`}
-                    >
-                      {rowData["errors_count"] + " errors"}
-                    </MuiLink>
-                  );
-                }
-              },
-            },
-            { title: "Status", field: "status" },
-          ]}
-          options={{
-            actionsColumnIndex: -1,
-            addRowPosition: "last",
-            showTitle: false,
-          }}
-          actions={[
-            {
-              icon: () => <EditIcon />,
-              tooltip: "Edit project",
-              onClick: (event, rowData) => {
-                navigate(
-                  `/${toSnakeCase(rowData["taxonomyName"])}/${
-                    rowData["branchName"]
-                  }/entry`
-                );
-              },
-            },
-          ]}
-        />
+        <Box sx={{ width: "90%" }}>
+          <ProjectsTable projects={data} />
+        </Box>
       </Grid>
     </Box>
   );
