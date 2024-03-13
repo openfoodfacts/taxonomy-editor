@@ -104,6 +104,11 @@ const AdvancedResearchForm = () => {
         updateURL(updatedFilters);
     }
 
+    const updateFiltersStates = (filters: FiltersType) => {
+        setIsRootNodesChecked(filters.is_root);
+        setIsModifiedChecked(filters.is_modified);
+    }
+
     const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchExpression(event.target.value);
     };
@@ -122,6 +127,7 @@ const AdvancedResearchForm = () => {
             setFilters(updatedFilters);
             event.preventDefault();
             updateURL(updatedFilters);
+            updateFiltersStates(updatedFilters);
         }
     };
 
