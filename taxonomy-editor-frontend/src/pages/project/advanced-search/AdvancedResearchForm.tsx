@@ -73,7 +73,9 @@ const AdvancedResearchForm = () => {
 
     console.log("initFilters() = ",initFilters);
     const [filters,setFilters] = useState<FiltersType>(initFilters);
-    const [searchExpression,setSearchExpression] = useState(initExpression); //à initialiser selon les params de l'url
+    const [searchExpression,setSearchExpression] = useState<string>(initExpression);
+    const [isRootNodesChecked,setIsRootNodesChecked] = useState<boolean>(initFilters.is_root);
+    const [isModifiedChecked,setIsModifiedChecked] = useState<boolean>(initFilters.is_modified);
 
     const updateSearchExpression = (updatedFilters:FiltersType) => {
         const newExpression = findExpressionFromFilters(updatedFilters);
@@ -82,6 +84,7 @@ const AdvancedResearchForm = () => {
 
     const handleRootNodesCheckbox = (event: React.ChangeEvent<HTMLInputElement>) => {
         const updatedFilters = {...filters, is_root: event.target.checked};
+        setIsRootNodesChecked(!isRootNodesChecked);
         setFilters(updatedFilters);
         updateSearchExpression(updatedFilters);
         updateURL(updatedFilters);
@@ -89,6 +92,7 @@ const AdvancedResearchForm = () => {
 
     const handleModifiedCheckbox = (event: React.ChangeEvent<HTMLInputElement>) => {
         const updatedFilters = {...filters, is_modified: event.target.checked};
+        setIsModifiedChecked(!isModifiedChecked);
         setFilters(updatedFilters);
         updateSearchExpression(updatedFilters);
         updateURL(updatedFilters);
@@ -160,8 +164,8 @@ const AdvancedResearchForm = () => {
                 pr:2,
                 }}
             >
-                <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={handleRootNodesCheckbox}/>} label="Root nodes" />
-                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={handleModifiedCheckbox}/>} label="Modified" /> 
+                <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={handleRootNodesCheckbox} checked={isRootNodesChecked} />} label="Root nodes" />
+                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={handleModifiedCheckbox} checked={isModifiedChecked} />} label="Modified" /> 
             </Box>
         </Box>
     )
