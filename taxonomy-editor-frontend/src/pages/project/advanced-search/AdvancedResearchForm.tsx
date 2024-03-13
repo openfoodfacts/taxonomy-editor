@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
     Typography,
@@ -38,17 +38,45 @@ const emptyFilters = {
 const AdvancedResearchForm = () => {
 
     const navigate = useNavigate();
-    const [searchExpression,setSearchExpression] = useState(""); //à initialiser selon les params de l'url
-    const [filters,setFilters] = useState<FiltersType>(emptyFilters);
+    const location = useLocation();
 
-    const updateSearchExpression = (updatedFilters:FiltersType) => {
+    const queryParams = new URLSearchParams(location.search);
+
+    const initializeFilters = () => {
+        const isRootString = queryParams.get("is_root");
+        const isRoot = isRootString === null ? false : true;
+
+        const isModifiedString = queryParams.get("is_modified");
+        const isModified = isModifiedString === null ? false : true;
+
+        return {
+            is_root: isRoot,
+            is_modified: isModified,
+        }
+    }
+
+    const findExpressionFromFilters = (filters:FiltersType) => {
         let newExpression = "";
-        for (const filter in updatedFilters) {
-            const value = updatedFilters[filter]
+        for (const filter in filters) {
+            const value = filters[filter]
             if (typeof value === "boolean" && value === true) {
                 newExpression += " " + filter.replace("_",":")
             }
         }
+        return newExpression;
+    }
+
+    const initFilters = initializeFilters();
+    const initExpression = findExpressionFromFilters(initFilters);
+
+
+
+    console.log("initFilters() = ",initFilters);
+    const [filters,setFilters] = useState<FiltersType>(initFilters);
+    const [searchExpression,setSearchExpression] = useState(initExpression); //à initialiser selon les params de l'url
+
+    const updateSearchExpression = (updatedFilters:FiltersType) => {
+        const newExpression = findExpressionFromFilters(updatedFilters);
         setSearchExpression(newExpression);
     }
 
