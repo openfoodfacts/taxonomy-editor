@@ -50,6 +50,10 @@ class TaxonomyGraph:
         self.branch_name = branch_name
         self.project_name = "p_" + taxonomy_name + "_" + branch_name
 
+    @property
+    def taxonomy_path_in_repository(self):
+        return utils.taxonomy_path_in_repository(self.taxonomy_name)
+
     def get_label(self, id):
         """
         Helper function for getting the label for a given id
@@ -81,10 +85,6 @@ class TaxonomyGraph:
         with open(filepath, "wb") as f:
             await run_in_threadpool(shutil.copyfileobj, uploadfile.file, f)
         return filepath
-
-    @property
-    def taxonomy_path_in_repository(self):
-        return utils.taxonomy_path_in_repository(self.taxonomy_name)
 
     async def get_github_taxonomy_file(self, tmpdir: str):
         async with TransactionCtx():
