@@ -32,7 +32,7 @@ export const StartProject = () => {
 
   const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
-    return `${taxonomyName.toLowerCase()}_${ownerName
+    return `${toSnakeCase(taxonomyName.toLowerCase())}_${ownerName
       .replace(" ", "")
       .toLowerCase()}_${Math.floor(Date.now() / 1000)}`;
   }, [ownerName, taxonomyName]);
