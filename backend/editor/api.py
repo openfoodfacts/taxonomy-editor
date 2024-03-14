@@ -38,7 +38,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header
+from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .scheduler import scheduler_lifespan
 
@@ -421,7 +421,7 @@ async def create_entry_node(
     normalized_id = await taxonomy.create_entry_node(
         new_entry_node.name, new_entry_node.main_language_code
     )
-    await taxonomy.add_node_to_end("ENTRY", normalized_id)
+    await taxonomy.add_node_to_end(NodeType.ENTRY, normalized_id)
 
 
 @app.post("/{taxonomy_name}/{branch}/entry/{entry}")
