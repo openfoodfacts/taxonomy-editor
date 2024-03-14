@@ -10,6 +10,7 @@ import {
 import { SetStateAction } from "react";
 
 type MultipleSelectFilterType = {
+    label: string,
     filterValue : string[],
     setFilterValue: (value: SetStateAction<string[]>) => void,
     listOfChoices: string[],
@@ -17,10 +18,10 @@ type MultipleSelectFilterType = {
     mapValueToCode: (value: string) => string,
 }
 
-export const MultipleSelectFilter = ({filterValue, setFilterValue,listOfChoices,mapCodeToValue=()=>"",mapValueToCode=()=>""}:MultipleSelectFilterType) => {
+export const MultipleSelectFilter = ({label, filterValue, setFilterValue,listOfChoices,mapCodeToValue=()=>"",mapValueToCode=()=>""}:MultipleSelectFilterType) => {
     return (
         <FormControl sx={{ m: 1, minWidth: 120 }}>
-            <InputLabel id="demo-multiple-name-label">With languages</InputLabel>
+            <InputLabel id="demo-multiple-name-label">{label}</InputLabel>
             <Select
                 id="languages-filter"
                 multiple

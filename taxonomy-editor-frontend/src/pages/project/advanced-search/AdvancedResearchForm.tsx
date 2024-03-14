@@ -64,15 +64,24 @@ const AdvancedResearchForm = () => {
                 newExpression += " " + filter.replace("_",":")
             } else if (Array.isArray(value) && value.length>0) {
                 let filter_expression="";
+                let isNegative=false;
                 switch (filter) {
                     case "with_languages":
                         filter_expression="language";
+                        break;
+                    case "without_languages":
+                        filter_expression="language";
+                        isNegative=true;
                         break;
                     default:
                         break;
                 }
                 for (const element of value) {
-                    newExpression+= " " + filter_expression + ":" + element;
+                    if (isNegative) {
+                        newExpression += ` not(${filter_expression}:${element})`;
+                    } else {
+                        newExpression += ` ${filter_expression}:${element}`;
+                    }
                 }
             }
         }
@@ -89,6 +98,7 @@ const AdvancedResearchForm = () => {
     const [isRootNodesChecked,setIsRootNodesChecked] = useState<boolean>(initFilters.is_root);
     const [isModifiedChecked,setIsModifiedChecked] = useState<boolean>(initFilters.is_modified);
     const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState(initFilters.with_languages);
+    const [withoutChosenLanguagesCodes,setWithoutChosenLanguagesCodes] =useState(initFilters.without_languages);
 
     const updateSearchExpression = useCallback((updatedFilters:FiltersType) => {
         const newExpression = findExpressionFromFilters(updatedFilters);
@@ -126,12 +136,12 @@ const AdvancedResearchForm = () => {
             is_root: isRootNodesChecked,
             is_modified: isModifiedChecked,
             with_languages: chosenLanguagesCodes, 
-            without_languages: [],
+            without_languages: withoutChosenLanguagesCodes,
         }
         setFilters(updatedFilters);
         updateSearchExpression(updatedFilters);
         updateURL(updatedFilters);
-      }, [chosenLanguagesCodes, isModifiedChecked, isRootNodesChecked, updateSearchExpression, updateURL]);
+      }, [chosenLanguagesCodes, withoutChosenLanguagesCodes, isModifiedChecked, isRootNodesChecked, updateSearchExpression, updateURL]);
 
     const handleCheckbox = (
         event: React.ChangeEvent<HTMLInputElement>,
@@ -152,6 +162,7 @@ const AdvancedResearchForm = () => {
             let updatedIsRootNodes = false;
             let updatedIsModified = false;
             const updatedChosenLanguagesCodes:string[] = [];
+            const updatedWithoutChosenLanguagesCodes:string[] = [];
             for (const searchTerm of searchTerms) {
                 const filterToUpdate = parseFilterSearchTerm(searchTerm);
                 if (filterToUpdate!==null) {
@@ -165,18 +176,23 @@ const AdvancedResearchForm = () => {
                             updatedIsModified = filterValue;
                             break;
                         case "with_languages":
-                            console.log("filterValue = ",filterValue);
-                            console.log("current languages = ", chosenLanguagesCodes);
-                            console.log("new languages without filter = ",[...chosenLanguagesCodes,filterValue[0]]);
-                            console.log("new languages with filter = ",[...chosenLanguagesCodes,filterValue[0]].filter((item,
-                                index) => chosenLanguagesCodes.indexOf(item) === index));
+                            // console.log("filterValue = ",filterValue);
+                            // console.log("current languages = ", chosenLanguagesCodes);
+                            // console.log("new languages without filter = ",[...chosenLanguagesCodes,filterValue[0]]);
+                            // console.log("new languages with filter = ",[...chosenLanguagesCodes,filterValue[0]].filter((item,
+                            //     index) => chosenLanguagesCodes.indexOf(item) === index));
                             updatedChosenLanguagesCodes.push(filterValue[0]);
+                            break;
+                        case "without_languages":
+                            updatedWithoutChosenLanguagesCodes.push(filterValue[0]);
+                            break;
                     }
                 }
             }
             setIsRootNodesChecked(updatedIsRootNodes);
             setIsModifiedChecked(updatedIsModified);
             setChosenLanguagesCodes(updatedChosenLanguagesCodes);
+            setWithoutChosenLanguagesCodes(updatedWithoutChosenLanguagesCodes);
             event.preventDefault();
         }
     };
@@ -207,7 +223,9 @@ const AdvancedResearchForm = () => {
             >
                 <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_root",setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
                 <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_modified",setIsModifiedChecked)} checked={isModifiedChecked} />} label="Modified" />
-                <MultipleSelectFilter filterValue={chosenLanguagesCodes} setFilterValue={setChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
+                <MultipleSelectFilter label="Translated into" filterValue={chosenLanguagesCodes} setFilterValue={setChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
+                <MultipleSelectFilter label="Not translated into" filterValue={withoutChosenLanguagesCodes} setFilterValue={setWithoutChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
+
             </Box>
         </Box>
     )

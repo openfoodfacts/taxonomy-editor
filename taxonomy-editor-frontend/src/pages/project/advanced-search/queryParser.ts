@@ -56,11 +56,11 @@ export function parseFilterSearchTerm(searchTerm: string): OneFilterType<boolean
             break;
         case "language":
             return {with_languages: [filterValue]}
-        // case "not(language)":
-        //     if (filterValue.length !== 2 || !filterValue.match(/^[a-zA-Z]+$/)) {
-        //         return null;
-        //     }
-        //     return new LanguageFilterSearchTerm(filterValue, filterName === "not(language)");
+        case "not(language":
+            if (filterValue.length !== 3 || !filterValue.match(/^[a-zA-Z]{2}\)/)) {
+                return null;
+            }
+            return {without_languages: [filterValue.slice(0, -1)]};
         // case "parent":
         //     return new ParentFilterSearchTerm(filterValue);
         // case "child":
