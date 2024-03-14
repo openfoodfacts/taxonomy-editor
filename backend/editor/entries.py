@@ -605,12 +605,12 @@ class TaxonomyGraph:
         for child_id in children_ids:
             # Create new relationships if it doesn't exist
             query = f"""
-                MATCH ()-[r:is_child_of]->(parent:{self.project_name}:ENTRY),
-                (new_child:{self.project_name}:ENTRY)
+                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
                 WHERE parent.id = $id AND new_child.id = $child_id
+                OPTIONAL MATCH ()-[r:is_child_of]->(parent)
                 WITH parent, new_child, COUNT(r) AS rel_count
                 MERGE (new_child)-[r:is_child_of]->(parent)
-                ON CREATE SET r.position = rel_count
+                ON CREATE SET r.position = CASE WHEN rel_count IS NULL THEN 1 ELSE rel_count + 1 END
             """
             _result = await get_current_transaction().run(
                 query, {"id": entry, "child_id": child_id}
