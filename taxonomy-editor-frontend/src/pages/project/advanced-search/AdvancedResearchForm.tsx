@@ -9,13 +9,10 @@ import {
     Box,
     FormControlLabel,
     Checkbox,
-    Select,
-    MenuItem,
-    InputLabel,
-    ListItemText,
   } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { parseFilterSearchTerm, splitQueryIntoSearchTerms } from "./queryParser";
+import { MultipleSelectFilter } from "./MultipleSelectFilter";
 
 const checkboxTheme = {
     color: "#201a17",
@@ -30,13 +27,6 @@ export type FiltersType = {
     with_languages: string[];
     without_languages: string[];
 };
-
-const emptyFilters: FiltersType = {
-    is_root: false,
-    is_modified: false,
-    with_languages: [],
-    without_languages: [],
-}; 
 
 const AdvancedResearchForm = () => {
 
@@ -151,11 +141,6 @@ const AdvancedResearchForm = () => {
         setChecked(event.target.checked);
     }
 
-    const updateFiltersStates = (filters: FiltersType) => {
-        setIsRootNodesChecked(filters.is_root);
-        setIsModifiedChecked(filters.is_modified);
-    }
-
     const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchExpression(event.target.value);
     };
@@ -164,7 +149,6 @@ const AdvancedResearchForm = () => {
         if (event.key === 'Enter') {
             // Update URL when Enter key is pressed
             const searchTerms = splitQueryIntoSearchTerms(searchExpression);
-            // let updatedFilters = emptyFilters;
             let updatedIsRootNodes = false;
             let updatedIsModified = false;
             const updatedChosenLanguagesCodes:string[] = [];
@@ -176,11 +160,9 @@ const AdvancedResearchForm = () => {
                     switch(filterName) {
                         case "is_root":
                             updatedIsRootNodes = filterValue;
-                            // setIsRootNodesChecked(filterValue);
                             break;
                         case "is_modified":
                             updatedIsModified = filterValue;
-                            // setIsModifiedChecked(filterValue);
                             break;
                         case "with_languages":
                             console.log("filterValue = ",filterValue);
@@ -189,22 +171,13 @@ const AdvancedResearchForm = () => {
                             console.log("new languages with filter = ",[...chosenLanguagesCodes,filterValue[0]].filter((item,
                                 index) => chosenLanguagesCodes.indexOf(item) === index));
                             updatedChosenLanguagesCodes.push(filterValue[0]);
-                            // setChosenLanguagesCodes([...chosenLanguagesCodes,filterValue[0]]);
                     }
-                    // if (typeof filterValue === "boolean") {
-                    //     updatedFilters = {...updatedFilters,...filterToUpdate};
-                    // } else if (Array.isArray(filterValue)) {
-                    //     updatedFilters[filterName].push(filterValue[0]);
-                    // }
                 }
             }
-            // setFilters(updatedFilters);
             setIsRootNodesChecked(updatedIsRootNodes);
             setIsModifiedChecked(updatedIsModified);
             setChosenLanguagesCodes(updatedChosenLanguagesCodes);
             event.preventDefault();
-            // updateURL(updatedFilters);
-            // updateFiltersStates(updatedFilters);
         }
     };
 
@@ -234,40 +207,7 @@ const AdvancedResearchForm = () => {
             >
                 <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_root",setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
                 <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_modified",setIsModifiedChecked)} checked={isModifiedChecked} />} label="Modified" />
-                <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <InputLabel id="demo-multiple-name-label">With languages</InputLabel>
-                    <Select
-                        id="languages-filter"
-                        multiple
-                        value={chosenLanguagesCodes}
-                        onChange={
-                            (event) =>{
-                                console.log("chosen languages = ",event.target.value as string[])
-                              setChosenLanguagesCodes(event.target.value as string[]) // type casting to string[] due to the `multiple` prop
-                          }}
-                        input={<OutlinedInput label="Languages" />}
-                        renderValue={(selected) =>
-                            selected
-                              .map((langCode) => ISO6391.getName(langCode))
-                              .filter(Boolean) //to ignore "xx" language
-                              .join(", ")
-                          }
-                        >
-                        {ISO6391.getAllNames()
-                        .sort()
-                        .map((languageNameItem) => {
-                            const languageCodeItem = ISO6391.getCode(languageNameItem);
-                            return (
-                            <MenuItem key={languageCodeItem} value={languageCodeItem}>
-                                <Checkbox
-                                checked={chosenLanguagesCodes.includes(languageCodeItem)}
-                                />
-                                <ListItemText primary={languageNameItem} />
-                            </MenuItem>
-                            );
-                        })}
-                    </Select>
-                </FormControl> 
+                <MultipleSelectFilter filterValue={chosenLanguagesCodes} setFilterValue={setChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
             </Box>
         </Box>
     )
