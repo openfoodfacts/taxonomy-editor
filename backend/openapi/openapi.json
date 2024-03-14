@@ -1154,6 +1154,19 @@
   },
   "components": {
     "schemas": {
+      "AncestorFilterSearchTerm": {
+        "properties": {
+          "filterType": {
+            "const": "ancestor",
+            "title": "Filtertype",
+            "default": "ancestor"
+          },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterValue"],
+        "title": "AncestorFilterSearchTerm"
+      },
       "Body_upload_taxonomy__taxonomy_name___branch__upload_post": {
         "properties": {
           "file": { "type": "string", "format": "binary", "title": "File" },
@@ -1162,6 +1175,32 @@
         "type": "object",
         "required": ["file", "description"],
         "title": "Body_upload_taxonomy__taxonomy_name___branch__upload_post"
+      },
+      "ChildFilterSearchTerm": {
+        "properties": {
+          "filterType": {
+            "const": "child",
+            "title": "Filtertype",
+            "default": "child"
+          },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterValue"],
+        "title": "ChildFilterSearchTerm"
+      },
+      "DescendantFilterSearchTerm": {
+        "properties": {
+          "filterType": {
+            "const": "descendant",
+            "title": "Filtertype",
+            "default": "descendant"
+          },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterValue"],
+        "title": "DescendantFilterSearchTerm"
       },
       "EntryNode": {
         "properties": {
@@ -1232,6 +1271,20 @@
             "items": { "$ref": "#/components/schemas/EntryNode" },
             "type": "array",
             "title": "Nodes"
+          },
+          "filters": {
+            "items": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/IsFilterSearchTerm" },
+                { "$ref": "#/components/schemas/LanguageFilterSearchTerm" },
+                { "$ref": "#/components/schemas/ParentFilterSearchTerm" },
+                { "$ref": "#/components/schemas/ChildFilterSearchTerm" },
+                { "$ref": "#/components/schemas/AncestorFilterSearchTerm" },
+                { "$ref": "#/components/schemas/DescendantFilterSearchTerm" }
+              ]
+            },
+            "type": "array",
+            "title": "Filters"
           }
         },
         "type": "object",
@@ -1282,6 +1335,46 @@
         "title": "HTTPValidationError"
       },
       "Header": { "properties": {}, "type": "object", "title": "Header" },
+      "IsFilterSearchTerm": {
+        "properties": {
+          "filterType": {
+            "const": "is",
+            "title": "Filtertype",
+            "default": "is"
+          },
+          "filterValue": { "const": "root", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterValue"],
+        "title": "IsFilterSearchTerm"
+      },
+      "LanguageFilterSearchTerm": {
+        "properties": {
+          "filterType": {
+            "const": "language",
+            "title": "Filtertype",
+            "default": "language"
+          },
+          "filterValue": { "type": "string", "title": "Filtervalue" },
+          "negated": { "type": "boolean", "title": "Negated", "default": false }
+        },
+        "type": "object",
+        "required": ["filterValue"],
+        "title": "LanguageFilterSearchTerm"
+      },
+      "ParentFilterSearchTerm": {
+        "properties": {
+          "filterType": {
+            "const": "parent",
+            "title": "Filtertype",
+            "default": "parent"
+          },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterValue"],
+        "title": "ParentFilterSearchTerm"
+      },
       "Project": {
         "properties": {
           "id": { "type": "string", "title": "Id" },

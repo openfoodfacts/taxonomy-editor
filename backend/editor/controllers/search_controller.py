@@ -1,90 +1,24 @@
 import math
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Literal
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from ..graph_db import get_current_transaction
-from ..models.node_models import EntryNode, EntryNodeSearchResult
+from ..models.node_models import EntryNode
+from ..models.search_models import (
+    AncestorFilterSearchTerm,
+    ChildFilterSearchTerm,
+    DescendantFilterSearchTerm,
+    EntryNodeSearchResult,
+    FilterSearchTerm,
+    IsFilterSearchTerm,
+    LanguageFilterSearchTerm,
+    ParentFilterSearchTerm,
+)
 
 
 def get_query_param_name(index: int) -> str:
     return f"value_{index}"
-
-
-class FilterSearchTerm(ABC):
-    @abstractmethod
-    def build_cypher_query(self, index: int) -> tuple[str, str | None]:
-        pass
-
-
-@dataclass
-class IsFilterSearchTerm(FilterSearchTerm):
-    filter_value: Literal["root"]
-
-    def build_cypher_query(self, _index: int) -> tuple[str, None]:
-        match self.filter_value:
-            case "root":
-                return "NOT (n)-[:is_child_of]->()", None
-            case _:
-                raise ValueError("Invalid filter value")
-
-
-@dataclass
-class LanguageFilterSearchTerm(FilterSearchTerm):
-    filter_value: str
-    negated: bool = False
-
-    def build_cypher_query(self, _index: int) -> tuple[str, None]:
-        if self.negated:
-            return f"n.tags_ids_{self.filter_value} IS NULL", None
-        else:
-            return f"n.tags_ids_{self.filter_value} IS NOT NULL", None
-
-
-@dataclass
-class ParentFilterSearchTerm(FilterSearchTerm):
-    filter_value: str
-
-    def build_cypher_query(self, index: int) -> tuple[str, str]:
-        return (
-            "(n)<-[:is_child_of]-(:ENTRY {id: $" + get_query_param_name(index) + "})",
-            self.filter_value,
-        )
-
-
-@dataclass
-class ChildFilterSearchTerm(FilterSearchTerm):
-    filter_value: str
-
-    def build_cypher_query(self, index: int) -> tuple[str, str]:
-        return (
-            "(n)-[:is_child_of]->(:ENTRY {id: $" + get_query_param_name(index) + "})",
-            self.filter_value,
-        )
-
-
-@dataclass
-class AncestorFilterSearchTerm(FilterSearchTerm):
-    filter_value: str
-
-    def build_cypher_query(self, index: int) -> tuple[str, str]:
-        return (
-            "(n)<-[:is_child_of*]-(:ENTRY {id: $" + get_query_param_name(index) + "})",
-            self.filter_value,
-        )
-
-
-@dataclass
-class DescendantFilterSearchTerm(FilterSearchTerm):
-    filter_value: str
-
-    def build_cypher_query(self, index: int) -> tuple[str, str]:
-        return (
-            "(n)-[:is_child_of*]->(:ENTRY {id: $" + get_query_param_name(index) + "})",
-            self.filter_value,
-        )
 
 
 @dataclass
@@ -134,24 +68,24 @@ def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
     match filter_name:
         case "is":
             if filter_value == "root":
-                return IsFilterSearchTerm(filter_value)
+                return IsFilterSearchTerm(filter_value=filter_value)
         case "language" | "not(language)":
             if len(filter_value) != 2 and filter_value.isalpha():
                 return None
 
             return (
-                LanguageFilterSearchTerm(filter_value)
+                LanguageFilterSearchTerm(filter_value=filter_value)
                 if filter_name == "language"
-                else LanguageFilterSearchTerm(filter_value, negated=True)
+                else LanguageFilterSearchTerm(filter_value=filter_value, negated=True)
             )
         case "parent":
-            return ParentFilterSearchTerm(filter_value)
+            return ParentFilterSearchTerm(filter_value=filter_value)
         case "child":
-            return ChildFilterSearchTerm(filter_value)
+            return ChildFilterSearchTerm(filter_value=filter_value)
         case "ancestor":
-            return AncestorFilterSearchTerm(filter_value)
+            return AncestorFilterSearchTerm(filter_value=filter_value)
         case "descendant":
-            return DescendantFilterSearchTerm(filter_value)
+            return DescendantFilterSearchTerm(filter_value=filter_value)
         case _:
             return None
 
@@ -283,7 +217,8 @@ def build_cypher_query(
     )
 
     cypher_filter_search_terms = [
-        term.build_cypher_query(index) for index, term in enumerate(query.filter_search_terms)
+        term.build_cypher_query(get_query_param_name(index))
+        for index, term in enumerate(query.filter_search_terms)
     ]
 
     full_text_search_query, order_clause = "", ""
@@ -363,7 +298,7 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
         return EntryNodeSearchResult(
             node_count=node_count,
             page_count=math.ceil(node_count / PAGE_LENGTH),
-            nodes=[],
+            filters=query.filter_search_terms,
         )
 
     node_count, nodes = search_result["nodeCount"], search_result["nodeList"]
@@ -371,4 +306,5 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
         node_count=node_count,
         page_count=math.ceil(node_count / PAGE_LENGTH),
         nodes=[EntryNode(**node) for node in nodes],
+        filters=query.filter_search_terms,
     )

@@ -40,13 +40,13 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 # Data model imports
 from .models.node_models import (
     EntryNodeCreate,
-    EntryNodeSearchResult,
     ErrorNode,
     Footer,
     Header,
     NodeType,
 )
 from .models.project_models import Project, ProjectEdit, ProjectStatus
+from .models.search_models import EntryNodeSearchResult
 from .scheduler import scheduler_lifespan
 
 # -----------------------------------------------------------------------------------#
