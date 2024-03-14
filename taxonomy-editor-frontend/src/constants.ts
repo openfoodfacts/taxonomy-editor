@@ -3,7 +3,7 @@
  * @param URL location
  * @returns string
  */
-function taxonomyApiUrlFromUi(location) {
+const taxonomyApiUrlFromUi = (location: Location): string => {
   const components = location.host.split(".");
   if (components[0] === "ui") {
     // we build api url by just replacing ui by api
@@ -11,9 +11,9 @@ function taxonomyApiUrlFromUi(location) {
     return location.protocol + "//" + components.join(".") + "/";
   } else {
     // this is a default for simple dev setup
-    return process.env.REACT_APP_API_URL;
+    return import.meta.env.VITE_APP_API_URL;
   }
-}
+};
 
 export const API_URL = taxonomyApiUrlFromUi(window.location);
 
@@ -27,11 +27,11 @@ export const TAXONOMY_NAMES = [
   "Additives",
   "Allergens",
   "Amino Acids",
-  "Categories",
+  "Food Categories",
   "Data Quality",
   "Food Groups",
   "Improvements",
-  "Ingredients",
+  "Food Ingredients",
   "Ingredients Analysis",
   "Ingredients Processing",
   "Labels",

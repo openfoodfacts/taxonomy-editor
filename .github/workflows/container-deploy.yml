@@ -133,6 +133,7 @@ jobs:
             echo "COMPOSE_PATH_SEPARATOR=;" >> .env
             echo "COMPOSE_FILE=docker-compose.yml;docker/prod.yml" >> .env
             echo "DOCKER_TAG=sha-${{ github.sha }}" >> .env
+            echo "RESTART_POLICY=always" >> .env
 
             # Neo4j configuration
             echo "NEO4J_server_memory_heap_initial__size=3G" >> .env
@@ -145,6 +146,9 @@ jobs:
             echo "TAXONOMY_EDITOR_DOMAIN=${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env
             # should be blank in production
             echo "PUBLIC_TAXONOMY_EDITOR_PORT=" >> .env
+            # in docker we want to expose the server on all interfaces for frontend nginx to reach it
+            echo "VITE_SERVER_PORT=3000" >> .env
+            echo "VITE_SERVER_HOST=0.0.0.0" >> .env
             # we use https
             echo "API_SCHEME=https" >> .env
             # the PAT is environment dependant

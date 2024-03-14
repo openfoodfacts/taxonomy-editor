@@ -21,7 +21,7 @@ interface ErrorParams {
   branchName: string;
 }
 
-const Errors = ({ addNavLinks }) => {
+export const Errors = () => {
   const { taxonomyName, branchName } = useParams() as unknown as ErrorParams;
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const [errors, setErrors] = useState([]);
@@ -41,15 +41,6 @@ const Errors = ({ addNavLinks }) => {
     }));
     setErrors(newErrors);
   }, [errorData]);
-
-  useEffect(
-    function defineMainNavLinks() {
-      if (!branchName || !taxonomyName) return;
-
-      addNavLinks({ branchName, taxonomyName });
-    },
-    [taxonomyName, branchName, addNavLinks]
-  );
 
   if (isError) {
     return (
@@ -74,9 +65,7 @@ const Errors = ({ addNavLinks }) => {
   }
 
   return (
-    <Box
-      sx={{ display: "flex", flexDirection: "column", my: 4, mx: 6, gap: 2 }}
-    >
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <TableContainer sx={{ width: 375, mb: 2 }}>
         <Table style={{ border: "solid", borderWidth: 1.5 }}>
           <TableHead>
@@ -142,5 +131,3 @@ const Errors = ({ addNavLinks }) => {
     </Box>
   );
 };
-
-export default Errors;

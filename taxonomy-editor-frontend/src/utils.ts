@@ -44,6 +44,7 @@ export const getNodeType = (id: string): NodeType => {
 /**
  * Creating base URL for server requests
  * @returns API_URL/taxonomyName/branchName/
+ * @deprecated the DefaultService methods should be used instead
  */
 export const createBaseURL = (taxonomyName: string, branchName: string) => {
   return `${API_URL}${taxonomyName}/${branchName}/`;

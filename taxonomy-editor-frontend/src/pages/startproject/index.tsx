@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -14,6 +14,7 @@ import {
   FormControl,
   Select,
   MenuItem,
+  FormHelperText,
 } from "@mui/material";
 
 import { TAXONOMY_NAMES } from "@/constants";
@@ -21,27 +22,33 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
-const StartProject = ({ clearNavBarLinks }) => {
-  const [branchName, setBranchName] = useState("");
+export const StartProject = () => {
+  const [ownerName, setOwnerName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
-  useEffect(
-    function cleanMainNavLinks() {
-      clearNavBarLinks();
-    },
-    [clearNavBarLinks]
-  );
+  const findDefaultBranchName = useCallback(() => {
+    if (taxonomyName === "" || ownerName === "") return "";
+    return `${toSnakeCase(taxonomyName.toLowerCase())}_${ownerName
+      .replace(" ", "")
+      .toLowerCase()}_${Math.floor(Date.now() / 1000)}`;
+  }, [ownerName, taxonomyName]);
+
+  const [branchName, setBranchName] = useState(findDefaultBranchName());
+
+  useEffect(() => {
+    setBranchName(findDefaultBranchName());
+  }, [ownerName, taxonomyName, findDefaultBranchName]);
 
   const handleSubmit = () => {
-    if (!taxonomyName || !branchName) return;
+    if (!taxonomyName || !branchName || !ownerName) return;
 
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
-    const dataToBeSent = { description: description };
+    const dataToBeSent = { description: description, ownerName: ownerName };
     let errorMessage = "Unable to import";
 
     fetch(`${baseUrl}import`, {
@@ -59,8 +66,8 @@ const StartProject = ({ clearNavBarLinks }) => {
       })
       .catch(() => {
         setErrorMessage(errorMessage);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
   };
 
   const handleCloseErrorSnackbar = () => {
@@ -68,6 +75,15 @@ const StartProject = ({ clearNavBarLinks }) => {
   };
 
   const isInvalidBranchName = branchNameRegEx.test(branchName);
+
+  const isOwnerNameInvalid = (name: string) => {
+    if (name === "") return false;
+    const pattern = /^[a-zA-Z0-9 _]+$/;
+    if (!pattern.test(name)) {
+      return true;
+    }
+    return false;
+  };
 
   return (
     <Box>
@@ -99,37 +115,66 @@ const StartProject = ({ clearNavBarLinks }) => {
           </FormControl>
         </div>
 
-        <div>
-          <TextField
-            error={isInvalidBranchName}
-            helperText={
-              isInvalidBranchName &&
-              "Special characters, capital letters and white spaces are not allowed"
-            }
-            size="small"
-            sx={{ width: 265, mt: 2 }}
-            onChange={(event) => {
-              setBranchName(event.target.value);
-            }}
-            value={branchName}
-            variant="outlined"
-            label="Branch Name"
-          />
-        </div>
+        <TextField
+          error={isOwnerNameInvalid(ownerName)}
+          helperText={
+            isOwnerNameInvalid(ownerName) &&
+            "Special characters are not allowed"
+          }
+          size="small"
+          sx={{ width: 265, mt: 2 }}
+          onChange={(event) => {
+            setOwnerName(event.target.value);
+          }}
+          value={ownerName}
+          variant="outlined"
+          label="Your Name"
+          required={true}
+        />
 
-        <div>
-          <TextField
-            sx={{ width: 265, mt: 2 }}
-            minRows={4}
-            multiline
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
-            value={description}
-            variant="outlined"
-            label="Description"
-          />
-        </div>
+        <FormHelperText
+          sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
+        >
+          Please use your Github account username if possible, or eventually
+          your id on open food facts slack (so that we can contact you)
+        </FormHelperText>
+
+        <TextField
+          error={isInvalidBranchName}
+          helperText={
+            isInvalidBranchName &&
+            "Special characters, capital letters and white spaces are not allowed"
+          }
+          size="small"
+          sx={{ width: 265, mt: 2 }}
+          onChange={(event) => {
+            setBranchName(event.target.value);
+          }}
+          value={branchName}
+          variant="outlined"
+          label="Branch Name"
+          required={true}
+        />
+
+        <TextField
+          sx={{ width: 265, mt: 2 }}
+          minRows={4}
+          multiline
+          onChange={(event) => {
+            setDescription(event.target.value);
+          }}
+          value={description}
+          variant="outlined"
+          label="Description"
+        />
+
+        <FormHelperText
+          sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
+        >
+          Explain what is your goal with this new project, what changes are you
+          going to bring. Remember to privilege small projects (do big project
+          as a succession of small one).
+        </FormHelperText>
 
         <Button
           variant="contained"
@@ -166,5 +211,3 @@ const StartProject = ({ clearNavBarLinks }) => {
     </Box>
   );
 };
-
-export default StartProject;

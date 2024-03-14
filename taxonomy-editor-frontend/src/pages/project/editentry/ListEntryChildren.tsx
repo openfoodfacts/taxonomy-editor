@@ -123,7 +123,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       </Stack>
 
       {/* Renders parents or children of the node */}
-      <Stack direction="row">
+      <Stack direction="row" flexWrap="wrap">
         {relations.map((relationObject) => (
           <Stack
             key={relationObject["index"]}
