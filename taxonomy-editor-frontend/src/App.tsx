@@ -15,6 +15,7 @@ import { ProjectPage, projectLoader } from "./pages/project";
 import { ProjectNotFound } from "./pages/project/ProjectNotFound";
 import { PageNotFound } from "./pages/PageNotFound";
 import { RootLayout } from "./pages/RootLayout";
+import { AdvancedResearchFormWrapper2 } from "./pages/project/advanced-search/AdvancedResearchForm2";
 
 const theme = createTheme({
   typography: {
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
           {
             path: "errors",
             element: <Errors />,
+          },
+          {
+            path: "advancedresearch",
+            element: <AdvancedResearchFormWrapper2 />,
           },
         ],
       },
