@@ -11,11 +11,13 @@ import equal from "fast-deep-equal";
 import { createURL, getNodeType, toSnakeCase } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { DefaultService } from "@/client";
 
 interface AccumulateAllComponentsProps {
   id: string;
   taxonomyName: string;
   branchName: string;
+  isReadOnly: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ const AccumulateAllComponents = ({
   id,
   taxonomyName,
   branchName,
+  isReadOnly,
 }: AccumulateAllComponentsProps) => {
   // Finding URL to send requests
   const url = createURL(taxonomyName, branchName, id);
@@ -41,13 +44,18 @@ const AccumulateAllComponents = ({
     error,
     refetch,
   } = useQuery({
-    queryKey: [url],
+    queryKey: [
+      "findOneEntryTaxonomyNameBranchEntryEntryGet",
+      taxonomyName,
+      branchName,
+      id,
+    ],
     queryFn: async () => {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to fetch node");
-      }
-      return response.json();
+      return await DefaultService.findOneEntryTaxonomyNameBranchEntryEntryGet(
+        branchName,
+        taxonomyName,
+        id
+      );
     },
   });
   const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
@@ -178,10 +186,12 @@ const AccumulateAllComponents = ({
                 originalNodeObject={originalNodeObject}
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
+                isReadOnly={isReadOnly}
               />
               <ListAllEntryProperties
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
+                isReadOnly={isReadOnly}
               />
               {/* Sticky button for submitting edits */}
               {hasChanges && (

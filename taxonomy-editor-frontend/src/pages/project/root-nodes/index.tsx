@@ -26,6 +26,7 @@ import {
   type ProjectInfoAPIResponse,
   type RootEntriesAPIResponse,
   ProjectStatus,
+  NodeInfo,
 } from "@/backend-types/types";
 import NodesTableBody from "@/components/NodesTableBody";
 import { useQuery } from "@tanstack/react-query";
@@ -90,9 +91,12 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
       ].includes(info.status as ProjectStatus),
   });
 
-  let nodeIds: string[] = [];
+  let nodeInfos: NodeInfo[] = [];
   if (nodes && nodes.length > 0) {
-    nodeIds = nodes.map((node) => node[0].id);
+    nodeInfos = nodes.map((node) => ({
+      id: node[0].id,
+      is_external: node[0].is_external,
+    }));
   }
 
   const handleCloseAddDialog = () => {
@@ -197,7 +201,7 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
             </TableRow>
           </TableHead>
           <NodesTableBody
-            nodeIds={nodeIds}
+            nodeInfos={nodeInfos}
             taxonomyName={taxonomyName}
             branchName={branchName}
           />

@@ -37,6 +37,7 @@ class NodeData:
     # to the right property or tag when possible
     comments_stack: list[tuple[int, str]] = field(default_factory=list)
     is_external: bool = False  # True if the node comes from another taxonomy
+    original_taxonomy: str | None = None  # the name of the taxonomy the node comes from
 
     def to_dict(self):
         return {
@@ -45,6 +46,7 @@ class NodeData:
             "preceding_lines": self.preceding_lines,
             "src_position": self.src_position,
             "is_external": self.is_external,
+            "original_taxonomy": self.original_taxonomy,
             **self.properties,
             **self.tags,
             **self.comments,
@@ -466,10 +468,14 @@ class TaxonomyParser:
         for node in entry_nodes:
             if node.id in ids_to_nodes:
                 first_node = ids_to_nodes[node.id]
-                # if we merge a node from the taxonomy with an external node,
-                # the merged node is not external anymore
-                if first_node.is_external and not node.is_external:
-                    first_node.is_external = False
+                if first_node.is_external:
+                    # we don't want to merge a node with an external node;
+                    # the external node gets a new id with its original taxonomy name
+                    # and the new one becomes the new "first node"
+                    first_node.id += f"@{first_node.original_taxonomy}"
+                    unique_entry_nodes.append(node)
+                    ids_to_nodes[node.id] = node
+                    continue
                 for key, value in node.tags.items():
                     if not key.startswith("tags_ids_"):
                         # union of the tags
@@ -519,6 +525,7 @@ class TaxonomyParser:
         harvested_data = self._harvest_entries(filename, entries_start_line)
         for entry in harvested_data:
             if entry.get_node_type() == NodeType.ENTRY:
+                entry.original_taxonomy = filename.split("/")[-1]
                 entry_nodes.append(entry)
             else:
                 other_nodes.append(entry)

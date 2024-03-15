@@ -26,14 +26,14 @@ type ProjectType = {
 
 export type ProjectsAPIResponse = ProjectType[];
 
-type NodeType = {
+export type NodeInfo = {
   id: string;
-  string: string | Array<string>;
+  is_external: boolean;
 };
 
-export type RootEntriesAPIResponse = Array<NodeType[]>;
+export type RootEntriesAPIResponse = Array<NodeInfo[]>;
 
-export type SearchAPIResponse = string[];
+export type SearchAPIResponse = NodeInfo[];
 
 export type ParentsAPIResponse = string[];
 

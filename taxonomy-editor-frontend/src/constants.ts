@@ -21,7 +21,8 @@ export const ENTER_KEYCODE = 13;
 export const greyHexCode = "#808080";
 
 // List of all editable taxonomies in Open Food Facts
-// Countries and Languages taxonomlies are not editable
+// Countries and Languages taxonomies are not editable
+// Origins is also not editable as it depends on the Countries taxonomy
 // https://wiki.openfoodfacts.org/Global_taxonomies#Overview
 export const TAXONOMY_NAMES = [
   "Additives",

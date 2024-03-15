@@ -12,9 +12,7 @@ type RenderedPropertyType = RowType & {
   id: string;
 };
 
-const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
-  const isExternalNode = nodeObject?.is_external === true;
-
+const ListAllEntryProperties = ({ nodeObject, setNodeObject, isReadOnly }) => {
   function replaceAll(str: string, find: string, replace: string) {
     return str.replace(new RegExp(find, "g"), replace);
   }
@@ -127,7 +125,7 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             { title: "Value", field: "propertyValue" },
           ]}
           editable={
-            isExternalNode
+            isReadOnly
               ? undefined
               : {
                   onRowAdd: (newRow: RowType) =>

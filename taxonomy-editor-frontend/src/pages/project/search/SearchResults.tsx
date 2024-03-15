@@ -39,7 +39,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const {
-    data: nodeIds,
+    data: nodeInfos,
     isPending,
     isError,
     errorMessage,
@@ -108,7 +108,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
           <Typography variant="h4">Search Results</Typography>
         </Grid>
         <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-          Number of nodes found: {(nodeIds ?? []).length}
+          Number of nodes found: {(nodeInfos ?? []).length}
         </Typography>
         {/* Table for listing all nodes in taxonomy */}
         <TableContainer sx={{ width: 375 }} component={Paper}>
@@ -134,7 +134,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
               </TableRow>
             </TableHead>
             <NodesTableBody
-              nodeIds={nodeIds ?? []}
+              nodeInfos={nodeInfos ?? []}
               taxonomyName={taxonomyName}
               branchName={branchName}
             />

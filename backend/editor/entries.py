@@ -2,6 +2,7 @@
 Database helper functions for API
 """
 
+import asyncio
 import logging
 import re
 import shutil
@@ -34,6 +35,7 @@ from .graph_db import (  # Neo4J transactions context managers
 )
 from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
+from .settings import EXTERNAL_TAXONOMIES
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +52,6 @@ class TaxonomyGraph:
         self.branch_name = branch_name
         self.project_name = "p_" + taxonomy_name + "_" + branch_name
 
-    @property
     def taxonomy_path_in_repository(self, taxonomy_name):
         return utils.taxonomy_path_in_repository(taxonomy_name)
 
@@ -136,20 +137,8 @@ class TaxonomyGraph:
                     else self.get_local_taxonomy_file(tmpdir, uploadfile)
                 )
                 other_filepaths = None
-                if self.taxonomy_name == "ingredients":
-                    other_filepaths = []
-                    for external_taxonomy in (
-                        "additives_classes",
-                        "additives",
-                        "minerals",
-                        "vitamins",
-                        "nucleotides",
-                        "other_nutritional_substances",
-                    ):
-                        external_filepath = await self.get_github_taxonomy_file(
-                            tmpdir, external_taxonomy
-                        )
-                        other_filepaths.append(external_filepath)
+                if self.taxonomy_name in EXTERNAL_TAXONOMIES:
+                    other_filepaths = await self.fetch_external_taxonomy_files(tmpdir)
                 await run_in_threadpool(self.parse_taxonomy, filepath, other_filepaths)
                 async with TransactionCtx():
                     await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.OPEN))
@@ -159,6 +148,25 @@ class TaxonomyGraph:
                 await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.FAILED))
             log.exception(e)
             raise e
+
+    async def fetch_external_taxonomy_files(self, tmpdir: str) -> list[str]:
+        """
+        Helper function to fetch external taxonomies concurrently from Github
+        """
+        external_taxonomy_filepaths = []
+        tasks = []
+
+        # Create tasks for each external taxonomy and store them in a list
+        for external_taxonomy in EXTERNAL_TAXONOMIES[self.taxonomy_name]:
+            task = asyncio.create_task(self.get_github_taxonomy_file(tmpdir, external_taxonomy))
+            tasks.append(task)
+
+        # Wait for all tasks to complete concurrently
+        for task in tasks:
+            external_filepath = await task
+            external_taxonomy_filepaths.append(external_filepath)
+
+        return external_taxonomy_filepaths
 
     async def import_taxonomy(
         self,
@@ -700,9 +708,8 @@ class TaxonomyGraph:
                     where score_ > 0
                     return node, score_ as score
             }
-            with node.id as node, score
-            RETURN node, sum(score) as score
-
+            WITH node.id AS node_id, node.is_external AS is_external, score
+            RETURN {id: node_id, is_external: is_external} AS node, sum(score) AS score
             ORDER BY score DESC
         """
         _result = await get_current_transaction().run(query, params)

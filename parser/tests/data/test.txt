@@ -6,6 +6,7 @@ synonyms:en:passion fruit, passionfruit
 
 synonyms:fr:fruit de la passion, maracuja, passion
 
+<en:milk
 en:yogurts, yoghurts
 fr:yaourts, yoghourts, yogourts
 
