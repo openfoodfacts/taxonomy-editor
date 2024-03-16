@@ -249,20 +249,8 @@ class Parser:
         branch_name = normalize_text(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
         try:
-            # parse external taxonomies files if any, and add their entry nodes to the main taxonomy
-            external_entry_nodes = []
-            if external_filenames:
-                for filename in external_filenames:
-                    external_taxonomy_parser = TaxonomyParser()
-                    external_taxonomy = external_taxonomy_parser.parse_file(
-                        filename, self.parser_logger
-                    )
-                    external_entry_nodes.extend(external_taxonomy.entry_nodes)
-                for entry_node in external_entry_nodes:
-                    entry_node.is_external = True
-
             taxonomy = taxonomy_parser.parse_file(
-                main_filename, self.parser_logger, external_entry_nodes
+                main_filename, external_filenames, self.parser_logger
             )
 
             self._write_to_database(taxonomy, taxonomy_name, branch_name)
