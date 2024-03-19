@@ -614,7 +614,7 @@ export class DefaultService {
    * Search Entry Nodes
    * @param branch
    * @param taxonomyName
-   * @param q
+   * @param q The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr
    * @param page
    * @returns EntryNodeSearchResult Successful Response
    * @throws ApiError
