@@ -39,13 +39,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import (
-    EntryNodeCreate,
-    ErrorNode,
-    Footer,
-    Header,
-    NodeType,
-)
+from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .models.search_models import EntryNodeSearchResult
 from .scheduler import scheduler_lifespan
@@ -325,7 +319,8 @@ async def search_entry_nodes(
     q: Annotated[
         str,
         Query(
-            description="The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr"
+            description="The search query string to filter down the returned entry nodes.\
+            Example: is:root language:en not(language):fr"
         ),
     ] = "",
     page: int = 1,

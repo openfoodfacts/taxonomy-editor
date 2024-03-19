@@ -209,7 +209,8 @@ def build_cypher_query(
         MIN_SEARCH_SCORE = 0.1
 
         full_text_search_query = f"""
-            CALL db.index.fulltext.queryNodes("{query.project_id}_SearchTagsIds", ${SEARCH_QUERY_PARAM_NAME})
+            CALL db.index.fulltext.queryNodes("{query.project_id}_SearchTagsIds",
+            ${SEARCH_QUERY_PARAM_NAME})
             YIELD node, score
             WHERE score > {MIN_SEARCH_SCORE}
             WITH node.id AS nodeId

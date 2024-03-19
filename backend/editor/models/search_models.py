@@ -1,13 +1,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Annotated, Literal, NamedTuple, Self
+from typing import Annotated, Literal, Self
 
-from pydantic import (
-    Field,
-    StringConstraints,
-    TypeAdapter,
-    model_validator,
-)
+from pydantic import Field, StringConstraints, TypeAdapter, model_validator
 
 from .base_models import BaseModel
 from .node_models import EntryNode
