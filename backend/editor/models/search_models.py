@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Literal
+from typing import Annotated, Literal, Self
 
-from pydantic import Field
+from pydantic import (
+    Field,
+    StringConstraints,
+    TypeAdapter,
+    model_validator,
+)
 
 from .base_models import BaseModel
 from .node_models import EntryNode
@@ -17,7 +22,7 @@ class AbstractFilterSearchTerm(BaseModel, ABC):
 
 
 class IsFilterSearchTerm(AbstractFilterSearchTerm):
-    filter_type: Literal["is"] = "is"
+    filter_type: Literal["is"]
     filter_value: Literal["root"]
 
     def build_cypher_query(self, _param_name: str) -> tuple[str, None]:
@@ -29,8 +34,17 @@ class IsFilterSearchTerm(AbstractFilterSearchTerm):
 
 
 class LanguageFilterSearchTerm(AbstractFilterSearchTerm):
-    filter_type: Literal["language"] = "language"
+    filter_type: Literal["language"]
+    # Only allow 2-letter language codes
+    filter_value: Annotated[str, StringConstraints(pattern="^(not:)?[a-z]{2}$")]
     negated: bool = False
+
+    @model_validator(mode="after")
+    def validate_negation(self) -> Self:
+        if self.filter_value.startswith("not:"):
+            self.filter_value = self.filter_value[4:]
+            self.negated = True
+        return self
 
     def build_cypher_query(self, _param_name: str) -> tuple[str, None]:
         if self.negated:
@@ -40,7 +54,7 @@ class LanguageFilterSearchTerm(AbstractFilterSearchTerm):
 
 
 class ParentFilterSearchTerm(AbstractFilterSearchTerm):
-    filter_type: Literal["parent"] = "parent"
+    filter_type: Literal["parent"]
 
     def build_cypher_query(self, param_name: str) -> tuple[str, str]:
         return (
@@ -50,7 +64,7 @@ class ParentFilterSearchTerm(AbstractFilterSearchTerm):
 
 
 class ChildFilterSearchTerm(AbstractFilterSearchTerm):
-    filter_type: Literal["child"] = "child"
+    filter_type: Literal["child"]
 
     def build_cypher_query(self, param_name: str) -> tuple[str, str]:
         return (
@@ -60,7 +74,7 @@ class ChildFilterSearchTerm(AbstractFilterSearchTerm):
 
 
 class AncestorFilterSearchTerm(AbstractFilterSearchTerm):
-    filter_type: Literal["ancestor"] = "ancestor"
+    filter_type: Literal["ancestor"]
 
     def build_cypher_query(self, param_name: str) -> tuple[str, str]:
         return (
@@ -70,7 +84,7 @@ class AncestorFilterSearchTerm(AbstractFilterSearchTerm):
 
 
 class DescendantFilterSearchTerm(AbstractFilterSearchTerm):
-    filter_type: Literal["descendant"] = "descendant"
+    filter_type: Literal["descendant"]
 
     def build_cypher_query(self, param_name: str) -> tuple[str, str]:
         return (
@@ -79,14 +93,20 @@ class DescendantFilterSearchTerm(AbstractFilterSearchTerm):
         )
 
 
-FilterSearchTerm = (
-    IsFilterSearchTerm
-    | LanguageFilterSearchTerm
-    | ParentFilterSearchTerm
-    | ChildFilterSearchTerm
-    | AncestorFilterSearchTerm
-    | DescendantFilterSearchTerm
-)
+FilterSearchTerm = Annotated[
+    (
+        IsFilterSearchTerm
+        | LanguageFilterSearchTerm
+        | ParentFilterSearchTerm
+        | ChildFilterSearchTerm
+        | AncestorFilterSearchTerm
+        | DescendantFilterSearchTerm
+    ),
+    Field(discriminator="filter_type"),
+]
+
+# https://docs.pydantic.dev/dev/concepts/type_adapter/
+FilterSearchTermValidator = TypeAdapter(FilterSearchTerm)
 
 
 class EntryNodeSearchResult(BaseModel):

@@ -2,18 +2,14 @@ import math
 from dataclasses import dataclass
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
+from pydantic import ValidationError
 
 from ..graph_db import get_current_transaction
 from ..models.node_models import EntryNode
 from ..models.search_models import (
-    AncestorFilterSearchTerm,
-    ChildFilterSearchTerm,
-    DescendantFilterSearchTerm,
     EntryNodeSearchResult,
     FilterSearchTerm,
-    IsFilterSearchTerm,
-    LanguageFilterSearchTerm,
-    ParentFilterSearchTerm,
+    FilterSearchTermValidator,
 )
 
 
@@ -62,32 +58,16 @@ def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
     if filter_value.startswith('"') and filter_value.endswith('"'):
         filter_value = filter_value[1:-1]
 
+    # If the filter value contains quotes, it is invalid
     if '"' in filter_value:
         return None
 
-    match filter_name:
-        case "is":
-            if filter_value == "root":
-                return IsFilterSearchTerm(filter_value=filter_value)
-        case "language" | "not(language)":
-            if len(filter_value) != 2 and filter_value.isalpha():
-                return None
-
-            return (
-                LanguageFilterSearchTerm(filter_value=filter_value)
-                if filter_name == "language"
-                else LanguageFilterSearchTerm(filter_value=filter_value, negated=True)
-            )
-        case "parent":
-            return ParentFilterSearchTerm(filter_value=filter_value)
-        case "child":
-            return ChildFilterSearchTerm(filter_value=filter_value)
-        case "ancestor":
-            return AncestorFilterSearchTerm(filter_value=filter_value)
-        case "descendant":
-            return DescendantFilterSearchTerm(filter_value=filter_value)
-        case _:
-            return None
+    try:
+        return FilterSearchTermValidator.validate_python(
+            {"filter_type": filter_name, "filter_value": filter_value}
+        )
+    except ValidationError:
+        return None
 
 
 def validate_query(project_id: str, query: str) -> Query | None:
