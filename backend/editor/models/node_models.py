@@ -39,6 +39,10 @@ class EntryNode(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def construct_tags_and_properties_and_comments(cls, data: Any) -> Any:
+        """
+        Before model validation, construct tags, properties, and comments from the data dict.
+        Usage docs: https://docs.pydantic.dev/latest/concepts/validators/#model-validators
+        """
         if not isinstance(data, dict):
             return data
 

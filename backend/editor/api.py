@@ -8,7 +8,7 @@ import logging
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 # FastAPI
 from fastapi import (
@@ -16,6 +16,7 @@ from fastapi import (
     FastAPI,
     Form,
     HTTPException,
+    Query,
     Request,
     Response,
     UploadFile,
@@ -319,7 +320,15 @@ async def find_all_errors(branch: str, taxonomy_name: str) -> ErrorNode:
 
 @app.get("/{taxonomy_name}/{branch}/nodes/entry")
 async def search_entry_nodes(
-    branch: str, taxonomy_name: str, q: str = "", page: int = 1
+    branch: str,
+    taxonomy_name: str,
+    q: Annotated[
+        str,
+        Query(
+            description="The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr"
+        ),
+    ] = "",
+    page: int = 1,
 ) -> EntryNodeSearchResult:
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = await search_controller.search_entry_nodes(taxonomy.project_name, q, page)
