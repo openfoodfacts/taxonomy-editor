@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import model_validator
@@ -7,7 +7,7 @@ from .base_models import BaseModel
 from .types.datetime import DateTime
 
 
-class NodeType(str, Enum):
+class NodeType(StrEnum):
     TEXT = "TEXT"
     SYNONYMS = "SYNONYMS"
     STOPWORDS = "STOPWORDS"

@@ -133,6 +133,7 @@ jobs:
             echo "COMPOSE_PATH_SEPARATOR=;" >> .env
             echo "COMPOSE_FILE=docker-compose.yml;docker/prod.yml" >> .env
             echo "DOCKER_TAG=sha-${{ github.sha }}" >> .env
+            echo "RESTART_POLICY=always" >> .env
 
             # Neo4j configuration
             echo "NEO4J_server_memory_heap_initial__size=3G" >> .env
