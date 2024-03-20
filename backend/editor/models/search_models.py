@@ -20,6 +20,11 @@ class AbstractFilterSearchTerm(BaseModel, ABC):
 
     @abstractmethod
     def build_cypher_query(self, param_name: str) -> CypherQuery:
+        """Builds a Cypher query for the filter search term.
+
+        Args:
+            param_name (str): The param_name is used to avoid name conflicts in the Cypher query.
+        """
         pass
 
 
