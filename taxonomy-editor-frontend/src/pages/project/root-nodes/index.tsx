@@ -22,13 +22,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
 import { toTitleCase, createBaseURL } from "@/utils";
 import { greyHexCode } from "@/constants";
-import {
-  type ProjectInfoAPIResponse,
-  type RootEntriesAPIResponse,
-  ProjectStatus,
-} from "@/backend-types/types";
+import { type RootEntriesAPIResponse } from "@/backend-types/types";
 import NodesTableBody from "@/components/NodesTableBody";
 import { useQuery } from "@tanstack/react-query";
+import { DefaultService, Project, ProjectStatus } from "@/client";
 
 type RootNodesProps = {
   taxonomyName: string;
@@ -41,7 +38,6 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
     useState(false);
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
-  const projectInfoUrl = `${baseUrl}project`;
   const rootNodesUrl = `${baseUrl}rootentries`;
 
   const {
@@ -49,14 +45,17 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
     isPending: infoPending,
     isError: infoIsError,
     error: infoError,
-  } = useQuery<ProjectInfoAPIResponse>({
-    queryKey: [projectInfoUrl],
+  } = useQuery<Project>({
+    queryKey: [
+      "getProjectInfoTaxonomyNameBranchProjectGet",
+      branchName,
+      taxonomyName,
+    ],
     queryFn: async () => {
-      const response = await fetch(projectInfoUrl);
-      if (!response.ok) {
-        throw new Error("Failed to fetch project info");
-      }
-      return response.json();
+      return await DefaultService.getProjectInfoTaxonomyNameBranchProjectGet(
+        branchName,
+        taxonomyName
+      );
     },
     refetchInterval: (d) => {
       return d.state.status === "success" &&
@@ -83,11 +82,7 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
     // fetch root nodes after receiving project status
     enabled:
       !!info &&
-      [
-        ProjectStatus.OPEN,
-        ProjectStatus.CLOSED,
-        ProjectStatus.EXPORTED,
-      ].includes(info.status as ProjectStatus),
+      [ProjectStatus.OPEN, ProjectStatus.EXPORTED].includes(info.status),
   });
 
   let nodeIds: string[] = [];

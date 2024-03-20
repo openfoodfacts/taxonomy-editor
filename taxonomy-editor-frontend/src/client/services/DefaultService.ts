@@ -38,24 +38,15 @@ export class DefaultService {
     });
   }
   /**
-   * List All Projects
-   * List projects created in the Taxonomy Editor with a status filter
-   * @param status
-   * @returns any Successful Response
+   * Get All Projects
+   * List projects created in the Taxonomy Editor
+   * @returns Project Successful Response
    * @throws ApiError
    */
-  public static listAllProjectsProjectsGet(
-    status?: ProjectStatus | null
-  ): CancelablePromise<any> {
+  public static getAllProjectsProjectsGet(): CancelablePromise<Array<Project>> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/projects",
-      query: {
-        status: status,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
     });
   }
   /**

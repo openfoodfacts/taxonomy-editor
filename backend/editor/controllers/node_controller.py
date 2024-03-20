@@ -1,7 +1,7 @@
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from ..graph_db import get_current_transaction
-from ..models.node_models import EntryNodeCreate
+from ..models.node_models import EntryNodeCreate, ErrorNode
 
 
 async def delete_project_nodes(project_id: str):
@@ -43,3 +43,16 @@ async def create_entry_node(
 
     result = await get_current_transaction().run(query, params)
     return (await result.data())[0]["n.id"]
+
+
+async def get_error_node(project_id: str) -> ErrorNode | None:
+    query = """
+    MATCH (n:ERRORS {id: $project_id})
+    RETURN n
+    """
+    params = {"project_id": project_id}
+    result = await get_current_transaction().run(query, params)
+    error_node = await result.single()
+    if error_node is None:
+        return None
+    return ErrorNode(**error_node["n"])

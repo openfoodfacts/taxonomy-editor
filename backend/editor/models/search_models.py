@@ -124,5 +124,5 @@ FilterSearchTermValidator = TypeAdapter(FilterSearchTerm)
 class EntryNodeSearchResult(BaseModel):
     node_count: int = 0
     page_count: int = 0
-    nodes: list[EntryNode] = Field(default_factory=list)
     filters: list[FilterSearchTerm] = Field(default_factory=list)
+    nodes: list[EntryNode] = Field(default_factory=list)

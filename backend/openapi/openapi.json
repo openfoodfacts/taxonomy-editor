@@ -32,33 +32,19 @@
     },
     "/projects": {
       "get": {
-        "summary": "List All Projects",
-        "description": "List projects created in the Taxonomy Editor with a status filter",
-        "operationId": "list_all_projects_projects_get",
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                { "$ref": "#/components/schemas/ProjectStatus" },
-                { "type": "null" }
-              ],
-              "title": "Status"
-            }
-          }
-        ],
+        "summary": "Get All Projects",
+        "description": "List projects created in the Taxonomy Editor",
+        "operationId": "get_all_projects_projects_get",
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/Project" },
+                  "type": "array",
+                  "title": "Response Get All Projects Projects Get"
+                }
               }
             }
           }
@@ -1382,12 +1368,20 @@
           "taxonomyName": { "type": "string", "title": "Taxonomyname" },
           "branchName": { "type": "string", "title": "Branchname" },
           "description": { "type": "string", "title": "Description" },
-          "ownerName": { "type": "string", "title": "Ownername" },
+          "ownerName": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Ownername"
+          },
           "isFromGithub": { "type": "boolean", "title": "Isfromgithub" },
           "createdAt": {
             "type": "string",
             "format": "date-time",
             "title": "Createdat"
+          },
+          "errorsCount": {
+            "type": "integer",
+            "title": "Errorscount",
+            "default": 0
           },
           "githubCheckoutCommitSha": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
@@ -1408,7 +1402,6 @@
           "taxonomyName",
           "branchName",
           "description",
-          "ownerName",
           "isFromGithub",
           "createdAt"
         ],
