@@ -28,7 +28,7 @@ class Parser:
         elif node_data.get_node_type() == NodeType.STOPWORDS:
             type_label = "STOPWORDS"
         else:
-            raise ValueError(f"ENTRY nodes should not be passed to this function")
+            raise ValueError("ENTRY nodes should not be passed to this function")
 
         node_tags_queries = [f"{key} : ${key}" for key in node_data.tags]
 
@@ -70,7 +70,7 @@ class Parser:
 
         for entry_node in entry_nodes:
             if entry_node.get_node_type() != NodeType.ENTRY:
-                raise ValueError(f"Only ENTRY nodes should be passed to this function")
+                raise ValueError("Only ENTRY nodes should be passed to this function")
             seen_properties_and_tags_and_comments.update(entry_node.tags)
             seen_properties_and_tags_and_comments.update(entry_node.properties)
             seen_properties_and_tags_and_comments.update(entry_node.comments)
@@ -79,11 +79,13 @@ class Parser:
             f"{key} : entry_node.{key}" for key in seen_properties_and_tags_and_comments
         ]
 
-        base_properties_query = f"""
+        base_properties_query = """
             id: entry_node.id,
             preceding_lines: entry_node.preceding_lines,
             src_position: entry_node.src_position,
-            main_language: entry_node.main_language
+            main_language: entry_node.main_language,
+            is_external: entry_node.is_external,
+            original_taxonomy: entry_node.original_taxonomy
         """
 
         properties_query = ",\n".join([base_properties_query, *additional_properties_queries])
@@ -234,14 +236,23 @@ class Parser:
         self._create_child_links(taxonomy.child_links, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
 
-    def __call__(self, filename: str, branch_name: str, taxonomy_name: str):
+    def __call__(
+        self,
+        main_filename: str,
+        external_filenames: list[str] | None,
+        branch_name: str,
+        taxonomy_name: str,
+    ):
         """Process the file"""
         start_time = timeit.default_timer()
 
         branch_name = normalize_text(branch_name, char="_")
         taxonomy_parser = TaxonomyParser()
         try:
-            taxonomy = taxonomy_parser.parse_file(filename, self.parser_logger)
+            taxonomy = taxonomy_parser.parse_file(
+                main_filename, external_filenames, self.parser_logger
+            )
+
             self._write_to_database(taxonomy, taxonomy_name, branch_name)
 
             self.parser_logger.info(

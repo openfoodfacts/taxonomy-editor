@@ -12,7 +12,7 @@ type RenderedPropertyType = RowType & {
   id: string;
 };
 
-const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
+const ListAllEntryProperties = ({ nodeObject, setNodeObject, isReadOnly }) => {
   function replaceAll(str: string, find: string, replace: string) {
     return str.replace(new RegExp(find, "g"), replace);
   }
@@ -124,76 +124,86 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject }) => {
             },
             { title: "Value", field: "propertyValue" },
           ]}
-          editable={{
-            onRowAdd: (newRow: RowType) =>
-              new Promise<void>((resolve, reject) => {
-                if (!isPropertyNameUnique(newRow.propertyName, data)) {
-                  setErrorMessage(`${newRow.propertyName} already exists`);
-                  reject();
-                } else {
-                  // Add new property to rendered rows
-                  const updatedRows = [
-                    ...data,
-                    { id: Math.random().toString(), ...newRow },
-                  ];
-                  setData(updatedRows);
+          editable={
+            isReadOnly
+              ? undefined
+              : {
+                  onRowAdd: (newRow: RowType) =>
+                    new Promise<void>((resolve, reject) => {
+                      if (!isPropertyNameUnique(newRow.propertyName, data)) {
+                        setErrorMessage(
+                          `${newRow.propertyName} already exists`
+                        );
+                        reject();
+                      } else {
+                        // Add new property to rendered rows
+                        const updatedRows = [
+                          ...data,
+                          { id: Math.random().toString(), ...newRow },
+                        ];
+                        setData(updatedRows);
 
-                  // Add new key-value pair of a property in nodeObject
-                  changePropertyData(
-                    normalizeNameToDb(newRow.propertyName),
-                    newRow.propertyValue
-                  );
-                  resolve();
+                        // Add new key-value pair of a property in nodeObject
+                        changePropertyData(
+                          normalizeNameToDb(newRow.propertyName),
+                          newRow.propertyValue
+                        );
+                        resolve();
+                      }
+                    }),
+                  onRowDelete: (selectedRow: RenderedPropertyType) =>
+                    new Promise<void>((resolve) => {
+                      // Delete property from rendered rows
+                      const updatedRows = [...data];
+                      const index = updatedRows.findIndex(
+                        (row) => row.id === selectedRow.id
+                      );
+                      updatedRows.splice(index, 1);
+                      setData(updatedRows);
+                      // Delete key-value pair of a property from nodeObject
+                      deletePropertyData(selectedRow.propertyName);
+                      resolve();
+                    }),
+                  onRowUpdate: (
+                    updatedRow: RenderedPropertyType,
+                    oldRow: RenderedPropertyType
+                  ) =>
+                    new Promise<void>((resolve, reject) => {
+                      const index = data.findIndex(
+                        (row) => row.id === updatedRow.id
+                      );
+                      const otherProperties = [...data];
+                      otherProperties.splice(index, 1);
+                      if (
+                        !isPropertyNameUnique(
+                          updatedRow.propertyName,
+                          otherProperties
+                        )
+                      ) {
+                        setErrorMessage(
+                          `${updatedRow.propertyName} already exists`
+                        );
+                        reject();
+                      } else {
+                        // Update row in rendered rows
+                        const updatedRows = data.map((el) =>
+                          el.id === oldRow.id ? updatedRow : el
+                        );
+                        setData(updatedRows);
+                        // Updation takes place by deletion + addition
+                        // If property name has been changed, previous key should be removed from nodeObject
+                        updatedRow.propertyName !== oldRow.propertyName &&
+                          deletePropertyData(oldRow.propertyName);
+                        // Add new property to nodeObject
+                        changePropertyData(
+                          normalizeNameToDb(updatedRow.propertyName),
+                          updatedRow.propertyValue
+                        );
+                        resolve();
+                      }
+                    }),
                 }
-              }),
-            onRowDelete: (selectedRow: RenderedPropertyType) =>
-              new Promise<void>((resolve) => {
-                // Delete property from rendered rows
-                const updatedRows = [...data];
-                const index = updatedRows.findIndex(
-                  (row) => row.id === selectedRow.id
-                );
-                updatedRows.splice(index, 1);
-                setData(updatedRows);
-                // Delete key-value pair of a property from nodeObject
-                deletePropertyData(selectedRow.propertyName);
-                resolve();
-              }),
-            onRowUpdate: (
-              updatedRow: RenderedPropertyType,
-              oldRow: RenderedPropertyType
-            ) =>
-              new Promise<void>((resolve, reject) => {
-                const index = data.findIndex((row) => row.id === updatedRow.id);
-                const otherProperties = [...data];
-                otherProperties.splice(index, 1);
-                if (
-                  !isPropertyNameUnique(
-                    updatedRow.propertyName,
-                    otherProperties
-                  )
-                ) {
-                  setErrorMessage(`${updatedRow.propertyName} already exists`);
-                  reject();
-                } else {
-                  // Update row in rendered rows
-                  const updatedRows = data.map((el) =>
-                    el.id === oldRow.id ? updatedRow : el
-                  );
-                  setData(updatedRows);
-                  // Updation takes place by deletion + addition
-                  // If property name has been changed, previous key should be removed from nodeObject
-                  updatedRow.propertyName !== oldRow.propertyName &&
-                    deletePropertyData(oldRow.propertyName);
-                  // Add new property to nodeObject
-                  changePropertyData(
-                    normalizeNameToDb(updatedRow.propertyName),
-                    updatedRow.propertyValue
-                  );
-                  resolve();
-                }
-              }),
-          }}
+          }
           options={{
             actionsColumnIndex: -1,
             addRowPosition: "last",

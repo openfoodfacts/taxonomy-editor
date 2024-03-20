@@ -11,6 +11,14 @@ import equal from "fast-deep-equal";
 import { createURL, getNodeType, toSnakeCase } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { DefaultService } from "@/client";
+
+interface AccumulateAllComponentsProps {
+  id: string;
+  taxonomyName: string;
+  branchName: string;
+  isReadOnly: boolean;
+}
 
 /**
  * Component used for rendering node information
@@ -18,7 +26,12 @@ import { useQuery } from "@tanstack/react-query";
  * If node is an "stopword/synonym": Stopwords/synonyms, language and comments are rendered
  * If node is "header/footer": Comments are rendered
  */
-const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
+const AccumulateAllComponents = ({
+  id,
+  taxonomyName,
+  branchName,
+  isReadOnly,
+}: AccumulateAllComponentsProps) => {
   // Finding URL to send requests
   const url = createURL(taxonomyName, branchName, id);
   const urlPrefix = `/${taxonomyName}/${branchName}`;
@@ -31,13 +44,18 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: [url],
+    queryKey: [
+      "findOneEntryTaxonomyNameBranchEntryEntryGet",
+      taxonomyName,
+      branchName,
+      id,
+    ],
     queryFn: async () => {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to fetch node");
-      }
-      return response.json();
+      return await DefaultService.findOneEntryTaxonomyNameBranchEntryEntryGet(
+        branchName,
+        taxonomyName,
+        id
+      );
     },
   });
   const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
@@ -168,10 +186,12 @@ const AccumulateAllComponents = ({ id, taxonomyName, branchName }) => {
                 originalNodeObject={originalNodeObject}
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
+                isReadOnly={isReadOnly}
               />
               <ListAllEntryProperties
                 nodeObject={nodeObject}
                 setNodeObject={setNodeObject}
+                isReadOnly={isReadOnly}
               />
               {/* Sticky button for submitting edits */}
               {hasChanges && (

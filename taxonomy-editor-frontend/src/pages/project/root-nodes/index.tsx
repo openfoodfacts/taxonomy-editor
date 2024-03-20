@@ -22,7 +22,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
 import { toTitleCase, createBaseURL } from "@/utils";
 import { greyHexCode } from "@/constants";
-import { type RootEntriesAPIResponse } from "@/backend-types/types";
+import {
+  type RootEntriesAPIResponse,
+  type NodeInfo,
+} from "@/backend-types/types";
 import NodesTableBody from "@/components/NodesTableBody";
 import { useQuery } from "@tanstack/react-query";
 import { DefaultService, Project, ProjectStatus } from "@/client";
@@ -85,9 +88,12 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
       [ProjectStatus.OPEN, ProjectStatus.EXPORTED].includes(info.status),
   });
 
-  let nodeIds: string[] = [];
+  let nodeInfos: NodeInfo[] = [];
   if (nodes && nodes.length > 0) {
-    nodeIds = nodes.map((node) => node[0].id);
+    nodeInfos = nodes.map((node) => ({
+      id: node[0].id,
+      is_external: node[0].is_external,
+    }));
   }
 
   const handleCloseAddDialog = () => {
@@ -192,7 +198,7 @@ const RootNodes = ({ taxonomyName, branchName }: RootNodesProps) => {
             </TableRow>
           </TableHead>
           <NodesTableBody
-            nodeIds={nodeIds}
+            nodeInfos={nodeInfos}
             taxonomyName={taxonomyName}
             branchName={branchName}
           />

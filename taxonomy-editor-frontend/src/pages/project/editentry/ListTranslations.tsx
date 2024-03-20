@@ -21,6 +21,7 @@ export const ListTranslations = ({
   originalNodeObject,
   nodeObject,
   setNodeObject,
+  isReadOnly,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // Used for Dialog component
   const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]); // Used for storing LCs that are shown in the interface
@@ -194,6 +195,7 @@ export const ListTranslations = ({
                 <TranslationTags
                   translations={nodeObject["tags_" + languageCode] ?? []}
                   saveTranslations={saveTranslationsForLanguage(languageCode)}
+                  isReadOnly={isReadOnly}
                 />
               }
             </Stack>
