@@ -119,23 +119,17 @@ export const ListTranslations = ({
   );
   languagesToShow.unshift(nodeObject.main_language);
 
-  const numberOfLanguagesShownMessage =
-    "(" +
-    languagesToShow.length +
-    " language" +
-    (languagesToShow.length === 1 ? "" : "s") +
-    " shown)";
-
   const hasFirstTranslationChanged: boolean[] = languagesToShow.map(
     (language: string) =>
+      originalNodeObject[`tags_${language}`]?.[0] &&
       nodeObject[`tags_${language}`]?.[0] !==
-      originalNodeObject[`tags_${language}`]?.[0]
+        originalNodeObject[`tags_${language}`]?.[0]
   );
 
   const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
     const languageName =
       (languageCode === "xx"
-        ? "All languages"
+        ? "International translations"
         : ISO6391.getName(languageCode)) +
       (languageCode === nodeObject.main_language ? " (main language)" : "");
     const alertMessage =
@@ -151,18 +145,15 @@ export const ListTranslations = ({
     <Box sx={{ ml: 4 }}>
       {/* Title */}
       <Stack direction="row" alignItems="center" sx={{ mt: 4 }}>
-        <Typography sx={{ mb: 1 }} variant="h5">
+        <Typography sx={{ mb: 1, mr: 2 }} variant="h5">
           Translations
         </Typography>
-        <Button sx={{ ml: 1 }} onClick={handleOpen}>
-          {numberOfLanguagesShownMessage}
-        </Button>
         {xxLanguageExists ? (
-          // if "xx" words exist, the "All language" is always displayed, the user can't choose
+          // if "xx" words exist, the "International translations" are always displayed, the user can't choose
           <>
             <Checkbox checked={true} disabled />
             <Typography variant="h6" sx={{ color: "#bdbdbd" }}>
-              All languages
+              Show international translations
             </Typography>
           </>
         ) : (
@@ -171,10 +162,20 @@ export const ListTranslations = ({
               checked={shownLanguageCodes.includes("xx")}
               onClick={handleXxLanguage}
             />
-            <Typography variant="h6">All languages</Typography>
+            <Typography variant="h6">
+              Show international translations
+            </Typography>
           </>
         )}
       </Stack>
+
+      {!["en", "xx"].includes(nodeObject.main_language) && (
+        <Alert severity="info" sx={{ width: "fit-content" }}>
+          English or Internal translations is not the main language for this
+          entry. Please consider changing it to adhere to the prevailing
+          convention.
+        </Alert>
+      )}
 
       {/* Render translation tags for each language to show */}
       {shownLanguagesInfo.map(
@@ -202,6 +203,10 @@ export const ListTranslations = ({
           </Stack>
         )
       )}
+
+      <Button sx={{ my: 1 }} onClick={handleOpen}>
+        Show another language
+      </Button>
 
       {/* Dialog box for adding translations */}
       <Dialog open={isDialogOpen} onClose={handleClose}>
