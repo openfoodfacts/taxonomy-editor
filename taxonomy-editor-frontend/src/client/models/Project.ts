@@ -9,10 +9,11 @@ export type Project = {
   taxonomyName: string;
   branchName: string;
   description: string;
-  ownerName: string;
+  ownerName: string | null;
   isFromGithub: boolean;
   createdAt: string;
-  githubCheckoutCommitSha?: string | null;
-  githubFileLatestSha?: string | null;
-  githubPrUrl?: string | null;
+  errorsCount: number;
+  githubCheckoutCommitSha: string | null;
+  githubFileLatestSha: string | null;
+  githubPrUrl: string | null;
 };

@@ -18,7 +18,7 @@ from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from . import settings, utils
-from .controllers.node_controller import create_entry_node
+from .controllers.node_controller import create_entry_node, get_error_node
 from .controllers.project_controller import create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
@@ -141,11 +141,20 @@ class TaxonomyGraph:
                     other_filepaths = await self.fetch_external_taxonomy_files(tmpdir)
                 await run_in_threadpool(self.parse_taxonomy, filepath, other_filepaths)
                 async with TransactionCtx():
-                    await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.OPEN))
+                    error_node = await get_error_node(self.project_name)
+                    errors_count = len(error_node.errors) if error_node else 0
+                    await edit_project(
+                        self.project_name,
+                        ProjectEdit(status=ProjectStatus.OPEN, errors_count=errors_count),
+                    )
         except Exception as e:
-            # add an error node so we can display it with errors in the app
             async with TransactionCtx():
-                await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.FAILED))
+                error_node = await get_error_node(self.project_name)
+                errors_count = len(error_node.errors) if error_node else 0
+                await edit_project(
+                    self.project_name,
+                    ProjectEdit(status=ProjectStatus.FAILED, errors_count=errors_count),
+                )
             log.exception(e)
             raise e
 
@@ -641,12 +650,12 @@ class TaxonomyGraph:
         for child_id in children_ids:
             # Create new relationships if it doesn't exist
             query = f"""
-                MATCH ()-[r:is_child_of]->(parent:{self.project_name}:ENTRY),
-                (new_child:{self.project_name}:ENTRY)
+                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
                 WHERE parent.id = $id AND new_child.id = $child_id
+                OPTIONAL MATCH ()-[r:is_child_of]->(parent)
                 WITH parent, new_child, COUNT(r) AS rel_count
                 MERGE (new_child)-[r:is_child_of]->(parent)
-                ON CREATE SET r.position = rel_count
+                ON CREATE SET r.position = CASE WHEN rel_count IS NULL THEN 1 ELSE rel_count + 1 END
             """
             _result = await get_current_transaction().run(
                 query, {"id": entry, "child_id": child_id}
