@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import ISO6391 from "iso-639-1";
+// import ISO6391 from "iso-639-1";
 import {
     Typography,
     FormControl,
@@ -12,7 +12,7 @@ import {
   } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { parseFilterSearchTerm, splitQueryIntoSearchTerms } from "./queryParser";
-import { MultipleSelectFilter } from "./MultipleSelectFilter";
+// import { MultipleSelectFilter } from "./MultipleSelectFilter";
 
 const checkboxTheme = {
     color: "#201a17",
@@ -223,8 +223,8 @@ const AdvancedResearchForm = () => {
             >
                 <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_root",setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
                 <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is_modified",setIsModifiedChecked)} checked={isModifiedChecked} />} label="Modified" />
-                <MultipleSelectFilter label="Translated into" filterValue={chosenLanguagesCodes} setFilterValue={setChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
-                <MultipleSelectFilter label="Not translated into" filterValue={withoutChosenLanguagesCodes} setFilterValue={setWithoutChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
+                {/* <MultipleSelectFilter label="Translated into" filterValue={chosenLanguagesCodes} setFilterValue={setChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} /> */}
+                {/* <MultipleSelectFilter label="Not translated into" filterValue={withoutChosenLanguagesCodes} setFilterValue={setWithoutChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} /> */}
 
             </Box>
         </Box>

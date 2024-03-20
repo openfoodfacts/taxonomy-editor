@@ -13,14 +13,16 @@ export const FilterInput = ({label, filterValue, setFilterValue, setQ, keySearch
 
     const addFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter' && filterValue!=="") {
-            setQ((prevQ) => `${prevQ} ${keySearchTerm}:${filterValue}`);
+            // If the filterValue includes a space, wrap it in double quotes. Ex : “en: paprika extract”, en:e101ii
+            const value = filterValue.includes(" ")? `"${filterValue}"`: filterValue
+            setQ((prevQ) => `${prevQ} ${keySearchTerm}:${value}`);
             event.preventDefault();
             setFilterValue("");
         }
     }
 
     return (
-        <FormControl sx={{ m: 1, width: "150px" }} variant="outlined">
+        <FormControl sx={{ m: 1, width: "170px" }} variant="outlined">
             <InputLabel id="multiple-select-label">{label}</InputLabel>
             <OutlinedInput
                 id="property-input"

@@ -25,7 +25,7 @@ export const MultipleSelectFilter = ({label, filterValue,listOfChoices,mapCodeTo
             <InputLabel id="multiple-select-label">{label}</InputLabel>
             <Select
                 id="languages-filter"
-                sx={{ width: '150px' }}
+                sx={{ width: '170px' }}
                 multiple
                 value={filterValue}
                 input={<OutlinedInput label="Languages" />}
@@ -48,7 +48,7 @@ export const MultipleSelectFilter = ({label, filterValue,listOfChoices,mapCodeTo
                             if (!filterValue.includes(languageCodeItem)) {
                                 setQ((prevQ) => prevQ + ` ${keySearchTerm}:${languageCodeItem}`);
                             } else {
-                                setQ((prevQ) => prevQ.replace(` ${keySearchTerm}:${languageCodeItem}`,""));
+                                setQ((prevQ) => prevQ.replace(`${keySearchTerm}:${languageCodeItem}`,""));
                             }
                             event.target.closest('Menu')?.dispatchEvent(new Event('close'));
                         } }
