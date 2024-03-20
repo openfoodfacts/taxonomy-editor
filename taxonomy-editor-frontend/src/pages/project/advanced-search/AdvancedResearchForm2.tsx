@@ -43,7 +43,7 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
     // const [currentPage,setCurrentPage] = useState<number>(page);
     
     const [isRootNodesChecked,setIsRootNodesChecked] = useState<boolean>(true);
-    const [isModifiedChecked,setIsModifiedChecked] = useState<boolean>(false);
+    // const [isModifiedChecked,setIsModifiedChecked] = useState<boolean>(false);
     const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>([]);
     const [withoutChosenLanguagesCodes,setWithoutChosenLanguagesCodes] =useState<string[]>([]);
     const [parentId, setParentId] = useState<string>("");
@@ -93,7 +93,7 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
             }
         }
         setIsRootNodesChecked(filtersStates.isRootNodesChecked);
-        setIsModifiedChecked(filtersStates.isModifiedChecked);
+        // setIsModifiedChecked(filtersStates.isModifiedChecked);
         setChosenLanguagesCodes(filtersStates.chosenLanguagesCodes);
         setWithoutChosenLanguagesCodes(filtersStates.withoutChosenLanguagesCodes);
     },[])
@@ -187,7 +187,7 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
                 }}
             >
                 <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:root", isRootNodesChecked,setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
-                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:modified", isModifiedChecked,setIsModifiedChecked)} checked={isModifiedChecked} disabled />} label="Modified" />
+                {/* <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:modified", isModifiedChecked,setIsModifiedChecked)} checked={isModifiedChecked} disabled />} label="Modified" /> */}
                 <MultipleSelectFilter label="Translated into" filterValue={chosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} setQ={setQ} keySearchTerm="language"/>
                 <MultipleSelectFilter label="Not translated into" filterValue={withoutChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} setQ={setQ} keySearchTerm="language:not"/>
                 <FilterInput label="Parent Id" filterValue={parentId} setFilterValue={setParentId} setQ={setQ} keySearchTerm="parent"/>
