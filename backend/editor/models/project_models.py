@@ -25,13 +25,16 @@ class ProjectCreate(BaseModel):
 
 
 class Project(ProjectCreate):
+    owner_name: str | None = None
     created_at: DateTime
+    errors_count: int = 0
     github_checkout_commit_sha: str | None = None
     github_file_latest_sha: str | None = None
     github_pr_url: str | None = None
 
 
 class ProjectEdit(BaseModel):
+    errors_count: int | None = None
     status: ProjectStatus | None = None
     github_checkout_commit_sha: str | None = None
     github_file_latest_sha: str | None = None

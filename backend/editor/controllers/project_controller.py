@@ -34,6 +34,16 @@ async def get_projects_by_status(status: ProjectStatus) -> list[Project]:
     return [Project(**record["p"]) async for record in result]
 
 
+async def get_all_projects() -> list[Project]:
+    query = """
+    MATCH (p:PROJECT)
+    RETURN p
+    ORDER BY p.created_at DESC
+    """
+    result = await get_current_transaction().run(query)
+    return [Project(**record["p"]) async for record in result]
+
+
 async def create_project(project: ProjectCreate):
     """
     Create project
