@@ -7,30 +7,27 @@ import {
     InputLabel,
     ListItemText,
   } from "@mui/material";
-import { SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 type MultipleSelectFilterType = {
     label: string,
     filterValue : string[],
-    setFilterValue: (value: SetStateAction<string[]>) => void,
     listOfChoices: string[],
     mapCodeToValue: (code: string) => string,
     mapValueToCode: (value: string) => string,
+    setQ: Dispatch<SetStateAction<string>>,
+    keySearchTerm: string,
 }
 
-export const MultipleSelectFilter = ({label, filterValue, setFilterValue,listOfChoices,mapCodeToValue=()=>"",mapValueToCode=()=>""}:MultipleSelectFilterType) => {
+export const MultipleSelectFilter = ({label, filterValue,listOfChoices,mapCodeToValue=()=>"",mapValueToCode=()=>"", setQ, keySearchTerm}:MultipleSelectFilterType) => {
     return (
-        <FormControl sx={{ m: 1, minWidth: 120 }}>
-            <InputLabel id="demo-multiple-name-label">{label}</InputLabel>
+        <FormControl sx={{ m: 1 }}>
+            <InputLabel id="multiple-select-label">{label}</InputLabel>
             <Select
                 id="languages-filter"
+                sx={{ width: '150px' }}
                 multiple
                 value={filterValue}
-                onChange={
-                    (event) =>{
-                        console.log("chosen languages = ",event.target.value as string[])
-                        setFilterValue(event.target.value as string[]) // type casting to string[] due to the `multiple` prop
-                    }}
                 input={<OutlinedInput label="Languages" />}
                 renderValue={(selected) =>
                     selected
@@ -47,6 +44,15 @@ export const MultipleSelectFilter = ({label, filterValue, setFilterValue,listOfC
                     <MenuItem key={languageCodeItem} value={languageCodeItem}>
                         <Checkbox
                         checked={filterValue.includes(languageCodeItem)}
+                        onChange={(event) => {
+                            if (!filterValue.includes(languageCodeItem)) {
+                                setQ((prevQ) => prevQ + ` ${keySearchTerm}:${languageCodeItem}`);
+                            } else {
+                                setQ((prevQ) => prevQ.replace(` ${keySearchTerm}:${languageCodeItem}`,""));
+                            }
+                            event.target.closest('Menu')?.dispatchEvent(new Event('close'));
+                        } }
+
                         />
                         <ListItemText primary={languageNameItem} />
                     </MenuItem>
