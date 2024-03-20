@@ -16,6 +16,7 @@ import { DefaultService, EntryNode } from "@/client";
 
 import type { EntryNodeSearchResult } from "../../../client/models/EntryNodeSearchResult";
 import { useQuery } from "@tanstack/react-query";
+import { FilterInput } from "./FilterInput";
 
 const checkboxTheme = {
     color: "#201a17",
@@ -34,7 +35,7 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
 
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [q,setQ] = useState(searchParams.get("q") ?? "is:root")
+    const [q,setQ] = useState(searchParams.get("q")? " "+searchParams.get("q") : " is:root")
     const pageParam = searchParams.get("page");
     const page = (pageParam !== null ? +pageParam : 1);
 
@@ -45,6 +46,10 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
     const [isModifiedChecked,setIsModifiedChecked] = useState<boolean>(false);
     const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>([]);
     const [withoutChosenLanguagesCodes,setWithoutChosenLanguagesCodes] =useState<string[]>([]);
+    const [parentId, setParentId] = useState<string>("");
+    const [childId, setChildId] = useState<string>("");
+    const [ancestorId, setAncestorId] = useState<string>("");
+    const [descendantId, setDescendantId] = useState<string>("");
 
     const [filters,setFilters] = useState<FiltersType>([{filterType: "is", filterValue:"root"}]);//by default we display root nodes only
     const [, setNodes] = useState<EntryNode[]>([]);
@@ -119,9 +124,11 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
 
     useEffect(() => {
         refetch();
+        setSearchExpression(q);
     }, [q, refetch]);
 
     if (entryNodeSearchResult && entryNodeSearchResult.filters !== filters) {
+        console.log("entryNode = ",entryNodeSearchResult);
         setNodeCount(entryNodeSearchResult.nodeCount);
         setPageCount(entryNodeSearchResult.pageCount);
         setNodes(entryNodeSearchResult.nodes);
@@ -131,10 +138,16 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
     const handleCheckbox = (
         event: React.ChangeEvent<HTMLInputElement>,
         filterKey: string,
+        isChecked: boolean,
         setChecked: React.Dispatch<React.SetStateAction<boolean>>,
     ) => {
-        setQ((prevQ) => prevQ+` ${filterKey}`);
+        if (! isChecked) {
+            setQ((prevQ) => prevQ+` ${filterKey}`);
+        } else {
+            setQ((prevQ) => prevQ.replace(` ${filterKey}`,""));
+        }
         setChecked(event.target.checked);
+        
     }
 
     const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,7 +162,7 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
     };
 
     return (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap'}}>
             <FormControl fullWidth sx={{ m: 1 }} variant="outlined">
                 <OutlinedInput
                     id="search-expression"
@@ -170,12 +183,18 @@ const AdvancedResearchForm2 = ({taxonomyName, branchName}: AdvancedResearchFormT
                 p:1,
                 pl:2,
                 pr:2,
+                display: 'flex', flexWrap: 'wrap', alignItems: 'center'
                 }}
             >
-                <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:root",setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
-                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:modified",setIsModifiedChecked)} checked={isModifiedChecked} />} label="Modified" />
-                <MultipleSelectFilter label="Translated into" filterValue={chosenLanguagesCodes} setFilterValue={setChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
-                <MultipleSelectFilter label="Not translated into" filterValue={withoutChosenLanguagesCodes} setFilterValue={setWithoutChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} />
+                <FormControlLabel id="root-nodes-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:root", isRootNodesChecked,setIsRootNodesChecked)} checked={isRootNodesChecked} />} label="Root nodes" />
+                <FormControlLabel id="modified-checkbox" control={<Checkbox sx={checkboxTheme} onChange={(e) => handleCheckbox(e,"is:modified", isModifiedChecked,setIsModifiedChecked)} checked={isModifiedChecked} disabled />} label="Modified" />
+                <MultipleSelectFilter label="Translated into" filterValue={chosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} setQ={setQ} keySearchTerm="language"/>
+                <MultipleSelectFilter label="Not translated into" filterValue={withoutChosenLanguagesCodes} listOfChoices={ISO6391.getAllNames()} mapCodeToValue={ISO6391.getName} mapValueToCode={ISO6391.getCode} setQ={setQ} keySearchTerm="language:not"/>
+                <FilterInput label="Parent Id" filterValue={parentId} setFilterValue={setParentId} setQ={setQ} keySearchTerm="parent"/>
+                <FilterInput label="Child Id" filterValue={childId} setFilterValue={setChildId} setQ={setQ} keySearchTerm="child"/>
+                <FilterInput label="Ancestor Id" filterValue={ancestorId} setFilterValue={setAncestorId} setQ={setQ} keySearchTerm="ancestor"/>
+                <FilterInput label="Descendant Id" filterValue={descendantId} setFilterValue={setDescendantId} setQ={setQ} keySearchTerm="descendant"/>
+
 
             </Box>
         </Box>
