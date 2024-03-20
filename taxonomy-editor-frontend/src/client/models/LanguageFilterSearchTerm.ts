@@ -5,5 +5,6 @@
 export type LanguageFilterSearchTerm = {
   filterType: "language";
   filterValue: string;
-  negated: boolean;
+  readonly negated: boolean;
+  readonly language: string;
 };

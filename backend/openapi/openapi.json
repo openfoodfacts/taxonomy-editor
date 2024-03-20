@@ -885,11 +885,11 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr",
+              "description": "The search query string to filter down the returned entry nodes.            Example: is:root language:en not(language):fr",
               "default": "",
               "title": "Q"
             },
-            "description": "The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr"
+            "description": "The search query string to filter down the returned entry nodes.            Example: is:root language:en not(language):fr"
           },
           {
             "name": "page",
@@ -1237,6 +1237,7 @@
       },
       "EntryNodeSearchResult": {
         "properties": {
+          "q": { "type": "string", "title": "Q", "default": "" },
           "nodeCount": {
             "type": "integer",
             "title": "Nodecount",
@@ -1246,11 +1247,6 @@
             "type": "integer",
             "title": "Pagecount",
             "default": 0
-          },
-          "nodes": {
-            "items": { "$ref": "#/components/schemas/EntryNode" },
-            "type": "array",
-            "title": "Nodes"
           },
           "filters": {
             "items": {
@@ -1276,6 +1272,11 @@
             },
             "type": "array",
             "title": "Filters"
+          },
+          "nodes": {
+            "items": { "$ref": "#/components/schemas/EntryNode" },
+            "type": "array",
+            "title": "Nodes"
           }
         },
         "type": "object",
@@ -1343,10 +1344,19 @@
             "pattern": "^(not:)?[a-z]{2}$",
             "title": "Filtervalue"
           },
-          "negated": { "type": "boolean", "title": "Negated", "default": false }
+          "negated": {
+            "type": "boolean",
+            "title": "Negated",
+            "readOnly": true
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "readOnly": true
+          }
         },
         "type": "object",
-        "required": ["filterType", "filterValue"],
+        "required": ["filterType", "filterValue", "negated", "language"],
         "title": "LanguageFilterSearchTerm"
       },
       "ParentFilterSearchTerm": {

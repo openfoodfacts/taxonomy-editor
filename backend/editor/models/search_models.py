@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal
 
-from pydantic import Field, StringConstraints, TypeAdapter, model_validator
+from pydantic import Field, StringConstraints, TypeAdapter, computed_field
 
 from .base_models import BaseModel
 from .node_models import EntryNode
@@ -17,6 +17,12 @@ class CypherQuery:
 class AbstractFilterSearchTerm(BaseModel, ABC):
     filter_type: str
     filter_value: str
+
+    def to_query_string(self) -> str:
+        filter_value = self.filter_value
+        if " " in self.filter_value:
+            filter_value = f'"{self.filter_value}"'
+        return f"{self.filter_type}:{filter_value}"
 
     @abstractmethod
     def build_cypher_query(self, param_name: str) -> CypherQuery:
@@ -44,25 +50,20 @@ class LanguageFilterSearchTerm(AbstractFilterSearchTerm):
     filter_type: Literal["language"]
     # Only allow 2-letter language codes
     filter_value: Annotated[str, StringConstraints(pattern="^(not:)?[a-z]{2}$")]
-    negated: bool = False
 
-    @model_validator(mode="after")
-    def validate_negation(self) -> Self:
-        """
-        After model validation, update the negated flag and filter_value
-        if filter_value is not parsed yet.
-        Usage docs: https://docs.pydantic.dev/latest/concepts/validators/#model-validators
-        """
-        if self.filter_value.startswith("not:"):
-            self.filter_value = self.filter_value[4:]
-            self.negated = True
-        return self
+    @computed_field
+    def negated(self) -> bool:
+        return self.filter_value.startswith("not:")
+
+    @computed_field
+    def language(self) -> str:
+        return self.filter_value[4:] if self.negated else self.filter_value
 
     def build_cypher_query(self, _param_name: str) -> CypherQuery:
         if self.negated:
-            return CypherQuery(f"n.tags_ids_{self.filter_value} IS NULL")
+            return CypherQuery(f"n.tags_ids_{self.language} IS NULL")
         else:
-            return CypherQuery(f"n.tags_ids_{self.filter_value} IS NOT NULL")
+            return CypherQuery(f"n.tags_ids_{self.language} IS NOT NULL")
 
 
 class ParentFilterSearchTerm(AbstractFilterSearchTerm):
@@ -122,6 +123,7 @@ FilterSearchTermValidator = TypeAdapter(FilterSearchTerm)
 
 
 class EntryNodeSearchResult(BaseModel):
+    q: str = ""
     node_count: int = 0
     page_count: int = 0
     filters: list[FilterSearchTerm] = Field(default_factory=list)
