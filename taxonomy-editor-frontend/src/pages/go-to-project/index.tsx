@@ -72,7 +72,10 @@ const ProjectsTable = ({ projects }: { projects: Project[] }) => {
       rows={projects}
       columns={columns}
       onRowClick={onRowClick}
-      pageSizeOptions={[25]}
+      pageSizeOptions={[]}
+      initialState={{
+        pagination: { paginationModel: { pageSize: 25 } },
+      }}
     />
   );
 };
