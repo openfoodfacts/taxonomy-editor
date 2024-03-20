@@ -21,6 +21,7 @@ def get_query_param_name_prefix(index: int) -> str:
 @dataclass(frozen=True)
 class Query:
     project_id: str
+    search_terms: list[str]
     name_search_terms: list[str]
     filter_search_terms: list[FilterSearchTerm]
 
@@ -41,8 +42,10 @@ def split_query_into_search_terms(query: str) -> list[str]:
         # If we are not inside quotes and we encounter a whitespace
         # we are at the end of the current search term
         elif query[term_end] == " " and not inside_quotes:
-            search_term = query[term_start:term_end]
-            search_terms.append(search_term)
+            # If the term is not empty, we add it to the list of search terms
+            if term_start != term_end:
+                search_term = query[term_start:term_end]
+                search_terms.append(search_term)
             term_start = term_end + 1
 
     search_terms.append(query[term_start:])
@@ -77,7 +80,7 @@ def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
         return None
 
 
-def validate_query(project_id: str, query: str) -> Query | None:
+def validate_query(project_id: str, query: str) -> Query:
     """
     A query is composed of search terms separated by whitespaces.
     A search term is either a name search term or a filter search term.
@@ -112,16 +115,19 @@ def validate_query(project_id: str, query: str) -> Query | None:
 
     search_terms = split_query_into_search_terms(query)
 
+    parsed_search_terms = []
     name_search_terms = []
     filter_search_terms = []
 
     for search_term in search_terms:
         if (filter_search_term := parse_filter_search_term(search_term)) is not None:
             filter_search_terms.append(filter_search_term)
+            parsed_search_terms.append(filter_search_term.to_query_string())
         else:
             name_search_terms.append(search_term)
+            parsed_search_terms.append(search_term)
 
-    return Query(project_id, name_search_terms, filter_search_terms)
+    return Query(project_id, parsed_search_terms, name_search_terms, filter_search_terms)
 
 
 def _get_token_query(token: str) -> str:
@@ -185,9 +191,7 @@ def build_lucene_name_search_query(search_value: str) -> str | None:
     return search_query
 
 
-def build_cypher_query(
-    query: Query, skip: int, limit: int
-) -> tuple[str, str, dict[str, str]] | None:
+def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, str, dict[str, str]]:
     # build part of the query doing full text search
     lucene_name_search_queries = list(
         filter(
@@ -264,16 +268,15 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
     """
     query = validate_query(project_id, raw_query)
 
-    if query is None:
-        return EntryNodeSearchResult()
+    parsed_query_string = " ".join(query.search_terms)
+    # For better UX on the search bar
+    if parsed_query_string != "":
+        parsed_query_string += " "
 
     PAGE_LENGTH = 50
     skip = max(0, (page - 1) * PAGE_LENGTH)
 
     cypher_query = build_cypher_query(query, skip, PAGE_LENGTH)
-
-    if cypher_query is None:
-        return EntryNodeSearchResult()
 
     page_query, count_query, query_params = cypher_query
 
@@ -286,6 +289,7 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
         return EntryNodeSearchResult(
             node_count=node_count,
             page_count=math.ceil(node_count / PAGE_LENGTH),
+            q=parsed_query_string,
             filters=query.filter_search_terms,
         )
 
@@ -293,6 +297,7 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
     return EntryNodeSearchResult(
         node_count=node_count,
         page_count=math.ceil(node_count / PAGE_LENGTH),
-        nodes=[EntryNode(**node) for node in nodes],
+        q=parsed_query_string,
         filters=query.filter_search_terms,
+        nodes=[EntryNode(**node) for node in nodes],
     )
