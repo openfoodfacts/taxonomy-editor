@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import { SetStateAction } from "react";
 import type { AncestorFilterSearchTerm } from "./AncestorFilterSearchTerm";
 import type { ChildFilterSearchTerm } from "./ChildFilterSearchTerm";
 import type { DescendantFilterSearchTerm } from "./DescendantFilterSearchTerm";
@@ -10,6 +11,7 @@ import type { IsFilterSearchTerm } from "./IsFilterSearchTerm";
 import type { LanguageFilterSearchTerm } from "./LanguageFilterSearchTerm";
 import type { ParentFilterSearchTerm } from "./ParentFilterSearchTerm";
 export type EntryNodeSearchResult = {
+  q: SetStateAction<string>;
   nodeCount: number;
   pageCount: number;
   nodes: Array<EntryNode>;
