@@ -147,14 +147,11 @@ async def pong(response: Response):
 
 
 @app.get("/projects")
-async def list_all_projects(response: Response, status: Optional[ProjectStatus] = None):
+async def get_all_projects() -> list[Project]:
     """
-    List projects created in the Taxonomy Editor with a status filter
+    List projects created in the Taxonomy Editor
     """
-    # Listing all projects doesn't require a taxonomy name or branch name
-    taxonomy = TaxonomyGraph("", "")
-    result = await taxonomy.list_projects(status)
-    return result
+    return await project_controller.get_all_projects()
 
 
 @app.get("/{taxonomy_name}/{branch}/project")
