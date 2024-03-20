@@ -2,26 +2,23 @@ import math
 from dataclasses import dataclass
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
+from pydantic import ValidationError
 
 from ..graph_db import get_current_transaction
 from ..models.node_models import EntryNode
 from ..models.search_models import (
-    AncestorFilterSearchTerm,
-    ChildFilterSearchTerm,
-    DescendantFilterSearchTerm,
+    CypherQuery,
     EntryNodeSearchResult,
     FilterSearchTerm,
-    IsFilterSearchTerm,
-    LanguageFilterSearchTerm,
-    ParentFilterSearchTerm,
+    FilterSearchTermValidator,
 )
 
 
-def get_query_param_name(index: int) -> str:
+def get_query_param_name_prefix(index: int) -> str:
     return f"value_{index}"
 
 
-@dataclass
+@dataclass(frozen=True)
 class Query:
     project_id: str
     name_search_terms: list[str]
@@ -54,6 +51,12 @@ def split_query_into_search_terms(query: str) -> list[str]:
 
 
 def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
+    """
+    Parses a filter search term of the format `filter:value` if possible
+    OR
+    Returns None
+    """
+
     if ":" not in search_term:
         return None
 
@@ -62,32 +65,16 @@ def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
     if filter_value.startswith('"') and filter_value.endswith('"'):
         filter_value = filter_value[1:-1]
 
+    # If the filter value contains quotes, it is invalid
     if '"' in filter_value:
         return None
 
-    match filter_name:
-        case "is":
-            if filter_value == "root":
-                return IsFilterSearchTerm(filter_value=filter_value)
-        case "language" | "not(language)":
-            if len(filter_value) != 2 and filter_value.isalpha():
-                return None
-
-            return (
-                LanguageFilterSearchTerm(filter_value=filter_value)
-                if filter_name == "language"
-                else LanguageFilterSearchTerm(filter_value=filter_value, negated=True)
-            )
-        case "parent":
-            return ParentFilterSearchTerm(filter_value=filter_value)
-        case "child":
-            return ChildFilterSearchTerm(filter_value=filter_value)
-        case "ancestor":
-            return AncestorFilterSearchTerm(filter_value=filter_value)
-        case "descendant":
-            return DescendantFilterSearchTerm(filter_value=filter_value)
-        case _:
-            return None
+    try:
+        return FilterSearchTermValidator.validate_python(
+            {"filter_type": filter_name, "filter_value": filter_value}
+        )
+    except ValidationError:
+        return None
 
 
 def validate_query(project_id: str, query: str) -> Query | None:
@@ -137,6 +124,21 @@ def validate_query(project_id: str, query: str) -> Query | None:
     return Query(project_id, name_search_terms, filter_search_terms)
 
 
+def _get_token_query(token: str) -> str:
+    """
+    Returns the lucene query for a token.
+    The tokens are additive and the fuzziness of the search depends on the length of the token.
+    """
+
+    token = "+" + token
+    if len(token) > 10:
+        return token + "~2"
+    elif len(token) > 4:
+        return token + "~1"
+    else:
+        return token
+
+
 def build_lucene_name_search_query(search_value: str) -> str | None:
     """
     The name search term can trigger two types of searches:
@@ -150,6 +152,7 @@ def build_lucene_name_search_query(search_value: str) -> str | None:
     """
     language_code = None
 
+    # get an eventual language prefix
     if len(search_value) > 2 and search_value[2] == ":" and search_value[0:2].isalpha():
         language_code, search_value = search_value.split(":", maxsplit=1)
         language_code = language_code.lower()
@@ -169,16 +172,7 @@ def build_lucene_name_search_query(search_value: str) -> str | None:
 
         tokens = normalized_text.split("-")
 
-        def get_token_query(token: str) -> str:
-            token = "+" + token
-            if len(token) > 10:
-                return token + "~2"
-            elif len(token) > 4:
-                return token + "~1"
-            else:
-                return token
-
-        return "(" + " ".join(map(get_token_query, tokens)) + ")"
+        return "(" + " ".join(map(_get_token_query, tokens)) + ")"
 
     search_query = get_search_query()
 
@@ -191,33 +185,19 @@ def build_lucene_name_search_query(search_value: str) -> str | None:
     return search_query
 
 
-def build_cypher_name_search_term(project_id: str) -> tuple[str, str, str]:
-    query = f"""
-            CALL db.index.fulltext.queryNodes("{project_id}_SearchTagsIds", $search_query)
-            YIELD node, score
-            WHERE score > 0.1
-            WITH node.id AS nodeId
-            WITH COLLECT(nodeId) AS nodeIds
-        """
-
-    where_clause = "n.id IN nodeIds"
-
-    order_clause = "WITH n, apoc.coll.indexOf(nodeIds, n.id) AS index ORDER BY index"
-
-    return query, where_clause, order_clause
-
-
 def build_cypher_query(
     query: Query, skip: int, limit: int
 ) -> tuple[str, str, dict[str, str]] | None:
+    # build part of the query doing full text search
     lucene_name_search_queries = list(
         filter(
             lambda q: q is not None, map(build_lucene_name_search_query, query.name_search_terms)
         )
     )
 
+    # build part of the query for filter:value members
     cypher_filter_search_terms = [
-        term.build_cypher_query(get_query_param_name(index))
+        term.build_cypher_query(get_query_param_name_prefix(index))
         for index, term in enumerate(query.filter_search_terms)
     ]
 
@@ -225,21 +205,29 @@ def build_cypher_query(
     query_params = {}
 
     if lucene_name_search_queries:
-        (
-            full_text_search_query,
-            name_filter_search_term,
-            order_clause,
-        ) = build_cypher_name_search_term(query.project_id)
-        query_params["search_query"] = " AND ".join(lucene_name_search_queries)
-        cypher_filter_search_terms.append((name_filter_search_term, None))
+        SEARCH_QUERY_PARAM_NAME = "search_query"
+        MIN_SEARCH_SCORE = 0.1
 
-    query_params |= {
-        get_query_param_name(index): cypher_filter_search_term[1]
-        for index, cypher_filter_search_term in enumerate(cypher_filter_search_terms)
-    }
+        full_text_search_query = f"""
+            CALL db.index.fulltext.queryNodes("{query.project_id}_SearchTagsIds",
+            ${SEARCH_QUERY_PARAM_NAME})
+            YIELD node, score
+            WHERE score > {MIN_SEARCH_SCORE}
+            WITH node.id AS nodeId
+            WITH COLLECT(nodeId) AS nodeIds
+        """
+        query_params[SEARCH_QUERY_PARAM_NAME] = " AND ".join(lucene_name_search_queries)
+
+        order_clause = "WITH n, apoc.coll.indexOf(nodeIds, n.id) AS index ORDER BY index"
+
+        name_filter_search_term = "n.id IN nodeIds"
+        cypher_filter_search_terms.append(CypherQuery(name_filter_search_term))
+
+    for cypher_filter_search_term in cypher_filter_search_terms:
+        query_params |= cypher_filter_search_term.params
 
     combined_filter_query = (
-        f"WHERE {' AND '.join(map(lambda x: x[0], cypher_filter_search_terms))}"
+        f"WHERE {' AND '.join([cypher_query.query for cypher_query in cypher_filter_search_terms])}"
         if cypher_filter_search_terms
         else ""
     )

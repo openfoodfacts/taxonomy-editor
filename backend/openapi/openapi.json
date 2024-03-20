@@ -897,7 +897,13 @@
             "name": "q",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "default": "", "title": "Q" }
+            "schema": {
+              "type": "string",
+              "description": "The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "The search query string to filter down the returned entry nodes. Example: is:root language:en not(language):fr"
           },
           {
             "name": "page",
@@ -1156,15 +1162,11 @@
     "schemas": {
       "AncestorFilterSearchTerm": {
         "properties": {
-          "filterType": {
-            "const": "ancestor",
-            "title": "Filtertype",
-            "default": "ancestor"
-          },
+          "filterType": { "const": "ancestor", "title": "Filtertype" },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
-        "required": ["filterValue"],
+        "required": ["filterType", "filterValue"],
         "title": "AncestorFilterSearchTerm"
       },
       "Body_upload_taxonomy__taxonomy_name___branch__upload_post": {
@@ -1178,28 +1180,20 @@
       },
       "ChildFilterSearchTerm": {
         "properties": {
-          "filterType": {
-            "const": "child",
-            "title": "Filtertype",
-            "default": "child"
-          },
+          "filterType": { "const": "child", "title": "Filtertype" },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
-        "required": ["filterValue"],
+        "required": ["filterType", "filterValue"],
         "title": "ChildFilterSearchTerm"
       },
       "DescendantFilterSearchTerm": {
         "properties": {
-          "filterType": {
-            "const": "descendant",
-            "title": "Filtertype",
-            "default": "descendant"
-          },
+          "filterType": { "const": "descendant", "title": "Filtertype" },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
-        "required": ["filterValue"],
+        "required": ["filterType", "filterValue"],
         "title": "DescendantFilterSearchTerm"
       },
       "EntryNode": {
@@ -1274,14 +1268,25 @@
           },
           "filters": {
             "items": {
-              "anyOf": [
+              "oneOf": [
                 { "$ref": "#/components/schemas/IsFilterSearchTerm" },
                 { "$ref": "#/components/schemas/LanguageFilterSearchTerm" },
                 { "$ref": "#/components/schemas/ParentFilterSearchTerm" },
                 { "$ref": "#/components/schemas/ChildFilterSearchTerm" },
                 { "$ref": "#/components/schemas/AncestorFilterSearchTerm" },
                 { "$ref": "#/components/schemas/DescendantFilterSearchTerm" }
-              ]
+              ],
+              "discriminator": {
+                "propertyName": "filterType",
+                "mapping": {
+                  "ancestor": "#/components/schemas/AncestorFilterSearchTerm",
+                  "child": "#/components/schemas/ChildFilterSearchTerm",
+                  "descendant": "#/components/schemas/DescendantFilterSearchTerm",
+                  "is": "#/components/schemas/IsFilterSearchTerm",
+                  "language": "#/components/schemas/LanguageFilterSearchTerm",
+                  "parent": "#/components/schemas/ParentFilterSearchTerm"
+                }
+              }
             },
             "type": "array",
             "title": "Filters"
@@ -1337,42 +1342,34 @@
       "Header": { "properties": {}, "type": "object", "title": "Header" },
       "IsFilterSearchTerm": {
         "properties": {
-          "filterType": {
-            "const": "is",
-            "title": "Filtertype",
-            "default": "is"
-          },
+          "filterType": { "const": "is", "title": "Filtertype" },
           "filterValue": { "const": "root", "title": "Filtervalue" }
         },
         "type": "object",
-        "required": ["filterValue"],
+        "required": ["filterType", "filterValue"],
         "title": "IsFilterSearchTerm"
       },
       "LanguageFilterSearchTerm": {
         "properties": {
-          "filterType": {
-            "const": "language",
-            "title": "Filtertype",
-            "default": "language"
+          "filterType": { "const": "language", "title": "Filtertype" },
+          "filterValue": {
+            "type": "string",
+            "pattern": "^(not:)?[a-z]{2}$",
+            "title": "Filtervalue"
           },
-          "filterValue": { "type": "string", "title": "Filtervalue" },
           "negated": { "type": "boolean", "title": "Negated", "default": false }
         },
         "type": "object",
-        "required": ["filterValue"],
+        "required": ["filterType", "filterValue"],
         "title": "LanguageFilterSearchTerm"
       },
       "ParentFilterSearchTerm": {
         "properties": {
-          "filterType": {
-            "const": "parent",
-            "title": "Filtertype",
-            "default": "parent"
-          },
+          "filterType": { "const": "parent", "title": "Filtertype" },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
-        "required": ["filterValue"],
+        "required": ["filterType", "filterValue"],
         "title": "ParentFilterSearchTerm"
       },
       "Project": {

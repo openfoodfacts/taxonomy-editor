@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import model_validator
@@ -7,7 +7,7 @@ from .base_models import BaseModel
 from .types.datetime import DateTime
 
 
-class NodeType(str, Enum):
+class NodeType(StrEnum):
     TEXT = "TEXT"
     SYNONYMS = "SYNONYMS"
     STOPWORDS = "STOPWORDS"
@@ -39,6 +39,10 @@ class EntryNode(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def construct_tags_and_properties_and_comments(cls, data: Any) -> Any:
+        """
+        Before model validation, construct tags, properties, and comments from the data dict.
+        Usage docs: https://docs.pydantic.dev/latest/concepts/validators/#model-validators
+        """
         if not isinstance(data, dict):
             return data
 

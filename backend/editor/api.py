@@ -8,7 +8,7 @@ import logging
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 # FastAPI
 from fastapi import (
@@ -16,6 +16,7 @@ from fastapi import (
     FastAPI,
     Form,
     HTTPException,
+    Query,
     Request,
     Response,
     UploadFile,
@@ -38,13 +39,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import (
-    EntryNodeCreate,
-    ErrorNode,
-    Footer,
-    Header,
-    NodeType,
-)
+from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .models.search_models import EntryNodeSearchResult
 from .scheduler import scheduler_lifespan
@@ -319,7 +314,16 @@ async def find_all_errors(branch: str, taxonomy_name: str) -> ErrorNode:
 
 @app.get("/{taxonomy_name}/{branch}/nodes/entry")
 async def search_entry_nodes(
-    branch: str, taxonomy_name: str, q: str = "", page: int = 1
+    branch: str,
+    taxonomy_name: str,
+    q: Annotated[
+        str,
+        Query(
+            description="The search query string to filter down the returned entry nodes.\
+            Example: is:root language:en not(language):fr"
+        ),
+    ] = "",
+    page: int = 1,
 ) -> EntryNodeSearchResult:
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     result = await search_controller.search_entry_nodes(taxonomy.project_name, q, page)
@@ -373,7 +377,7 @@ async def import_from_github(
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
 
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique(from_github=True):

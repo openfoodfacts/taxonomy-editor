@@ -2,6 +2,7 @@
 Database helper functions for API
 """
 
+import logging
 import re
 import shutil
 import tempfile
@@ -15,7 +16,7 @@ from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
-from . import settings
+from . import settings, utils
 from .controllers.node_controller import create_entry_node
 from .controllers.project_controller import create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
@@ -33,7 +34,8 @@ from .graph_db import (  # Neo4J transactions context managers
 )
 from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
-from .utils import file_cleanup
+
+log = logging.getLogger(__name__)
 
 
 async def async_list(async_iterable):
@@ -47,6 +49,10 @@ class TaxonomyGraph:
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
         self.project_name = "p_" + taxonomy_name + "_" + branch_name
+
+    @property
+    def taxonomy_path_in_repository(self):
+        return utils.taxonomy_path_in_repository(self.taxonomy_name)
 
     def get_label(self, id):
         """
@@ -82,13 +88,13 @@ class TaxonomyGraph:
 
     async def get_github_taxonomy_file(self, tmpdir: str):
         async with TransactionCtx():
-            filename = f"{self.taxonomy_name}.txt"
-            filepath = f"{tmpdir}/{filename}"
-            base_url = (
-                "https://raw.githubusercontent.com/" + settings.repo_uri + "/main/taxonomies/"
+            filepath = f"{tmpdir}/{self.taxonomy_name}.txt"
+            target_url = (
+                f"https://raw.githubusercontent.com/{settings.repo_uri}"
+                f"/main/{self.taxonomy_path_in_repository}"
             )
             try:
-                await run_in_threadpool(urllib.request.urlretrieve, base_url + filename, filepath)
+                await run_in_threadpool(urllib.request.urlretrieve, target_url, filepath)
                 github_object = GithubOperations(self.taxonomy_name, self.branch_name)
                 commit_sha = (await github_object.get_branch("main")).commit.sha
                 file_sha = await github_object.get_file_sha()
@@ -131,6 +137,7 @@ class TaxonomyGraph:
             # add an error node so we can display it with errors in the app
             async with TransactionCtx():
                 await edit_project(self.project_name, ProjectEdit(status=ProjectStatus.FAILED))
+            log.exception(e)
             raise e
 
     async def import_taxonomy(
@@ -169,9 +176,10 @@ class TaxonomyGraph:
                 # Dump taxonomy with given file name and branch name
                 unparser_object(filename, self.branch_name, self.taxonomy_name)
                 # Program file removal in the background
-                background_tasks.add_task(file_cleanup, filename)
+                background_tasks.add_task(utils.file_cleanup, filename)
                 return filename
             except Exception as e:
+                log.exception(e)
                 raise TaxonomyUnparsingError() from e
 
     async def file_export(self, background_tasks: BackgroundTasks):
@@ -605,12 +613,12 @@ class TaxonomyGraph:
         for child_id in children_ids:
             # Create new relationships if it doesn't exist
             query = f"""
-                MATCH ()-[r:is_child_of]->(parent:{self.project_name}:ENTRY),
-                (new_child:{self.project_name}:ENTRY)
+                MATCH (parent:{self.project_name}:ENTRY), (new_child:{self.project_name}:ENTRY)
                 WHERE parent.id = $id AND new_child.id = $child_id
+                OPTIONAL MATCH ()-[r:is_child_of]->(parent)
                 WITH parent, new_child, COUNT(r) AS rel_count
                 MERGE (new_child)-[r:is_child_of]->(parent)
-                ON CREATE SET r.position = rel_count
+                ON CREATE SET r.position = CASE WHEN rel_count IS NULL THEN 1 ELSE rel_count + 1 END
             """
             _result = await get_current_transaction().run(
                 query, {"id": entry, "child_id": child_id}
