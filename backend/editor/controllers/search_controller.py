@@ -88,7 +88,6 @@ def validate_query(project_id: str, query: str) -> Query:
 
     A filter search term is of the format `filter:value` where `filter` is a valid filter value
     and `value` is a valid search value for the particular filter.
-    Some filters can sometimes be negated with the format `not(filter):value`.
     The `value` is surrounded by quotes if it contains whitespaces.
     The value cannot contain quotes.
 
@@ -98,19 +97,24 @@ def validate_query(project_id: str, query: str) -> Query:
     The possible filters are:
       - `is`: `root`, `external` and `not:external` are the only possible values.
         It allows to filter on the root and external nodes.
-      - `language`: the value is a language code. It allows to filter on if the language exists
-        on the node. It can be negated.
+      - `language`: the value is a language code. It allows to filter on
+        if the language exists or not on the node.
+        You can negate the filter with the not:lc syntax.
       - `parent`: the value is a node's id. It allows to filter on if the node is a
-        parent of the node with the given id. It cannot be negated.
+        parent of the node with the given id.
       - `child`: the value is a node's id. It allows to filter on if the node is a child of
-        the node with the given id. It cannot be negated.
+        the node with the given id.
       - `ancestor`: the value is a node's id. It allows to filter on if the node is an ancestor
-        of the node with the given id. It cannot be negated.
+        of the node with the given id.
       - `descendant`: the value is a node's id. It allows to filter on if the node is a descendant
-        of the node with the given id. It cannot be negated.
+        of the node with the given id.
+      - `property`: the value is a property name and an optional value (property_name:value).
+        It allows to filter on if the node has the given property and if the property has the
+        given value if it is provided. You can add the `not:inherited:` prefix to the filter to
+        negate it or to also search on parent nodes for inherited properties.
 
     Examples:
-    - "is:root language:en not(language):fr"
+    - "is:root language:en not(language):fr property:inherited:vegan:en:yes"
     - "is:not:external parent:"en:apple juice" descendant:en:juices "fruit concentrate""
     """
 
