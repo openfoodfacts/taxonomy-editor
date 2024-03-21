@@ -1,0 +1,14 @@
+# External taxonomy 2
+
+# comment
+en:coffee
+fr:café
+
+en:tomato
+fr:tomate
+
+<en:coffee
+en:cappuccino
+
+<en:coffee
+en:latte

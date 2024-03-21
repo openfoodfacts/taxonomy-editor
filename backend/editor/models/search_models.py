@@ -41,12 +41,16 @@ class AbstractFilterSearchTerm(BaseModel, ABC):
 
 class IsFilterSearchTerm(AbstractFilterSearchTerm):
     filter_type: Literal["is"]
-    filter_value: Literal["root"]
+    filter_value: Literal["root"] | Literal["external"] | Literal["not:external"]
 
     def build_cypher_query(self, _param_name: str) -> CypherQuery:
         match self.filter_value:
             case "root":
                 return CypherQuery("NOT (n)-[:is_child_of]->()")
+            case "external":
+                return CypherQuery("n.is_external = true")
+            case "not:external":
+                return CypherQuery("n.is_external = false")
             case _:
                 raise ValueError("Invalid filter value")
 

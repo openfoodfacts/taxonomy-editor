@@ -23,9 +23,10 @@ import Dialog from "@mui/material/Dialog";
 import useFetch from "@/components/useFetch";
 import { createBaseURL } from "@/utils";
 import { greyHexCode } from "@/constants";
-import type { SearchAPIResponse } from "@/backend-types/types";
+
 import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
 import NodesTableBody from "@/components/NodesTableBody";
+import { EntryNodeSearchResult } from "@/client";
 
 type Props = {
   query: string;
@@ -43,12 +44,17 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
     isPending,
     isError,
     errorMessage,
-  } = useFetch<SearchAPIResponse>(
+  } = useFetch<EntryNodeSearchResult>(
     `${baseUrl}nodes/entry?q=${encodeURI(query)}`
   );
 
   const nodes = result?.nodes;
-  const nodeIds = nodes?.map((node) => node.id);
+  const nodeInfos = nodes?.map((node) => {
+    return {
+      id: node.id,
+      is_external: node.isExternal,
+    };
+  });
 
   const handleCloseAddDialog = () => {
     setOpenNewNodeDialog(false);
@@ -140,7 +146,7 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
               </TableRow>
             </TableHead>
             <NodesTableBody
-              nodeIds={nodeIds ?? []}
+              nodeInfos={nodeInfos ?? []}
               taxonomyName={taxonomyName}
               branchName={branchName}
             />

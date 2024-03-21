@@ -35,7 +35,9 @@ class NodeData:
     # to keep track of comments just above the current line
     # during parsing of an entry, to be able to add them
     # to the right property or tag when possible
-    comments_stack: list[(int, str)] = field(default_factory=list)
+    comments_stack: list[tuple[int, str]] = field(default_factory=list)
+    is_external: bool = False  # True if the node comes from another taxonomy
+    original_taxonomy: str | None = None  # the name of the taxonomy the node comes from
 
     def to_dict(self):
         return {
@@ -43,6 +45,8 @@ class NodeData:
             "main_language": self.main_language,
             "preceding_lines": self.preceding_lines,
             "src_position": self.src_position,
+            "is_external": self.is_external,
+            "original_taxonomy": self.original_taxonomy,
             **self.properties,
             **self.tags,
             **self.comments,
@@ -464,6 +468,14 @@ class TaxonomyParser:
         for node in entry_nodes:
             if node.id in ids_to_nodes:
                 first_node = ids_to_nodes[node.id]
+                if first_node.is_external:
+                    # we don't want to merge a node with an external node;
+                    # the external node gets a new id with its original taxonomy name
+                    # and the new one becomes the new "first node"
+                    first_node.id += f"@{first_node.original_taxonomy}"
+                    unique_entry_nodes.append(node)
+                    ids_to_nodes[node.id] = node
+                    continue
                 for key, value in node.tags.items():
                     if not key.startswith("tags_ids_"):
                         # union of the tags
@@ -496,11 +508,25 @@ class TaxonomyParser:
                 ids_to_nodes[node.id] = node
         return unique_entry_nodes
 
-    def _create_taxonomy(self, filename: str) -> Taxonomy:
+    def _create_taxonomy(
+        self, filename: str, external_filenames: list[str] | None = None
+    ) -> Taxonomy:
         """Create the taxonomy from the file"""
+        # parse external taxonomies if any, and add their entry nodes to the main taxonomy
+        external_entry_nodes = []
+        for external_filename in external_filenames or []:
+            external_taxonomy_parser = TaxonomyParser()
+            external_taxonomy = external_taxonomy_parser.parse_file(
+                external_filename, None, self.parser_logger
+            )
+            external_entry_nodes.extend(external_taxonomy.entry_nodes)
+        for node in external_entry_nodes:
+            node.is_external = True
+
         self.parser_logger.info(f"Parsing {filename}")
         harvested_header_data, entries_start_line = self._header_harvest(filename)
         entry_nodes: list[NodeData] = []
+        entry_nodes.extend(external_entry_nodes)
         other_nodes = [
             NodeData(id="__header__", preceding_lines=harvested_header_data, src_position=1)
         ]
@@ -509,6 +535,7 @@ class TaxonomyParser:
         harvested_data = self._harvest_entries(filename, entries_start_line)
         for entry in harvested_data:
             if entry.get_node_type() == NodeType.ENTRY:
+                entry.original_taxonomy = filename.split("/")[-1]
                 entry_nodes.append(entry)
             else:
                 other_nodes.append(entry)
@@ -534,13 +561,18 @@ class TaxonomyParser:
             child_links=child_links,
         )
 
-    def parse_file(self, filename: str, logger: ParserConsoleLogger | None = None) -> Taxonomy:
+    def parse_file(
+        self,
+        filename: str,
+        external_filenames: list[str] | None = None,
+        logger: ParserConsoleLogger | None = None,
+    ) -> Taxonomy:
         if logger:
             self.parser_logger = logger
         """Process the file into a Taxonomy object"""
         start_time = timeit.default_timer()
         filename = normalize_filename(filename)
-        taxonomy = self._create_taxonomy(filename)
+        taxonomy = self._create_taxonomy(filename, external_filenames)
         self.parser_logger.info(f"Parsing done in {timeit.default_timer() - start_time} seconds.")
         self.parser_logger.info(
             f"Found {len(taxonomy.entry_nodes) + len(taxonomy.other_nodes)} nodes"

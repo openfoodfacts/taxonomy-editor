@@ -4,5 +4,5 @@
 /* eslint-disable */
 export type IsFilterSearchTerm = {
   filterType: "is";
-  filterValue: any;
+  filterValue: "root" | "external" | "not:external";
 };

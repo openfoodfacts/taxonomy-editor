@@ -76,3 +76,9 @@ export const createURL = (
       throw new Error(`Unknown id type, id: ${id}`);
   }
 };
+
+/**
+ *  @returns string without .txt extension. Example: 'additives.txt' to 'additives'
+ */
+export const removeTxtExtension = (filename: string): string =>
+  filename.replace(/\.txt$/, "");

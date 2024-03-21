@@ -25,9 +25,9 @@ def test_fileiter(neo4j):
     file_iterator = taxonomy_parser._file_iter(TEST_TAXONOMY_TXT)
     for counter, (_, line) in enumerate(file_iterator):
         assert line == "" or line[0] == "#" or ":" in line
-        if counter == 25:
+        if counter == 26:
             assert line == "carbon_footprint_fr_foodges_value:fr:10"
-    assert counter == 37
+    assert counter == 38
 
 
 @pytest.mark.parametrize(

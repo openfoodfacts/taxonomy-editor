@@ -96,8 +96,8 @@ def validate_query(project_id: str, query: str) -> Query:
     The name search term allows for a text search on a node's tags.
 
     The possible filters are:
-      - `is`: `root` is the only possible value. It allows to filter on the root nodes.
-        It cannot be negated.
+      - `is`: `root`, `external` and `not:external` are the only possible values.
+        It allows to filter on the root and external nodes.
       - `language`: the value is a language code. It allows to filter on if the language exists
         on the node. It can be negated.
       - `parent`: the value is a node's id. It allows to filter on if the node is a
@@ -111,7 +111,7 @@ def validate_query(project_id: str, query: str) -> Query:
 
     Examples:
     - "is:root language:en not(language):fr"
-    - "parent:"en:apple juice" descendant:en:juices "fruit concentrate""
+    - "is:not:external parent:"en:apple juice" descendant:en:juices "fruit concentrate""
     """
 
     search_terms = split_query_into_search_terms(query)
@@ -206,7 +206,7 @@ def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, str, d
         for index, term in enumerate(query.filter_search_terms)
     ]
 
-    full_text_search_query, order_clause = "", ""
+    full_text_search_query, order_clause = "", "WITH n ORDER BY n.is_external, n.id"
     query_params = {}
 
     if lucene_name_search_queries:
@@ -223,7 +223,9 @@ def build_cypher_query(query: Query, skip: int, limit: int) -> tuple[str, str, d
         """
         query_params[SEARCH_QUERY_PARAM_NAME] = " AND ".join(lucene_name_search_queries)
 
-        order_clause = "WITH n, apoc.coll.indexOf(nodeIds, n.id) AS index ORDER BY index"
+        order_clause = (
+            "WITH n, apoc.coll.indexOf(nodeIds, n.id) AS index ORDER BY index, n.is_external"
+        )
 
         name_filter_search_term = "n.id IN nodeIds"
         cypher_filter_search_terms.append(CypherQuery(name_filter_search_term))

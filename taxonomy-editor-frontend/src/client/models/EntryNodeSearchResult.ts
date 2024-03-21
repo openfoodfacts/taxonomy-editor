@@ -10,9 +10,9 @@ import type { IsFilterSearchTerm } from "./IsFilterSearchTerm";
 import type { LanguageFilterSearchTerm } from "./LanguageFilterSearchTerm";
 import type { ParentFilterSearchTerm } from "./ParentFilterSearchTerm";
 export type EntryNodeSearchResult = {
+  q: string;
   nodeCount: number;
   pageCount: number;
-  nodes: Array<EntryNode>;
   filters: Array<
     | IsFilterSearchTerm
     | LanguageFilterSearchTerm
@@ -21,4 +21,5 @@ export type EntryNodeSearchResult = {
     | AncestorFilterSearchTerm
     | DescendantFilterSearchTerm
   >;
+  nodes: Array<EntryNode>;
 };

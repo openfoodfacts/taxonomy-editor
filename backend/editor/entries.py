@@ -2,6 +2,7 @@
 Database helper functions for API
 """
 
+import asyncio
 import logging
 import re
 import shutil
@@ -34,6 +35,7 @@ from .graph_db import (  # Neo4J transactions context managers
 )
 from .models.node_models import EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
+from .settings import EXTERNAL_TAXONOMIES
 
 log = logging.getLogger(__name__)
 
@@ -50,9 +52,8 @@ class TaxonomyGraph:
         self.branch_name = branch_name
         self.project_name = "p_" + taxonomy_name + "_" + branch_name
 
-    @property
-    def taxonomy_path_in_repository(self):
-        return utils.taxonomy_path_in_repository(self.taxonomy_name)
+    def taxonomy_path_in_repository(self, taxonomy_name):
+        return utils.taxonomy_path_in_repository(taxonomy_name)
 
     def get_label(self, id):
         """
@@ -86,29 +87,34 @@ class TaxonomyGraph:
             await run_in_threadpool(shutil.copyfileobj, uploadfile.file, f)
         return filepath
 
-    async def get_github_taxonomy_file(self, tmpdir: str):
+    async def get_github_taxonomy_file(self, tmpdir: str, taxonomy_name: str):
         async with TransactionCtx():
-            filepath = f"{tmpdir}/{self.taxonomy_name}.txt"
+            filepath = f"{tmpdir}/{taxonomy_name}.txt"
+            path_in_repository = self.taxonomy_path_in_repository(taxonomy_name)
             target_url = (
                 f"https://raw.githubusercontent.com/{settings.repo_uri}"
-                f"/main/{self.taxonomy_path_in_repository}"
+                f"/main/{path_in_repository}"
             )
             try:
+                # get taxonomy file
                 await run_in_threadpool(urllib.request.urlretrieve, target_url, filepath)
-                github_object = GithubOperations(self.taxonomy_name, self.branch_name)
-                commit_sha = (await github_object.get_branch("main")).commit.sha
-                file_sha = await github_object.get_file_sha()
-                await edit_project(
-                    self.project_name,
-                    ProjectEdit(
-                        github_checkout_commit_sha=commit_sha, github_file_latest_sha=file_sha
-                    ),
-                )
+                if taxonomy_name == self.taxonomy_name:
+                    # this is the taxonomy we want to edit
+                    # track the current commit to know where to start the PR from
+                    github_object = GithubOperations(self.taxonomy_name, self.branch_name)
+                    commit_sha = (await github_object.get_branch("main")).commit.sha
+                    file_sha = await github_object.get_file_sha()
+                    await edit_project(
+                        self.project_name,
+                        ProjectEdit(
+                            github_checkout_commit_sha=commit_sha, github_file_latest_sha=file_sha
+                        ),
+                    )
                 return filepath
             except Exception as e:
                 raise TaxonomyImportError() from e
 
-    def parse_taxonomy(self, filepath: str):
+    def parse_taxonomy(self, main_filepath: str, other_filepaths: list[str] | None = None):
         """
         Helper function to call the Open Food Facts Python Taxonomy Parser
         """
@@ -117,7 +123,7 @@ class TaxonomyGraph:
             parser_object = parser.Parser(session)
             try:
                 # Parse taxonomy with given file name and branch name
-                parser_object(filepath, self.branch_name, self.taxonomy_name)
+                parser_object(main_filepath, other_filepaths, self.branch_name, self.taxonomy_name)
             except Exception as e:
                 # outer exception handler will put project status to FAILED
                 raise TaxonomyParsingError() from e
@@ -126,11 +132,14 @@ class TaxonomyGraph:
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
                 filepath = await (
-                    self.get_github_taxonomy_file(tmpdir)
+                    self.get_github_taxonomy_file(tmpdir, self.taxonomy_name)
                     if uploadfile is None
                     else self.get_local_taxonomy_file(tmpdir, uploadfile)
                 )
-                await run_in_threadpool(self.parse_taxonomy, filepath)
+                other_filepaths = None
+                if self.taxonomy_name in EXTERNAL_TAXONOMIES:
+                    other_filepaths = await self.fetch_external_taxonomy_files(tmpdir)
+                await run_in_threadpool(self.parse_taxonomy, filepath, other_filepaths)
                 async with TransactionCtx():
                     error_node = await get_error_node(self.project_name)
                     errors_count = len(error_node.errors) if error_node else 0
@@ -148,6 +157,25 @@ class TaxonomyGraph:
                 )
             log.exception(e)
             raise e
+
+    async def fetch_external_taxonomy_files(self, tmpdir: str) -> list[str]:
+        """
+        Helper function to fetch external taxonomies concurrently from Github
+        """
+        external_taxonomy_filepaths = []
+        tasks = []
+
+        # Create tasks for each external taxonomy and store them in a list
+        for external_taxonomy in EXTERNAL_TAXONOMIES[self.taxonomy_name]:
+            task = asyncio.create_task(self.get_github_taxonomy_file(tmpdir, external_taxonomy))
+            tasks.append(task)
+
+        # Wait for all tasks to complete concurrently
+        for task in tasks:
+            external_filepath = await task
+            external_taxonomy_filepaths.append(external_filepath)
+
+        return external_taxonomy_filepaths
 
     async def import_taxonomy(
         self,
