@@ -10,6 +10,7 @@ import {
 } from "react";
 import ISO6391 from "iso-639-1";
 import { EntryNodeSearchResult } from "@/client";
+import { ThreeOptionsSwitch } from "./ThreeOptionsSwitch";
 
 const checkboxTheme = {
   color: "#201a17",
@@ -30,6 +31,7 @@ export const FiltersArea = ({
   filters,
 }: FiltersAreaType) => {
   const [isRootNodesChecked, setIsRootNodesChecked] = useState<boolean>(true);
+  const [taxonomyScope, setTaxonomyScope] = useState<string>("");
   const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>(
     []
   );
@@ -42,13 +44,13 @@ export const FiltersArea = ({
 
   const initializeFilters = (): {
     isRootNodesChecked: boolean;
-    isModifiedChecked: boolean;
+    taxonomyScopeMode: string; //"in" -> in taxonomy, "out" -> outside taxonomy, "" -> filter not selected
     chosenLanguagesCodes: string[];
     withoutChosenLanguagesCodes: string[];
   } => {
     return {
       isRootNodesChecked: false,
-      isModifiedChecked: false,
+      taxonomyScopeMode: "",
       chosenLanguagesCodes: [],
       withoutChosenLanguagesCodes: [],
     };
@@ -61,8 +63,10 @@ export const FiltersArea = ({
         case "is":
           if (filter.filterValue === "root") {
             filtersStates.isRootNodesChecked = true;
-          } else if (filter.filterValue === "modified") {
-            filtersStates.isModifiedChecked = true;
+          } else if (filter.filterValue === "external") {
+            filtersStates.taxonomyScopeMode = "out";
+          } else if (filter.filterValue === "not:external") {
+            filtersStates.taxonomyScopeMode = "in";
           }
           break;
         case "language":
@@ -79,6 +83,7 @@ export const FiltersArea = ({
       }
     }
     setIsRootNodesChecked(filtersStates.isRootNodesChecked);
+    setTaxonomyScope(filtersStates.taxonomyScopeMode);
     setChosenLanguagesCodes(filtersStates.chosenLanguagesCodes);
     setWithoutChosenLanguagesCodes(filtersStates.withoutChosenLanguagesCodes);
   }, []);
@@ -135,6 +140,7 @@ export const FiltersArea = ({
         }
         label="Root nodes"
       />
+      <ThreeOptionsSwitch filterValue={taxonomyScope} setFilterValue={setTaxonomyScope} options={{"in": {text:"IN", isNegated:true},"out":{text:"OUT",isNegated:false}}} setQ={setQ} keySearchTerm="external" setCurrentPage={setCurrentPage}/>
       <MultipleSelectFilter
         label="Translated into"
         filterValue={chosenLanguagesCodes}
