@@ -7,14 +7,16 @@ type FilterInputType = {
     setFilterValue: Dispatch<SetStateAction<string>>,
     setQ: Dispatch<SetStateAction<string>>,
     keySearchTerm: string,
+    setCurrentPage: Dispatch<SetStateAction<number>>,
 }
 
-export const FilterInput = ({label, filterValue, setFilterValue, setQ, keySearchTerm}:FilterInputType) => {
+export const FilterInput = ({label, filterValue, setFilterValue, setQ, keySearchTerm, setCurrentPage}:FilterInputType) => {
 
     const addFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter' && filterValue!=="") {
             // If the filterValue includes a space, wrap it in double quotes. Ex : “en: paprika extract”, en:e101ii
             const value = filterValue.includes(" ")? `"${filterValue}"`: filterValue
+            setCurrentPage(1);
             setQ((prevQ) => `${prevQ} ${keySearchTerm}:${value}`);
             event.preventDefault();
             setFilterValue("");
