@@ -50,7 +50,7 @@ class IsFilterSearchTerm(AbstractFilterSearchTerm):
             case "external":
                 return CypherQuery("n.is_external = true")
             case "not:external":
-                return CypherQuery("n.is_external = false")
+                return CypherQuery("(n.is_external IS NULL OR n.is_external = false)")
             case _:
                 raise ValueError("Invalid filter value")
 
