@@ -11,12 +11,13 @@ services:
       - "${NEO4J_BOLT_EXPOSE:-127.0.0.1:7687}:7687"
     environment:
       # we should not expose it publicly, so no auth is ok
-      NEO4J_AUTH: none
+      - NEO4J_AUTH=none
+      - NEO4J_PLUGINS=["apoc"]
       # memory configuration from .env
-      NEO4J_server_memory_heap_initial__size:
-      NEO4J_server_memory_heap_max__size:
-      NEO4J_server_memory_pagecache_size:
-      NEO4J_db_memory_transaction_total_max:
+      - NEO4J_server_memory_heap_initial__size=${NEO4J_server_memory_heap_initial__size}
+      - NEO4J_server_memory_heap_max__size=${NEO4J_server_memory_heap_max__size}
+      - NEO4J_server_memory_pagecache_size=${NEO4J_server_memory_pagecache_size}
+      - NEO4J_db_memory_transaction_total_max=${NEO4J_db_memory_transaction_total_max}
     volumes:
       # put data in a volume
       - neo4j-data:/data

@@ -441,82 +441,6 @@
         }
       }
     },
-    "/{taxonomy_name}/{branch}/entry": {
-      "get": {
-        "summary": "Find All Entries",
-        "description": "Get all entries within taxonomy",
-        "operationId": "find_all_entries__taxonomy_name___branch__entry_get",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create Entry Node",
-        "description": "Creating a new entry node in a taxonomy",
-        "operationId": "create_entry_node__taxonomy_name___branch__entry_post",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/EntryNodeCreate" }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      }
-    },
     "/{taxonomy_name}/{branch}/synonym/{synonym}": {
       "get": {
         "summary": "Find One Synonym",
@@ -938,10 +862,10 @@
         }
       }
     },
-    "/{taxonomy_name}/{branch}/search": {
+    "/{taxonomy_name}/{branch}/nodes/entry": {
       "get": {
-        "summary": "Search Node",
-        "operationId": "search_node__taxonomy_name___branch__search_get",
+        "summary": "Search Entry Nodes",
+        "operationId": "search_entry_nodes__taxonomy_name___branch__nodes_entry_get",
         "parameters": [
           {
             "name": "branch",
@@ -956,16 +880,34 @@
             "schema": { "type": "string", "title": "Taxonomy Name" }
           },
           {
-            "name": "query",
+            "name": "q",
             "in": "query",
-            "required": true,
-            "schema": { "type": "string", "title": "Query" }
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "The search query string to filter down the returned entry nodes.            Example: is:root language:en not(language):fr",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "The search query string to filter down the returned entry nodes.            Example: is:root language:en not(language):fr"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1, "title": "Page" }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryNodeSearchResult"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1126,6 +1068,49 @@
         }
       }
     },
+    "/{taxonomy_name}/{branch}/entry": {
+      "post": {
+        "summary": "Create Entry Node",
+        "description": "Creating a new entry node in a taxonomy",
+        "operationId": "create_entry_node__taxonomy_name___branch__entry_post",
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Branch" }
+          },
+          {
+            "name": "taxonomy_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Taxonomy Name" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EntryNodeCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/{taxonomy_name}/{branch}": {
       "delete": {
         "summary": "Delete Project",
@@ -1161,6 +1146,15 @@
   },
   "components": {
     "schemas": {
+      "AncestorFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "ancestor", "title": "Filtertype" },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterType", "filterValue"],
+        "title": "AncestorFilterSearchTerm"
+      },
       "Body_upload_taxonomy__taxonomy_name___branch__upload_post": {
         "properties": {
           "file": { "type": "string", "format": "binary", "title": "File" },
@@ -1170,6 +1164,68 @@
         "required": ["file", "description"],
         "title": "Body_upload_taxonomy__taxonomy_name___branch__upload_post"
       },
+      "ChildFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "child", "title": "Filtertype" },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterType", "filterValue"],
+        "title": "ChildFilterSearchTerm"
+      },
+      "DescendantFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "descendant", "title": "Filtertype" },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterType", "filterValue"],
+        "title": "DescendantFilterSearchTerm"
+      },
+      "EntryNode": {
+        "properties": {
+          "id": { "type": "string", "title": "Id" },
+          "precedingLines": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Precedinglines"
+          },
+          "srcPosition": { "type": "integer", "title": "Srcposition" },
+          "mainLanguage": { "type": "string", "title": "Mainlanguage" },
+          "tags": {
+            "additionalProperties": {
+              "items": { "type": "string" },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Tags"
+          },
+          "properties": {
+            "additionalProperties": { "type": "string" },
+            "type": "object",
+            "title": "Properties"
+          },
+          "comments": {
+            "additionalProperties": {
+              "items": { "type": "string" },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Comments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "precedingLines",
+          "srcPosition",
+          "mainLanguage",
+          "tags",
+          "properties",
+          "comments"
+        ],
+        "title": "EntryNode"
+      },
       "EntryNodeCreate": {
         "properties": {
           "name": { "type": "string", "title": "Name" },
@@ -1178,6 +1234,53 @@
         "type": "object",
         "required": ["name", "mainLanguageCode"],
         "title": "EntryNodeCreate"
+      },
+      "EntryNodeSearchResult": {
+        "properties": {
+          "q": { "type": "string", "title": "Q", "default": "" },
+          "nodeCount": {
+            "type": "integer",
+            "title": "Nodecount",
+            "default": 0
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount",
+            "default": 0
+          },
+          "filters": {
+            "items": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/IsFilterSearchTerm" },
+                { "$ref": "#/components/schemas/LanguageFilterSearchTerm" },
+                { "$ref": "#/components/schemas/ParentFilterSearchTerm" },
+                { "$ref": "#/components/schemas/ChildFilterSearchTerm" },
+                { "$ref": "#/components/schemas/AncestorFilterSearchTerm" },
+                { "$ref": "#/components/schemas/DescendantFilterSearchTerm" }
+              ],
+              "discriminator": {
+                "propertyName": "filterType",
+                "mapping": {
+                  "ancestor": "#/components/schemas/AncestorFilterSearchTerm",
+                  "child": "#/components/schemas/ChildFilterSearchTerm",
+                  "descendant": "#/components/schemas/DescendantFilterSearchTerm",
+                  "is": "#/components/schemas/IsFilterSearchTerm",
+                  "language": "#/components/schemas/LanguageFilterSearchTerm",
+                  "parent": "#/components/schemas/ParentFilterSearchTerm"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Filters"
+          },
+          "nodes": {
+            "items": { "$ref": "#/components/schemas/EntryNode" },
+            "type": "array",
+            "title": "Nodes"
+          }
+        },
+        "type": "object",
+        "title": "EntryNodeSearchResult"
       },
       "ErrorNode": {
         "properties": {
@@ -1224,6 +1327,47 @@
         "title": "HTTPValidationError"
       },
       "Header": { "properties": {}, "type": "object", "title": "Header" },
+      "IsFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "is", "title": "Filtertype" },
+          "filterValue": { "const": "root", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterType", "filterValue"],
+        "title": "IsFilterSearchTerm"
+      },
+      "LanguageFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "language", "title": "Filtertype" },
+          "filterValue": {
+            "type": "string",
+            "pattern": "^(not:)?[a-z]{2}$",
+            "title": "Filtervalue"
+          },
+          "negated": {
+            "type": "boolean",
+            "title": "Negated",
+            "readOnly": true
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "readOnly": true
+          }
+        },
+        "type": "object",
+        "required": ["filterType", "filterValue", "negated", "language"],
+        "title": "LanguageFilterSearchTerm"
+      },
+      "ParentFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "parent", "title": "Filtertype" },
+          "filterValue": { "type": "string", "title": "Filtervalue" }
+        },
+        "type": "object",
+        "required": ["filterType", "filterValue"],
+        "title": "ParentFilterSearchTerm"
+      },
       "Project": {
         "properties": {
           "id": { "type": "string", "title": "Id" },

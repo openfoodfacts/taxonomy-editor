@@ -23,9 +23,10 @@ import Dialog from "@mui/material/Dialog";
 import useFetch from "@/components/useFetch";
 import { createBaseURL } from "@/utils";
 import { greyHexCode } from "@/constants";
-import type { SearchAPIResponse } from "@/backend-types/types";
+
 import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
 import NodesTableBody from "@/components/NodesTableBody";
+import { EntryNodeSearchResult } from "@/client";
 
 type Props = {
   query: string;
@@ -39,11 +40,21 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
 
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const {
-    data: nodeInfos,
+    data: result,
     isPending,
     isError,
     errorMessage,
-  } = useFetch<SearchAPIResponse>(`${baseUrl}search?query=${encodeURI(query)}`);
+  } = useFetch<EntryNodeSearchResult>(
+    `${baseUrl}nodes/entry?q=${encodeURI(query)}`
+  );
+
+  const nodes = result?.nodes;
+  const nodeInfos = nodes?.map((node) => {
+    return {
+      id: node.id,
+      is_external: node.isExternal,
+    };
+  });
 
   const handleCloseAddDialog = () => {
     setOpenNewNodeDialog(false);
@@ -108,7 +119,8 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
           <Typography variant="h4">Search Results</Typography>
         </Grid>
         <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-          Number of nodes found: {(nodeInfos ?? []).length}
+          Number of nodes found:{" "}
+          {`${result?.nodeCount} | pages: ${result?.pageCount}`}
         </Typography>
         {/* Table for listing all nodes in taxonomy */}
         <TableContainer sx={{ width: 375 }} component={Paper}>

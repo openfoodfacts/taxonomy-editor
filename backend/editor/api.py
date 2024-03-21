@@ -8,7 +8,7 @@ import logging
 # Required imports
 # ------------------------------------------------------------------------------------#
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 # FastAPI
 from fastapi import (
@@ -16,6 +16,7 @@ from fastapi import (
     FastAPI,
     Form,
     HTTPException,
+    Query,
     Request,
     Response,
     UploadFile,
@@ -31,7 +32,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from . import graph_db
 
 # Controller imports
-from .controllers import project_controller
+from .controllers import project_controller, search_controller
 from .entries import TaxonomyGraph
 
 # Custom exceptions
@@ -40,6 +41,7 @@ from .exceptions import GithubBranchExistsError, GithubUploadError
 # Data model imports
 from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
+from .models.search_models import EntryNodeSearchResult
 from .scheduler import scheduler_lifespan
 
 # -----------------------------------------------------------------------------------#
@@ -231,16 +233,6 @@ async def find_one_entry_children(response: Response, branch: str, taxonomy_name
     return one_entry_children
 
 
-@app.get("/{taxonomy_name}/{branch}/entry")
-async def find_all_entries(response: Response, branch: str, taxonomy_name: str):
-    """
-    Get all entries within taxonomy
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    all_entries = await taxonomy.get_all_nodes("ENTRY")
-    return all_entries
-
-
 @app.get("/{taxonomy_name}/{branch}/synonym/{synonym}")
 async def find_one_synonym(response: Response, branch: str, taxonomy_name: str, synonym: str):
     """
@@ -317,10 +309,21 @@ async def find_all_errors(branch: str, taxonomy_name: str) -> ErrorNode:
     return result
 
 
-@app.get("/{taxonomy_name}/{branch}/search")
-async def search_node(response: Response, branch: str, taxonomy_name: str, query: str):
+@app.get("/{taxonomy_name}/{branch}/nodes/entry")
+async def search_entry_nodes(
+    branch: str,
+    taxonomy_name: str,
+    q: Annotated[
+        str,
+        Query(
+            description="The search query string to filter down the returned entry nodes.\
+            Example: is:root language:en not(language):fr"
+        ),
+    ] = "",
+    page: int = 1,
+) -> EntryNodeSearchResult:
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    result = await taxonomy.full_text_search(query)
+    result = await search_controller.search_entry_nodes(taxonomy.project_name, q, page)
     return result
 
 

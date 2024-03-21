@@ -5,6 +5,4 @@ export type NodeInfo = {
 
 export type RootEntriesAPIResponse = Array<NodeInfo[]>;
 
-export type SearchAPIResponse = NodeInfo[];
-
 export type ParentsAPIResponse = string[];
