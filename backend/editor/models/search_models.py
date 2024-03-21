@@ -10,6 +10,11 @@ from .node_models import EntryNode
 
 @dataclass(frozen=True)
 class CypherQuery:
+    """
+    Each search filter will return a CypherQuery with a condition (query)
+    and corresponding parameters (params)
+    """
+
     query: str
     params: dict[str, str] = field(default_factory=dict)
 
@@ -118,6 +123,7 @@ FilterSearchTerm = Annotated[
     Field(discriminator="filter_type"),
 ]
 
+# This will create the right FilterSearchTerm based upon filter_type
 # https://docs.pydantic.dev/dev/concepts/type_adapter/
 FilterSearchTermValidator = TypeAdapter(FilterSearchTerm)
 

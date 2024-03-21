@@ -73,6 +73,7 @@ def parse_filter_search_term(search_term: str) -> FilterSearchTerm | None:
         return None
 
     try:
+        # dispatch according to filter_name
         return FilterSearchTermValidator.validate_python(
             {"filter_type": filter_name, "filter_value": filter_value}
         )
