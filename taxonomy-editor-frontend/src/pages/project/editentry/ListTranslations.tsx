@@ -68,7 +68,7 @@ export const ListTranslations = ({
     let newShownLanguageCodes: string[];
     if (shownLanguageCodes.includes(languageCode)) {
       newShownLanguageCodes = shownLanguageCodes.filter(
-        (lang) => lang !== languageCode
+        (langCode) => langCode !== languageCode
       );
     } else {
       newShownLanguageCodes = [...shownLanguageCodes, languageCode];
@@ -94,7 +94,7 @@ export const ListTranslations = ({
     newLanguageCodes.forEach((languageCode) => {
       if (shownLanguageCodes.includes(languageCode)) {
         newShownLanguageCodes = newShownLanguageCodes.filter(
-          (lang) => lang !== languageCode
+          (langCode) => langCode !== languageCode
         );
       } else {
         newShownLanguageCodes.push(languageCode);
