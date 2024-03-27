@@ -6,6 +6,7 @@ import {
   Button,
   IconButton,
   Box,
+  Alert,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -26,7 +27,12 @@ interface Relations {
   child: string;
 }
 
-const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
+const ListEntryChildren = ({
+  url,
+  urlPrefix,
+  setUpdateNodeChildren,
+  hasChanges,
+}) => {
   const [relations, setRelations] = useState<Relations[]>([]);
   const [newChild, setNewChild] = useState("");
   const [newLanguageCode, setNewLanguageCode] = useState("");
@@ -122,6 +128,14 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         </IconButton>
       </Stack>
 
+      {/* Renders warning message to save changes to be able to click on a child node */}
+      {hasChanges ? (
+        <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
+          Changes are pending and have not been saved. Please save your changes
+          before navigating to a child node.
+        </Alert>
+      ) : null}
+
       {/* Renders parents or children of the node */}
       <Stack direction="row" flexWrap="wrap">
         {relations.map((relationObject) => (
@@ -131,7 +145,11 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
             alignItems="center"
           >
             <Link
-              to={`${urlPrefix}/entry/${relationObject["child"]}`}
+              to={
+                hasChanges
+                  ? "#"
+                  : `${urlPrefix}/entry/${relationObject["child"]}`
+              }
               style={{ color: "#0064c8", display: "inline-block" }}
             >
               <Typography sx={{ ml: 8 }} variant="h6">
