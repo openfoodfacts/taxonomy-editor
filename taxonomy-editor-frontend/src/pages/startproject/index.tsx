@@ -36,7 +36,6 @@ export const StartProject = () => {
       `${toSnakeCase(taxonomyName.toLowerCase())}_${ownerName}_${Math.floor(
         Date.now() / 1000
       )}`
-        // .replace(/\s+/g, "_")
         .replace(/[\s-]+/g, "_")
         .toLowerCase()
     );
@@ -83,7 +82,6 @@ export const StartProject = () => {
 
   const isOwnerNameInvalid = (name: string) => {
     if (name === "") return false;
-    // const pattern = /^[a-zA-Z0-9 _]+$/;
     const pattern = /^[a-zA-Z0-9 _-]+$/;
     if (!pattern.test(name)) {
       return true;
