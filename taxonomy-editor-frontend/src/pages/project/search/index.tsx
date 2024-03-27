@@ -62,7 +62,12 @@ export const AdvancedResearchForm = () => {
         filters={entryNodeSearchResult?.filters ?? []}
       />
       <AdvancedResearchResults
-        nodeIds={entryNodeSearchResult?.nodes.map((node) => node.id) ?? []}
+        nodeInfos={
+          entryNodeSearchResult?.nodes.map((node) => ({
+            id: node.id,
+            is_external: node.isExternal,
+          })) ?? []
+        }
         nodeCount={entryNodeSearchResult?.nodeCount}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}

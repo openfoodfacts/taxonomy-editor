@@ -20,16 +20,17 @@ import {
 import { Dispatch, SetStateAction, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { useParams } from "react-router-dom";
+import { NodeInfo } from "@/backend-types/types";
 
 type AdvancedResearchResultsType = {
-  nodeIds: string[];
+  nodeInfos: NodeInfo[];
   nodeCount: number | undefined;
   currentPage: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
 export const AdvancedResearchResults = ({
-  nodeIds,
+  nodeInfos,
   nodeCount = 0,
   currentPage,
   setCurrentPage,
@@ -68,26 +69,26 @@ export const AdvancedResearchResults = ({
         <Table>
           <TableHead>
             <TableRow>
-              <Stack direction="row" alignItems="center">
-                <TableCell align="left">
+              <TableCell align="left">
+                <Stack direction="row" alignItems="center">
                   <Typography variant="h6">Nodes</Typography>
-                </TableCell>
-                <IconButton
-                  sx={{ ml: 1, color: greyHexCode }}
-                  onClick={() => {
-                    setOpenNewNodeDialog(true);
-                  }}
-                >
-                  <AddBoxIcon />
-                </IconButton>
-              </Stack>
+                  <IconButton
+                    sx={{ ml: 1, color: greyHexCode }}
+                    onClick={() => {
+                      setOpenNewNodeDialog(true);
+                    }}
+                  >
+                    <AddBoxIcon />
+                  </IconButton>
+                </Stack>
+              </TableCell>
               <TableCell align="left">
                 <Typography variant="h6">Action</Typography>
               </TableCell>
             </TableRow>
           </TableHead>
           <NodesTableBody
-            nodeIds={nodeIds ?? []}
+            nodeInfos={nodeInfos ?? []}
             taxonomyName={taxonomyName ?? ""}
             branchName={branchName ?? ""}
           />

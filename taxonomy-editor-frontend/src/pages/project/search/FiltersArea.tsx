@@ -61,12 +61,16 @@ export const FiltersArea = ({
     for (const filter of updatedFilters) {
       switch (filter.filterType) {
         case "is":
-          if (filter.filterValue === "root") {
-            filtersStates.isRootNodesChecked = true;
-          } else if (filter.filterValue === "external") {
-            filtersStates.taxonomyScopeMode = "out";
-          } else if (filter.filterValue === "not:external") {
-            filtersStates.taxonomyScopeMode = "in";
+          switch (filter.filterValue) {
+            case "root":
+              filtersStates.isRootNodesChecked = true;
+              break;
+            case "external":
+              filtersStates.taxonomyScopeMode = "out";
+              break;
+            case "not:external":
+              filtersStates.taxonomyScopeMode = "in";
+              break;
           }
           break;
         case "language":
@@ -140,7 +144,17 @@ export const FiltersArea = ({
         }
         label="Root nodes"
       />
-      <ThreeOptionsSwitch filterValue={taxonomyScope} setFilterValue={setTaxonomyScope} options={{"in": {text:"IN", isNegated:true},"out":{text:"OUT",isNegated:false}}} setQ={setQ} keySearchTerm="external" setCurrentPage={setCurrentPage}/>
+      <ThreeOptionsSwitch
+        filterValue={taxonomyScope}
+        setFilterValue={setTaxonomyScope}
+        options={{
+          in: { text: "IN", isNegated: true },
+          out: { text: "OUT", isNegated: false },
+        }}
+        setQ={setQ}
+        keySearchTerm="external"
+        setCurrentPage={setCurrentPage}
+      />
       <MultipleSelectFilter
         label="Translated into"
         filterValue={chosenLanguagesCodes}
