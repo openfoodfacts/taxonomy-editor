@@ -22,6 +22,19 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
+function formatDate(date) {
+  const map = {
+      mm: date.getMonth() + 1,
+      dd: date.getDate(),
+      yy: date.getFullYear().toString().slice(-2),
+      yyyy: date.getFullYear(),
+      HH: date.getHours().toString().slice(-2),
+      MinMin: date.getMinutes().toString().slice(-2)
+  }
+
+  return `${map.mm}${map.dd}${map.yy}_${map.HH}_${map.MinMin}`;
+}
+
 export const StartProject = () => {
   const [ownerName, setOwnerName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
@@ -32,9 +45,7 @@ export const StartProject = () => {
 
   const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
-    return `${toSnakeCase(
-      taxonomyName.toLowerCase()
-    )}_${ownerName}_${Math.floor(Date.now() / 1000)}`
+    return `${taxonomyName.toLowerCase()}_${ownerName}_${formatDate(new Date())}`
       .replace(/[\s-]+/g, "_")
       .toLowerCase();
   }, [ownerName, taxonomyName]);
