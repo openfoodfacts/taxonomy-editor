@@ -67,7 +67,8 @@ const ExportTaxonomyToGithub = ({
         sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
         variant="h5"
       >
-        Click the button below to export to GitHub
+        Click the button below to export to GitHub. Your changes will be
+        reviewed by the community before being accepted.
       </Typography>
       <Button
         startIcon={<GitHubIcon />}
@@ -99,7 +100,12 @@ const ExportTaxonomyToGithub = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePullRequestDialog}>Close</Button>
-          <Button component={MuiLink} target="_blank" href={pullRequestURL}>
+          <Button
+            component={MuiLink}
+            target="_blank"
+            rel="noopener"
+            href={pullRequestURL}
+          >
             View your pull request
           </Button>
         </DialogActions>
