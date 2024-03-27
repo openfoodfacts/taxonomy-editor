@@ -24,13 +24,13 @@ const branchNameRegEx = /[^a-z0-9_]+/;
 
 function formatDate(date) {
   const map = {
-      mm: date.getMonth() + 1,
-      dd: date.getDate(),
-      yy: date.getFullYear().toString().slice(-2),
-      yyyy: date.getFullYear(),
-      HH: date.getHours().toString().slice(-2),
-      MinMin: date.getMinutes().toString().slice(-2)
-  }
+    mm: date.getMonth() + 1,
+    dd: date.getDate(),
+    yy: date.getFullYear().toString().slice(-2),
+    yyyy: date.getFullYear(),
+    HH: date.getHours().toString().slice(-2),
+    MinMin: date.getMinutes().toString().slice(-2),
+  };
 
   return `${map.mm}${map.dd}${map.yy}_${map.HH}_${map.MinMin}`;
 }
@@ -45,7 +45,9 @@ export const StartProject = () => {
 
   const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
-    return `${taxonomyName.toLowerCase()}_${ownerName}_${formatDate(new Date())}`
+    return `${taxonomyName.toLowerCase()}_${ownerName}_${formatDate(
+      new Date()
+    )}`
       .replace(/[\s-]+/g, "_")
       .toLowerCase();
   }, [ownerName, taxonomyName]);
