@@ -1,6 +1,6 @@
 import { DefaultService } from "@/client";
+import { Alert, AlertTitle } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { CustomAlert } from "./CustomAlert";
 
 interface WarningParsingErrorsProps {
   taxonomyName: string;
@@ -28,13 +28,12 @@ export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
 
   if (errorNode && errorNode?.errors.length !== 0) {
     return (
-      <CustomAlert
-        severity="warning"
-        title="Parsing errors"
-        message="This taxonomy has encountered parsing errors. 
-        Please review and fix errors on the 'Errors' page, so that the 
-        taxonomy can then be edited."
-      />
+      <Alert severity="warning">
+        <AlertTitle>Parsing errors</AlertTitle>
+        This taxonomy has encountered parsing errors. Please review and fix
+        errors on the &apos;Errors&apos; page, so that the taxonomy can then be
+        edited.
+      </Alert>
     );
   }
 
