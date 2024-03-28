@@ -22,6 +22,18 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
+function formatDate(date) {
+  const map = {
+    mm: ("0" + (date.getMonth() + 1)).slice(-2),
+    dd: ("0" + date.getDate()).slice(-2),
+    yy: ("0" + date.getFullYear()).slice(-2),
+    HH: ("0" + date.getHours()).slice(-2),
+    MinMin: ("0" + date.getMinutes()).slice(-2),
+  };
+
+  return `${map.mm}${map.dd}${map.yy}_${map.HH}_${map.MinMin}`;
+}
+
 export const StartProject = () => {
   const [ownerName, setOwnerName] = useState("");
   const [taxonomyName, setTaxonomyName] = useState("");
@@ -32,9 +44,9 @@ export const StartProject = () => {
 
   const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
-    return `${toSnakeCase(taxonomyName.toLowerCase())}_${ownerName
-      .replace(" ", "")
-      .toLowerCase()}_${Math.floor(Date.now() / 1000)}`;
+    return `${formatDate(new Date())}_${taxonomyName}_${ownerName}`
+      .replace(/[\s-]+/g, "_")
+      .toLowerCase();
   }, [ownerName, taxonomyName]);
 
   const [branchName, setBranchName] = useState(findDefaultBranchName());
@@ -78,7 +90,7 @@ export const StartProject = () => {
 
   const isOwnerNameInvalid = (name: string) => {
     if (name === "") return false;
-    const pattern = /^[a-zA-Z0-9 _]+$/;
+    const pattern = /^[a-zA-Z0-9 _-]+$/;
     if (!pattern.test(name)) {
       return true;
     }
