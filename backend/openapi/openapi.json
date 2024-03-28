@@ -1261,7 +1261,8 @@
                 { "$ref": "#/components/schemas/ParentFilterSearchTerm" },
                 { "$ref": "#/components/schemas/ChildFilterSearchTerm" },
                 { "$ref": "#/components/schemas/AncestorFilterSearchTerm" },
-                { "$ref": "#/components/schemas/DescendantFilterSearchTerm" }
+                { "$ref": "#/components/schemas/DescendantFilterSearchTerm" },
+                { "$ref": "#/components/schemas/PropertyFilterSearchTerm" }
               ],
               "discriminator": {
                 "propertyName": "filterType",
@@ -1271,7 +1272,8 @@
                   "descendant": "#/components/schemas/DescendantFilterSearchTerm",
                   "is": "#/components/schemas/IsFilterSearchTerm",
                   "language": "#/components/schemas/LanguageFilterSearchTerm",
-                  "parent": "#/components/schemas/ParentFilterSearchTerm"
+                  "parent": "#/components/schemas/ParentFilterSearchTerm",
+                  "property": "#/components/schemas/PropertyFilterSearchTerm"
                 }
               }
             },
@@ -1433,6 +1435,42 @@
         "type": "string",
         "enum": ["OPEN", "EXPORTED", "LOADING", "FAILED"],
         "title": "ProjectStatus"
+      },
+      "PropertyFilterSearchTerm": {
+        "properties": {
+          "filterType": { "const": "property", "title": "Filtertype" },
+          "filterValue": { "type": "string", "title": "Filtervalue" },
+          "negated": {
+            "type": "boolean",
+            "title": "Negated",
+            "readOnly": true
+          },
+          "inherited": {
+            "type": "boolean",
+            "title": "Inherited",
+            "readOnly": true
+          },
+          "propertyName": {
+            "type": "string",
+            "title": "Propertyname",
+            "readOnly": true
+          },
+          "propertyValue": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Propertyvalue",
+            "readOnly": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "filterType",
+          "filterValue",
+          "negated",
+          "inherited",
+          "propertyName",
+          "propertyValue"
+        ],
+        "title": "PropertyFilterSearchTerm"
       },
       "ValidationError": {
         "properties": {
