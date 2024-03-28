@@ -155,6 +155,7 @@ jobs:
             # and must have write access to PRs on the target repo (see REPO_URI)
             echo "GITHUB_PAT=${{ secrets.OFF_SERVER_GITHUB_PAT }}" >> .env
             echo "REPO_URI=${{ env.REPO_URI }}" >> .env
+            echo "FRONTEND_URL=https://ui.${{ env.TAXONOMY_EDITOR_DOMAIN }}" >> .env
 
       - name: Create external Docker volumes
         uses: appleboy/ssh-action@master
