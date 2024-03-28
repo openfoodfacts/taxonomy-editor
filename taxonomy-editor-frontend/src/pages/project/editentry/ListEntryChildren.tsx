@@ -129,12 +129,12 @@ const ListEntryChildren = ({
       </Stack>
 
       {/* Renders warning message to save changes to be able to click on a child node */}
-      {hasChanges ? (
-        <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
+      {hasChanges && (
+        <Alert severity="warning" sx={{ mb: 1, ml: 4, width: "fit-content" }}>
           Changes are pending and have not been saved. Please save your changes
           before navigating to a child node.
         </Alert>
-      ) : null}
+      )}
 
       {/* Renders parents or children of the node */}
       <Stack direction="row" flexWrap="wrap">
