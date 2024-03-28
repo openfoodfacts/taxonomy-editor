@@ -44,9 +44,9 @@ export const StartProject = () => {
 
   const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
-    return `${taxonomyName.toLowerCase()}_${ownerName}_${formatDate(
-      new Date()
-    )}`.replace(/[\s-]+/g, "_");
+    return `${formatDate(new Date())}_${taxonomyName}_${ownerName}`
+      .replace(/[\s-]+/g, "_")
+      .toLowerCase();
   }, [ownerName, taxonomyName]);
 
   const [branchName, setBranchName] = useState(findDefaultBranchName());
