@@ -67,8 +67,8 @@ const ExportTaxonomyToGithub = ({
         sx={{ mt: 10, flexGrow: 1, textAlign: "center" }}
         variant="h5"
       >
-        Click the button below to export to GitHub. Your changes will be
-        reviewed by the community before being accepted.
+        Click the button below to export to GitHub. <br />
+        Your changes will be reviewed by the community before being accepted.
       </Typography>
       <Button
         startIcon={<GitHubIcon />}
