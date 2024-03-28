@@ -1,60 +1,47 @@
-import CircularProgress from "@mui/material/CircularProgress";
-import { useState } from "react";
-
-import {
-  Typography,
-  Snackbar,
-  Alert,
-  Box,
-  Grid,
-  Stack,
-  IconButton,
-  Paper,
-} from "@mui/material";
-import Container from "@mui/material/Container";
-import Table from "@mui/material/Table";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import AddBoxIcon from "@mui/icons-material/AddBox";
-import Dialog from "@mui/material/Dialog";
-
-import useFetch from "@/components/useFetch";
-import { createBaseURL } from "@/utils";
-import { greyHexCode } from "@/constants";
-
 import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
 import NodesTableBody from "@/components/NodesTableBody";
-import { EntryNodeSearchResult } from "@/client";
+import { greyHexCode } from "@/constants";
+import {
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  Stack,
+  TableCell,
+  Typography,
+  IconButton,
+  Dialog,
+  Alert,
+  Grid,
+  Snackbar,
+  TablePagination,
+} from "@mui/material";
+import { Dispatch, SetStateAction, useState } from "react";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import { useParams } from "react-router-dom";
+import { NodeInfo } from "@/backend-types/types";
 
-type Props = {
-  query: string;
-  taxonomyName: string;
-  branchName: string;
+type AdvancedResearchResultsType = {
+  nodeInfos: NodeInfo[];
+  nodeCount: number | undefined;
+  currentPage: number;
+  setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
-const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
+export const AdvancedResearchResults = ({
+  nodeInfos,
+  nodeCount = 0,
+  currentPage,
+  setCurrentPage,
+}: AdvancedResearchResultsType) => {
+  const { taxonomyName, branchName } = useParams<{
+    taxonomyName: string;
+    branchName: string;
+  }>();
+
   const [openNewNodeDialog, setOpenNewNodeDialog] = useState(false);
   const [showNewNodeSuccess, setShowNewNodeSuccess] = useState(false);
-
-  const baseUrl = createBaseURL(taxonomyName, branchName);
-  const {
-    data: result,
-    isPending,
-    isError,
-    errorMessage,
-  } = useFetch<EntryNodeSearchResult>(
-    `${baseUrl}nodes/entry?q=${encodeURI(query)}`
-  );
-
-  const nodes = result?.nodes;
-  const nodeInfos = nodes?.map((node) => {
-    return {
-      id: node.id,
-      is_external: node.isExternal,
-    };
-  });
 
   const handleCloseAddDialog = () => {
     setOpenNewNodeDialog(false);
@@ -64,73 +51,27 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
     setShowNewNodeSuccess(false);
   };
 
-  // Displaying errorMessages if any
-  if (isError) {
-    return (
-      <Container component="main" maxWidth="xs">
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Typography sx={{ mt: 2 }} variant="h5">
-            {errorMessage}
-          </Typography>
-        </Grid>
-      </Container>
-    );
-  }
-
-  // Loading...
-  if (isPending) {
-    return (
-      <Grid
-        container
-        direction="column"
-        alignItems="center"
-        justifyContent="center"
-        height="100%"
-      >
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "1em",
-          }}
-        >
-          <CircularProgress sx={{ textAlign: "center" }} />
-        </Box>
-      </Grid>
-    );
-  }
+  const handlePageChange = (
+    event: React.MouseEvent | null,
+    newPage: number
+  ) => {
+    setCurrentPage(newPage + 1);
+  };
 
   return (
-    <Box>
-      <Grid
-        container
-        direction="column"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Grid item xs={3} sx={{ mt: 4 }}>
-          <Typography variant="h4">Search Results</Typography>
-        </Grid>
-        <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-          Number of nodes found:{" "}
-          {`${result?.nodeCount} | pages: ${result?.pageCount}`}
-        </Typography>
-        {/* Table for listing all nodes in taxonomy */}
-        <TableContainer sx={{ width: 375 }} component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
+    <Grid
+      container
+      direction="column"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <TableContainer sx={{ width: 375 }} component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell align="left">
                 <Stack direction="row" alignItems="center">
-                  <TableCell align="left">
-                    <Typography variant="h6">Nodes</Typography>
-                  </TableCell>
+                  <Typography variant="h6">Nodes</Typography>
                   <IconButton
                     sx={{ ml: 1, color: greyHexCode }}
                     onClick={() => {
@@ -140,51 +81,55 @@ const SearchResults = ({ query, taxonomyName, branchName }: Props) => {
                     <AddBoxIcon />
                   </IconButton>
                 </Stack>
-                <TableCell align="left">
-                  <Typography variant="h6">Action</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <NodesTableBody
-              nodeInfos={nodeInfos ?? []}
-              taxonomyName={taxonomyName}
-              branchName={branchName}
-            />
-          </Table>
-        </TableContainer>
-
-        {/* Dialog box for adding nodes */}
-        <Dialog open={openNewNodeDialog} onClose={handleCloseAddDialog}>
-          <CreateNodeDialogContent
-            taxonomyName={taxonomyName}
-            branchName={branchName}
-            onCloseDialog={handleCloseAddDialog}
-            onSuccess={() => {
-              setOpenNewNodeDialog(false);
-              setShowNewNodeSuccess(true);
-            }}
+              </TableCell>
+              <TableCell align="left">
+                <Typography variant="h6">Action</Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <NodesTableBody
+            nodeInfos={nodeInfos ?? []}
+            taxonomyName={taxonomyName ?? ""}
+            branchName={branchName ?? ""}
           />
-        </Dialog>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        count={nodeCount}
+        rowsPerPage={50}
+        page={currentPage - 1}
+        component="div"
+        onPageChange={handlePageChange}
+      ></TablePagination>
 
-        {/* Snackbar for acknowledgment of addition of node */}
-        <Snackbar
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          open={showNewNodeSuccess}
-          autoHideDuration={3000}
+      {/* Dialog box for adding nodes */}
+      <Dialog open={openNewNodeDialog} onClose={handleCloseAddDialog}>
+        <CreateNodeDialogContent
+          taxonomyName={taxonomyName ?? ""}
+          branchName={branchName ?? ""}
+          onCloseDialog={handleCloseAddDialog}
+          onSuccess={() => {
+            setOpenNewNodeDialog(false);
+            setShowNewNodeSuccess(true);
+          }}
+        />
+      </Dialog>
+      {/* Snackbar for acknowledgment of addition of node */}
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={showNewNodeSuccess}
+        autoHideDuration={3000}
+        onClose={handleCloseSuccessSnackbar}
+      >
+        <Alert
+          elevation={6}
+          variant="filled"
           onClose={handleCloseSuccessSnackbar}
+          severity="success"
         >
-          <Alert
-            elevation={6}
-            variant="filled"
-            onClose={handleCloseSuccessSnackbar}
-            severity="success"
-          >
-            The node has been successfully added!
-          </Alert>
-        </Snackbar>
-      </Grid>
-    </Box>
+          The node has been successfully added!
+        </Alert>
+      </Snackbar>
+    </Grid>
   );
 };
-
-export default SearchResults;
