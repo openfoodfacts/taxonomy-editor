@@ -143,6 +143,7 @@ export const ResponsiveAppBar = () => {
                 component={Link}
                 to="/"
                 target="_blank"
+                rel="noopener"
               >
                 <img
                   src={logoUrl}

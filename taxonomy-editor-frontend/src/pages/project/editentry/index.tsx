@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { Typography, Stack, IconButton, Button, Box } from "@mui/material";
+import {
+  Typography,
+  Stack,
+  IconButton,
+  Alert,
+  Button,
+  Box,
+} from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -13,7 +20,6 @@ import AccumulateAllComponents from "./AccumulateAllComponents";
 import { createBaseURL, removeTxtExtension, toTitleCase } from "@/utils";
 import { greyHexCode } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
-import { CustomAlert } from "@/components/CustomAlert";
 import { DefaultService } from "@/client";
 
 type EditEntryProps = {
@@ -76,13 +82,11 @@ const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
           )}
         </Stack>
         {isExternalNode && (
-          <CustomAlert
-            message={`This node has been imported from another taxonomy (${toTitleCase(
+          <Alert severity="info" sx={{ ml: 4, mb: 2, width: "fit-content" }}>
+            {`This node has been imported from another taxonomy (${toTitleCase(
               removeTxtExtension(node.original_taxonomy)
             )}) to extend the current taxonomy. You can only add children from the current taxonomy to it.`}
-            severity="info"
-            sx={{ ml: 4, mb: 2, width: "fit-content" }}
-          />
+          </Alert>
         )}
       </Box>
 

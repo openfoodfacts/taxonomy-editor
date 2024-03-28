@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import { Typography, Box, Grid, Link as MuiLink } from "@mui/material";
+import { Typography, Box, Grid, Link as MuiLink, Alert } from "@mui/material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useQuery } from "@tanstack/react-query";
@@ -105,21 +105,26 @@ export const GoToProject = () => {
   }
 
   return (
-    <Box sx={{ overflowY: "scroll" }}>
-      <Grid
-        container
-        direction="column"
-        alignItems="center"
-        justifyContent="center"
-        gap={2}
-      >
-        <Typography sx={{ mt: 2 }} variant="h6">
-          List of current projects
-        </Typography>
-        <Box sx={{ width: "90%", mb: 6 }}>
-          <ProjectsTable projects={data} />
-        </Box>
-      </Grid>
-    </Box>
+    <>
+      <Alert severity="warning">
+        Please be careful when editing projects you do not own.
+      </Alert>
+      <Box sx={{ overflowY: "scroll" }}>
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          gap={2}
+        >
+          <Typography sx={{ mt: 2 }} variant="h6">
+            List of current projects
+          </Typography>
+          <Box sx={{ width: "90%", mb: 6 }}>
+            <ProjectsTable projects={data} />
+          </Box>
+        </Grid>
+      </Box>
+    </>
   );
 };
