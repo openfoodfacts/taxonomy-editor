@@ -36,6 +36,7 @@ class EntryNode(BaseModel):
     properties: dict[str, str]
     comments: dict[str, list[str]]
     is_external: bool = False
+    original_taxonomy: str | None = None
 
     @model_validator(mode="before")
     @classmethod
