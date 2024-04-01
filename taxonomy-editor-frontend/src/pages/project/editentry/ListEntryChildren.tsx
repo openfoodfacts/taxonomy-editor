@@ -21,6 +21,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ISO6391 from "iso-639-1";
 import { ENTER_KEYCODE } from "@/constants";
 import { greyHexCode } from "@/constants";
+import equal from "fast-deep-equal";
 
 interface Relations {
   index: string;
@@ -30,7 +31,10 @@ interface Relations {
 const ListEntryChildren = ({
   url,
   urlPrefix,
+  updateChildren,
   setUpdateNodeChildren,
+  previousUpdateChildren,
+  setPreviousUpdateChildren,
   hasChanges,
 }) => {
   const [relations, setRelations] = useState<Relations[]>([]);
@@ -52,6 +56,9 @@ const ListEntryChildren = ({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       setUpdateNodeChildren(incomingData.map((el) => el?.[0]));
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      setPreviousUpdateChildren(incomingData.map((el) => el?.[0]));
       const arrayData: Relations[] = [];
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -60,7 +67,7 @@ const ListEntryChildren = ({
       );
       setRelations(arrayData);
     }
-  }, [incomingData, setUpdateNodeChildren]);
+  }, [incomingData, setPreviousUpdateChildren, setUpdateNodeChildren]);
 
   // Helper functions for Dialog component
   const handleCloseDialog = () => {
@@ -129,10 +136,13 @@ const ListEntryChildren = ({
       </Stack>
 
       {/* Renders warning message to save changes to be able to click on a child node */}
-      {hasChanges && (
+      {(!equal(updateChildren, previousUpdateChildren) || hasChanges) && (
         <Alert severity="warning" sx={{ mb: 1, ml: 4, width: "fit-content" }}>
-          Changes are pending and have not been saved. Please save your changes
-          before navigating to a child node.
+          {!equal(updateChildren, previousUpdateChildren) &&
+            "You've just created a new child. To navigate to it, please ensure your changes are saved first."}
+          {!equal(updateChildren, previousUpdateChildren) && <br />}
+          {hasChanges &&
+            "Changes are pending and have not been saved. Please save your changes before navigating to any child node. If you prefer not to save your pending changes but wish to avoid losing them, you can navigate to a child node in a new window."}
         </Alert>
       )}
 
@@ -146,7 +156,9 @@ const ListEntryChildren = ({
           >
             <Link
               to={
-                hasChanges
+                // Is this a newly created child node that hasn't been saved yet?
+                updateChildren.includes(relationObject["child"]) &&
+                !previousUpdateChildren.includes(relationObject["child"])
                   ? "#"
                   : `${urlPrefix}/entry/${relationObject["child"]}`
               }
