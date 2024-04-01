@@ -16,6 +16,9 @@ import {
   Grid,
   Snackbar,
   TablePagination,
+  Box,
+  CircularProgress,
+  Container,
 } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
@@ -27,6 +30,9 @@ type AdvancedResearchResultsType = {
   nodeCount: number | undefined;
   currentPage: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
+  isError: boolean;
+  errorMessage: string;
+  isPending: boolean;
 };
 
 export const AdvancedResearchResults = ({
@@ -34,11 +40,14 @@ export const AdvancedResearchResults = ({
   nodeCount = 0,
   currentPage,
   setCurrentPage,
+  isError,
+  errorMessage,
+  isPending,
 }: AdvancedResearchResultsType) => {
-  const { taxonomyName, branchName } = useParams<{
+  const { taxonomyName, branchName } = useParams() as unknown as {
     taxonomyName: string;
     branchName: string;
-  }>();
+  };
 
   const [openNewNodeDialog, setOpenNewNodeDialog] = useState(false);
   const [showNewNodeSuccess, setShowNewNodeSuccess] = useState(false);
@@ -57,6 +66,49 @@ export const AdvancedResearchResults = ({
   ) => {
     setCurrentPage(newPage + 1);
   };
+
+  // Displaying errorMessages if any
+  if (isError) {
+    return (
+      <Container component="main" maxWidth="xs">
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Typography sx={{ mt: 2 }} variant="h5">
+            {errorMessage}
+          </Typography>
+        </Grid>
+      </Container>
+    );
+  }
+
+  // Loading...
+  if (isPending) {
+    return (
+      <Grid
+        container
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+        height="100%"
+      >
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "1em",
+          }}
+        >
+          <CircularProgress sx={{ textAlign: "center" }} />
+        </Box>
+      </Grid>
+    );
+  }
 
   return (
     <Grid
@@ -89,8 +141,8 @@ export const AdvancedResearchResults = ({
           </TableHead>
           <NodesTableBody
             nodeInfos={nodeInfos ?? []}
-            taxonomyName={taxonomyName ?? ""}
-            branchName={branchName ?? ""}
+            taxonomyName={taxonomyName}
+            branchName={branchName}
           />
         </Table>
       </TableContainer>
@@ -105,8 +157,8 @@ export const AdvancedResearchResults = ({
       {/* Dialog box for adding nodes */}
       <Dialog open={openNewNodeDialog} onClose={handleCloseAddDialog}>
         <CreateNodeDialogContent
-          taxonomyName={taxonomyName ?? ""}
-          branchName={branchName ?? ""}
+          taxonomyName={taxonomyName}
+          branchName={branchName}
           onCloseDialog={handleCloseAddDialog}
           onSuccess={() => {
             setOpenNewNodeDialog(false);

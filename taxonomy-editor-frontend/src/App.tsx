@@ -8,7 +8,7 @@ import { EditEntryWrapper } from "./pages/project/editentry";
 import { ExportTaxonomyWrapper } from "./pages/project/export";
 import { GoToProject } from "./pages/go-to-project";
 import { Home } from "./pages/home";
-import { AdvancedResearchForm } from "./pages/project/search";
+import { AdvancedSearchForm } from "./pages/project/search";
 import { StartProject } from "./pages/startproject";
 import { Errors } from "./pages/project/errors";
 import { ProjectPage, projectLoader } from "./pages/project";
@@ -58,7 +58,7 @@ const router = createBrowserRouter([
           },
           {
             path: "search",
-            element: <AdvancedResearchForm />,
+            element: <AdvancedSearchForm />,
           },
           {
             path: "errors",

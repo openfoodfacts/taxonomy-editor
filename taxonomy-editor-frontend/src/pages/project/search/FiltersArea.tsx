@@ -19,7 +19,7 @@ const checkboxTheme = {
   },
 };
 
-type FiltersAreaType = {
+type FiltersAreaProps = {
   setCurrentPage: Dispatch<SetStateAction<number>>;
   setQ: Dispatch<SetStateAction<string>>;
   filters: EntryNodeSearchResult["filters"];
@@ -29,7 +29,7 @@ export const FiltersArea = ({
   setCurrentPage,
   setQ,
   filters,
-}: FiltersAreaType) => {
+}: FiltersAreaProps) => {
   const [isRootNodesChecked, setIsRootNodesChecked] = useState<boolean>(true);
   const [taxonomyScope, setTaxonomyScope] = useState<string>("");
   const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>(

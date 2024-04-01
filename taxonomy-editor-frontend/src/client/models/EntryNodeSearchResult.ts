@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import { SetStateAction } from "react";
 import type { AncestorFilterSearchTerm } from "./AncestorFilterSearchTerm";
 import type { ChildFilterSearchTerm } from "./ChildFilterSearchTerm";
 import type { DescendantFilterSearchTerm } from "./DescendantFilterSearchTerm";
