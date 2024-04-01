@@ -24,7 +24,12 @@ export const AdvancedSearchForm = () => {
     parseInt(pageParam ?? "1")
   );
 
-  const { data: entryNodeSearchResult, isError, isPending, error } = useQuery({
+  const {
+    data: entryNodeSearchResult,
+    isError,
+    isPending,
+    error,
+  } = useQuery({
     queryKey: [
       "searchEntryNodesTaxonomyNameBranchNodesEntryGet",
       branchName,
@@ -44,7 +49,6 @@ export const AdvancedSearchForm = () => {
     },
   });
 
-
   useEffect(() => {
     if (entryNodeSearchResult?.q) {
       setSearchExpression(entryNodeSearchResult.q);
@@ -53,7 +57,7 @@ export const AdvancedSearchForm = () => {
         q: entryNodeSearchResult.q,
       }));
     }
-  }, [entryNodeSearchResult?.q, setSearchParams])
+  }, [entryNodeSearchResult?.q, setSearchParams]);
 
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap" }}>
@@ -79,7 +83,7 @@ export const AdvancedSearchForm = () => {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         isError={isError}
-        errorMessage={error?.message??""}
+        errorMessage={error?.message ?? ""}
         isPending={isPending}
       />
     </Box>
