@@ -1,9 +1,12 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
-import { RootNodesWrapper } from "./pages/project/root-nodes";
 import { EditEntryWrapper } from "./pages/project/editentry";
 import { ExportTaxonomyWrapper } from "./pages/project/export";
 import { GoToProject } from "./pages/go-to-project";
@@ -45,12 +48,16 @@ const router = createBrowserRouter([
         errorElement: <ProjectNotFound />,
         children: [
           {
+            path: "",
+            element: <Navigate to="search" />,
+          },
+          {
             path: "export",
             element: <ExportTaxonomyWrapper />,
           },
           {
             path: "entry",
-            element: <RootNodesWrapper />,
+            element: <Navigate to="../search" relative="path" />,
           },
           {
             path: "entry/:id",
