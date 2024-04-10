@@ -45,7 +45,6 @@ export const MultipleSelectFilter = ({
         prevQ.replace(`${keySearchTerm}:${languageCodeItem}`, "")
       );
     }
-    // event.target.closest("Menu")?.dispatchEvent(new Event("close"));
     setMenuOpen((prevMenuOpen) => !prevMenuOpen);
   };
 

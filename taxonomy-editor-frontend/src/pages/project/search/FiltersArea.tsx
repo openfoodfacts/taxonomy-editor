@@ -37,10 +37,6 @@ export const FiltersArea = ({
   );
   const [withoutChosenLanguagesCodes, setWithoutChosenLanguagesCodes] =
     useState<string[]>([]);
-  const [parentId, setParentId] = useState<string>("");
-  const [childId, setChildId] = useState<string>("");
-  const [ancestorId, setAncestorId] = useState<string>("");
-  const [descendantId, setDescendantId] = useState<string>("");
 
   const initializeFilters = (): {
     isRootNodesChecked: boolean;
@@ -177,32 +173,24 @@ export const FiltersArea = ({
       />
       <FilterInput
         label="Is parent of (id)"
-        filterValue={parentId}
-        setFilterValue={setParentId}
         setQ={setQ}
         keySearchTerm="parent"
         setCurrentPage={setCurrentPage}
       />
       <FilterInput
         label="Is child of (id)"
-        filterValue={childId}
-        setFilterValue={setChildId}
         setQ={setQ}
         keySearchTerm="child"
         setCurrentPage={setCurrentPage}
       />
       <FilterInput
         label="Is ancestor of (id)"
-        filterValue={ancestorId}
-        setFilterValue={setAncestorId}
         setQ={setQ}
         keySearchTerm="ancestor"
         setCurrentPage={setCurrentPage}
       />
       <FilterInput
         label="Is descendant of (id)"
-        filterValue={descendantId}
-        setFilterValue={setDescendantId}
         setQ={setQ}
         keySearchTerm="descendant"
         setCurrentPage={setCurrentPage}
