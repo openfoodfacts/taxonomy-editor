@@ -7,7 +7,7 @@ import {
   InputLabel,
   ListItemText,
 } from "@mui/material";
-import { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 
 type MultipleSelectFilterType = {
   label: string;
@@ -30,6 +30,9 @@ export const MultipleSelectFilter = ({
   keySearchTerm,
   setCurrentPage,
 }: MultipleSelectFilterType) => {
+
+  const [menuOpen,setMenuOpen] = useState(false);
+
   const handleChange = (
     event: ChangeEvent<HTMLInputElement>,
     languageCodeItem: string
@@ -42,8 +45,18 @@ export const MultipleSelectFilter = ({
         prevQ.replace(`${keySearchTerm}:${languageCodeItem}`, "")
       );
     }
-    event.target.closest("Menu")?.dispatchEvent(new Event("close"));
+    // event.target.closest("Menu")?.dispatchEvent(new Event("close"));
+    setMenuOpen((prevMenuOpen) => !prevMenuOpen);
   };
+
+  const handleSelectOpen = () => {
+    setMenuOpen(true);
+  };
+
+  const handleSelectClose = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <FormControl sx={{ m: 1 }}>
       <InputLabel id="multiple-select-label">{label}</InputLabel>
@@ -51,6 +64,9 @@ export const MultipleSelectFilter = ({
         id="languages-filter"
         sx={{ width: "170px" }}
         multiple
+        open={menuOpen}
+        onClose={handleSelectClose}
+        onOpen={handleSelectOpen}
         value={filterValue}
         input={<OutlinedInput label="Languages" />}
         renderValue={(selected) =>
@@ -60,7 +76,7 @@ export const MultipleSelectFilter = ({
             .join(", ")
         }
       >
-        {listOfChoices.sort().map((languageNameItem) => {
+        {listOfChoices.map((languageNameItem) => {
           const languageCodeItem = mapValueToCode(languageNameItem);
           return (
             <MenuItem key={languageCodeItem} value={languageCodeItem}>
