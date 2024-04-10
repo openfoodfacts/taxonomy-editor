@@ -1,9 +1,8 @@
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
-from .utils.result_utils import get_unique_record
-
 from ..graph_db import get_current_transaction
 from ..models.node_models import EntryNode, EntryNodeCreate, ErrorNode
+from .utils.result_utils import get_unique_record
 
 
 async def delete_project_nodes(project_id: str):

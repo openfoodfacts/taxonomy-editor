@@ -1,10 +1,7 @@
-from fastapi import HTTPException
-
-from .utils.result_utils import get_unique_record
-
 from ..graph_db import get_current_transaction
 from ..models.project_models import Project, ProjectCreate, ProjectEdit, ProjectStatus
 from .node_controller import delete_project_nodes
+from .utils.result_utils import get_unique_record
 
 
 async def get_project(project_id: str) -> Project:
