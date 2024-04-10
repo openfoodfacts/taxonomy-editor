@@ -1,4 +1,4 @@
-import { Box, FormControlLabel, Checkbox } from "@mui/material";
+import { Box } from "@mui/material";
 import { FilterInput } from "./FilterInput";
 import { MultipleSelectFilter } from "./MultipleSelectFilter";
 import {
@@ -10,14 +10,7 @@ import {
 } from "react";
 import ISO6391 from "iso-639-1";
 import { EntryNodeSearchResult } from "@/client";
-import { ThreeOptionsSwitch } from "./ThreeOptionsSwitch";
-
-const checkboxTheme = {
-  color: "#201a17",
-  "&.Mui-checked": {
-    color: "#341100",
-  },
-};
+import { SingleSelectFilter } from "./SingleSelectFilter";
 
 type FiltersAreaProps = {
   setCurrentPage: Dispatch<SetStateAction<number>>;
@@ -30,8 +23,8 @@ export const FiltersArea = ({
   setQ,
   filters,
 }: FiltersAreaProps) => {
-  const [isRootNodesChecked, setIsRootNodesChecked] = useState<boolean>(true);
-  const [taxonomyScope, setTaxonomyScope] = useState<string>("");
+  const [nodesLevel, setNodesLevel] = useState<string>("root");
+  const [taxonomyScope, setTaxonomyScope] = useState<string>("both");
   const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>(
     []
   );
@@ -39,13 +32,13 @@ export const FiltersArea = ({
     useState<string[]>([]);
 
   const initializeFilters = (): {
-    isRootNodesChecked: boolean;
+    nodesLevel: string;
     taxonomyScopeMode: string; //"in" -> in taxonomy, "out" -> outside taxonomy, "" -> filter not selected
     chosenLanguagesCodes: string[];
     withoutChosenLanguagesCodes: string[];
   } => {
     return {
-      isRootNodesChecked: false,
+      nodesLevel: "root",
       taxonomyScopeMode: "",
       chosenLanguagesCodes: [],
       withoutChosenLanguagesCodes: [],
@@ -54,18 +47,23 @@ export const FiltersArea = ({
 
   const updateFiltersStates = useCallback((updatedFilters) => {
     const filtersStates = initializeFilters();
+    let hasScopeFilterInQ = false;
+    let hasLevelFilterInQ = false;
     for (const filter of updatedFilters) {
       switch (filter.filterType) {
         case "is":
           switch (filter.filterValue) {
             case "root":
-              filtersStates.isRootNodesChecked = true;
+              filtersStates.nodesLevel = "root";
+              hasLevelFilterInQ = true;
               break;
             case "external":
-              filtersStates.taxonomyScopeMode = "out";
+              filtersStates.taxonomyScopeMode = "external";
+              hasScopeFilterInQ = true;
               break;
             case "not:external":
-              filtersStates.taxonomyScopeMode = "in";
+              filtersStates.taxonomyScopeMode = "not:external";
+              hasScopeFilterInQ = true;
               break;
           }
           break;
@@ -82,8 +80,10 @@ export const FiltersArea = ({
           break;
       }
     }
-    setIsRootNodesChecked(filtersStates.isRootNodesChecked);
-    setTaxonomyScope(filtersStates.taxonomyScopeMode);
+    setNodesLevel(hasLevelFilterInQ ? filtersStates.nodesLevel : "both");
+    setTaxonomyScope(
+      hasScopeFilterInQ ? filtersStates.taxonomyScopeMode : "both"
+    );
     setChosenLanguagesCodes(filtersStates.chosenLanguagesCodes);
     setWithoutChosenLanguagesCodes(filtersStates.withoutChosenLanguagesCodes);
   }, []);
@@ -92,20 +92,26 @@ export const FiltersArea = ({
     updateFiltersStates(filters);
   }, [filters, updateFiltersStates]);
 
-  const handleCheckbox = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    filterKey: string,
-    isChecked: boolean,
-    setChecked: React.Dispatch<React.SetStateAction<boolean>>
-  ) => {
-    setCurrentPage(1);
-    if (!isChecked) {
-      setQ((prevQ) => prevQ + ` ${filterKey}`);
-    } else {
-      setQ((prevQ) => prevQ.replace(`${filterKey}`, ""));
-    }
-    setChecked(event.target.checked);
+  const reverseDict = (dict) => {
+    return Object.fromEntries(
+      Object.entries(dict).map(([key, value]) => [value, key])
+    );
   };
+
+  const scopeOptions = {
+    external: "Only Outside Current Taxonomy",
+    "not:external": "Only In Current Taxonomy",
+    both: "Both In and Outside Current Taxonomy",
+  };
+
+  const scopeOptionsReverse = reverseDict(scopeOptions);
+
+  const levelOptions = {
+    root: "Without parents level",
+    both: "All levels",
+  };
+
+  const levelOptionsReverse = reverseDict(levelOptions);
 
   return (
     <Box
@@ -122,33 +128,24 @@ export const FiltersArea = ({
         alignItems: "center",
       }}
     >
-      <FormControlLabel
-        id="root-nodes-checkbox"
-        control={
-          <Checkbox
-            sx={checkboxTheme}
-            onChange={(e) =>
-              handleCheckbox(
-                e,
-                "is:root",
-                isRootNodesChecked,
-                setIsRootNodesChecked
-              )
-            }
-            checked={isRootNodesChecked}
-          />
-        }
-        label="Root nodes"
-      />
-      <ThreeOptionsSwitch
-        filterValue={taxonomyScope}
-        setFilterValue={setTaxonomyScope}
-        options={{
-          in: { text: "IN", isNegated: true },
-          out: { text: "OUT", isNegated: false },
-        }}
+      <SingleSelectFilter
+        label="Hierarchy Level"
+        filterValue={nodesLevel}
+        listOfChoices={Object.values(levelOptions)}
+        mapCodeToValue={(code: string) => levelOptions[code]}
+        mapValueToCode={(value: string) => levelOptionsReverse[value]}
         setQ={setQ}
-        keySearchTerm="external"
+        keySearchTerm="is"
+        setCurrentPage={setCurrentPage}
+      />
+      <SingleSelectFilter
+        label="Scope"
+        filterValue={taxonomyScope}
+        listOfChoices={Object.values(scopeOptions)}
+        mapCodeToValue={(code: string) => scopeOptions[code]}
+        mapValueToCode={(value: string) => scopeOptionsReverse[value]}
+        setQ={setQ}
+        keySearchTerm="is"
         setCurrentPage={setCurrentPage}
       />
       <MultipleSelectFilter

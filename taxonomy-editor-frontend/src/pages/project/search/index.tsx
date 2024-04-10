@@ -16,7 +16,7 @@ export const AdvancedSearchForm = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [q, setQ] = useState(searchParams.get("q") ?? "is:root");
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
   const pageParam = searchParams.get("page");
 
   const [searchExpression, setSearchExpression] = useState<string>(q);
@@ -50,7 +50,7 @@ export const AdvancedSearchForm = () => {
   });
 
   useEffect(() => {
-    if (entryNodeSearchResult?.q) {
+    if (entryNodeSearchResult?.q !== undefined) {
       setSearchExpression(entryNodeSearchResult.q);
       setSearchParams((prevSearchParams) => ({
         ...prevSearchParams,

@@ -1,6 +1,5 @@
 import {
   FormControl,
-  OutlinedInput,
   Checkbox,
   Select,
   MenuItem,
@@ -9,9 +8,9 @@ import {
 } from "@mui/material";
 import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 
-type MultipleSelectFilterType = {
+type SingleSelectFilterType = {
   label: string;
-  filterValue: string[];
+  filterValue: string;
   listOfChoices: string[];
   mapCodeToValue: (code: string) => string;
   mapValueToCode: (value: string) => string;
@@ -20,7 +19,7 @@ type MultipleSelectFilterType = {
   setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
-export const MultipleSelectFilter = ({
+export const SingleSelectFilter = ({
   label,
   filterValue,
   listOfChoices,
@@ -29,20 +28,23 @@ export const MultipleSelectFilter = ({
   setQ,
   keySearchTerm,
   setCurrentPage,
-}: MultipleSelectFilterType) => {
+}: SingleSelectFilterType) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement>,
-    languageCodeItem: string
+    codeItem: string
   ) => {
     setCurrentPage(1);
-    if (!filterValue.includes(languageCodeItem)) {
-      setQ((prevQ) => prevQ + ` ${keySearchTerm}:${languageCodeItem}`);
-    } else {
-      setQ((prevQ) =>
-        prevQ.replace(`${keySearchTerm}:${languageCodeItem}`, "")
-      );
+    if (filterValue !== codeItem) {
+      setQ((prevQ) => {
+        let newQ = prevQ;
+        if (codeItem !== "both") {
+          newQ += ` ${keySearchTerm}:${codeItem}`; // add new filter value
+        }
+        newQ = newQ.replace(`${keySearchTerm}:${filterValue}`, ""); //remove potential previous filter value
+        return newQ;
+      });
     }
     setMenuOpen((prevMenuOpen) => !prevMenuOpen);
   };
@@ -61,25 +63,18 @@ export const MultipleSelectFilter = ({
       <Select
         id="languages-filter"
         sx={{ width: "170px" }}
-        multiple
         open={menuOpen}
         onClose={handleSelectClose}
         onOpen={handleSelectOpen}
-        value={filterValue}
-        input={<OutlinedInput label="Languages" />}
-        renderValue={(selected) =>
-          selected
-            .map((langCode) => mapCodeToValue(langCode))
-            .filter(Boolean) //to ignore "xx" language
-            .join(", ")
-        }
+        value={mapCodeToValue(filterValue)}
+        renderValue={(selected) => selected}
       >
         {listOfChoices.map((languageNameItem) => {
           const languageCodeItem = mapValueToCode(languageNameItem);
           return (
             <MenuItem key={languageCodeItem} value={languageCodeItem}>
               <Checkbox
-                checked={filterValue.includes(languageCodeItem)}
+                checked={filterValue === languageCodeItem}
                 onChange={(event) => handleChange(event, languageCodeItem)}
               />
               <ListItemText primary={languageNameItem} />

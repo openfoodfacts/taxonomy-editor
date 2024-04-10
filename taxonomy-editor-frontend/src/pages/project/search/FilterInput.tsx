@@ -18,7 +18,7 @@ export const FilterInput = ({
   keySearchTerm,
   setCurrentPage,
 }: FilterInputType) => {
-  const [filterValue,setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState("");
   const addFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && filterValue !== "") {
       // If the filterValue includes a space, wrap it in double quotes. Ex : “en: paprika extract”, en:e101ii

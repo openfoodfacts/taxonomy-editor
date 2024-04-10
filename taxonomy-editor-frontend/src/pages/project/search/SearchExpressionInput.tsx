@@ -1,4 +1,9 @@
-import { FormControl, OutlinedInput, InputAdornment } from "@mui/material";
+import {
+  FormControl,
+  OutlinedInput,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { Dispatch, SetStateAction } from "react";
 
@@ -20,9 +25,13 @@ export const SearchExpressionInput = ({
   ) => {
     setCurrentPage(1);
     if (event.key === "Enter") {
-      setQ(searchExpression);
+      handleSearch();
       event.preventDefault();
     }
+  };
+
+  const handleSearch = () => {
+    setQ(searchExpression);
   };
 
   const handleSearchInputChange = (
@@ -32,10 +41,14 @@ export const SearchExpressionInput = ({
   };
 
   return (
-    <FormControl fullWidth sx={{ m: 1 }} variant="outlined">
+    <FormControl
+      fullWidth
+      sx={{ m: 1, display: "flex", alignItems: "center", flexDirection: "row" }}
+      variant="outlined"
+    >
       <OutlinedInput
         id="search-expression"
-        sx={{ backgroundColor: "#f2e9e4" }}
+        sx={{ backgroundColor: "#f2e9e4", flexGrow: 1 }}
         startAdornment={
           <InputAdornment position="start">
             <SearchIcon />
@@ -45,6 +58,9 @@ export const SearchExpressionInput = ({
         onChange={handleSearchInputChange}
         onKeyDown={handleEnterKeyPress}
       />
+      <IconButton onClick={handleSearch}>
+        <SearchIcon />
+      </IconButton>
     </FormControl>
   );
 };
