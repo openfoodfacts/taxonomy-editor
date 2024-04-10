@@ -45,6 +45,10 @@ const router = createBrowserRouter([
         errorElement: <ProjectNotFound />,
         children: [
           {
+            path: "",
+            element: <RootNodesWrapper />,
+          },
+          {
             path: "export",
             element: <ExportTaxonomyWrapper />,
           },

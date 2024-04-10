@@ -138,7 +138,7 @@ class GithubOperations:
         {description}
 
         ### Link to the project in Taxonomy Editor
-        {settings.frontend_url}/{self.taxonomy_name}/{self.branch_name}/entry
+        {settings.frontend_url}/{self.taxonomy_name}/{self.branch_name}
         """
         )
         return (
