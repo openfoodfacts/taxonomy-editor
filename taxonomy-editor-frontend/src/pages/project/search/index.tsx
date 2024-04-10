@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { DefaultService } from "@/client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AdvancedResearchResults } from "./SearchResults";
 import { SearchExpressionInput } from "./SearchExpressionInput";
 import { FiltersArea } from "./FiltersArea";
@@ -47,6 +47,7 @@ export const AdvancedSearchForm = () => {
         );
       return nodesResult;
     },
+    placeholderData: keepPreviousData,
   });
 
   useEffect(() => {

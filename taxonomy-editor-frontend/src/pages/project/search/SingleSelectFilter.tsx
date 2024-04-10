@@ -1,6 +1,5 @@
 import {
   FormControl,
-  Checkbox,
   Select,
   MenuItem,
   InputLabel,
@@ -12,7 +11,6 @@ type SingleSelectFilterType = {
   label: string;
   filterValue: string;
   listOfChoices: string[];
-  mapCodeToValue: (code: string) => string;
   mapValueToCode: (value: string) => string;
   setQ: Dispatch<SetStateAction<string>>;
   keySearchTerm: string;
@@ -23,7 +21,6 @@ export const SingleSelectFilter = ({
   label,
   filterValue,
   listOfChoices,
-  mapCodeToValue = () => "",
   mapValueToCode = () => "",
   setQ,
   keySearchTerm,
@@ -31,10 +28,8 @@ export const SingleSelectFilter = ({
 }: SingleSelectFilterType) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleChange = (
-    event: ChangeEvent<HTMLInputElement>,
-    codeItem: string
-  ) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const codeItem = event.target.value;
     setCurrentPage(1);
     if (filterValue !== codeItem) {
       setQ((prevQ) => {
@@ -59,24 +54,20 @@ export const SingleSelectFilter = ({
 
   return (
     <FormControl sx={{ m: 1 }}>
-      <InputLabel id="multiple-select-label">{label}</InputLabel>
+      <InputLabel id="single-select-label">{label}</InputLabel>
       <Select
         id="languages-filter"
         sx={{ width: "170px" }}
         open={menuOpen}
         onClose={handleSelectClose}
         onOpen={handleSelectOpen}
-        value={mapCodeToValue(filterValue)}
-        renderValue={(selected) => selected}
+        value={filterValue}
+        onChange={handleChange}
       >
         {listOfChoices.map((languageNameItem) => {
           const languageCodeItem = mapValueToCode(languageNameItem);
           return (
             <MenuItem key={languageCodeItem} value={languageCodeItem}>
-              <Checkbox
-                checked={filterValue === languageCodeItem}
-                onChange={(event) => handleChange(event, languageCodeItem)}
-              />
               <ListItemText primary={languageNameItem} />
             </MenuItem>
           );

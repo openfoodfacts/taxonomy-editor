@@ -92,26 +92,16 @@ export const FiltersArea = ({
     updateFiltersStates(filters);
   }, [filters, updateFiltersStates]);
 
-  const reverseDict = (dict) => {
-    return Object.fromEntries(
-      Object.entries(dict).map(([key, value]) => [value, key])
-    );
-  };
-
   const scopeOptions = {
-    external: "Only Outside Current Taxonomy",
-    "not:external": "Only In Current Taxonomy",
-    both: "Both In and Outside Current Taxonomy",
+    "Only Outside Current Taxonomy": "external",
+    "Only In Current Taxonomy": "not:external",
+    "Both In and Outside Current Taxonomy": "both",
   };
-
-  const scopeOptionsReverse = reverseDict(scopeOptions);
 
   const levelOptions = {
-    root: "Without parents level",
-    both: "All levels",
+    "Without parents level": "root",
+    "All levels": "both",
   };
-
-  const levelOptionsReverse = reverseDict(levelOptions);
 
   return (
     <Box
@@ -131,9 +121,8 @@ export const FiltersArea = ({
       <SingleSelectFilter
         label="Hierarchy Level"
         filterValue={nodesLevel}
-        listOfChoices={Object.values(levelOptions)}
-        mapCodeToValue={(code: string) => levelOptions[code]}
-        mapValueToCode={(value: string) => levelOptionsReverse[value]}
+        listOfChoices={Object.keys(levelOptions)}
+        mapValueToCode={(value: string) => levelOptions[value]}
         setQ={setQ}
         keySearchTerm="is"
         setCurrentPage={setCurrentPage}
@@ -141,9 +130,8 @@ export const FiltersArea = ({
       <SingleSelectFilter
         label="Scope"
         filterValue={taxonomyScope}
-        listOfChoices={Object.values(scopeOptions)}
-        mapCodeToValue={(code: string) => scopeOptions[code]}
-        mapValueToCode={(value: string) => scopeOptionsReverse[value]}
+        listOfChoices={Object.keys(scopeOptions)}
+        mapValueToCode={(value: string) => scopeOptions[value]}
         setQ={setQ}
         keySearchTerm="is"
         setCurrentPage={setCurrentPage}
