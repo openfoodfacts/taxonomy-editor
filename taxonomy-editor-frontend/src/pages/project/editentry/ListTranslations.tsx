@@ -18,6 +18,30 @@ import { TranslationTags } from "./TranslationTags";
 
 export const SHOWN_LANGUAGES_KEY = "shownLanguages";
 
+const getLanguageName = (languageCode: string): string => {
+  if (languageCode === "xx") {
+    return "Fallback translations";
+  }
+  const languageName = ISO6391.getName(languageCode);
+  if (languageName === "") {
+    return languageCode;
+  }
+  return languageName;
+};
+
+const sortByLanguageName = (lcA: any, lcB: any): number => {
+  const languageNameA = getLanguageName(lcA);
+  const languageNameB = getLanguageName(lcB);
+
+  if (languageNameA < languageNameB) {
+    return -1;
+  } else if (languageNameA > languageNameB) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
+
 /**
  * Sub-component for rendering translation of an "entry"
  */
@@ -39,30 +63,6 @@ export const ListTranslations = ({
         : nodeObject["tags_xx"].length > 0;
     return exists;
   }, [nodeObject]);
-
-  const getLanguageName = (languageCode: string): string => {
-    if (languageCode === "xx") {
-      return "Fallback translations";
-    }
-    const languageName = ISO6391.getName(languageCode);
-    if (languageName === "") {
-      return languageCode;
-    }
-    return languageName;
-  };
-
-  const sortByLanguageName = (lcA: any, lcB: any): number => {
-    const languageNameA = getLanguageName(lcA);
-    const languageNameB = getLanguageName(lcB);
-
-    if (languageNameA < languageNameB) {
-      return -1;
-    } else if (languageNameA > languageNameB) {
-      return 1;
-    } else {
-      return 0;
-    }
-  };
 
   const handleLanguagePin = (languageCode: string) => {
     let newShownLanguageCodes: string[];

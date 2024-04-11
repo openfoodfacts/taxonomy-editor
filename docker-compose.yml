@@ -35,6 +35,7 @@ services:
       # taken from .env
       GITHUB_PAT:
       REPO_URI:
+      FRONTEND_URL:
       # make proxy headers be taken into account
       FORWARDED_ALLOW_IPS: "*"
   taxonomy_frontend:
