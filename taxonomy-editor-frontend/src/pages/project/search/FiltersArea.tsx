@@ -99,7 +99,7 @@ export const FiltersArea = ({
   };
 
   const levelOptions = {
-    "Without parents level": "root",
+    "Top level entries": "root",
     "All levels": "both",
   };
 
