@@ -23,6 +23,7 @@ export type { LanguageFilterSearchTerm } from "./models/LanguageFilterSearchTerm
 export type { ParentFilterSearchTerm } from "./models/ParentFilterSearchTerm";
 export type { Project } from "./models/Project";
 export { ProjectStatus } from "./models/ProjectStatus";
+export type { PropertyFilterSearchTerm } from "./models/PropertyFilterSearchTerm";
 export type { ValidationError } from "./models/ValidationError";
 
 export { DefaultService } from "./services/DefaultService";

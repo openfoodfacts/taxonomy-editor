@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import { DefaultService } from "@/client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { AdvancedResearchResults } from "./SearchResults";
+import { SearchResults } from "./SearchResults";
 import { SearchExpressionInput } from "./SearchExpressionInput";
 import { FiltersArea } from "./FiltersArea";
 
@@ -73,13 +73,8 @@ export const AdvancedSearchForm = () => {
         setQ={setQ}
         filters={entryNodeSearchResult?.filters ?? []}
       />
-      <AdvancedResearchResults
-        nodeInfos={
-          entryNodeSearchResult?.nodes.map((node) => ({
-            id: node.id,
-            is_external: node.isExternal,
-          })) ?? []
-        }
+      <SearchResults
+        entryNodes={entryNodeSearchResult?.nodes ?? []}
         nodeCount={entryNodeSearchResult?.nodeCount}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}

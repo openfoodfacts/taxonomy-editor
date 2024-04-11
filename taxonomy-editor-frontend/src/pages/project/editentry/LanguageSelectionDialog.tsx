@@ -1,18 +1,13 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ISO6391 from "iso-639-1";
 
 import {
-  OutlinedInput,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  ListItemText,
-  Select,
-  Checkbox,
+  Autocomplete,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
+  TextField,
 } from "@mui/material";
 
 type Props = {
@@ -28,56 +23,50 @@ const LanguageSelectionDialog = ({
   handleDialogConfirm,
   shownLanguageCodes,
 }: Props) => {
-  const [newShownLanguageCodes, setNewShownLanguageCodes] = useState([
-    ...shownLanguageCodes,
-  ]);
+  const [newLanguageCodes, setNewLanguageCodes] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   return (
     <>
-      <DialogTitle>Select shown languages</DialogTitle>
+      <DialogTitle>Show another language</DialogTitle>
       <DialogContent>
-        <FormControl sx={{ m: 1, width: 500 }}>
-          <InputLabel id="multiple-lang-checkbox-label">Languages</InputLabel>
-          <Select
-            labelId="multiple-lang-checkbox-label"
-            id="multiple-lang-checkbox"
-            value={newShownLanguageCodes}
-            multiple
-            onChange={
-              (event) =>
-                setNewShownLanguageCodes(event.target.value as string[]) // type casting to string[] due to the `multiple` prop
-            }
-            input={<OutlinedInput label="Languages" />}
-            renderValue={(selected) =>
-              selected
-                .map((langCode) => ISO6391.getName(langCode))
-                .filter(Boolean) //to ignore "xx" language
-                .join(", ")
-            }
-          >
-            {ISO6391.getAllNames()
-              .sort()
-              .map((languageNameItem) => {
-                const languageCodeItem = ISO6391.getCode(languageNameItem);
-                return languageCodeItem === mainLanguageCode ? null : (
-                  <MenuItem key={languageCodeItem} value={languageCodeItem}>
-                    <Checkbox
-                      checked={newShownLanguageCodes.includes(languageCodeItem)}
-                    />
-                    <ListItemText primary={languageNameItem} />
-                  </MenuItem>
-                );
-              })}
-          </Select>
-        </FormControl>
+        <Autocomplete
+          multiple
+          openOnFocus
+          sx={{ m: 1, width: 500 }}
+          value={newLanguageCodes.map((langCode) => ISO6391.getName(langCode))}
+          onChange={(_event, newValue: string[]) => {
+            setNewLanguageCodes(
+              newValue.map((langName) => ISO6391.getCode(langName))
+            );
+          }}
+          options={ISO6391.getAllNames()
+            .sort()
+            .filter(
+              (languageName) =>
+                !shownLanguageCodes.includes(ISO6391.getCode(languageName)) &&
+                !newLanguageCodes.includes(ISO6391.getCode(languageName)) &&
+                languageName !== ISO6391.getName(mainLanguageCode)
+            )}
+          getOptionLabel={(option) => option}
+          renderInput={(params) => (
+            <TextField {...params} label="Enter language" inputRef={inputRef} />
+          )}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={setNewShownLanguageCodes.length === 0}
-          onClick={() => handleDialogConfirm(newShownLanguageCodes)}
+          disabled={newLanguageCodes.length === 0}
+          onClick={() => handleDialogConfirm(newLanguageCodes)}
         >
-          Done
+          Add
         </Button>
       </DialogActions>
     </>
