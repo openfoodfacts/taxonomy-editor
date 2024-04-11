@@ -1,10 +1,8 @@
 import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
 
-type FilterInputType = {
+type FilterInputProps = {
   label: string;
-  // filterValue: string;
-  // setFilterValue: Dispatch<SetStateAction<string>>;
   setQ: Dispatch<SetStateAction<string>>;
   keySearchTerm: string;
   setCurrentPage: Dispatch<SetStateAction<number>>;
@@ -12,12 +10,10 @@ type FilterInputType = {
 
 export const FilterInput = ({
   label,
-  // filterValue,
-  // setFilterValue,
   setQ,
   keySearchTerm,
   setCurrentPage,
-}: FilterInputType) => {
+}: FilterInputProps) => {
   const [filterValue, setFilterValue] = useState("");
   const addFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && filterValue !== "") {

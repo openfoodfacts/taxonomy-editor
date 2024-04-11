@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 
-type MultipleSelectFilterType = {
+type MultipleSelectFilterProps = {
   label: string;
   filterValue: string[];
   listOfChoices: string[];
@@ -29,7 +29,7 @@ export const MultipleSelectFilter = ({
   setQ,
   keySearchTerm,
   setCurrentPage,
-}: MultipleSelectFilterType) => {
+}: MultipleSelectFilterProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleChange = (

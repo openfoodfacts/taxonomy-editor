@@ -116,6 +116,7 @@ export const AdvancedResearchResults = ({
       direction="column"
       alignItems="center"
       justifyContent="center"
+      sx={{ mt: 4 }}
     >
       <TableContainer sx={{ width: 375 }} component={Paper}>
         <Table>
