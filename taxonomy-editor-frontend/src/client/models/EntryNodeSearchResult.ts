@@ -9,6 +9,7 @@ import type { EntryNode } from "./EntryNode";
 import type { IsFilterSearchTerm } from "./IsFilterSearchTerm";
 import type { LanguageFilterSearchTerm } from "./LanguageFilterSearchTerm";
 import type { ParentFilterSearchTerm } from "./ParentFilterSearchTerm";
+import type { PropertyFilterSearchTerm } from "./PropertyFilterSearchTerm";
 export type EntryNodeSearchResult = {
   q: string;
   nodeCount: number;
@@ -20,6 +21,7 @@ export type EntryNodeSearchResult = {
     | ChildFilterSearchTerm
     | AncestorFilterSearchTerm
     | DescendantFilterSearchTerm
+    | PropertyFilterSearchTerm
   >;
   nodes: Array<EntryNode>;
 };

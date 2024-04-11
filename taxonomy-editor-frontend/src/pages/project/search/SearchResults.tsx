@@ -1,5 +1,5 @@
 import CreateNodeDialogContent from "@/components/CreateNodeDialogContent";
-import NodesTableBody from "@/components/NodesTableBody";
+import { EntryNodesTableBody } from "@/components/EntryNodesTableBody";
 import { greyHexCode } from "@/constants";
 import {
   TableContainer,
@@ -23,10 +23,10 @@ import {
 import { Dispatch, SetStateAction, useState } from "react";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { useParams } from "react-router-dom";
-import { NodeInfo } from "@/backend-types/types";
+import { EntryNode } from "@/client";
 
-type AdvancedResearchResultsType = {
-  nodeInfos: NodeInfo[];
+type SearchResultsType = {
+  entryNodes: EntryNode[];
   nodeCount: number | undefined;
   currentPage: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
@@ -35,15 +35,15 @@ type AdvancedResearchResultsType = {
   isPending: boolean;
 };
 
-export const AdvancedResearchResults = ({
-  nodeInfos,
+export const SearchResults = ({
+  entryNodes,
   nodeCount = 0,
   currentPage,
   setCurrentPage,
   isError,
   errorMessage,
   isPending,
-}: AdvancedResearchResultsType) => {
+}: SearchResultsType) => {
   const { taxonomyName, branchName } = useParams() as unknown as {
     taxonomyName: string;
     branchName: string;
@@ -61,11 +61,24 @@ export const AdvancedResearchResults = ({
   };
 
   const handlePageChange = (
-    event: React.MouseEvent | null,
+    _event: React.MouseEvent | null,
     newPage: number
   ) => {
     setCurrentPage(newPage + 1);
   };
+
+  const SearchTablePagination = () => (
+    <TablePagination
+      count={nodeCount}
+      rowsPerPage={50}
+      rowsPerPageOptions={[]}
+      showFirstButton
+      showLastButton
+      page={currentPage - 1}
+      component="div"
+      onPageChange={handlePageChange}
+    ></TablePagination>
+  );
 
   // Displaying errorMessages if any
   if (isError) {
@@ -118,13 +131,14 @@ export const AdvancedResearchResults = ({
       justifyContent="center"
       sx={{ mt: 4 }}
     >
-      <TableContainer sx={{ width: 375 }} component={Paper}>
+      <SearchTablePagination />
+      <TableContainer sx={{ width: "90%" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell align="left">
                 <Stack direction="row" alignItems="center">
-                  <Typography variant="h6">Nodes</Typography>
+                  <Typography variant="h6">Entries</Typography>
                   <IconButton
                     sx={{ ml: 1, color: greyHexCode }}
                     onClick={() => {
@@ -135,25 +149,16 @@ export const AdvancedResearchResults = ({
                   </IconButton>
                 </Stack>
               </TableCell>
-              <TableCell align="left">
-                <Typography variant="h6">Action</Typography>
-              </TableCell>
             </TableRow>
           </TableHead>
-          <NodesTableBody
-            nodeInfos={nodeInfos ?? []}
+          <EntryNodesTableBody
+            entryNodes={entryNodes}
             taxonomyName={taxonomyName}
             branchName={branchName}
           />
         </Table>
       </TableContainer>
-      <TablePagination
-        count={nodeCount}
-        rowsPerPage={50}
-        page={currentPage - 1}
-        component="div"
-        onPageChange={handlePageChange}
-      ></TablePagination>
+      <SearchTablePagination />
 
       {/* Dialog box for adding nodes */}
       <Dialog open={openNewNodeDialog} onClose={handleCloseAddDialog}>

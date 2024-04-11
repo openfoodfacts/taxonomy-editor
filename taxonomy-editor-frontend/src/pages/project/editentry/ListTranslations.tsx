@@ -6,13 +6,41 @@ import {
   Box,
   Dialog,
   Checkbox,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import PushPinOutlinedIcon from "@/assets/icons/pushpin-line-grey.svg?react";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
 import { useMemo, useEffect, useState } from "react";
 import ISO6391 from "iso-639-1";
 import { TranslationTags } from "./TranslationTags";
 
-const SHOWN_LANGUAGES_KEY = "shownLanguages";
+export const SHOWN_LANGUAGES_KEY = "shownLanguages";
+
+const getLanguageName = (languageCode: string): string => {
+  if (languageCode === "xx") {
+    return "Fallback translations";
+  }
+  const languageName = ISO6391.getName(languageCode);
+  if (languageName === "") {
+    return languageCode;
+  }
+  return languageName;
+};
+
+const sortByLanguageName = (lcA: any, lcB: any): number => {
+  const languageNameA = getLanguageName(lcA);
+  const languageNameB = getLanguageName(lcB);
+
+  if (languageNameA < languageNameB) {
+    return -1;
+  } else if (languageNameA > languageNameB) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
 
 /**
  * Sub-component for rendering translation of an "entry"
@@ -25,26 +53,8 @@ export const ListTranslations = ({
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // Used for Dialog component
   const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]); // Used for storing LCs that are shown in the interface
-
-  // Helper functions for Dialog component
-  const handleClose = () => {
-    setIsDialogOpen(false);
-  };
-  const handleOpen = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleXxLanguage = () => {
-    if (shownLanguageCodes.includes("xx")) {
-      const newShownLanguagesCodes = shownLanguageCodes.filter(
-        (lang) => lang !== "xx"
-      );
-      setShownLanguageCodes(newShownLanguagesCodes);
-    } else {
-      const newShownLanguagesCodes = ["xx", ...shownLanguageCodes];
-      setShownLanguageCodes(newShownLanguagesCodes);
-    }
-  };
+  const [showExistingTranslations, setShowExistingTranslations] =
+    useState<boolean>(false);
 
   const xxLanguageExists = useMemo(() => {
     const exists =
@@ -54,15 +64,47 @@ export const ListTranslations = ({
     return exists;
   }, [nodeObject]);
 
-  const handleDialogConfirm = (newShownLanguageCodes: string[]) => {
+  const handleLanguagePin = (languageCode: string) => {
+    let newShownLanguageCodes: string[];
+    if (shownLanguageCodes.includes(languageCode)) {
+      newShownLanguageCodes = shownLanguageCodes.filter(
+        (langCode) => langCode !== languageCode
+      );
+    } else {
+      newShownLanguageCodes = [...shownLanguageCodes, languageCode];
+      newShownLanguageCodes.sort(sortByLanguageName);
+    }
     localStorage.setItem(
       SHOWN_LANGUAGES_KEY,
       JSON.stringify(newShownLanguageCodes)
     );
+    setShownLanguageCodes(newShownLanguageCodes);
+  };
 
-    if (xxLanguageExists && !newShownLanguageCodes.includes("xx")) {
-      newShownLanguageCodes = ["xx", ...newShownLanguageCodes];
-    }
+  // Helper functions for Dialog component
+  const handleClose = () => {
+    setIsDialogOpen(false);
+  };
+  const handleOpen = () => {
+    setIsDialogOpen(true);
+  };
+
+  const handleDialogConfirm = (newLanguageCodes: string[]) => {
+    let newShownLanguageCodes = [...shownLanguageCodes];
+    newLanguageCodes.forEach((languageCode) => {
+      if (shownLanguageCodes.includes(languageCode)) {
+        newShownLanguageCodes = newShownLanguageCodes.filter(
+          (langCode) => langCode !== languageCode
+        );
+      } else {
+        newShownLanguageCodes.push(languageCode);
+        newShownLanguageCodes.sort(sortByLanguageName);
+      }
+    });
+    localStorage.setItem(
+      SHOWN_LANGUAGES_KEY,
+      JSON.stringify(newShownLanguageCodes)
+    );
     setShownLanguageCodes(newShownLanguageCodes);
 
     setIsDialogOpen(false);
@@ -114,29 +156,44 @@ export const ListTranslations = ({
     };
   };
 
-  const languagesToShow: string[] = shownLanguageCodes.filter(
+  let languagesToShow: string[];
+  languagesToShow = shownLanguageCodes.filter(
     (languageCode) => languageCode !== nodeObject.main_language
   );
+  if (shownLanguageCodes.includes("xx")) {
+    languagesToShow = languagesToShow.filter(
+      (languageCode) => languageCode !== "xx"
+    );
+    languagesToShow.unshift("xx");
+  }
   languagesToShow.unshift(nodeObject.main_language);
 
-  const numberOfLanguagesShownMessage =
-    "(" +
-    languagesToShow.length +
-    " language" +
-    (languagesToShow.length === 1 ? "" : "s") +
-    " shown)";
+  if (showExistingTranslations) {
+    languagesToShow.push(
+      ...Object.keys(nodeObject)
+        .filter(
+          (key) =>
+            key.startsWith("tags_") &&
+            !key.startsWith("tags_ids_") &&
+            (nodeObject[key]?.length > 0 || originalNodeObject[key]?.length > 0)
+        )
+        .map((key) => key.slice(5))
+        .filter((languageCode) => !languagesToShow.includes(languageCode))
+        .sort(sortByLanguageName)
+    );
+  }
 
   const hasFirstTranslationChanged: boolean[] = languagesToShow.map(
     (language: string) =>
+      originalNodeObject[`tags_${language}`]?.[0] &&
+      nodeObject[`tags_${language}`]?.[0] &&
       nodeObject[`tags_${language}`]?.[0] !==
-      originalNodeObject[`tags_${language}`]?.[0]
+        originalNodeObject[`tags_${language}`]?.[0]
   );
 
   const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
     const languageName =
-      (languageCode === "xx"
-        ? "All languages"
-        : ISO6391.getName(languageCode)) +
+      getLanguageName(languageCode) +
       (languageCode === nodeObject.main_language ? " (main language)" : "");
     const alertMessage =
       "Changing the first translation will modify " +
@@ -151,57 +208,103 @@ export const ListTranslations = ({
     <Box sx={{ ml: 4 }}>
       {/* Title */}
       <Stack direction="row" alignItems="center" sx={{ mt: 4 }}>
-        <Typography sx={{ mb: 1 }} variant="h5">
+        <Typography sx={{ mb: 1, mr: 2 }} variant="h5">
           Translations
         </Typography>
-        <Button sx={{ ml: 1 }} onClick={handleOpen}>
-          {numberOfLanguagesShownMessage}
-        </Button>
-        {xxLanguageExists ? (
-          // if "xx" words exist, the "All language" is always displayed, the user can't choose
-          <>
-            <Checkbox checked={true} disabled />
-            <Typography variant="h6" sx={{ color: "#bdbdbd" }}>
-              All languages
-            </Typography>
-          </>
-        ) : (
-          <>
-            <Checkbox
-              checked={shownLanguageCodes.includes("xx")}
-              onClick={handleXxLanguage}
-            />
-            <Typography variant="h6">All languages</Typography>
-          </>
-        )}
+        {/* if "xx" words exist, the "Fallback translations" are always
+        displayed, the user can't choose */}
+        <Checkbox
+          checked={xxLanguageExists ? true : shownLanguageCodes.includes("xx")}
+          disabled={xxLanguageExists}
+          onClick={() => handleLanguagePin("xx")}
+        />
+        <Typography
+          variant="h6"
+          sx={{ color: `${xxLanguageExists ? "#bdbdbd" : ""}`, mr: 1 }}
+        >
+          Show fallback translations
+        </Typography>
+        <Checkbox
+          checked={showExistingTranslations}
+          onClick={() => {
+            setShowExistingTranslations(!showExistingTranslations);
+          }}
+        />
+        <Typography variant="h6">Show all existing translations</Typography>
       </Stack>
+
+      {!["en", "xx"].includes(nodeObject.main_language) && (
+        <Alert severity="info" sx={{ width: "fit-content" }}>
+          English or Fallback translations is not the main language for this
+          entry. Please consider changing it to adhere to the prevailing
+          convention.
+        </Alert>
+      )}
 
       {/* Render translation tags for each language to show */}
       {shownLanguagesInfo.map(
-        ({ languageCode, languageName, alertMessage }) => (
-          <Stack key={languageCode}>
-            <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
-              <Typography variant="h6">{languageName}</Typography>
+        ({ languageCode, languageName, alertMessage }) => {
+          const isLanguageSelected = shownLanguageCodes.includes(languageCode);
+          return (
+            <Stack key={languageCode}>
+              <Stack direction="row" alignItems="center" sx={{ my: 0.5 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: `${!isLanguageSelected ? "grey" : ""}`,
+                  }}
+                >
+                  {languageName}
+                </Typography>
+
+                {languageCode !== "xx" && (
+                  <Tooltip
+                    title={`${
+                      isLanguageSelected ? "Hide language" : "Pin language"
+                    }`}
+                    placement="right"
+                    arrow
+                  >
+                    <IconButton
+                      sx={{
+                        color: "grey",
+                        ml: 1,
+                      }}
+                      onClick={() => handleLanguagePin(languageCode)}
+                    >
+                      {!isLanguageSelected ? (
+                        <PushPinOutlinedIcon width={24} height={24} />
+                      ) : (
+                        <VisibilityOffOutlinedIcon />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Stack>
+              {hasFirstTranslationChanged[
+                languagesToShow.indexOf(languageCode)
+              ] && (
+                <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
+                  {alertMessage}
+                </Alert>
+              )}
+              <Stack direction="row" sx={{ mr: 4 }}>
+                {
+                  <TranslationTags
+                    translations={nodeObject["tags_" + languageCode] ?? []}
+                    saveTranslations={saveTranslationsForLanguage(languageCode)}
+                    isReadOnly={isReadOnly}
+                  />
+                }
+              </Stack>
             </Stack>
-            {hasFirstTranslationChanged[
-              languagesToShow.indexOf(languageCode)
-            ] && (
-              <Alert severity="warning" sx={{ mb: 1, width: "fit-content" }}>
-                {alertMessage}
-              </Alert>
-            )}
-            <Stack direction="row" sx={{ mr: 4 }}>
-              {
-                <TranslationTags
-                  translations={nodeObject["tags_" + languageCode] ?? []}
-                  saveTranslations={saveTranslationsForLanguage(languageCode)}
-                  isReadOnly={isReadOnly}
-                />
-              }
-            </Stack>
-          </Stack>
-        )
+          );
+        }
       )}
+
+      <Button sx={{ my: 1 }} onClick={handleOpen}>
+        Show another language
+      </Button>
 
       {/* Dialog box for adding translations */}
       <Dialog open={isDialogOpen} onClose={handleClose}>
