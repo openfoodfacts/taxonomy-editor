@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import ISO6391 from "iso-639-1";
+import { useEffect, useState } from "react";
+import { SHOWN_LANGUAGES_KEY } from "@/pages/project/editentry/ListTranslations";
 
 type Props = {
   entryNodes: EntryNode[];
@@ -30,12 +32,24 @@ const EntryTitle = ({ id }: { id: string }) => {
   );
 };
 
-const displayTranslatedLanguages = (tags: Record<string, string[]>) => {
-  const languageCodes = Object.keys(tags)
-    .filter((tag) => tag.includes("_ids_"))
-    .map((tag) => tag.split("_").at(-1) as string);
-  const languageNames = languageCodes.map((code) => ISO6391.getName(code));
-  return "Translated in " + languageNames.join(", ");
+const getTranslations = (
+  tags: Record<string, string[]>,
+  shownLanguageCodes: string[]
+) => {
+  const result: string[] = [];
+
+  shownLanguageCodes.forEach((languageCode) => {
+    const languageName =
+      languageCode === "xx"
+        ? "Fallback translations"
+        : ISO6391.getName(languageCode);
+    const translations = tags[`tags_${languageCode}`];
+    if (translations) {
+      result.push(`${languageName}: ${translations.join(", ")}`);
+    }
+  });
+
+  return result;
 };
 
 export const EntryNodesTableBody = ({
@@ -43,6 +57,37 @@ export const EntryNodesTableBody = ({
   taxonomyName,
   branchName,
 }: Props) => {
+  const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]);
+
+  useEffect(() => {
+    // get shown languages from local storage if it exists else use main language
+    try {
+      const rawLocalStorageShownLanguages =
+        localStorage.getItem(SHOWN_LANGUAGES_KEY);
+      let localStorageShownLanguages: string[] | null =
+        rawLocalStorageShownLanguages
+          ? JSON.parse(rawLocalStorageShownLanguages)
+          : null;
+      // validate that shown languages is an array of strings and filter all items that are valid language codes
+      if (
+        Array.isArray(localStorageShownLanguages) &&
+        localStorageShownLanguages.every((item) => typeof item === "string")
+      ) {
+        localStorageShownLanguages = localStorageShownLanguages.filter(
+          (item) => {
+            return item === "xx" || ISO6391.validate(item);
+          }
+        );
+      } else {
+        localStorageShownLanguages = [];
+      }
+      setShownLanguageCodes(localStorageShownLanguages);
+    } catch (e) {
+      // shown languages is an empty list, when we can't parse the local storage
+      console.log(e);
+    }
+  }, []);
+
   return (
     <>
       <TableBody>
@@ -62,11 +107,11 @@ export const EntryNodesTableBody = ({
                     External Node
                   </Typography>
                 )}
-                <Typography variant="body2" color="inherit">
-                  {Object.keys(tags).length === 0
-                    ? "No translations"
-                    : displayTranslatedLanguages(tags)}
-                </Typography>
+                {getTranslations(tags, shownLanguageCodes).map((line, i) => (
+                  <Typography key={i} variant="body2" color="inherit">
+                    {line}
+                  </Typography>
+                ))}
               </Stack>
             </TableCell>
           </TableRow>
