@@ -16,7 +16,7 @@ import { useMemo, useEffect, useState } from "react";
 import ISO6391 from "iso-639-1";
 import { TranslationTags } from "./TranslationTags";
 
-const SHOWN_LANGUAGES_KEY = "shownLanguages";
+export const SHOWN_LANGUAGES_KEY = "shownLanguages";
 
 const getLanguageName = (languageCode: string): string => {
   if (languageCode === "xx") {

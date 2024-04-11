@@ -7,12 +7,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
-import { RootNodesWrapper } from "./pages/project/root-nodes";
 import { EditEntryWrapper } from "./pages/project/editentry";
 import { ExportTaxonomyWrapper } from "./pages/project/export";
 import { GoToProject } from "./pages/go-to-project";
 import { Home } from "./pages/home";
-import { SearchNodeWrapper } from "./pages/project/search";
+import { AdvancedSearchForm } from "./pages/project/search";
 import { StartProject } from "./pages/startproject";
 import { Errors } from "./pages/project/errors";
 import { ProjectPage, projectLoader } from "./pages/project";
@@ -58,7 +57,7 @@ const router = createBrowserRouter([
           },
           {
             path: "entry",
-            element: <RootNodesWrapper />,
+            element: <Navigate to="../search" relative="path" />,
           },
           {
             path: "entry/:id",
@@ -66,7 +65,7 @@ const router = createBrowserRouter([
           },
           {
             path: "search",
-            element: <SearchNodeWrapper />,
+            element: <AdvancedSearchForm />,
           },
           {
             path: "errors",
