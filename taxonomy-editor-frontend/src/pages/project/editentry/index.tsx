@@ -48,7 +48,7 @@ const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
     },
   });
 
-  const isExternalNode = node?.is_external === true;
+  const isExternalNode = node?.isExternal === true;
 
   const baseUrl: string = createBaseURL(taxonomyName, branchName);
 
@@ -84,7 +84,7 @@ const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
         {isExternalNode && (
           <Alert severity="info" sx={{ ml: 4, mb: 2, width: "fit-content" }}>
             {`This node has been imported from another taxonomy (${toTitleCase(
-              removeTxtExtension(node.original_taxonomy)
+              removeTxtExtension(node.originalTaxonomy as string)
             )}) to extend the current taxonomy. You can only add children from the current taxonomy to it.`}
           </Alert>
         )}

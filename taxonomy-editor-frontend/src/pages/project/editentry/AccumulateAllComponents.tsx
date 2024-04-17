@@ -1,7 +1,7 @@
 import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import ListEntryParents from "./ListEntryParents";
 import ListEntryChildren from "./ListEntryChildren";
 import { ListTranslations } from "./ListTranslations";
@@ -12,6 +12,7 @@ import { createURL, getNodeType, toSnakeCase } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { DefaultService } from "@/client";
+import { DestructuredEntryNode } from "@/backend-types/types";
 
 interface AccumulateAllComponentsProps {
   id: string;
@@ -38,7 +39,7 @@ const AccumulateAllComponents = ({
   const isEntry = getNodeType(id) === "entry";
 
   const {
-    data: node,
+    data: rawNode,
     isPending,
     isError,
     error,
@@ -58,8 +59,29 @@ const AccumulateAllComponents = ({
       );
     },
   });
-  const [nodeObject, setNodeObject] = useState(null); // Storing updates to node
-  const [originalNodeObject, setOriginalNodeObject] = useState(null); // For tracking changes
+
+  // Intermediate destructuring step. Migrate to @/client/models/EntryNode when possible
+  const node: DestructuredEntryNode | null = useMemo(() => {
+    if (!rawNode) return null;
+    const {
+      tags: _tags,
+      properties: _properties,
+      comments: _comments,
+      ...destructuredNode
+    } = {
+      ...rawNode,
+      ...rawNode.tags,
+      ...rawNode.properties,
+      ...rawNode.comments,
+    };
+    return destructuredNode;
+  }, [rawNode]);
+
+  const [nodeObject, setNodeObject] = useState<DestructuredEntryNode | null>(
+    null
+  ); // Storing updates to node
+  const [originalNodeObject, setOriginalNodeObject] =
+    useState<DestructuredEntryNode | null>(null); // For tracking changes
   const [updateChildren, setUpdateChildren] = useState(null); // Storing updates of children in node
   const [previousUpdateChildren, setPreviousUpdateChildren] = useState(null); // Tracking changes of children
   const [open, setOpen] = useState(false); // Used for Dialog component
@@ -118,8 +140,7 @@ const AccumulateAllComponents = ({
   // Function handling updation of node
   const handleSubmit = () => {
     if (!nodeObject) return;
-    const data = Object.assign({}, nodeObject);
-    delete data["id"]; // ID not allowed in POST
+    const { id: _, ...data } = { ...nodeObject }; // ID not allowed in POST
 
     const dataToBeSent = {};
     // Remove UUIDs from data

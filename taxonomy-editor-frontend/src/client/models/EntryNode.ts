@@ -11,4 +11,5 @@ export type EntryNode = {
   properties: Record<string, string>;
   comments: Record<string, Array<string>>;
   isExternal: boolean;
+  originalTaxonomy: string | null;
 };

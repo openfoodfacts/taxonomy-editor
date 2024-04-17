@@ -32,14 +32,14 @@ from fastapi.responses import FileResponse, JSONResponse
 from . import graph_db
 
 # Controller imports
-from .controllers import project_controller, search_controller
+from .controllers import node_controller, project_controller, search_controller
 from .entries import TaxonomyGraph
 
 # Custom exceptions
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import EntryNodeCreate, ErrorNode, Footer, Header, NodeType
+from .models.node_models import EntryNode, EntryNodeCreate, ErrorNode, Footer, Header, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .models.search_models import EntryNodeSearchResult
 from .scheduler import scheduler_lifespan
@@ -199,16 +199,12 @@ async def find_all_root_nodes(response: Response, branch: str, taxonomy_name: st
 
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}")
-async def find_one_entry(response: Response, branch: str, taxonomy_name: str, entry: str):
+async def find_one_entry(branch: str, taxonomy_name: str, entry: str) -> EntryNode:
     """
     Get entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    one_entry = await taxonomy.get_nodes("ENTRY", entry)
-
-    check_single(one_entry)
-
-    return one_entry[0]["n"]
+    return await node_controller.get_entry_node(taxonomy.project_name, entry)
 
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/parents")

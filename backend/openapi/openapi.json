@@ -268,7 +268,11 @@
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EntryNode" }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1217,6 +1221,10 @@
             "type": "boolean",
             "title": "Isexternal",
             "default": false
+          },
+          "originalTaxonomy": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Originaltaxonomy"
           }
         },
         "type": "object",

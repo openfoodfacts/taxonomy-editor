@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Body_upload_taxonomy__taxonomy_name___branch__upload_post } from "../models/Body_upload_taxonomy__taxonomy_name___branch__upload_post";
+import type { EntryNode } from "../models/EntryNode";
 import type { EntryNodeCreate } from "../models/EntryNodeCreate";
 import type { EntryNodeSearchResult } from "../models/EntryNodeSearchResult";
 import type { ErrorNode } from "../models/ErrorNode";
@@ -180,14 +181,14 @@ export class DefaultService {
    * @param branch
    * @param taxonomyName
    * @param entry
-   * @returns any Successful Response
+   * @returns EntryNode Successful Response
    * @throws ApiError
    */
   public static findOneEntryTaxonomyNameBranchEntryEntryGet(
     branch: string,
     taxonomyName: string,
     entry: string
-  ): CancelablePromise<any> {
+  ): CancelablePromise<EntryNode> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/{taxonomy_name}/{branch}/entry/{entry}",

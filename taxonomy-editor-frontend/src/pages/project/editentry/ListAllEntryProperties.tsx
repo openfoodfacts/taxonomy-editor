@@ -2,6 +2,7 @@ import { Alert, Box, Grid, Paper, Snackbar, Typography } from "@mui/material";
 import MaterialTable, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 import ISO6391, { LanguageCode } from "iso-639-1";
+import { DestructuredEntryNode } from "@/backend-types/types";
 
 type RowType = {
   propertyName: string;
@@ -12,41 +13,84 @@ type RenderedPropertyType = RowType & {
   id: string;
 };
 
-const ListAllEntryProperties = ({ nodeObject, setNodeObject, isReadOnly }) => {
-  function replaceAll(str: string, find: string, replace: string) {
-    return str.replace(new RegExp(find, "g"), replace);
-  }
+function replaceAll(str: string, find: string, replace: string) {
+  return str.replace(new RegExp(find, "g"), replace);
+}
 
-  const normalizeNameToFrontend = (name: string) => {
-    // Use the replace() method with a regular expression to replace underscores with colons
-    return replaceAll(name, "_", ":");
-  };
+const normalizeNameToFrontend = (name: string) => {
+  // Use the replace() method with a regular expression to replace underscores with colons
+  return replaceAll(name, "_", ":");
+};
 
-  const normalizeNameToDb = (name: string) => {
-    // Use the replace() method with a regular expression to replace underscores with colons
-    return replaceAll(name, ":", "_");
-  };
+const normalizeNameToDb = (name: string) => {
+  // Use the replace() method with a regular expression to replace underscores with colons
+  return replaceAll(name, ":", "_");
+};
 
-  const collectProperties = (): RenderedPropertyType[] => {
-    const renderedProperties: RenderedPropertyType[] = [];
-    Object.keys(nodeObject).forEach((key: string) => {
-      // Collecting properties (begin with prop_)
-      // Ex: prop_vegan_en
-      if (key.startsWith("prop") && !key.endsWith("_comments")) {
-        // Removing "prop_" prefix from key to render only the name
-        const property_name = key.replace(/^prop_/, "");
+const collectProperties = (
+  entryNode: DestructuredEntryNode
+): RenderedPropertyType[] => {
+  const renderedProperties: RenderedPropertyType[] = [];
+  Object.keys(entryNode).forEach((key: string) => {
+    // Collecting properties (begin with prop_)
+    // Ex: prop_vegan_en
+    if (key.startsWith("prop") && !key.endsWith("_comments")) {
+      // Removing "prop_" prefix from key to render only the name
+      const property_name = key.replace(/^prop_/, "");
 
-        renderedProperties.push({
-          id: Math.random().toString(),
-          propertyName: normalizeNameToFrontend(property_name),
-          propertyValue: nodeObject[key],
-        });
+      renderedProperties.push({
+        id: Math.random().toString(),
+        propertyName: normalizeNameToFrontend(property_name),
+        propertyValue: entryNode[key],
+      });
+    }
+  });
+  return renderedProperties;
+};
+
+const validatePropertyName = (propertyName: string): boolean => {
+  const languageCodes = ISO6391.getAllCodes();
+  // Every property name should be in the form property_name:lang_code
+  if (propertyName) {
+    const words = propertyName.split(":");
+    const langCode = words[words.length - 1];
+    if (!languageCodes.includes(langCode as LanguageCode)) {
+      return false;
+    }
+    // Property name should not include special caracters
+    for (const word of words) {
+      const pattern = /^[a-zA-Z0-9_]+$/;
+      if (!pattern.test(word)) {
+        return false;
       }
-    });
-    return renderedProperties;
-  };
+    }
+    return true;
+  }
+  return false;
+};
 
-  const [data, setData] = useState(collectProperties());
+const isPropertyNameUnique = (
+  propertyName: string,
+  otherProperties: RenderedPropertyType[]
+): boolean => {
+  for (const prop of otherProperties) {
+    if (prop.propertyName === propertyName) return false;
+  }
+  return true;
+};
+
+interface ListAllEntryPropertiesProps {
+  nodeObject: DestructuredEntryNode;
+  setNodeObject: React.Dispatch<React.SetStateAction<DestructuredEntryNode>>;
+  isReadOnly: boolean;
+}
+
+const ListAllEntryProperties = ({
+  nodeObject,
+  setNodeObject,
+  isReadOnly,
+}: ListAllEntryPropertiesProps) => {
+  const [data, setData] = useState(collectProperties(nodeObject));
 
   // Helper function used for changing properties of node
   const changePropertyData = (key: string, value: string) => {
@@ -62,40 +106,8 @@ const ListAllEntryProperties = ({ nodeObject, setNodeObject, isReadOnly }) => {
     setNodeObject((prevState) => {
       const toRemove = normalizeNameToDb("prop_" + key);
       const { [toRemove]: _, ...newNodeObject } = prevState;
-      return newNodeObject;
+      return newNodeObject as DestructuredEntryNode;
     });
-  };
-
-  const LanguageCodes = ISO6391.getAllCodes();
-
-  const validatePropertyName = (propertyName: string): boolean => {
-    // Every property name should be in the form property_name:lang_code
-    if (propertyName) {
-      const words = propertyName.split(":");
-      const langCode = words[words.length - 1];
-      if (!LanguageCodes.includes(langCode as LanguageCode)) {
-        return false;
-      }
-      // Property name should not include special caracters
-      for (const word of words) {
-        const pattern = /^[a-zA-Z0-9_]+$/;
-        if (!pattern.test(word)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  };
-
-  const isPropertyNameUnique = (
-    propertyName: string,
-    otherProperties: RenderedPropertyType[]
-  ): boolean => {
-    for (const prop of otherProperties) {
-      if (prop.propertyName === propertyName) return false;
-    }
-    return true;
   };
 
   const [errorMessage, setErrorMessage] = useState("");
