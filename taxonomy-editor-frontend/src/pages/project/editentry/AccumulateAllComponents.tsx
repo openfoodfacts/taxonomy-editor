@@ -60,6 +60,7 @@ const AccumulateAllComponents = ({
     },
   });
 
+  // Intermediate destructuring step. Migrate to @/client/models/EntryNode when possible
   const node: DestructuredEntryNode | null = useMemo(() => {
     if (!rawNode) return null;
     const {

@@ -1,4 +1,6 @@
-// TODO: Migrate to @/client/models/EntryNode
+/**
+ * @deprecated Migrate to @/client/models/EntryNode when possible
+ */
 export type DestructuredEntryNode = {
   id: string;
   precedingLines: Array<string>;
