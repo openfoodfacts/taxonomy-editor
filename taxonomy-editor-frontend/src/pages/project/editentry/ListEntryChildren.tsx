@@ -6,6 +6,7 @@ import {
   Button,
   IconButton,
   Box,
+  Alert,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -20,13 +21,22 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ISO6391 from "iso-639-1";
 import { ENTER_KEYCODE } from "@/constants";
 import { greyHexCode } from "@/constants";
+import equal from "fast-deep-equal";
 
 interface Relations {
   index: string;
   child: string;
 }
 
-const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
+const ListEntryChildren = ({
+  url,
+  urlPrefix,
+  updateChildren,
+  setUpdateNodeChildren,
+  previousUpdateChildren,
+  setPreviousUpdateChildren,
+  hasChanges,
+}) => {
   const [relations, setRelations] = useState<Relations[]>([]);
   const [newChild, setNewChild] = useState("");
   const [newLanguageCode, setNewLanguageCode] = useState("");
@@ -46,6 +56,9 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       setUpdateNodeChildren(incomingData.map((el) => el?.[0]));
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      setPreviousUpdateChildren(incomingData.map((el) => el?.[0]));
       const arrayData: Relations[] = [];
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -54,7 +67,7 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
       );
       setRelations(arrayData);
     }
-  }, [incomingData, setUpdateNodeChildren]);
+  }, [incomingData, setPreviousUpdateChildren, setUpdateNodeChildren]);
 
   // Helper functions for Dialog component
   const handleCloseDialog = () => {
@@ -122,6 +135,17 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
         </IconButton>
       </Stack>
 
+      {/* Renders warning message to save changes to be able to click on a child node */}
+      {(!equal(updateChildren, previousUpdateChildren) || hasChanges) && (
+        <Alert severity="warning" sx={{ mb: 1, ml: 4, width: "fit-content" }}>
+          {!equal(updateChildren, previousUpdateChildren) &&
+            "You've just created a new child. To navigate to it, please ensure your changes are saved first."}
+          {!equal(updateChildren, previousUpdateChildren) && <br />}
+          {hasChanges &&
+            "Changes are pending and have not been saved. Please save your changes before navigating to any child node. If you prefer not to save your pending changes but wish to avoid losing them, you can navigate to a child node in a new window."}
+        </Alert>
+      )}
+
       {/* Renders parents or children of the node */}
       <Stack direction="row" flexWrap="wrap">
         {relations.map((relationObject) => (
@@ -131,7 +155,13 @@ const ListEntryChildren = ({ url, urlPrefix, setUpdateNodeChildren }) => {
             alignItems="center"
           >
             <Link
-              to={`${urlPrefix}/entry/${relationObject["child"]}`}
+              to={
+                // Is this a newly created child node that hasn't been saved yet?
+                updateChildren.includes(relationObject["child"]) &&
+                !previousUpdateChildren.includes(relationObject["child"])
+                  ? "#"
+                  : `${urlPrefix}/entry/${relationObject["child"]}`
+              }
               style={{ color: "#0064c8", display: "inline-block" }}
             >
               <Typography sx={{ ml: 8 }} variant="h6">
