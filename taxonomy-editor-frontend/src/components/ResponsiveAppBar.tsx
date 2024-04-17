@@ -26,7 +26,6 @@ const getDisplayedPages = (
 
   const navUrlPrefix = `${params.taxonomyName}/${params.branchName}/`;
   return [
-    { url: navUrlPrefix + "entry", translationKey: "Nodes" },
     { url: navUrlPrefix + "search", translationKey: "Search" },
     { url: navUrlPrefix + "export", translationKey: "Export" },
     { url: navUrlPrefix + "errors", translationKey: "Errors" },
@@ -46,7 +45,7 @@ export const ResponsiveAppBar = () => {
   };
 
   return (
-    <AppBar position="sticky" sx={{ textColor: "#000", background: "#f2e9e4" }}>
+    <AppBar position="sticky" sx={{ color: "#000", background: "#f2e9e4" }}>
       <Container maxWidth={false}>
         <Toolbar disableGutters>
           {/* Mobile content */}
@@ -143,6 +142,7 @@ export const ResponsiveAppBar = () => {
                 component={Link}
                 to="/"
                 target="_blank"
+                rel="noopener"
               >
                 <img
                   src={logoUrl}

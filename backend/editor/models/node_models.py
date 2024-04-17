@@ -30,7 +30,6 @@ class EntryNodeCreate(BaseModel):
 class EntryNode(BaseModel):
     id: str
     preceding_lines: list[str]
-    src_position: int
     main_language: str
     tags: dict[str, list[str]]
     properties: dict[str, str]

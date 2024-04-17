@@ -200,7 +200,11 @@ const AccumulateAllComponents = ({
               <ListEntryChildren
                 url={url + "/children"}
                 urlPrefix={urlPrefix}
+                updateChildren={updateChildren}
                 setUpdateNodeChildren={setUpdateChildren}
+                previousUpdateChildren={previousUpdateChildren}
+                setPreviousUpdateChildren={setPreviousUpdateChildren}
+                hasChanges={hasChanges}
               />
               <ListTranslations
                 originalNodeObject={originalNodeObject}

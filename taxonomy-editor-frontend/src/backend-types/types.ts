@@ -1,8 +1,3 @@
-export type NodeInfo = {
-  id: string;
-  is_external: boolean;
-};
-
 // TODO: Migrate to @/client/models/EntryNode
 export type DestructuredEntryNode = {
   id: string;
@@ -17,7 +12,5 @@ export type DestructuredEntryNode = {
   // properties: Record<string, string>;
   // comments: Record<string, Array<string>>;
 };
-
-export type RootEntriesAPIResponse = Array<NodeInfo[]>;
 
 export type ParentsAPIResponse = string[];
