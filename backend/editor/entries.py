@@ -312,18 +312,6 @@ class TaxonomyGraph:
         """
         return parser_utils.normalize_text(self.branch_name, char="_") == self.branch_name
 
-    def is_tag_key(self, key):
-        """
-        Helper function to check if a key is a tag key (tags_XX)
-        """
-        return key.startswith("tags_") and not ("_ids_" in key or key.endswith("_comments"))
-
-    def is_property_key(self, key):
-        """
-        Helper function to check if a key is a property key (prop_NAME_XX)
-        """
-        return key.startswith("prop_") and not key.endswith("_comments")
-
     async def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
