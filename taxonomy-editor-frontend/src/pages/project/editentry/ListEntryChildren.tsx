@@ -183,8 +183,7 @@ const ListEntryChildren = ({
         <DialogTitle>Add a child</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Enter the name of the child in the format
-            &quot;LC:child_tag_id&quot;
+            Enter the language code and the main name for the children
           </DialogContentText>
           <DialogContentText>Example - en:yogurts</DialogContentText>
           <Stack sx={{ mt: 2 }} direction="row" alignItems="center">
