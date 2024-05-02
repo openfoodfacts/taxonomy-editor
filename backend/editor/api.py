@@ -39,7 +39,7 @@ from .entries import TaxonomyGraph
 from .exceptions import GithubBranchExistsError, GithubUploadError
 
 # Data model imports
-from .models.node_models import EntryNode, EntryNodeCreate, ErrorNode, Footer, Header, NodeType
+from .models.node_models import EntryNode, EntryNodeCreate, ErrorNode, NodeType
 from .models.project_models import Project, ProjectEdit, ProjectStatus
 from .models.search_models import EntryNodeSearchResult
 from .scheduler import scheduler_lifespan
@@ -429,7 +429,9 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    updated_entry = await taxonomy.update_node("ENTRY", entry, incoming_data)
+    incoming_data["id"] = entry
+    new_entry = EntryNode(**incoming_data)
+    updated_entry = await taxonomy.update_node("ENTRY", new_entry)
     return updated_entry
 
 
@@ -444,54 +446,6 @@ async def edit_entry_children(request: Request, branch: str, taxonomy_name: str,
     incoming_data = await request.json()
     updated_children = await taxonomy.update_node_children(entry, incoming_data)
     return updated_children
-
-
-@app.post("/{taxonomy_name}/{branch}/synonym/{synonym}")
-async def edit_synonyms(request: Request, branch: str, taxonomy_name: str, synonym: str):
-    """
-    Editing a synonym in a taxonomy.
-    New key-value pairs can be added, old key-value pairs can be updated.
-    URL will be of format '/synonym/<id>'
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incoming_data = await request.json()
-    updated_synonym = await taxonomy.update_node("SYNONYMS", synonym, incoming_data)
-    return updated_synonym
-
-
-@app.post("/{taxonomy_name}/{branch}/stopword/{stopword}")
-async def edit_stopwords(request: Request, branch: str, taxonomy_name: str, stopword: str):
-    """
-    Editing a stopword in a taxonomy.
-    New key-value pairs can be added, old key-value pairs can be updated.
-    URL will be of format '/stopword/<id>'
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incoming_data = await request.json()
-    updated_stopword = await taxonomy.update_node("STOPWORDS", stopword, incoming_data)
-    return updated_stopword
-
-
-@app.post("/{taxonomy_name}/{branch}/header")
-async def edit_header(incoming_data: Header, branch: str, taxonomy_name: str):
-    """
-    Editing the __header__ in a taxonomy.
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    convertedData = incoming_data.dict()
-    updated_header = await taxonomy.update_node("TEXT", "__header__", convertedData)
-    return updated_header
-
-
-@app.post("/{taxonomy_name}/{branch}/footer")
-async def edit_footer(incoming_data: Footer, branch: str, taxonomy_name: str):
-    """
-    Editing the __footer__ in a taxonomy.
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    convertedData = incoming_data.dict()
-    updated_footer = await taxonomy.update_node("TEXT", "__footer__", convertedData)
-    return updated_footer
 
 
 # Delete methods

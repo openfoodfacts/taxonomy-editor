@@ -158,7 +158,7 @@ export const ListTranslations = ({
 
   let languagesToShow: string[];
   languagesToShow = shownLanguageCodes.filter(
-    (languageCode) => languageCode !== nodeObject.main_language
+    (languageCode) => languageCode !== nodeObject.mainLanguage
   );
   if (shownLanguageCodes.includes("xx")) {
     languagesToShow = languagesToShow.filter(
@@ -166,7 +166,7 @@ export const ListTranslations = ({
     );
     languagesToShow.unshift("xx");
   }
-  languagesToShow.unshift(nodeObject.main_language);
+  languagesToShow.unshift(nodeObject.mainLanguage);
 
   if (showExistingTranslations) {
     languagesToShow.push(
@@ -194,10 +194,10 @@ export const ListTranslations = ({
   const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
     const languageName =
       getLanguageName(languageCode) +
-      (languageCode === nodeObject.main_language ? " (main language)" : "");
+      (languageCode === nodeObject.mainLanguage ? " (main language)" : "");
     const alertMessage =
       "Changing the first translation will modify " +
-      (languageCode === nodeObject.main_language
+      (languageCode === nodeObject.mainLanguage
         ? "the ID of the node and "
         : "") +
       "the display name for this language!";
@@ -233,7 +233,7 @@ export const ListTranslations = ({
         <Typography variant="h6">Show all existing translations</Typography>
       </Stack>
 
-      {!["en", "xx"].includes(nodeObject.main_language) && (
+      {!["en", "xx"].includes(nodeObject.mainLanguage) && (
         <Alert severity="info" sx={{ width: "fit-content" }}>
           English or Fallback translations is not the main language for this
           entry. Please consider changing it to adhere to the prevailing
@@ -310,7 +310,7 @@ export const ListTranslations = ({
       <Dialog open={isDialogOpen} onClose={handleClose}>
         <LanguageSelectionDialog
           handleClose={handleClose}
-          mainLanguageCode={nodeObject.main_language}
+          mainLanguageCode={nodeObject.mainLanguage}
           handleDialogConfirm={handleDialogConfirm}
           shownLanguageCodes={shownLanguageCodes}
         />

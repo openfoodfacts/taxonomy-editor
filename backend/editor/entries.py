@@ -4,7 +4,6 @@ Database helper functions for API
 
 import asyncio
 import logging
-import re
 import shutil
 import tempfile
 import urllib.request  # Sending requests
@@ -33,7 +32,7 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
-from .models.node_models import EntryNodeCreate
+from .models.node_models import EntryNode, EntryNodeCreate
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
 from .settings import EXTERNAL_TAXONOMIES
 
@@ -319,6 +318,12 @@ class TaxonomyGraph:
         """
         return key.startswith("tags_") and not ("_ids_" in key or key.endswith("_comments"))
 
+    def is_property_key(self, key):
+        """
+        Helper function to check if a key is a property key (prop_NAME_XX)
+        """
+        return key.startswith("prop_") and not key.endswith("_comments")
+
     async def list_projects(self, status=None):
         """
         Helper function for listing all existing projects created in Taxonomy Editor
@@ -514,92 +519,50 @@ class TaxonomyGraph:
         }
         return stopwords_dict
 
-    async def update_node(self, label, entry, new_node):
+    async def update_node(self, label, new_node: EntryNode):
         """
         Helper function used for updation of node with given id and label
         """
-        # Sanity check keys
-        for key in new_node.keys():
-            if not re.match(r"^\w+$", key) or key == "id":
-                raise ValueError("Invalid key: %s", key)
-
         # Get current node information and deleted keys
-        result = await self.get_nodes(label, entry)
-        curr_node = result[0]["n"]
-        deleted_keys = set(curr_node.keys()) - set(new_node.keys())
+        result = await self.get_nodes(label, new_node.id)
+        curr_node = EntryNode(**result[0]["n"])
 
-        # Check for deleted keys having associated comments and delete them too
-        comments_keys_to_delete = set()
-        for key in deleted_keys:
-            comments_key = key + "_comments"
-            if new_node.get(comments_key) is not None:
-                comments_keys_to_delete.add(comments_key)
-        deleted_keys = deleted_keys.union(comments_keys_to_delete)
-
-        # Check for keys having null/empty values
-        for key in new_node.keys():
-            if ((new_node[key] == []) or (new_node[key] is None)) and key != "preceding_lines":
-                deleted_keys.add(key)
-                deleted_keys.add(key + "_comments")
-                # Delete tags_ids if we delete tags of a language
-                if self.is_tag_key(key):
-                    deleted_keys.add("tags_ids_" + key.split("_", 1)[1])
+        # Recompute normalized tags ids corresponding to entry tags
+        stopwords = await self.get_stopwords_dict()
+        new_node.recompute_tags_ids(stopwords)
 
         # Build query
         query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
 
         # Delete keys removed by user
+        deleted_keys = (
+            (set(curr_node.tags.keys()) - set(new_node.tags.keys()))
+            | (set(curr_node.tags_ids.keys()) - set(new_node.tags_ids.keys()))
+            | (set(curr_node.properties.keys()) - set(new_node.properties.keys()))
+            | (set(curr_node.comments.keys()) - set(new_node.comments.keys()))
+        )
         for key in deleted_keys:
-            if key == "id":  # Doesn't require to be deleted
-                continue
             query.append(f"""\nREMOVE n.{key}\n""")
 
-        # Adding normalized tags ids corresponding to entry tags
-        normalised_new_node = {}
-        stopwords = await self.get_stopwords_dict()
-        for key in set(new_node.keys()) - deleted_keys:
-            if self.is_tag_key(key):
-                # Normalise tags and store them in tags_ids
-                keys_language_code = key.split("_", 1)[1]
-                normalised_value = []
-                for value in new_node[key]:
-                    normalised_value.append(
-                        parser_utils.normalize_text(value, keys_language_code, stopwords=stopwords)
-                    )
-                normalised_new_node[key] = new_node[key]
-                normalised_new_node["tags_ids_" + keys_language_code] = normalised_value
-            else:
-                # No need to normalise
-                normalised_new_node[key] = new_node[key]
-
         # Update keys
-        for key in normalised_new_node.keys():
+        data = new_node.flat_dict()
+        for key in data.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
 
         # Update id if first translation of the main language has changed
-        main_language, id = curr_node["id"].split(":")
-        new_normalised_first_translation = normalised_new_node["tags_ids_" + main_language][0]
-        if id != new_normalised_first_translation:
-            if (
-                len(
-                    await self.get_nodes(
-                        label, f"{main_language}:{new_normalised_first_translation}"
-                    )
-                )
-                != 0
-            ):
+        new_node.recompute_id()
+        if new_node.id != curr_node.id:
+            # check it does not already exists
+            if len(await self.get_nodes(label, new_node.id)) != 0:
                 raise HTTPException(
                     status_code=400,
-                    detail=(
-                        f"Entry {main_language}:{new_normalised_first_translation} already exists"
-                    ),
+                    detail=(f"Can't change node id, entry {new_node.id} already exists"),
                 )
-            normalised_new_node["new_id"] = main_language + ":" + new_normalised_first_translation
-            query.append("""\nSET n.id = $new_id\n""")
+            query.append("""\nSET n.id = $id\n""")
 
         query.append("""RETURN n""")
-
-        params = dict(normalised_new_node, id=entry)
+        params = dict(data)
+        log.debug("update_node query: %s \nParam:%s", " ".join(query), params)
         result = await get_current_transaction().run(" ".join(query), params)
         return (await async_list(result))[0]["n"]
 

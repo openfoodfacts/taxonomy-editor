@@ -1,8 +1,12 @@
+import logging
+
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from ..graph_db import get_current_transaction
 from ..models.node_models import EntryNode, EntryNodeCreate, ErrorNode
 from .utils.result_utils import get_unique_record
+
+log = logging.getLogger(__name__)
 
 
 async def delete_project_nodes(project_id: str):
@@ -59,7 +63,8 @@ async def get_entry_node(project_id: str, node_id: str) -> EntryNode:
     result = await get_current_transaction().run(query, params)
 
     entry_record = await get_unique_record(result, node_id)
-    return EntryNode(**entry_record["n"])
+    node = EntryNode(**entry_record["n"])
+    return node
 
 
 async def get_error_node(project_id: str) -> ErrorNode | None:
