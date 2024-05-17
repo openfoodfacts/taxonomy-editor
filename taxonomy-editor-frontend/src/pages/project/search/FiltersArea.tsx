@@ -138,7 +138,7 @@ export const FiltersArea = ({
       <MultipleSelectFilter
         label="Translated into"
         filterValue={chosenLanguagesCodes}
-        listOfChoices={ISO6391.getAllNames()}
+        listOfChoices={ISO6391.getAllNames().sort()}
         mapCodeToValue={ISO6391.getName}
         mapValueToCode={ISO6391.getCode}
         setQ={setQ}
@@ -148,7 +148,7 @@ export const FiltersArea = ({
       <MultipleSelectFilter
         label="Not translated into"
         filterValue={withoutChosenLanguagesCodes}
-        listOfChoices={ISO6391.getAllNames()}
+        listOfChoices={ISO6391.getAllNames().sort()}
         mapCodeToValue={ISO6391.getName}
         mapValueToCode={ISO6391.getCode}
         setQ={setQ}
