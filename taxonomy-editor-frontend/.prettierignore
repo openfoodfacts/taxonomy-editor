@@ -1,1 +1,3 @@
 **/build
+# managed by release-please
+CHANGELOG.md
