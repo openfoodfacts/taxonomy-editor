@@ -56,11 +56,20 @@ class WriteTaxonomy:
         line = (", ").join(node["tags_" + lc])
         return lc + ":" + line
 
+    @staticmethod
+    def property_sort_key(property):
+        name, lang_code, *_ = property.split("_", 2)
+        # give priority to xx and en language codes
+        priority = {"en": 1, "xx": 0}
+        return (name, priority.get(lang_code, 100), lang_code)
+
     def list_property_and_lc(self, node):
         """return an ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        return sorted([property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")])
+        values = [property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")]
+        # note: using the fact that we are sure to find language code after the first underscore
+        return sorted(values, key=self.property_sort_key)
 
     def get_property_line(self, node, property):
         """return a string that should look like the original property line"""
