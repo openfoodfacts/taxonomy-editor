@@ -351,3 +351,16 @@ def test_error_log(neo4j, tmp_path, caplog):
         assert "duplicate id in file at line 12" in error
         assert "The two nodes will be merged, keeping the last" in error
         assert "values in case of conflicts." in error
+
+
+def test_properties_confused_lang(neo4j, tmp_path):
+    """Test that short property names don't get confused with language prefixes"""
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
+        fpath = str(pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt")
+        test_parser(fpath, None, "branch", "test")
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:1-for-planet' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        # "web:en" was not confused with a language prefix "web:"
+        assert "prop_web_en" in node.keys()
