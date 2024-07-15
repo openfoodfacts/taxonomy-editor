@@ -23,7 +23,7 @@ const getProjectQuery = (taxonomyName: string, branchName: string) => ({
   queryFn: async () => {
     return await DefaultService.getProjectInfoTaxonomyNameBranchProjectGet(
       branchName,
-      taxonomyName
+      taxonomyName,
     );
   },
 });

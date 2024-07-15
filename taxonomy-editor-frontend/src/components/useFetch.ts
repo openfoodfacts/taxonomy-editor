@@ -27,7 +27,7 @@ type ActionsType<DataType> =
 
 const reducer = <DataType>(
   state: ReducerStateType<DataType>,
-  action: ActionsType<DataType>
+  action: ActionsType<DataType>,
 ): ReducerStateType<DataType> => {
   switch (action.type) {
     case "fetching":

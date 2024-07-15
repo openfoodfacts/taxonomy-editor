@@ -21,7 +21,7 @@ export const WarningParsingErrors: React.FC<WarningParsingErrorsProps> = ({
     queryFn: async () => {
       return await DefaultService.findAllErrorsTaxonomyNameBranchParsingErrorsGet(
         branchName,
-        taxonomyName
+        taxonomyName,
       );
     },
   });
