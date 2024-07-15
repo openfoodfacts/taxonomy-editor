@@ -55,7 +55,7 @@ const AccumulateAllComponents = ({
       return await DefaultService.findOneEntryTaxonomyNameBranchEntryEntryGet(
         branchName,
         taxonomyName,
-        id
+        id,
       );
     },
   });
@@ -78,7 +78,7 @@ const AccumulateAllComponents = ({
   }, [rawNode]);
 
   const [nodeObject, setNodeObject] = useState<DestructuredEntryNode | null>(
-    null
+    null,
   ); // Storing updates to node
   const [originalNodeObject, setOriginalNodeObject] =
     useState<DestructuredEntryNode | null>(null); // For tracking changes
@@ -176,7 +176,7 @@ const AccumulateAllComponents = ({
         setPreviousUpdateChildren(updateChildren);
         if (newId !== id) {
           navigate(
-            `/${toSnakeCase(taxonomyName)}/${branchName}/entry/${newId}`
+            `/${toSnakeCase(taxonomyName)}/${branchName}/entry/${newId}`,
           );
         } else {
           refetch();
