@@ -68,7 +68,7 @@ export const ListTranslations = ({
     let newShownLanguageCodes: string[];
     if (shownLanguageCodes.includes(languageCode)) {
       newShownLanguageCodes = shownLanguageCodes.filter(
-        (langCode) => langCode !== languageCode
+        (langCode) => langCode !== languageCode,
       );
     } else {
       newShownLanguageCodes = [...shownLanguageCodes, languageCode];
@@ -76,7 +76,7 @@ export const ListTranslations = ({
     }
     localStorage.setItem(
       SHOWN_LANGUAGES_KEY,
-      JSON.stringify(newShownLanguageCodes)
+      JSON.stringify(newShownLanguageCodes),
     );
     setShownLanguageCodes(newShownLanguageCodes);
   };
@@ -94,7 +94,7 @@ export const ListTranslations = ({
     newLanguageCodes.forEach((languageCode) => {
       if (shownLanguageCodes.includes(languageCode)) {
         newShownLanguageCodes = newShownLanguageCodes.filter(
-          (langCode) => langCode !== languageCode
+          (langCode) => langCode !== languageCode,
         );
       } else {
         newShownLanguageCodes.push(languageCode);
@@ -103,7 +103,7 @@ export const ListTranslations = ({
     });
     localStorage.setItem(
       SHOWN_LANGUAGES_KEY,
-      JSON.stringify(newShownLanguageCodes)
+      JSON.stringify(newShownLanguageCodes),
     );
     setShownLanguageCodes(newShownLanguageCodes);
 
@@ -127,7 +127,7 @@ export const ListTranslations = ({
         localStorageShownLanguages = localStorageShownLanguages.filter(
           (item) => {
             return item === "xx" || ISO6391.validate(item);
-          }
+          },
         );
       } else {
         localStorageShownLanguages = [];
@@ -158,11 +158,11 @@ export const ListTranslations = ({
 
   let languagesToShow: string[];
   languagesToShow = shownLanguageCodes.filter(
-    (languageCode) => languageCode !== nodeObject.mainLanguage
+    (languageCode) => languageCode !== nodeObject.mainLanguage,
   );
   if (shownLanguageCodes.includes("xx")) {
     languagesToShow = languagesToShow.filter(
-      (languageCode) => languageCode !== "xx"
+      (languageCode) => languageCode !== "xx",
     );
     languagesToShow.unshift("xx");
   }
@@ -175,11 +175,12 @@ export const ListTranslations = ({
           (key) =>
             key.startsWith("tags_") &&
             !key.startsWith("tags_ids_") &&
-            (nodeObject[key]?.length > 0 || originalNodeObject[key]?.length > 0)
+            (nodeObject[key]?.length > 0 ||
+              originalNodeObject[key]?.length > 0),
         )
         .map((key) => key.slice(5))
         .filter((languageCode) => !languagesToShow.includes(languageCode))
-        .sort(sortByLanguageName)
+        .sort(sortByLanguageName),
     );
   }
 
@@ -188,7 +189,7 @@ export const ListTranslations = ({
       originalNodeObject[`tags_${language}`]?.[0] &&
       nodeObject[`tags_${language}`]?.[0] &&
       nodeObject[`tags_${language}`]?.[0] !==
-        originalNodeObject[`tags_${language}`]?.[0]
+        originalNodeObject[`tags_${language}`]?.[0],
   );
 
   const shownLanguagesInfo = languagesToShow.map((languageCode: string) => {
@@ -299,7 +300,7 @@ export const ListTranslations = ({
               </Stack>
             </Stack>
           );
-        }
+        },
       )}
 
       <Button sx={{ my: 1 }} onClick={handleOpen}>

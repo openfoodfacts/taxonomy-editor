@@ -63,7 +63,7 @@ const ProjectsTable = ({ projects }: { projects: Project[] }) => {
 
   const onRowClick = (params: GridRowParams<Project>) => {
     navigate(
-      `/${toSnakeCase(params.row.taxonomyName)}/${params.row.branchName}/entry`
+      `/${toSnakeCase(params.row.taxonomyName)}/${params.row.branchName}/entry`,
     );
   };
 

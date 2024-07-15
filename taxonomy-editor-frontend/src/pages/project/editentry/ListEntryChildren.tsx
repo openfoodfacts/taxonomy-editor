@@ -63,7 +63,7 @@ const ListEntryChildren = ({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       incomingData.map((el) =>
-        arrayData.push({ index: Math.random().toString(), child: el?.[0] })
+        arrayData.push({ index: Math.random().toString(), child: el?.[0] }),
       );
       setRelations(arrayData);
     }

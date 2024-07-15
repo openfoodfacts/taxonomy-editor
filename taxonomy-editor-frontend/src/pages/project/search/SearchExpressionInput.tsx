@@ -16,7 +16,7 @@ export const SearchExpressionInput = ({
   setQ,
 }: SearchExpressionInputType) => {
   const handleEnterKeyPress = (
-    event: React.KeyboardEvent<HTMLInputElement>
+    event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     setCurrentPage(1);
     if (event.key === "Enter") {
@@ -30,7 +30,7 @@ export const SearchExpressionInput = ({
   };
 
   const handleSearchInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setSearchExpression(event.target.value);
   };
