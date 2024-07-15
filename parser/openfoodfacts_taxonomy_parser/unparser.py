@@ -46,7 +46,9 @@ class WriteTaxonomy:
         for property in node:
             if property.startswith(key):
                 lc_list.append(property.split("_", dash_before_lc)[dash_before_lc])
-        lc_list.sort()
+        # we sort, but with a priority for xx and en language codes
+        priority = {"en": 1, "xx": 0}
+        lc_list.sort(key=lambda name: (priority.get(name[:2], 100), name))
         return lc_list
 
     def get_tags_line(self, node, lc):
