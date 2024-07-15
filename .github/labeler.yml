@@ -34,7 +34,7 @@ backend:
   - any-glob-to-any-file: 'backend/editor/graph_db.py'
   - any-glob-to-any-file: 'backend/editor/models.py'
   - any-glob-to-any-file: 'backend/editor/normalizer.py'
-  - bany-glob-to-any-file: 'ackend/editor/settings.py'
+  - any-glob-to-any-file: 'backend/editor/settings.py'
   - any-glob-to-any-file: 'backend/pyproject.toml'
   - any-glob-to-any-file: 'backend/poetry.lock'
   - any-glob-to-any-file: 'backend/sample/load.py'
@@ -85,8 +85,8 @@ parser:
   - any-glob-to-any-file: 'parser/**/*'
 
 tests:
-  - parser/tests/__init__.py
-  - parser/tests/conftest.py
-  - parser/tests/data/test.txt
-  - parser/tests/integration/__init__.py
-  - parser/tests/**/*
+  - any-glob-to-any-file: 'parser/tests/__init__.py'
+  - any-glob-to-any-file: 'parser/tests/conftest.py'
+  - any-glob-to-any-file: 'parser/tests/data/test.txt'
+  - any-glob-to-any-file: 'parser/tests/integration/__init__.py'
+  - any-glob-to-any-file: 'parser/tests/**/*'
