@@ -146,5 +146,4 @@ if __name__ == "__main__":
 
     # Pass session variable to unparser object
     write = WriteTaxonomy(session)
-    import pdb;pdb.set_trace()
     write(filename, branch_name, taxonomy_name)
