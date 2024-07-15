@@ -43,7 +43,7 @@ const LanguageSelectionDialog = ({
           value={newLanguageCodes.map((langCode) => ISO6391.getName(langCode))}
           onChange={(_event, newValue: string[]) => {
             setNewLanguageCodes(
-              newValue.map((langName) => ISO6391.getCode(langName))
+              newValue.map((langName) => ISO6391.getCode(langName)),
             );
           }}
           options={ISO6391.getAllNames()
@@ -52,7 +52,7 @@ const LanguageSelectionDialog = ({
               (languageName) =>
                 !shownLanguageCodes.includes(ISO6391.getCode(languageName)) &&
                 !newLanguageCodes.includes(ISO6391.getCode(languageName)) &&
-                languageName !== ISO6391.getName(mainLanguageCode)
+                languageName !== ISO6391.getName(mainLanguageCode),
             )}
           getOptionLabel={(option) => option}
           renderInput={(params) => (

@@ -62,7 +62,7 @@ export const SearchResults = ({
 
   const handlePageChange = (
     _event: React.MouseEvent | null,
-    newPage: number
+    newPage: number,
   ) => {
     setCurrentPage(newPage + 1);
   };
