@@ -26,7 +26,7 @@ export const FiltersArea = ({
   const [nodesLevel, setNodesLevel] = useState<string>("root");
   const [taxonomyScope, setTaxonomyScope] = useState<string>("both");
   const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>(
-    []
+    [],
   );
   const [withoutChosenLanguagesCodes, setWithoutChosenLanguagesCodes] =
     useState<string[]>([]);
@@ -70,7 +70,7 @@ export const FiltersArea = ({
         case "language":
           if (filter.negated) {
             filtersStates.withoutChosenLanguagesCodes.push(
-              filter.filterValue.replace("not:", "")
+              filter.filterValue.replace("not:", ""),
             );
           } else {
             filtersStates.chosenLanguagesCodes.push(filter.filterValue);
@@ -82,7 +82,7 @@ export const FiltersArea = ({
     }
     setNodesLevel(hasLevelFilterInQ ? filtersStates.nodesLevel : "both");
     setTaxonomyScope(
-      hasScopeFilterInQ ? filtersStates.taxonomyScopeMode : "both"
+      hasScopeFilterInQ ? filtersStates.taxonomyScopeMode : "both",
     );
     setChosenLanguagesCodes(filtersStates.chosenLanguagesCodes);
     setWithoutChosenLanguagesCodes(filtersStates.withoutChosenLanguagesCodes);

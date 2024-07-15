@@ -54,7 +54,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
               tagsExtracted.push({
                 index: uuids[index],
                 tag: tag,
-              })
+              }),
             );
           }
         }
@@ -68,7 +68,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
   const changeData = (index, value) => {
     const updatedTagObject = { index: index, tag: value };
     const newRenderedNonEntryInfo = renderedNonEntryInfo.map((obj) =>
-      obj.index === index ? updatedTagObject : obj
+      obj.index === index ? updatedTagObject : obj,
     );
     setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 
@@ -100,7 +100,7 @@ const ListAllNonEntryInfo = ({ nodeObject, id, setNodeObject }) => {
 
   const handleDelete = (index) => {
     const newRenderedNonEntryInfo = renderedNonEntryInfo.filter(
-      (obj) => !(obj.index === index)
+      (obj) => !(obj.index === index),
     );
     setRenderedNonEntryInfo(newRenderedNonEntryInfo); // Set state
 

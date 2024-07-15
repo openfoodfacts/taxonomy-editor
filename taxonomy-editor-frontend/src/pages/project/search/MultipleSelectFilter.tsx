@@ -34,14 +34,14 @@ export const MultipleSelectFilter = ({
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement>,
-    languageCodeItem: string
+    languageCodeItem: string,
   ) => {
     setCurrentPage(1);
     if (!filterValue.includes(languageCodeItem)) {
       setQ((prevQ) => prevQ + ` ${keySearchTerm}:${languageCodeItem}`);
     } else {
       setQ((prevQ) =>
-        prevQ.replace(`${keySearchTerm}:${languageCodeItem}`, "")
+        prevQ.replace(`${keySearchTerm}:${languageCodeItem}`, ""),
       );
     }
     setMenuOpen((prevMenuOpen) => !prevMenuOpen);
