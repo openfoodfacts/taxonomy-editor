@@ -56,7 +56,7 @@ export const createBaseURL = (taxonomyName: string, branchName: string) => {
 export const createURL = (
   taxonomyName: string,
   branchName: string,
-  id: string
+  id: string,
 ) => {
   const baseUrl = createBaseURL(taxonomyName, branchName);
   const idType = getNodeType(id);

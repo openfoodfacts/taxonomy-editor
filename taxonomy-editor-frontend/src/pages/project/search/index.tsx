@@ -21,7 +21,7 @@ export const AdvancedSearchForm = () => {
 
   const [searchExpression, setSearchExpression] = useState<string>(q);
   const [currentPage, setCurrentPage] = useState<number>(
-    parseInt(pageParam ?? "1")
+    parseInt(pageParam ?? "1"),
   );
 
   const {
@@ -43,7 +43,7 @@ export const AdvancedSearchForm = () => {
           branchName,
           taxonomyName,
           q,
-          currentPage
+          currentPage,
         );
       return nodesResult;
     },

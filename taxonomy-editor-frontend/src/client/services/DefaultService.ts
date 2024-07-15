@@ -60,7 +60,7 @@ export class DefaultService {
    */
   public static getProjectInfoTaxonomyNameBranchProjectGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<Project> {
     return __request(OpenAPI, {
       method: "GET",
@@ -86,7 +86,7 @@ export class DefaultService {
   public static setProjectStatusTaxonomyNameBranchSetProjectStatusGet(
     branch: string,
     taxonomyName: string,
-    status?: ProjectStatus | null
+    status?: ProjectStatus | null,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -113,7 +113,7 @@ export class DefaultService {
    */
   public static findAllNodesTaxonomyNameBranchNodesGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -137,7 +137,7 @@ export class DefaultService {
    */
   public static deleteNodeTaxonomyNameBranchNodesDelete(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "DELETE",
@@ -161,7 +161,7 @@ export class DefaultService {
    */
   public static findAllRootNodesTaxonomyNameBranchRootentriesGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -187,7 +187,7 @@ export class DefaultService {
   public static findOneEntryTaxonomyNameBranchEntryEntryGet(
     branch: string,
     taxonomyName: string,
-    entry: string
+    entry: string,
   ): CancelablePromise<EntryNode> {
     return __request(OpenAPI, {
       method: "GET",
@@ -216,7 +216,7 @@ export class DefaultService {
   public static editEntryTaxonomyNameBranchEntryEntryPost(
     branch: string,
     taxonomyName: string,
-    entry: string
+    entry: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -243,7 +243,7 @@ export class DefaultService {
   public static findOneEntryParentsTaxonomyNameBranchEntryEntryParentsGet(
     branch: string,
     taxonomyName: string,
-    entry: string
+    entry: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -270,7 +270,7 @@ export class DefaultService {
   public static findOneEntryChildrenTaxonomyNameBranchEntryEntryChildrenGet(
     branch: string,
     taxonomyName: string,
-    entry: string
+    entry: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -299,7 +299,7 @@ export class DefaultService {
   public static editEntryChildrenTaxonomyNameBranchEntryEntryChildrenPost(
     branch: string,
     taxonomyName: string,
-    entry: string
+    entry: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -326,7 +326,7 @@ export class DefaultService {
   public static findOneSynonymTaxonomyNameBranchSynonymSynonymGet(
     branch: string,
     taxonomyName: string,
-    synonym: string
+    synonym: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -355,7 +355,7 @@ export class DefaultService {
   public static editSynonymsTaxonomyNameBranchSynonymSynonymPost(
     branch: string,
     taxonomyName: string,
-    synonym: string
+    synonym: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -380,7 +380,7 @@ export class DefaultService {
    */
   public static findAllSynonymsTaxonomyNameBranchSynonymGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -406,7 +406,7 @@ export class DefaultService {
   public static findOneStopwordTaxonomyNameBranchStopwordStopwordGet(
     branch: string,
     taxonomyName: string,
-    stopword: string
+    stopword: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -435,7 +435,7 @@ export class DefaultService {
   public static editStopwordsTaxonomyNameBranchStopwordStopwordPost(
     branch: string,
     taxonomyName: string,
-    stopword: string
+    stopword: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -460,7 +460,7 @@ export class DefaultService {
    */
   public static findAllStopwordsTaxonomyNameBranchStopwordGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -484,7 +484,7 @@ export class DefaultService {
    */
   public static findHeaderTaxonomyNameBranchHeaderGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -510,7 +510,7 @@ export class DefaultService {
   public static editHeaderTaxonomyNameBranchHeaderPost(
     branch: string,
     taxonomyName: string,
-    requestBody: Header
+    requestBody: Header,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -536,7 +536,7 @@ export class DefaultService {
    */
   public static findFooterTaxonomyNameBranchFooterGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -562,7 +562,7 @@ export class DefaultService {
   public static editFooterTaxonomyNameBranchFooterPost(
     branch: string,
     taxonomyName: string,
-    requestBody: Footer
+    requestBody: Footer,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -588,7 +588,7 @@ export class DefaultService {
    */
   public static findAllErrorsTaxonomyNameBranchParsingErrorsGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<ErrorNode> {
     return __request(OpenAPI, {
       method: "GET",
@@ -615,7 +615,7 @@ export class DefaultService {
     branch: string,
     taxonomyName: string,
     q: string = "",
-    page: number = 1
+    page: number = 1,
   ): CancelablePromise<EntryNodeSearchResult> {
     return __request(OpenAPI, {
       method: "GET",
@@ -642,7 +642,7 @@ export class DefaultService {
    */
   public static exportToTextFileTaxonomyNameBranchDownloadexportGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -665,7 +665,7 @@ export class DefaultService {
    */
   public static exportToGithubTaxonomyNameBranchGithubexportGet(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
@@ -689,7 +689,7 @@ export class DefaultService {
    */
   public static importFromGithubTaxonomyNameBranchImportPost(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -715,7 +715,7 @@ export class DefaultService {
   public static uploadTaxonomyTaxonomyNameBranchUploadPost(
     branch: string,
     taxonomyName: string,
-    formData: Body_upload_taxonomy__taxonomy_name___branch__upload_post
+    formData: Body_upload_taxonomy__taxonomy_name___branch__upload_post,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -743,7 +743,7 @@ export class DefaultService {
   public static createEntryNodeTaxonomyNameBranchEntryPost(
     branch: string,
     taxonomyName: string,
-    requestBody: EntryNodeCreate
+    requestBody: EntryNodeCreate,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "POST",
@@ -769,7 +769,7 @@ export class DefaultService {
    */
   public static deleteProjectTaxonomyNameBranchDelete(
     branch: string,
-    taxonomyName: string
+    taxonomyName: string,
   ): CancelablePromise<void> {
     return __request(OpenAPI, {
       method: "DELETE",
