@@ -99,15 +99,11 @@ class TaxonomyParser:
                 # sanitizing
                 # remove any space characters at end of line
                 line = line.rstrip()
-                # replace ’ (typographique quote) to simple quote '
-                line = line.replace("’", "'")
                 # replace commas between digits and that have no space around by a lower comma character
                 # and do the same for escaped comma (preceded by a \)
                 # (to distinguish them from commas acting as tags separators)
                 line = re.sub(r"(\d),(\d)", r"\1‚\2", line)
                 line = re.sub(r"\\,", "\\‚", line)
-                # removes parenthesis for roman numeral
-                line = re.sub(r"\(([ivx]+)\)", r"\1", line, flags=re.I)
                 yield line_number, line
                 line_count += 1
             yield line_count, ""  # to end the last entry if not ended
@@ -260,7 +256,7 @@ class TaxonomyParser:
         saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
-        
+
         # Check if it is correctly written
         correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
