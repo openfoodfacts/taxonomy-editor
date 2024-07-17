@@ -235,14 +235,25 @@ class TaxonomyParser:
 
         return new_data
 
+    _language_code_prefix = re.compile(
+        r"[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
+    )
+
+    def is_entry_synonyms_line(self, line):
+        matching_prefix = self._language_code_prefix.match(line)
+        if matching_prefix:
+            # verify it's not a property, that is a name followed by a colon and a language
+            return not (
+                self._language_code_prefix.match(line[matching_prefix.end():])
+            )
+        return False
+
     def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
         saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
-        language_code_prefix = re.compile(
-            r"[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
-        )
+        
         # Check if it is correctly written
         correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
@@ -328,7 +339,7 @@ class TaxonomyParser:
                 elif line[0] == "<":
                     # parent definition
                     data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
-                elif language_code_prefix.match(line):
+                elif self.is_entry_synonyms_line(line):
                     # synonyms definition
                     if not data.id:
                         data.id = self._normalize_entry_id(line.split(",", 1)[0])
