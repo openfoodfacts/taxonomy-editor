@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.0...v1.0.1) (2024-07-17)
+
+
+### Bug Fixes
+
+* avoid confusing language prefixes and property names ([#513](https://github.com/openfoodfacts/taxonomy-editor/issues/513)) ([e0053b6](https://github.com/openfoodfacts/taxonomy-editor/commit/e0053b6213b7f3584fcb860eb7f577baebb34520))
+* language order as we dump taxonomies ([#512](https://github.com/openfoodfacts/taxonomy-editor/issues/512)) ([2bc56e6](https://github.com/openfoodfacts/taxonomy-editor/commit/2bc56e621829dd1676660a1a6a4407c5e036eb40))
+
 ## 1.0.0 (2024-07-12)
 
 
