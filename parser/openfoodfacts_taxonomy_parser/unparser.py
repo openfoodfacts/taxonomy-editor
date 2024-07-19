@@ -83,7 +83,7 @@ class WriteTaxonomy:
             parent = dict(parent)
             lc = parent["main_language"]
             parent_id = parent["tags_" + lc][0]
-            yield "<" + lc + ":" + parent_id
+            yield "<" + lc + ": " + parent_id
 
     def iter_lines(self, project_label):
         previous_block_id = ""

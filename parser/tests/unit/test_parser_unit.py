@@ -26,7 +26,7 @@ def test_fileiter(neo4j):
     for counter, (_, line) in enumerate(file_iterator):
         assert line == "" or line[0] == "#" or ":" in line
         if counter == 26:
-            assert line == "carbon_footprint_fr_foodges_value:fr:10"
+            assert line == "carbon_footprint_fr_foodges_value:fr: 10"
     assert counter == 38
 
 

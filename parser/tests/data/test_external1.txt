@@ -1,18 +1,18 @@
 # External taxonomy 1
 
-synonyms:en:fiber, fibre
+synonyms:en: fiber, fibre
 
-stopwords:fr:aux, au, de, le, du, la, a, et
+stopwords:fr: aux, au, de, le, du, la, a, et
 
 # comment
-en:milk
-fr:lait
+en: milk
+fr: lait
 
-en:honey
-fr:miel
+en: honey
+fr: miel
 
-<en:milk
-en:oat milk
+<en: milk
+en: oat milk
 
-<en:milk
-en:almond milk
+<en: milk
+en: almond milk
