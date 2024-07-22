@@ -125,13 +125,13 @@ class TaxonomyParser:
         text = re.sub(r"\\‚", "\\,", text)
         return text
 
-    def _get_lc_value(self, line: str) -> tuple[str, list[str]]:
-        """Get the language code "lc" and a list of normalized values"""
+    def _get_lc_value(self, line: str, remove_stopwords=True) -> tuple[str, list[str]]:
+        """Get the language code "lc" and a list of values and normalized values"""
         lc, line = line.split(":", 1)
-        new_line: list[str] = []
-        for word in line.split(","):
-            new_line.append(normalize_text(word, lc, stopwords=self.stopwords))
-        return lc, new_line
+        values = [self.undo_normalize_text(words.strip()) for word in line.split(",")]
+        stopwords = self.stopwords if remove_stopwords else []
+        tags = [normalize_text(word, lc, stopwords=stopwords) for word in values]
+        return lc, values, tags
 
     def _set_data_id(self, data: NodeData, id: str, line_number: int) -> NodeData:
         if not data.id:
@@ -261,7 +261,7 @@ class TaxonomyParser:
         correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
-        # the other entries
+        # the first entry is after __header__ which was created before
         data = NodeData(is_before="__header__")
         line_number = (
             entries_start_line  # if the iterator is empty, line_number will not be unbound
@@ -308,19 +308,17 @@ class TaxonomyParser:
                     index_stopwords += 1
                     # remove "stopwords:" part
                     line = line[10:]
-                    # compute raw values outside _get_lc_value as it normalizes them!
-                    tags = [self.undo_normalize_text(words.strip()) for words in line[3:].split(",")]
                     try:
-                        lc, value = self._get_lc_value(line)
+                        lc, tags, tags_ids = self._get_lc_value(line, remove_stopwords=False)
                     except ValueError:
                         self.parser_logger.error(
                             f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
-                        data.tags["tags_ids_" + lc] = value
-                        # add the normalized list with its lc
-                        self.stopwords[lc] = value
+                        data.tags["tags_ids_" + lc] = tags_ids
+                        # add the normalized list with its lc to current processing
+                        self.stopwords[lc] = tags_ids
                 elif line.startswith("synonyms"):
                     # general synonyms definition for a language
                     id = "synonyms:" + str(index_synonyms)
@@ -328,23 +326,22 @@ class TaxonomyParser:
                     index_synonyms += 1
                     # remove "synonyms:" part
                     line = line[9:]
-                    # compute raw values outside _get_lc_value as it normalizes them!
-                    tags = [self.undo_normalize_text(words.strip()) for words in line[3:].split(",")]
                     try:
-                        lc, value = self._get_lc_value(line)
+                        lc, tags, tags_ids = self._get_lc_value(line)
                     except ValueError:
                         self.parser_logger.error(
                             f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
-                        data.tags["tags_ids_" + lc] = value
+                        data.tags["tags_ids_" + lc] = tags_ids
                 elif line[0] == "<":
                     # parent definition
                     data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
                 elif self.is_entry_synonyms_line(line):
                     # synonyms definition
                     if not data.id:
+                        # the first item on the first line gives the id
                         data.id = self._normalize_entry_id(line.split(",", 1)[0])
                         # first 2-3 characters before ":" are the language code
                         data.main_language = data.id.split(":", 1)[0]
@@ -386,7 +383,7 @@ class TaxonomyParser:
                             )
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
-                            data.properties[prop_key] = self.undo_normalize_text(property_value)
+                            data.properties[prop_key] = self.undo_normalize_text(property_value.strip())
                             data = self._get_node_data_with_comments_above_key(
                                 data, line_number, prop_key
                             )

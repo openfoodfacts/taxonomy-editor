@@ -54,7 +54,7 @@ class WriteTaxonomy:
     def get_tags_line(self, node, lc):
         """return a string that should look like the original line"""
         line = (", ").join(node["tags_" + lc])
-        return lc + ":" + line
+        return lc + ": " + line
 
     @staticmethod
     def property_sort_key(property):
@@ -75,7 +75,7 @@ class WriteTaxonomy:
         """return a string that should look like the original property line"""
         property_name, lc = property.rsplit("_", 1)
         property_value = node["prop_" + property]
-        line = property_name + ":" + lc + ":" + property_value
+        line = property_name + ":" + lc + ": " + property_value
         return line
 
     def get_parents_lines(self, parents):
@@ -83,7 +83,7 @@ class WriteTaxonomy:
             parent = dict(parent)
             lc = parent["main_language"]
             parent_id = parent["tags_" + lc][0]
-            yield "<" + lc + ":" + parent_id
+            yield "<" + lc + ": " + parent_id
 
     def iter_lines(self, project_label):
         previous_block_id = ""
