@@ -9,6 +9,11 @@ def normalize_text(line: str, lang: str = "default", char: str = "-", stopwords:
     if stopwords is None:
         stopwords = {}
 
+    # replace ’ (typographique quote) to simple quote '
+    line = line.replace("’", "'")
+    # removes parenthesis for roman numeral
+    line = re.sub(r"\(([ivx]+)\)", r"\1", line, flags=re.I)
+
     line = unicodedata.normalize("NFC", line)
 
     # Removing accent

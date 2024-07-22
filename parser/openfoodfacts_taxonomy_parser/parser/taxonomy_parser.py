@@ -99,15 +99,11 @@ class TaxonomyParser:
                 # sanitizing
                 # remove any space characters at end of line
                 line = line.rstrip()
-                # replace ’ (typographique quote) to simple quote '
-                line = line.replace("’", "'")
-                # replace commas that have no space around by a lower comma character
+                # replace commas between digits and that have no space around by a lower comma character
                 # and do the same for escaped comma (preceded by a \)
                 # (to distinguish them from commas acting as tags separators)
                 line = re.sub(r"(\d),(\d)", r"\1‚\2", line)
                 line = re.sub(r"\\,", "\\‚", line)
-                # removes parenthesis for roman numeral
-                line = re.sub(r"\(([ivx]+)\)", r"\1", line, flags=re.I)
                 yield line_number, line
                 line_count += 1
             yield line_count, ""  # to end the last entry if not ended
@@ -122,10 +118,17 @@ class TaxonomyParser:
         normalized_id = f"{lc}:{normalized_main_tag}"
         return normalized_id
 
+    def undo_normalize_text(self, text: str) -> str:
+        """Undo some normalizations made in `_file_iter`"""
+        # restore commas from lower comma characters
+        text = re.sub(r"(\d)‚(\d)", r"\1,\2", text)
+        text = re.sub(r"\\‚", "\\,", text)
+        return text
+
     def _get_lc_value(self, line: str, remove_stopwords=True) -> tuple[str, list[str]]:
         """Get the language code "lc" and a list of values and normalized values"""
         lc, line = line.split(":", 1)
-        values = [word.strip() for word in line.split(",")]
+        values = [self.undo_normalize_text(word.strip()) for word in line.split(",")]
         stopwords = self.stopwords if remove_stopwords else []
         tags = [normalize_text(word, lc, stopwords=stopwords) for word in values]
         return lc, values, tags
@@ -349,7 +352,7 @@ class TaxonomyParser:
                     tags_list = []
                     tagsids_list = []
                     for word in line.split(","):
-                        tags_list.append(word.strip())
+                        tags_list.append(self.undo_normalize_text(word.strip()))
                         word_normalized = normalize_text(word, lang, stopwords=self.stopwords)
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
@@ -380,7 +383,7 @@ class TaxonomyParser:
                             )
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
-                            data.properties[prop_key] = property_value.strip()
+                            data.properties[prop_key] = self.undo_normalize_text(property_value.strip())
                             data = self._get_node_data_with_comments_above_key(
                                 data, line_number, prop_key
                             )
