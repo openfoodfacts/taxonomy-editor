@@ -128,7 +128,7 @@ class TaxonomyParser:
     def _get_lc_value(self, line: str, remove_stopwords=True) -> tuple[str, list[str]]:
         """Get the language code "lc" and a list of values and normalized values"""
         lc, line = line.split(":", 1)
-        values = [self.undo_normalize_text(words.strip()) for word in line.split(",")]
+        values = [self.undo_normalize_text(word.strip()) for word in line.split(",")]
         stopwords = self.stopwords if remove_stopwords else []
         tags = [normalize_text(word, lc, stopwords=stopwords) for word in values]
         return lc, values, tags
