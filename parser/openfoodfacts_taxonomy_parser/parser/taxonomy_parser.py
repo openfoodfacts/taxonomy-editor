@@ -1,5 +1,4 @@
 import collections
-import copy
 import logging
 import re
 import sys
@@ -31,11 +30,6 @@ class NodeData:
     properties: dict[str, str] = field(default_factory=dict)
     tags: dict[str, list[str]] = field(default_factory=dict)
     comments: dict[str, list[str]] = field(default_factory=dict)
-    # comments_stack is a list of tuples (line_number, comment),
-    # to keep track of comments just above the current line
-    # during parsing of an entry, to be able to add them
-    # to the right property or tag when possible
-    comments_stack: list[tuple[int, str]] = field(default_factory=list)
     is_external: bool = False  # True if the node comes from another taxonomy
     original_taxonomy: str | None = None  # the name of the taxonomy the node comes from
 
@@ -210,42 +204,13 @@ class TaxonomyParser:
                 data.preceding_lines.pop(0)
         return data
 
-    def _get_node_data_with_comments_above_key(
-        self, data: NodeData, line_number: int, key: str
-    ) -> NodeData:
+    def _add_comments(self, data: NodeData, comments: list[str], key: str) -> NodeData:
         """Returns the updated node data with comments above the given
         key stored in the {key}_comments property."""
-        new_data = copy.deepcopy(data)
-
-        # Get comments just above the given line
-        comments_above = []
-        current_line = line_number - 1
-        while new_data.comments_stack and new_data.comments_stack[-1][0] == current_line:
-            comments_above.append(new_data.comments_stack.pop()[1])
-            current_line -= 1
-        if comments_above:
-            new_data.comments[key + "_comments"] = comments_above[::-1]
-
-        return new_data
-
-    def _get_node_data_with_parent_and_end_comments(self, data: NodeData) -> NodeData:
-        """Returns the updated node data with parent and end comments"""
-        new_data = copy.deepcopy(data)
-
-        # Get parent comments (part of an entry block and just above/between the parents lines)
-        parent_comments = []
-        while new_data.preceding_lines and new_data.preceding_lines[-1] != "":
-            parent_comments.append(new_data.preceding_lines.pop())
-        if parent_comments:
-            new_data.comments["parent_comments"] = parent_comments[::-1]
-
-        # Get end comments (part of an entry block after the last tag/prop
-        # and before the separating blank line)
-        end_comments = [comment[1] for comment in new_data.comments_stack]
-        if end_comments:
-            new_data.comments["end_comments"] = end_comments
-
-        return new_data
+        if comments:
+            data.comments.setdefault(f"{key}_comments", []).extend(comments)
+            # reset the comments list
+            comments[:] = []
 
     _language_code_prefix = re.compile(
         r"[a-zA-Z][a-zA-Z][a-zA-Z]?([-_][a-zA-Z][a-zA-Z][a-zA-Z]?)?:"
@@ -260,11 +225,30 @@ class TaxonomyParser:
             )
         return False
 
+    def finalize_data(self, data, comments, saved_nodes):
+        data = self._remove_separating_line(data)
+        if data.get_node_type() == NodeType.ENTRY:
+            self._add_comments(data, comments, "end")
+        if data.id in saved_nodes:
+            # this duplicate node will be merged with the first one
+            data.is_before = None
+            msg = (
+                f"WARNING: Entry with same id {data.id} already exists, "
+                f"duplicate id in file at line {data.src_position}. "
+                "The two nodes will be merged, keeping the last "
+                "values in case of conflicts."
+            )
+            self.parser_logger.error(msg)
+        else:
+            saved_nodes.append(data.id)
+        return data
+
     def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
         saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
+        comments = []
 
         # Check if it is correctly written
         correctly_written = re.compile(r"\w+\Z")
@@ -278,23 +262,11 @@ class TaxonomyParser:
         for line_number, raw_line in self._file_iter(filename, entries_start_line):
             # yield data if block ended
             if self._entry_end(raw_line, data):
-                data = self._remove_separating_line(data)
-                if data.get_node_type() == NodeType.ENTRY:
-                    data = self._get_node_data_with_parent_and_end_comments(data)
-                if data.id in saved_nodes:
-                    # this duplicate node will be merged with the first one
-                    data.is_before = None
-                    msg = (
-                        f"WARNING: Entry with same id {data.id} already exists, "
-                        f"duplicate id in file at line {data.src_position}. "
-                        "The two nodes will be merged, keeping the last "
-                        "values in case of conflicts."
-                    )
-                    self.parser_logger.error(msg)
-                else:
-                    saved_nodes.append(data.id)
-                    is_before = data.id
-                yield data  # another function will use this dictionary to create a node
+                is_before = data.is_before
+                # another function will use data to create a node
+                yield self.finalize_data(data, comments, saved_nodes)
+                # if data was a duplicate (is_before is None) reuse same is_before
+                is_before = data.id if data.is_before else is_before
                 data = NodeData(is_before=is_before)
 
             # harvest the line
@@ -302,7 +274,7 @@ class TaxonomyParser:
                 # comment or blank line
                 if data.id:
                     # we are within the node definition
-                    data.comments_stack.append((line_number, raw_line))
+                    comments.append(raw_line)
                 else:
                     # we are before the actual node
                     data.preceding_lines.append(raw_line)
@@ -349,6 +321,7 @@ class TaxonomyParser:
                 elif line[0] == "<":
                     # parent definition
                     data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
+                    self._add_comments(data, comments, "parent")
                 elif self.is_entry_synonyms_line(line):
                     # synonyms definition
                     if not data.id:
@@ -370,9 +343,7 @@ class TaxonomyParser:
                             tagsids_list.append(word_normalized)
                     data.tags["tags_" + lang] = tags_list
                     data.tags["tags_ids_" + lang] = tagsids_list
-                    data = self._get_node_data_with_comments_above_key(
-                        data, line_number, "tags_" + lang
-                    )
+                    self._add_comments(data, comments, "tags_" + lang)
                 else:
                     # property definition
                     property_name = None
@@ -399,9 +370,7 @@ class TaxonomyParser:
                             data.properties[prop_key] = self.undo_normalize_text(
                                 property_value.strip()
                             )
-                            data = self._get_node_data_with_comments_above_key(
-                                data, line_number, prop_key
-                            )
+                            self._add_comments(data, comments, prop_key)
 
         data.id = "__footer__"
         data.preceding_lines.pop(0)
