@@ -1,7 +1,6 @@
 import pathlib
 
 import pytest
-
 from openfoodfacts_taxonomy_parser import parser, utils
 
 # taxonomy in text format : test.txt

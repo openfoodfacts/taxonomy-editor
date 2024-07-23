@@ -9,7 +9,14 @@ from neo4j import GraphDatabase, Session, Transaction
 
 from ..utils import get_project_name, normalize_text
 from .logger import ParserConsoleLogger
-from .taxonomy_parser import ChildLink, NodeData, NodeType, PreviousLink, Taxonomy, TaxonomyParser
+from .taxonomy_parser import (
+    ChildLink,
+    NodeData,
+    NodeType,
+    PreviousLink,
+    Taxonomy,
+    TaxonomyParser,
+)
 
 
 class Parser:
@@ -19,7 +26,9 @@ class Parser:
         self.session = session
         self.parser_logger = ParserConsoleLogger()
 
-    def _create_other_node(self, tx: Transaction, node_data: NodeData, project_label: str):
+    def _create_other_node(
+        self, tx: Transaction, node_data: NodeData, project_label: str
+    ):
         """Create a TEXT, SYNONYMS or STOPWORDS node"""
         if node_data.get_node_type() == NodeType.TEXT:
             type_label = "TEXT"
@@ -88,20 +97,26 @@ class Parser:
             original_taxonomy: entry_node.original_taxonomy
         """
 
-        properties_query = ",\n".join([base_properties_query, *additional_properties_queries])
+        properties_query = ",\n".join(
+            [base_properties_query, *additional_properties_queries]
+        )
 
         query = f"""
           WITH $entry_nodes as entry_nodes
           UNWIND entry_nodes as entry_node
           CREATE (n:{project_label}:ENTRY {{ {properties_query} }})
         """
-        self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
+        self.session.run(
+            query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes]
+        )
 
         self.parser_logger.info(
             f"Created {len(entry_nodes)} ENTRY nodes in {timeit.default_timer() - start_time} seconds"
         )
 
-    def _create_previous_links(self, previous_links: list[PreviousLink], project_label: str):
+    def _create_previous_links(
+        self, previous_links: list[PreviousLink], project_label: str
+    ):
         """Create the 'is_before' relations between nodes"""
         self.parser_logger.info("Creating 'is_before' links")
         start_time = timeit.default_timer()
@@ -142,9 +157,9 @@ class Parser:
                 MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
                 WHERE p.id = child_link.parent_id
                 MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+                WHERE c.id = child_link.id
             """
             + """
-                WHERE c.id = child_link.id
                 CREATE (c)-[relations:is_child_of {position: child_link.position}]->(p)
                 WITH relations
                 UNWIND relations AS relation
@@ -210,7 +225,9 @@ class Parser:
         )
         self.session.run(query)
 
-        language_codes = [lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""]
+        language_codes = [
+            lang.alpha2 for lang in list(iso639.languages) if lang.alpha2 != ""
+        ]
         tags_prefixed_lc = ["n.tags_ids_" + lc for lc in language_codes]
         tags_prefixed_lc = ", ".join(tags_prefixed_lc)
         query = f"""CREATE FULLTEXT INDEX {project_label+'_SearchTagsIds'} IF NOT EXISTS
@@ -225,9 +242,13 @@ class Parser:
         self._create_node_id_index(project_label)
         self._create_node_fulltext_index(project_label)
 
-        self.parser_logger.info(f"Created indexes in {timeit.default_timer() - start_time} seconds")
+        self.parser_logger.info(
+            f"Created indexes in {timeit.default_timer() - start_time} seconds"
+        )
 
-    def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
+    def _write_to_database(
+        self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str
+    ):
         project_label = get_project_name(taxonomy_name, branch_name)
         # First create nodes, then create node indexes to accelerate relationship creation, then create relationships
         self._create_other_nodes(taxonomy.other_nodes, project_label)

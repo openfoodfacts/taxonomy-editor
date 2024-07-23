@@ -127,8 +127,8 @@ lint: backend_lint frontend_lint config_lint ## Run all linters
 
 backend_lint: ## Run lint on backend code
 	@echo "🍜 Linting python code"
-	${DOCKER_COMPOSE} run --rm taxonomy_api isort .
-	${DOCKER_COMPOSE} run --rm taxonomy_api black .
+	${DOCKER_COMPOSE} run --rm taxonomy_api isort . /parser
+	${DOCKER_COMPOSE} run --rm taxonomy_api black . /parser
 
 frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"

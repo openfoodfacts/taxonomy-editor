@@ -67,7 +67,11 @@ class WriteTaxonomy:
         """return an ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        values = [property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")]
+        values = [
+            property[5:]
+            for property in node
+            if property.startswith("prop_") and not property.endswith("_comments")
+        ]
         # note: using the fact that we are sure to find language code after the first underscore
         return sorted(values, key=self.property_sort_key)
 
@@ -83,7 +87,7 @@ class WriteTaxonomy:
             parent = dict(parent)
             lc = parent["main_language"]
             parent_id = parent["tags_" + lc][0]
-            yield "<" + lc + ": " + parent_id
+            yield "< " + lc + ":" + parent_id
 
     def iter_lines(self, project_label):
         previous_block_id = ""
@@ -91,9 +95,9 @@ class WriteTaxonomy:
             node = dict(node)
             has_content = node["id"] not in ["__header__", "__footer__"]
             # eventually add a blank line but in specific case
-            following_synonyms = node["id"].startswith("synonyms") and previous_block_id.startswith(
+            following_synonyms = node["id"].startswith(
                 "synonyms"
-            )
+            ) and previous_block_id.startswith("synonyms")
             following_stopwords = node["id"].startswith(
                 "stopwords"
             ) and previous_block_id.startswith("stopwords")
