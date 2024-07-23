@@ -1,5 +1,4 @@
 import inspect
-import pathlib
 
 import pytest
 
