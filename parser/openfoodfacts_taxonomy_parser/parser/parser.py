@@ -230,7 +230,8 @@ class Parser:
 
     def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
         project_label = get_project_name(taxonomy_name, branch_name)
-        # First create nodes, then create node indexes to accelerate relationship creation,
+        # First create nodes,
+        # then create node indexes to accelerate relationship creation,
         # then create relationships
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
