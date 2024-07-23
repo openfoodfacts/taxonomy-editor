@@ -56,6 +56,10 @@ class NodeData:
         else:
             return NodeType.ENTRY
 
+    @property
+    def is_started(self):
+        return self.id or self.parent_tags or self.tags or self.properties
+
 
 class PreviousLink(TypedDict):
     before_id: str
@@ -272,7 +276,7 @@ class TaxonomyParser:
             # harvest the line
             if not (raw_line.strip()) or raw_line[0] == "#":
                 # comment or blank line
-                if data.id:
+                if data.is_started:
                     # we are within the node definition
                     comments.append(raw_line)
                 else:
