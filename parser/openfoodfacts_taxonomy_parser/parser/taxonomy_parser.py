@@ -220,9 +220,7 @@ class TaxonomyParser:
         # Get comments just above the given line
         comments_above = []
         current_line = line_number - 1
-        while (
-            new_data.comments_stack and new_data.comments_stack[-1][0] == current_line
-        ):
+        while new_data.comments_stack and new_data.comments_stack[-1][0] == current_line:
             comments_above.append(new_data.comments_stack.pop()[1])
             current_line -= 1
         if comments_above:
@@ -257,12 +255,12 @@ class TaxonomyParser:
         matching_prefix = self._language_code_prefix.match(line)
         if matching_prefix:
             # verify it's not a property, that is a name followed by a colon and a language
-            return not (self._language_code_prefix.match(line[matching_prefix.end() :]))
+            return not (
+                self._language_code_prefix.match(line[matching_prefix.end() :])  # noqa: E203
+            )
         return False
 
-    def _harvest_entries(
-        self, filename: str, entries_start_line: int
-    ) -> Iterator[NodeData]:
+    def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
         saved_nodes = []
         index_stopwords = 0
@@ -274,7 +272,9 @@ class TaxonomyParser:
         self.stopwords = {}
         # the first entry is after __header__ which was created before
         data = NodeData(is_before="__header__")
-        line_number = entries_start_line  # if the iterator is empty, line_number will not be unbound
+        line_number = (
+            entries_start_line  # if the iterator is empty, line_number will not be unbound
+        )
         for line_number, raw_line in self._file_iter(filename, entries_start_line):
             # yield data if block ended
             if self._entry_end(raw_line, data):
@@ -318,12 +318,11 @@ class TaxonomyParser:
                     # remove "stopwords:" part
                     line = line[10:]
                     try:
-                        lc, tags, tags_ids = self._get_lc_value(
-                            line, remove_stopwords=False
-                        )
+                        lc, tags, tags_ids = self._get_lc_value(line, remove_stopwords=False)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
+                            f"Missing language code at line {line_number + 1} ? "
+                            f"'{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
@@ -341,16 +340,15 @@ class TaxonomyParser:
                         lc, tags, tags_ids = self._get_lc_value(line)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
+                            f"Missing language code at line {line_number + 1} ? "
+                            f"'{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
                         data.tags["tags_ids_" + lc] = tags_ids
                 elif line[0] == "<":
                     # parent definition
-                    data.parent_tags.append(
-                        (self._normalize_entry_id(line[1:]), line_number + 1)
-                    )
+                    data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
                 elif self.is_entry_synonyms_line(line):
                     # synonyms definition
                     if not data.id:
@@ -366,9 +364,7 @@ class TaxonomyParser:
                     tagsids_list = []
                     for word in line.split(","):
                         tags_list.append(self.undo_normalize_text(word.strip()))
-                        word_normalized = normalize_text(
-                            word, lang, stopwords=self.stopwords
-                        )
+                        word_normalized = normalize_text(word, lang, stopwords=self.stopwords)
                         if word_normalized not in tagsids_list:
                             # in case 2 normalized synonyms are the same
                             tagsids_list.append(word_normalized)
@@ -384,18 +380,19 @@ class TaxonomyParser:
                         property_name, lc, property_value = line.split(":", 2)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
+                            f"Reading error at line {line_number + 1}, "
+                            f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         # in case there is space before or after the colons
                         property_name = property_name.strip()
                         lc = lc.strip().replace("-", "_")
                         if not (
-                            correctly_written.match(property_name)
-                            and correctly_written.match(lc)
+                            correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
                             self.parser_logger.error(
-                                f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
+                                f"Reading error at line {line_number + 1}, "
+                                f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
                             )
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
@@ -427,9 +424,7 @@ class TaxonomyParser:
             # we collect all the tags_ids in a certain language
             tags_ids = {}
             for node in entry_nodes:
-                node_tags_ids = {
-                    tag_id: node.id for tag_id in node.tags.get(f"tags_ids_{lc}", [])
-                }
+                node_tags_ids = {tag_id: node.id for tag_id in node.tags.get(f"tags_ids_{lc}", [])}
                 tags_ids.update(node_tags_ids)
 
             # we check if the parent_id exists in the tags_ids
@@ -438,9 +433,7 @@ class TaxonomyParser:
                 if parent_id not in tags_ids:
                     missing_child_links.append(child_link)
                 else:
-                    child_link["parent_id"] = tags_ids[
-                        parent_id
-                    ]  # normalise the parent_id
+                    child_link["parent_id"] = tags_ids[parent_id]  # normalise the parent_id
                     normalised_child_links.append(child_link)
 
         return normalised_child_links, missing_child_links
@@ -466,10 +459,8 @@ class TaxonomyParser:
         ]
 
         # Normalise and validate the unnormalised links
-        normalised_child_links, missing_child_links = (
-            self._normalise_and_validate_child_links(
-                entry_nodes, child_links_to_normalise
-            )
+        normalised_child_links, missing_child_links = self._normalise_and_validate_child_links(
+            entry_nodes, child_links_to_normalise
         )
 
         valid_child_links.extend(normalised_child_links)
@@ -483,9 +474,7 @@ class TaxonomyParser:
 
         return valid_child_links
 
-    def _remove_duplicate_child_links(
-        self, child_links: list[ChildLink]
-    ) -> list[ChildLink]:
+    def _remove_duplicate_child_links(self, child_links: list[ChildLink]) -> list[ChildLink]:
         """Remove duplicate child links (i.e child links with the same parent_id and id)"""
         unique_child_links = []
         children_to_parents = collections.defaultdict(set)
@@ -496,9 +485,7 @@ class TaxonomyParser:
                 unique_child_links.append(child_link)
         return unique_child_links
 
-    def _merge_duplicate_entry_nodes(
-        self, entry_nodes: list[NodeData]
-    ) -> list[NodeData]:
+    def _merge_duplicate_entry_nodes(self, entry_nodes: list[NodeData]) -> list[NodeData]:
         """Merge entry nodes with the same id:
         - merge their tags (union)
         - merge their properties (union, and in case of conflict, keep the last value)
@@ -568,9 +555,7 @@ class TaxonomyParser:
         entry_nodes: list[NodeData] = []
         entry_nodes.extend(external_entry_nodes)
         other_nodes = [
-            NodeData(
-                id="__header__", preceding_lines=harvested_header_data, src_position=1
-            )
+            NodeData(id="__header__", preceding_lines=harvested_header_data, src_position=1)
         ]
         previous_links: list[PreviousLink] = []
         raw_child_links: list[ChildLink] = []
@@ -582,9 +567,7 @@ class TaxonomyParser:
             else:
                 other_nodes.append(entry)
             if entry.is_before:
-                previous_links.append(
-                    PreviousLink(before_id=entry.is_before, id=entry.id)
-                )
+                previous_links.append(PreviousLink(before_id=entry.is_before, id=entry.id))
             if entry.parent_tags:
                 for position, (parent, line_position) in enumerate(entry.parent_tags):
                     raw_child_links.append(
@@ -617,9 +600,7 @@ class TaxonomyParser:
         start_time = timeit.default_timer()
         filename = normalize_filename(filename)
         taxonomy = self._create_taxonomy(filename, external_filenames)
-        self.parser_logger.info(
-            f"Parsing done in {timeit.default_timer() - start_time} seconds."
-        )
+        self.parser_logger.info(f"Parsing done in {timeit.default_timer() - start_time} seconds.")
         self.parser_logger.info(
             f"Found {len(taxonomy.entry_nodes) + len(taxonomy.other_nodes)} nodes"
         )

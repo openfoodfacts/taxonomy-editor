@@ -1,16 +1,13 @@
 import pathlib
 
 import pytest
+
 from openfoodfacts_taxonomy_parser import parser, unparser
 
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
-TEST_EXTERNAL_1_TXT = str(
-    pathlib.Path(__file__).parent.parent / "data" / "test_external1.txt"
-)
-TEST_EXTERNAL_2_TXT = str(
-    pathlib.Path(__file__).parent.parent / "data" / "test_external2.txt"
-)
+TEST_EXTERNAL_1_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_external1.txt")
+TEST_EXTERNAL_2_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_external2.txt")
 
 
 @pytest.fixture(autouse=True)

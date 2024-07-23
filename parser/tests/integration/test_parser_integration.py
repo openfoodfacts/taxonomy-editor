@@ -3,16 +3,13 @@ import pathlib
 import textwrap
 
 import pytest
+
 from openfoodfacts_taxonomy_parser import parser
 
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
-TEST_EXTERNAL_1_TXT = str(
-    pathlib.Path(__file__).parent.parent / "data" / "test_external1.txt"
-)
-TEST_EXTERNAL_2_TXT = str(
-    pathlib.Path(__file__).parent.parent / "data" / "test_external2.txt"
-)
+TEST_EXTERNAL_1_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_external1.txt")
+TEST_EXTERNAL_2_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_external2.txt")
 
 
 @pytest.fixture(autouse=True)
@@ -40,9 +37,7 @@ def test_calling(neo4j):
         assert number_of_nodes == 14
 
         # header correctly added
-        query = (
-            "MATCH (n:p_test_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
-        )
+        query = "MATCH (n:p_test_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
         result = session.run(query)
         header = result.value()[0]
         assert header == ["# test taxonomy"]
@@ -206,9 +201,7 @@ def test_with_external_taxonomies(neo4j):
         assert number_of_nodes == 22
 
         # header correctly added
-        query = (
-            "MATCH (n:p_test_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
-        )
+        query = "MATCH (n:p_test_branch) WHERE n.id = '__header__' RETURN n.preceding_lines"
         result = session.run(query)
         header = result.value()[0]
         assert header == ["# test taxonomy"]
@@ -410,9 +403,7 @@ def test_properties_confused_lang(neo4j, tmp_path):
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
         fpath = str(
-            pathlib.Path(__file__).parent.parent
-            / "data"
-            / "test_property_confused_lang.txt"
+            pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt"
         )
         test_parser(fpath, None, "branch", "test")
         query = "MATCH (n:p_test_branch) WHERE n.id = 'en:1-for-planet' RETURN n"

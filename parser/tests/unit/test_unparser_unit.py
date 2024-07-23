@@ -2,6 +2,7 @@ import inspect
 import pathlib
 
 import pytest
+
 from openfoodfacts_taxonomy_parser import unparser
 
 
@@ -30,17 +31,19 @@ from openfoodfacts_taxonomy_parser import unparser
 )
 def test_list_property_and_lc(properties_txt, expected):
     # construct a node with the given properties
-    properties = [
-        prop for prop in inspect.cleandoc(properties_txt).split("\n") if prop.strip()
-    ]
+    properties = [prop for prop in inspect.cleandoc(properties_txt).split("\n") if prop.strip()]
     name_lc_values = [prop.split(":", 2) for prop in properties]
     node = {f"prop_{name}_{lc}": value for name, lc, value in name_lc_values}
     result = unparser.WriteTaxonomy(None).list_property_and_lc(node)
     assert result == expected
 
+
 def test_list_property_and_lc_with_comment():
-    node = {"prop_test_ar": "a", "prop_test_ar_comments": "# a", "prop_test_en": "b", "prop_test_comments_en": "legit"}
+    node = {
+        "prop_test_ar": "a",
+        "prop_test_ar_comments": "# a",
+        "prop_test_en": "b",
+        "prop_test_comments_en": "legit",
+    }
     result = unparser.WriteTaxonomy(None).list_property_and_lc(node)
     assert result == ["test_en", "test_ar", "test_comments_en"]
-
-

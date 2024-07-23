@@ -123,12 +123,18 @@ generate_sdk: ## Generate client SDK from OpenAPI spec
 	${DOCKER_COMPOSE} run --rm taxonomy_node npm run generate:api
 
 # lint code
-lint: backend_lint frontend_lint config_lint ## Run all linters
+lint: parser_lint backend_lint frontend_lint config_lint ## Run all linters
 
 backend_lint: ## Run lint on backend code
 	@echo "🍜 Linting python code"
-	${DOCKER_COMPOSE} run --rm taxonomy_api isort . /parser
-	${DOCKER_COMPOSE} run --rm taxonomy_api black . /parser
+	${DOCKER_COMPOSE} run --rm taxonomy_api isort .
+	${DOCKER_COMPOSE} run --rm taxonomy_api black .
+
+parser_lint: ## Run lint on parser code
+	@echo "🍜 Linting python code"
+	${DOCKER_COMPOSE} run --rm -w /parser taxonomy_api isort /parser
+	${DOCKER_COMPOSE} run --rm -w /parser taxonomy_api black /parser
+
 
 frontend_lint: ## Run lint on frontend code
 	@echo "🍜 Linting react code"
@@ -141,13 +147,20 @@ config_lint: ## Run on lint configuration files
 
 
 # check code quality
-quality: backend_quality frontend_quality config_quality ## Run all quality checks
+quality: parser_quality backend_quality frontend_quality config_quality ## Run all quality checks
 
 backend_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
 	${DOCKER_COMPOSE} run --rm taxonomy_api flake8 --exclude=.venv .
 	${DOCKER_COMPOSE} run --rm taxonomy_api isort --check-only --skip .venv .
 	${DOCKER_COMPOSE} run --rm taxonomy_api black --check --exclude=.venv .
+
+parser_quality: ## Run quality checks on backend code
+	@echo "🍜 Quality checks python"
+	${DOCKER_COMPOSE} run --rm  -w /parser taxonomy_api flake8 --exclude=.venv /parser
+	${DOCKER_COMPOSE} run --rm  -w /parser taxonomy_api isort --check-only --skip .venv /parser
+	${DOCKER_COMPOSE} run --rm  -w /parser taxonomy_api black --check --exclude=.venv /parser
+
 
 frontend_quality: ## Run quality checks on frontend code
 	@echo "🍜 Quality checks JS"

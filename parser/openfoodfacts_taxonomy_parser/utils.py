@@ -48,9 +48,7 @@ def normalize_text(
         stopwords = stopwords[lang]
         line_surrounded_by_char = char + line + char
         for stopword in stopwords:
-            line_surrounded_by_char = line_surrounded_by_char.replace(
-                char + stopword + char, char
-            )
+            line_surrounded_by_char = line_surrounded_by_char.replace(char + stopword + char, char)
         line = line_surrounded_by_char[1:-1]
 
     return line
