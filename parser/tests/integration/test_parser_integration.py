@@ -71,8 +71,28 @@ def test_calling(neo4j):
         results = session.run(query)
         expected_stopwords = {
             "id": "stopwords:0",
-            "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test normalisation"],
-            "tags_ids_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test-normalisation"],
+            "tags_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test normalisation",
+            ],
+            "tags_ids_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test-normalisation",
+            ],
             "preceding_lines": [],
         }
         for result in results:
@@ -167,7 +187,12 @@ def test_calling(neo4j):
 def test_with_external_taxonomies(neo4j):
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
-        test_parser(TEST_TAXONOMY_TXT, [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT], "branch", "test")
+        test_parser(
+            TEST_TAXONOMY_TXT,
+            [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT],
+            "branch",
+            "test",
+        )
 
         # total number of nodes (TEXT, ENTRY, SYNONYMS, STOPWORDS) + 1 ERROR node
         query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
@@ -210,8 +235,28 @@ def test_with_external_taxonomies(neo4j):
         results = session.run(query)
         expected_stopwords = {
             "id": "stopwords:0",
-            "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test normalisation"],
-            "tags_ids_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test-normalisation"],
+            "tags_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test normalisation",
+            ],
+            "tags_ids_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test-normalisation",
+            ],
             "preceding_lines": [],
         }
         for result in results:
@@ -357,7 +402,9 @@ def test_properties_confused_lang(neo4j, tmp_path):
     """Test that short property names don't get confused with language prefixes"""
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
-        fpath = str(pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt")
+        fpath = str(
+            pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt"
+        )
         test_parser(fpath, None, "branch", "test")
         query = "MATCH (n:p_test_branch) WHERE n.id = 'en:1-for-planet' RETURN n"
         result = session.run(query)

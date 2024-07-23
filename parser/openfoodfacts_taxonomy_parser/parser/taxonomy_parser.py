@@ -99,7 +99,8 @@ class TaxonomyParser:
                 # sanitizing
                 # remove any space characters at end of line
                 line = line.rstrip()
-                # replace commas between digits and that have no space around by a lower comma character
+                # replace commas between digits
+                # and that have no space around by a lower comma character
                 # and do the same for escaped comma (preceded by a \)
                 # (to distinguish them from commas acting as tags separators)
                 line = re.sub(r"(\d),(\d)", r"\1‚\2", line)
@@ -246,8 +247,9 @@ class TaxonomyParser:
         matching_prefix = self._language_code_prefix.match(line)
         if matching_prefix:
             # verify it's not a property, that is a name followed by a colon and a language
+            # we need no-qa this because of black vs flake8 opinion
             return not (
-                self._language_code_prefix.match(line[matching_prefix.end():])
+                self._language_code_prefix.match(line[matching_prefix.end() :])  # noqa: E203
             )
         return False
 
@@ -312,7 +314,8 @@ class TaxonomyParser:
                         lc, tags, tags_ids = self._get_lc_value(line, remove_stopwords=False)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
+                            f"Missing language code at line {line_number + 1} ? "
+                            f"'{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
@@ -330,7 +333,8 @@ class TaxonomyParser:
                         lc, tags, tags_ids = self._get_lc_value(line)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? '{self.parser_logger.ellipsis(line)}'"
+                            f"Missing language code at line {line_number + 1} ? "
+                            f"'{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         data.tags["tags_" + lc] = tags
@@ -369,7 +373,8 @@ class TaxonomyParser:
                         property_name, lc, property_value = line.split(":", 2)
                     except ValueError:
                         self.parser_logger.error(
-                            f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
+                            f"Reading error at line {line_number + 1}, "
+                            f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
                         )
                     else:
                         # in case there is space before or after the colons
@@ -379,11 +384,14 @@ class TaxonomyParser:
                             correctly_written.match(property_name) and correctly_written.match(lc)
                         ):
                             self.parser_logger.error(
-                                f"Reading error at line {line_number + 1}, unexpected format: '{self.parser_logger.ellipsis(line)}'"
+                                f"Reading error at line {line_number + 1},"
+                                f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
                             )
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
-                            data.properties[prop_key] = self.undo_normalize_text(property_value.strip())
+                            data.properties[prop_key] = self.undo_normalize_text(
+                                property_value.strip()
+                            )
                             data = self._get_node_data_with_comments_above_key(
                                 data, line_number, prop_key
                             )
@@ -473,7 +481,8 @@ class TaxonomyParser:
     def _merge_duplicate_entry_nodes(self, entry_nodes: list[NodeData]) -> list[NodeData]:
         """Merge entry nodes with the same id:
         - merge their tags (union)
-        - merge their properties (union, and in case of conflict, keep the last value)"""
+        - merge their properties (union, and in case of conflict, keep the last value)
+        """
         unique_entry_nodes = []
         ids_to_nodes = dict()
         for node in entry_nodes:

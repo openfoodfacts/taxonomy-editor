@@ -1,4 +1,3 @@
-import collections
 import logging
 import os
 import sys
@@ -55,7 +54,8 @@ class Parser:
                 self._create_other_node(tx, node, project_label)
 
         self.parser_logger.info(
-            f"Created {len(other_nodes)} TEXT, SYNONYMS and STOPWORDS nodes in {timeit.default_timer() - start_time} seconds"
+            f"Created {len(other_nodes)} TEXT, SYNONYMS and STOPWORDS nodes "
+            f"in {timeit.default_timer() - start_time} seconds"
         )
 
     def _create_entry_nodes(self, entry_nodes: list[NodeData], project_label: str):
@@ -98,7 +98,8 @@ class Parser:
         self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
 
         self.parser_logger.info(
-            f"Created {len(entry_nodes)} ENTRY nodes in {timeit.default_timer() - start_time} seconds"
+            f"Created {len(entry_nodes)} ENTRY nodes "
+            f"in {timeit.default_timer() - start_time} seconds"
         )
 
     def _create_previous_links(self, previous_links: list[PreviousLink], project_label: str):
@@ -229,7 +230,9 @@ class Parser:
 
     def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
         project_label = get_project_name(taxonomy_name, branch_name)
-        # First create nodes, then create node indexes to accelerate relationship creation, then create relationships
+        # First create nodes,
+        # then create node indexes to accelerate relationship creation,
+        # then create relationships
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self._create_node_indexes(project_label)
