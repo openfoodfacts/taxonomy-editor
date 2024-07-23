@@ -1,2 +1,2 @@
-from .parser import Parser
-from .taxonomy_parser import TaxonomyParser
+from .parser import Parser  # noqa: F401
+from .taxonomy_parser import TaxonomyParser  # noqa: F401

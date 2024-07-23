@@ -157,9 +157,9 @@ backend_quality: ## Run quality checks on backend code
 
 parser_quality: ## Run quality checks on backend code
 	@echo "🍜 Quality checks python"
-	${DOCKER_COMPOSE} run --rm taxonomy_api -w /parser flake8 --exclude=.venv /parser
-	${DOCKER_COMPOSE} run --rm taxonomy_api -w /parser isort --check-only --skip .venv /parser
-	${DOCKER_COMPOSE} run --rm taxonomy_api -w /parser black --check --exclude=.venv /parser
+	${DOCKER_COMPOSE} run --rm  -w /parser taxonomy_api flake8 --exclude=.venv /parser
+	${DOCKER_COMPOSE} run --rm  -w /parser taxonomy_api isort --check-only --skip .venv /parser
+	${DOCKER_COMPOSE} run --rm  -w /parser taxonomy_api black --check --exclude=.venv /parser
 
 
 frontend_quality: ## Run quality checks on frontend code
