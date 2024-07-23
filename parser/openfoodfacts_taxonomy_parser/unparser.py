@@ -67,7 +67,11 @@ class WriteTaxonomy:
         """return an ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        values = [property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")]
+        values = [
+            property[5:]
+            for property in node
+            if property.startswith("prop_") and not property.endswith("_comments")
+        ]
         # note: using the fact that we are sure to find language code after the first underscore
         return sorted(values, key=self.property_sort_key)
 

@@ -122,7 +122,12 @@ def test_round_trip_with_external_taxonomies(neo4j):
         test_parser = parser.Parser(session)
 
         # parse taxonomy
-        test_parser(TEST_TAXONOMY_TXT, [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT], "branch", "test")
+        test_parser(
+            TEST_TAXONOMY_TXT,
+            [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT],
+            "branch",
+            "test",
+        )
         # just quick check it runs ok with total number of nodes
         query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
         result = session.run(query)

@@ -246,9 +246,7 @@ class TaxonomyParser:
         matching_prefix = self._language_code_prefix.match(line)
         if matching_prefix:
             # verify it's not a property, that is a name followed by a colon and a language
-            return not (
-                self._language_code_prefix.match(line[matching_prefix.end():])
-            )
+            return not (self._language_code_prefix.match(line[matching_prefix.end() :]))
         return False
 
     def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
@@ -383,7 +381,9 @@ class TaxonomyParser:
                             )
                         if property_name:
                             prop_key = "prop_" + property_name + "_" + lc
-                            data.properties[prop_key] = self.undo_normalize_text(property_value.strip())
+                            data.properties[prop_key] = self.undo_normalize_text(
+                                property_value.strip()
+                            )
                             data = self._get_node_data_with_comments_above_key(
                                 data, line_number, prop_key
                             )
@@ -473,7 +473,8 @@ class TaxonomyParser:
     def _merge_duplicate_entry_nodes(self, entry_nodes: list[NodeData]) -> list[NodeData]:
         """Merge entry nodes with the same id:
         - merge their tags (union)
-        - merge their properties (union, and in case of conflict, keep the last value)"""
+        - merge their properties (union, and in case of conflict, keep the last value)
+        """
         unique_entry_nodes = []
         ids_to_nodes = dict()
         for node in entry_nodes:
