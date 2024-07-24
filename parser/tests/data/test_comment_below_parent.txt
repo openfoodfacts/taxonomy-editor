@@ -1,0 +1,9 @@
+# test a bug found with ingr taxonomy
+
+en:milk
+
+# a comment above the parent
+<en: milk
+# a comment below the parent
+en: Cow milk
+fr: lait de vache
