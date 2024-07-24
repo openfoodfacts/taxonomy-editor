@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.1...v1.0.2) (2024-07-24)
+
+
+### Bug Fixes
+
+* add a space after line identifier ([#520](https://github.com/openfoodfacts/taxonomy-editor/issues/520)) ([51f7b43](https://github.com/openfoodfacts/taxonomy-editor/commit/51f7b43c73b7a1f8504ce203c98627583cb31097))
+* avoid altering original entries at parsing time ([#519](https://github.com/openfoodfacts/taxonomy-editor/issues/519)) ([5fbaba9](https://github.com/openfoodfacts/taxonomy-editor/commit/5fbaba991ad3d37ccd48ce22f19014ac9d418b4f))
+* less transformations on comment lines and others ([#523](https://github.com/openfoodfacts/taxonomy-editor/issues/523)) ([d366218](https://github.com/openfoodfacts/taxonomy-editor/commit/d3662181e139243c8c709dffbe48124bb100b7fa))
+
 ## [1.0.1](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.0...v1.0.1) (2024-07-17)
 
 
