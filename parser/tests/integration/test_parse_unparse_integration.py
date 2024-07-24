@@ -60,10 +60,10 @@ def test_round_trip(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("<fr: yaourts fruit de la passion"):
-            line = "<en: Passion fruit yogurts"
+        elif line.startswith("< fr:yaourts fruit de la passion"):
+            line = "< en:Passion fruit yogurts"
         # third tweak: removing unexisting parents
-        elif line.startswith("<en: milk"):
+        elif line.startswith("< en:milk"):
             continue
         expected_lines.append(line)
 
@@ -105,10 +105,10 @@ def test_two_branch_round_trip(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("<fr: yaourts fruit de la passion"):
-            line = "<en: Passion fruit yogurts"
+        elif line.startswith("< fr:yaourts fruit de la passion"):
+            line = "< en:Passion fruit yogurts"
         # third tweak: removing unexisting parents
-        elif line.startswith("<en: milk"):
+        elif line.startswith("< en:milk"):
             continue
         expected_lines.append(line)
 
@@ -146,8 +146,8 @@ def test_round_trip_with_external_taxonomies(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("<fr: yaourts fruit de la passion"):
-            line = "<en: Passion fruit yogurts"
+        elif line.startswith("< fr:yaourts fruit de la passion"):
+            line = "< en:Passion fruit yogurts"
         expected_lines.append(line)
 
     assert expected_lines == lines

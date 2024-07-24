@@ -143,9 +143,9 @@ class Parser:
                 MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
                 WHERE p.id = child_link.parent_id
                 MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+                WHERE c.id = child_link.id
             """
             + """
-                WHERE c.id = child_link.id
                 CREATE (c)-[relations:is_child_of {position: child_link.position}]->(p)
                 WITH relations
                 UNWIND relations AS relation

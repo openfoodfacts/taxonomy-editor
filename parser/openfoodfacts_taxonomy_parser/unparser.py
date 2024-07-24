@@ -59,7 +59,7 @@ class WriteTaxonomy:
 
     @staticmethod
     def property_sort_key(property):
-        name, lang_code, *_ = property.split("_", 2)
+        name, lang_code = property.rsplit("_", 1)
         # give priority to xx and en language codes
         priority = {"en": 1, "xx": 0}
         return (name, priority.get(lang_code, 100), lang_code)
@@ -88,7 +88,7 @@ class WriteTaxonomy:
             parent = dict(parent)
             lc = parent["main_language"]
             parent_id = parent["tags_" + lc][0]
-            yield "<" + lc + ": " + parent_id
+            yield "< " + lc + ":" + parent_id
 
     def iter_lines(self, project_label):
         previous_block_id = ""

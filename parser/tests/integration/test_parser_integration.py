@@ -121,7 +121,7 @@ def test_calling(neo4j):
             {
                 "tags_en": ["meat"],
                 "tags_ids_en": ["meat"],
-                "preceding_lines": ["# meat", ""],
+                "preceding_lines": ["# meat ", ""],
                 "prop_vegan_en": "no",
                 "prop_carbon_footprint_fr_foodges_value_fr": "10",
             },
@@ -285,7 +285,7 @@ def test_with_external_taxonomies(neo4j):
             {
                 "tags_en": ["meat"],
                 "tags_ids_en": ["meat"],
-                "preceding_lines": ["# meat", ""],
+                "preceding_lines": ["# meat ", ""],
                 "prop_vegan_en": "no",
                 "prop_carbon_footprint_fr_foodges_value_fr": "10",
             },
@@ -411,3 +411,16 @@ def test_properties_confused_lang(neo4j, tmp_path):
         node = result.value()[0]
         # "web:en" was not confused with a language prefix "web:"
         assert "prop_web_en" in node.keys()
+
+
+def test_comment_below_parent(neo4j, tmp_path):
+    """Test that if a comment is below a parent, it is not added to preceeding_lines"""
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
+        fpath = str(pathlib.Path(__file__).parent.parent / "data" / "test_comment_below_parent.txt")
+        test_parser(fpath, None, "branch", "test")
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:cow-milk' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert node["preceding_lines"] == ["# a comment above the parent"]
+        assert node["tags_en_comments"] == ["# a comment below the parent"]
