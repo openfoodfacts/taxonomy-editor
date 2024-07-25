@@ -1,0 +1,13 @@
+# test a bug found with categories taxonomy
+
+en:milk
+# broken property
+mytest:en it lacks a colon
+okprop:en: this is ok
+
+# isolated property
+another:en: this is ok too
+
+# broken parent
+< milk
+en: Cow milk

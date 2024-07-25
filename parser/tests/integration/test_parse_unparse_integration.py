@@ -62,9 +62,9 @@ def test_round_trip(neo4j):
         # second tweak: renaming parent
         elif line.startswith("< fr:yaourts fruit de la passion"):
             line = "< en:Passion fruit yogurts"
-        # third tweak: removing unexisting parents
+        # third tweak: commenting non existing parents
         elif line.startswith("< en:milk"):
-            continue
+            line = "# < en:milk"
         expected_lines.append(line)
 
     assert expected_lines == lines
@@ -107,9 +107,9 @@ def test_two_branch_round_trip(neo4j):
         # second tweak: renaming parent
         elif line.startswith("< fr:yaourts fruit de la passion"):
             line = "< en:Passion fruit yogurts"
-        # third tweak: removing unexisting parents
+        # third tweak: commenting non existing parents
         elif line.startswith("< en:milk"):
-            continue
+            line = "# < en:milk"
         expected_lines.append(line)
 
     assert expected_lines == lines_branch1

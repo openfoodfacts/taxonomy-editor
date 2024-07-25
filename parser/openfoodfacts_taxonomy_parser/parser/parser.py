@@ -245,12 +245,13 @@ class Parser:
         external_filenames: list[str] | None,
         branch_name: str,
         taxonomy_name: str,
+        keep_unknown_parents=True,
     ):
         """Process the file"""
         start_time = timeit.default_timer()
 
         branch_name = normalize_text(branch_name, char="_")
-        taxonomy_parser = TaxonomyParser()
+        taxonomy_parser = TaxonomyParser(keep_unknown_parents=keep_unknown_parents)
         try:
             taxonomy = taxonomy_parser.parse_file(
                 main_filename, external_filenames, self.parser_logger

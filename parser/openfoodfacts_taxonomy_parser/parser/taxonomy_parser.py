@@ -84,8 +84,9 @@ class Taxonomy:
 class TaxonomyParser:
     """Parse a taxonomy file"""
 
-    def __init__(self):
+    def __init__(self, keep_unknown_parents=True):
         self.parser_logger = ParserConsoleLogger()
+        self.keep_unknown_parents = keep_unknown_parents
 
     def _file_iter(self, filename: str, start: int = 0) -> Iterator[tuple[int, str]]:
         """Generator to get the file line by line"""
@@ -247,15 +248,119 @@ class TaxonomyParser:
             saved_nodes.append(data.id)
         return data
 
+    # Check if a property correctly written
+    _prop_correctly_written = re.compile(r"\w+\Z")
+
+    def _process_stopwords(self, data, line, line_number, index_stopwords):
+        """process a line of general stopwords definition for a language"""
+        id = "stopwords:" + str(index_stopwords)
+        data = self._set_data_id(data, id, line_number)
+        # remove "stopwords:" part
+        line = line[10:]
+        try:
+            lc, tags, tags_ids = self._get_lc_value(line, remove_stopwords=False)
+        except ValueError:
+            self.parser_logger.error(
+                f"Missing language code at line {line_number + 1} ? "
+                f"'{self.parser_logger.ellipsis(line)}'"
+            )
+            # add line as a comment
+            data.preceding_lines.append(f"# {line}")
+        else:
+            data.tags["tags_" + lc] = tags
+            data.tags["tags_ids_" + lc] = tags_ids
+            # add the normalized list with its lc to current processing
+            self.stopwords[lc] = tags_ids
+
+    def _process_synonyms(self, data, line, line_number, index_synonyms):
+        """process a line of general synonyms definition for a language"""
+        id = "synonyms:" + str(index_synonyms)
+        data = self._set_data_id(data, id, line_number)
+        # remove "synonyms:" part
+        line = line[9:]
+        try:
+            lc, tags, tags_ids = self._get_lc_value(line)
+        except ValueError:
+            self.parser_logger.error(
+                f"Missing language code at line {line_number + 1} ? "
+                f"'{self.parser_logger.ellipsis(line)}'"
+            )
+            # add line as a comment
+            data.preceding_lines.append(f"# {line}")
+        else:
+            data.tags["tags_" + lc] = tags
+            data.tags["tags_ids_" + lc] = tags_ids
+
+    def _process_parent(self, data, line, line_number, comments):
+        """process line of parent definition"""
+        data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
+        self._add_comments(data, comments, "parent")
+
+    def _process_entry(self, data, line, comments):
+        """process line of entry synonyms definition in a language"""
+        if not data.id:
+            # the first item on the first line gives the id
+            data.id = self._normalize_entry_id(line.split(",", 1)[0])
+            # first 2-3 characters before ":" are the language code
+            data.main_language = data.id.split(":", 1)[0]
+        # add tags and tagsid
+        lang, line = line.split(":", 1)
+        # to transform '-' from language code to '_'
+        lang = lang.strip().replace("-", "_")
+        tags_list = []
+        tagsids_list = []
+        for word in line.split(","):
+            tags_list.append(self.undo_normalize_text(word.strip()))
+            word_normalized = normalize_text(word, lang, stopwords=self.stopwords)
+            if word_normalized not in tagsids_list:
+                # in case 2 normalized synonyms are the same
+                tagsids_list.append(word_normalized)
+        data.tags["tags_" + lang] = tags_list
+        data.tags["tags_ids_" + lang] = tagsids_list
+        self._add_comments(data, comments, "tags_" + lang)
+
+    def _process_property(self, data, line, line_number, comments):
+        """process line with property definition"""
+        property_name = None
+        try:
+            property_name, lc, property_value = line.split(":", 2)
+        except ValueError:
+            self.parser_logger.error(
+                f"Reading error at line {line_number + 1}, "
+                f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
+            )
+            # add line as a comment
+            comments.append(f"# {line}")
+        else:
+            # in case there is space before or after the colons
+            property_name = property_name.strip()
+            lc = lc.strip().replace("-", "_")
+            if not (
+                self._prop_correctly_written.match(property_name)
+                and self._prop_correctly_written.match(lc)
+            ):
+                self.parser_logger.error(
+                    f"Reading error at line {line_number + 1}, "
+                    f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
+                )
+                # add line as a comment
+                comments.append(f"# {line}")
+            elif property_name:
+                prop_key = "prop_" + property_name + "_" + lc
+                data.properties[prop_key] = self.undo_normalize_text(property_value.strip())
+                self._add_comments(data, comments, prop_key)
+
     def _harvest_entries(self, filename: str, entries_start_line: int) -> Iterator[NodeData]:
         """Transform data from file to dictionary"""
         saved_nodes = []
         index_stopwords = 0
         index_synonyms = 0
         comments = []
+        # we keep one node back, because some time we need to put data into it,
+        # like isolated properties
+        # so we always release keep current and previous node, before yielding
+        previous_data = None
 
-        # Check if it is correctly written
-        correctly_written = re.compile(r"\w+\Z")
         # stopwords will contain a list of stopwords with their language code as key
         self.stopwords = {}
         # the first entry is after __header__ which was created before
@@ -264,118 +369,68 @@ class TaxonomyParser:
             entries_start_line  # if the iterator is empty, line_number will not be unbound
         )
         for line_number, raw_line in self._file_iter(filename, entries_start_line):
-            # yield data if block ended
-            if self._entry_end(raw_line, data):
-                is_before = data.is_before
-                # another function will use data to create a node
-                yield self.finalize_data(data, comments, saved_nodes)
-                # if data was a duplicate (is_before is None) reuse same is_before
-                is_before = data.id if data.is_before else is_before
-                data = NodeData(is_before=is_before)
+            try:
+                # yield data if block ended
+                if self._entry_end(raw_line, data):
+                    is_before = data.is_before
+                    # another function will use data to create a node
+                    if previous_data is not None:
+                        yield previous_data  # it's ok with this one
+                    previous_data = self.finalize_data(data, comments, saved_nodes)
+                    # if data was a duplicate (is_before is None) reuse same is_before
+                    is_before = data.id if data.is_before else is_before
+                    data = NodeData(is_before=is_before)
 
-            # harvest the line
-            if not (raw_line.strip()) or raw_line[0] == "#":
-                # comment or blank line
-                if data.is_started:
-                    # we are within the node definition
-                    comments.append(raw_line)
+                # harvest the line
+                if not (raw_line.strip()) or raw_line[0] == "#":
+                    # comment or blank line
+                    if data.is_started:
+                        # we are within the node definition
+                        comments.append(raw_line)
+                    else:
+                        # we are before the actual node
+                        data.preceding_lines.append(raw_line)
                 else:
-                    # we are before the actual node
-                    data.preceding_lines.append(raw_line)
-            else:
-                line = self.prepare_line(raw_line)
-                if not data.src_position:
-                    data.src_position = line_number + 1
-                if line.startswith("stopwords"):
-                    # general stopwords definition for a language
-                    id = "stopwords:" + str(index_stopwords)
-                    data = self._set_data_id(data, id, line_number)
-                    index_stopwords += 1
-                    # remove "stopwords:" part
-                    line = line[10:]
-                    try:
-                        lc, tags, tags_ids = self._get_lc_value(line, remove_stopwords=False)
-                    except ValueError:
-                        self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? "
-                            f"'{self.parser_logger.ellipsis(line)}'"
-                        )
+                    line = self.prepare_line(raw_line)
+                    if not data.src_position:
+                        data.src_position = line_number + 1
+                    if line.startswith("stopwords"):
+                        self._process_stopwords(data, line, line_number, index_stopwords)
+                        index_stopwords += 1
+                    elif line.startswith("synonyms"):
+                        self._process_synonyms(data, line, line_number, index_synonyms)
+                        index_synonyms += 1
+                    elif line[0] == "<":
+                        self._process_parent(data, line, line_number, comments)
+                    elif self.is_entry_synonyms_line(line):
+                        self._process_entry(data, line, comments)
                     else:
-                        data.tags["tags_" + lc] = tags
-                        data.tags["tags_ids_" + lc] = tags_ids
-                        # add the normalized list with its lc to current processing
-                        self.stopwords[lc] = tags_ids
-                elif line.startswith("synonyms"):
-                    # general synonyms definition for a language
-                    id = "synonyms:" + str(index_synonyms)
-                    data = self._set_data_id(data, id, line_number)
-                    index_synonyms += 1
-                    # remove "synonyms:" part
-                    line = line[9:]
-                    try:
-                        lc, tags, tags_ids = self._get_lc_value(line)
-                    except ValueError:
-                        self.parser_logger.error(
-                            f"Missing language code at line {line_number + 1} ? "
-                            f"'{self.parser_logger.ellipsis(line)}'"
-                        )
-                    else:
-                        data.tags["tags_" + lc] = tags
-                        data.tags["tags_ids_" + lc] = tags_ids
-                elif line[0] == "<":
-                    # parent definition
-                    data.parent_tags.append((self._normalize_entry_id(line[1:]), line_number + 1))
-                    self._add_comments(data, comments, "parent")
-                elif self.is_entry_synonyms_line(line):
-                    # synonyms definition
-                    if not data.id:
-                        # the first item on the first line gives the id
-                        data.id = self._normalize_entry_id(line.split(",", 1)[0])
-                        # first 2-3 characters before ":" are the language code
-                        data.main_language = data.id.split(":", 1)[0]
-                    # add tags and tagsid
-                    lang, line = line.split(":", 1)
-                    # to transform '-' from language code to '_'
-                    lang = lang.strip().replace("-", "_")
-                    tags_list = []
-                    tagsids_list = []
-                    for word in line.split(","):
-                        tags_list.append(self.undo_normalize_text(word.strip()))
-                        word_normalized = normalize_text(word, lang, stopwords=self.stopwords)
-                        if word_normalized not in tagsids_list:
-                            # in case 2 normalized synonyms are the same
-                            tagsids_list.append(word_normalized)
-                    data.tags["tags_" + lang] = tags_list
-                    data.tags["tags_ids_" + lang] = tagsids_list
-                    self._add_comments(data, comments, "tags_" + lang)
-                else:
-                    # property definition
-                    property_name = None
-                    try:
-                        property_name, lc, property_value = line.split(":", 2)
-                    except ValueError:
-                        self.parser_logger.error(
-                            f"Reading error at line {line_number + 1}, "
-                            f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
-                        )
-                    else:
-                        # in case there is space before or after the colons
-                        property_name = property_name.strip()
-                        lc = lc.strip().replace("-", "_")
-                        if not (
-                            correctly_written.match(property_name) and correctly_written.match(lc)
-                        ):
-                            self.parser_logger.error(
-                                f"Reading error at line {line_number + 1}, "
-                                f"unexpected format: '{self.parser_logger.ellipsis(line)}'"
+                        # isolated properties are added to previous node
+                        if not data.id:
+                            self.parser_logger.warning(
+                                f"Isolated property at line {line_number + 1}: "
+                                f"{line.split(':', 1)[0]}"
                             )
-                        if property_name:
-                            prop_key = "prop_" + property_name + "_" + lc
-                            data.properties[prop_key] = self.undo_normalize_text(
-                                property_value.strip()
-                            )
-                            self._add_comments(data, comments, prop_key)
-
+                        target_data = data if data.id else previous_data
+                        self._process_property(target_data, line, line_number, comments)
+            except Exception as e:
+                self.parser_logger.error(
+                    f"Reading error at line {line_number + 1}, "
+                    f"unexpected format: '{self.parser_logger.ellipsis(raw_line)}' "
+                    f"(error: {e})"
+                )
+                # add the line as a comment
+                comments.append(f"# {raw_line}")
+                # and let's try to continue
+        # yield non yield data
+        if previous_data is not None:
+            yield previous_data
+        if data.id:
+            yield self.finalize_data(data, comments, saved_nodes)
+            # if data was a duplicate (is_before is None) reuse same is_before
+            is_before = data.id if data.is_before else is_before
+            data = NodeData(is_before=is_before)
+        # remaining data is footer
         data.id = "__footer__"
         data.preceding_lines.pop(0)
         data.src_position = line_number + 1 - len(data.preceding_lines)
@@ -415,20 +470,20 @@ class TaxonomyParser:
         self, entry_nodes: list[NodeData], raw_child_links: list[ChildLink]
     ) -> list[ChildLink]:
         """Get only the valid child links, i.e. the child links whose the parent_id exists"""
-        node_ids = set([node.id for node in entry_nodes])
+        node_by_ids = {node.id: node for node in entry_nodes}
 
         # Links in which the parent_id exists are valid and do not need to be normalized
         valid_child_links = [
             child_link.copy()
             for child_link in raw_child_links
-            if child_link["parent_id"] in node_ids
+            if child_link["parent_id"] in node_by_ids
         ]
 
         # Unnormalised links are links in which a synonym was used to designate the parent
         child_links_to_normalise = [
             child_link.copy()
             for child_link in raw_child_links
-            if child_link["parent_id"] not in node_ids
+            if child_link["parent_id"] not in node_by_ids
         ]
 
         # Normalise and validate the unnormalised links
@@ -440,10 +495,14 @@ class TaxonomyParser:
 
         for child_link in missing_child_links:
             lc, parent_id = child_link["parent_id"].split(":")
+            node = node_by_ids[child_link["id"]]
             self.parser_logger.error(
-                f"Missing child link at line {child_link['line_position']}: "
+                f"Missing child link at line {child_link['line_position']} for {node.id}: "
                 f"parent_id {parent_id} not found in tags_ids_{lc}"
             )
+            if self.keep_unknown_parents:
+                # add as a synonym
+                self._add_comments(node, [f"# < {child_link['parent_id']}"], "parent")
 
         return valid_child_links
 
