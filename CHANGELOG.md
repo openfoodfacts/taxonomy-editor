@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.2...v1.1.0) (2024-07-26)
+
+
+### Features
+
+* make taxonomy more robust ([#524](https://github.com/openfoodfacts/taxonomy-editor/issues/524)) ([49d8e46](https://github.com/openfoodfacts/taxonomy-editor/commit/49d8e46ea30d7c8ca6b6edc73842005603058d1e))
+
 ## [1.0.2](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.1...v1.0.2) (2024-07-24)
 
 
