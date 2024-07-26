@@ -424,3 +424,27 @@ def test_comment_below_parent(neo4j, tmp_path):
         node = result.value()[0]
         assert node["preceding_lines"] == ["# a comment above the parent"]
         assert node["tags_en_comments"] == ["# a comment below the parent"]
+
+
+def test_broken_taxonomy(neo4j, tmp_path):
+    """Test that if some taxonomy lines are broken, we are able to parse it"""
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
+        fpath = str(pathlib.Path(__file__).parent.parent / "data" / "test_broken_taxonomy.txt")
+        test_parser(fpath, None, "branch", "test")
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:milk' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert node["prop_okprop_en"] == "this is ok"
+        # isolated property
+        assert node["prop_another_en"] == "this is ok too"
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:cow-milk' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert node
+        # errors are there
+        query = "MATCH (n:p_test_branch:ERRORS) RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert len(node["errors"]) == 2
+        assert len(node["warnings"]) == 1
