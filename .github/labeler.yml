@@ -2,91 +2,91 @@
 # for reference, see https://github.com/actions/labeler
 
 github:
-- changed-files:
-  - any-glob-to-any-file: '.github/**/*'
+  - changed-files:
+      - any-glob-to-any-file: ".github/**/*"
 
 documentation:
-- changed-files:
-  - any-glob-to-any-file: 'CONTRIBUTING.md'
-  - any-glob-to-any-file: 'LICENSE'
-  - any-glob-to-any-file: 'README.md'
-  - any-glob-to-any-file: 'backend/README.md'
-  - any-glob-to-any-file: 'doc/how-to-guides/develop-with-neo4j.md'
-  - any-glob-to-any-file: 'doc/how-to-guides/docker-compose-setup.md'
-  - any-glob-to-any-file: 'doc/introduction/setup-dev.md'
-  - any-glob-to-any-file: 'doc/references/taxonomy-parser.md'
-  - any-glob-to-any-file: 'doc/assets/.empty'
-  - any-glob-to-any-file: 'doc/**/*'
+  - changed-files:
+      - any-glob-to-any-file: "CONTRIBUTING.md"
+      - any-glob-to-any-file: "LICENSE"
+      - any-glob-to-any-file: "README.md"
+      - any-glob-to-any-file: "backend/README.md"
+      - any-glob-to-any-file: "doc/how-to-guides/develop-with-neo4j.md"
+      - any-glob-to-any-file: "doc/how-to-guides/docker-compose-setup.md"
+      - any-glob-to-any-file: "doc/introduction/setup-dev.md"
+      - any-glob-to-any-file: "doc/references/taxonomy-parser.md"
+      - any-glob-to-any-file: "doc/assets/.empty"
+      - any-glob-to-any-file: "doc/**/*"
 
 docker:
-- changed-files:
-  - any-glob-to-any-file: 'backend/Dockerfile'
-  - any-glob-to-any-file: 'taxonomy-editor-frontend/Dockerfile'
-  - any-glob-to-any-file: 'docker-compose.yml'
-  - any-glob-to-any-file: 'docker/dev.yml'
+  - changed-files:
+      - any-glob-to-any-file: "backend/Dockerfile"
+      - any-glob-to-any-file: "taxonomy-editor-frontend/Dockerfile"
+      - any-glob-to-any-file: "docker-compose.yml"
+      - any-glob-to-any-file: "docker/dev.yml"
 
 backend:
-- changed-files:
-  - any-glob-to-any-file: 'backend/editor/__init__.py'
-  - any-glob-to-any-file: 'backend/editor/api.py'
-  - any-glob-to-any-file: 'backend/editor/entries.py'
-  - any-glob-to-any-file: 'backend/editor/exceptions.py'
-  - any-glob-to-any-file: 'backend/editor/graph_db.py'
-  - any-glob-to-any-file: 'backend/editor/models.py'
-  - any-glob-to-any-file: 'backend/editor/normalizer.py'
-  - any-glob-to-any-file: 'backend/editor/settings.py'
-  - any-glob-to-any-file: 'backend/pyproject.toml'
-  - any-glob-to-any-file: 'backend/poetry.lock'
-  - any-glob-to-any-file: 'backend/sample/load.py'
-  - any-glob-to-any-file: 'backend/sample/schema.json'
-  - any-glob-to-any-file: 'backend/sample/test-neo4j.json'
-  - any-glob-to-any-file: 'backend/sample/test.json'
-  - any-glob-to-any-file: 'backend/sample/test.txt'
-  - any-glob-to-any-file: 'backend/**/*'
+  - changed-files:
+      - any-glob-to-any-file: "backend/editor/__init__.py"
+      - any-glob-to-any-file: "backend/editor/api.py"
+      - any-glob-to-any-file: "backend/editor/entries.py"
+      - any-glob-to-any-file: "backend/editor/exceptions.py"
+      - any-glob-to-any-file: "backend/editor/graph_db.py"
+      - any-glob-to-any-file: "backend/editor/models.py"
+      - any-glob-to-any-file: "backend/editor/normalizer.py"
+      - any-glob-to-any-file: "backend/editor/settings.py"
+      - any-glob-to-any-file: "backend/pyproject.toml"
+      - any-glob-to-any-file: "backend/poetry.lock"
+      - any-glob-to-any-file: "backend/sample/load.py"
+      - any-glob-to-any-file: "backend/sample/schema.json"
+      - any-glob-to-any-file: "backend/sample/test-neo4j.json"
+      - any-glob-to-any-file: "backend/sample/test.json"
+      - any-glob-to-any-file: "backend/sample/test.txt"
+      - any-glob-to-any-file: "backend/**/*"
 
 frontend:
-- changed-files:
-  - any-glob-to-any-file: 'taxonomy-editor-frontend/**/*'
+  - changed-files:
+      - any-glob-to-any-file: "taxonomy-editor-frontend/**/*"
 
 dependencies:
-- changed-files:
-  - any-glob-to-any-file: 'backend/pyproject.toml'
-  - any-glob-to-any-file: 'backend/poetry.lock'
-  - any-glob-to-any-file: 'parser/pyproject.toml'
-  - any-glob-to-any-file: 'parser/poetry.lock'
-  - any-glob-to-any-file: 'taxonomy-editor-frontend/package.json'
+  - changed-files:
+      - any-glob-to-any-file: "backend/pyproject.toml"
+      - any-glob-to-any-file: "backend/poetry.lock"
+      - any-glob-to-any-file: "parser/pyproject.toml"
+      - any-glob-to-any-file: "parser/poetry.lock"
+      - any-glob-to-any-file: "taxonomy-editor-frontend/package.json"
 
 api:
-- changed-files:
-  - any-glob-to-any-file: 'backend/editor/api.py'
+  - changed-files:
+      - any-glob-to-any-file: "backend/editor/api.py"
 
 nginx:
-- changed-files:
-  - any-glob-to-any-file: 'conf/nginx.conf'
+  - changed-files:
+      - any-glob-to-any-file: "conf/nginx.conf"
 
 neo4j:
-- changed-files:
-  - any-glob-to-any-file: 'neo4j/**/*'
+  - changed-files:
+      - any-glob-to-any-file: "neo4j/**/*"
 
 parser:
-- changed-files:
-  - any-glob-to-any-file: 'parser/Makefile'
-  - any-glob-to-any-file: 'parser/openfoodfacts_taxonomy_parser/__init__.py'
-  - any-glob-to-any-file: 'parser/openfoodfacts_taxonomy_parser/exception.py'
-  - any-glob-to-any-file: 'parser/openfoodfacts_taxonomy_parser/parser.py'
-  - any-glob-to-any-file: 'parser/openfoodfacts_taxonomy_parser/unparser.py'
-  - any-glob-to-any-file: 'parser/pyproject.toml'
-  - any-glob-to-any-file: 'parser/poetry.lock'
-  - any-glob-to-any-file: 'parser/setup.cfg'
-  - any-glob-to-any-file: 'parser/tests/__init__.py'
-  - any-glob-to-any-file: 'parser/tests/conftest.py'
-  - any-glob-to-any-file: 'parser/tests/data/test.txt'
-  - any-glob-to-any-file: 'parser/tests/integration/__init__.py'
-  - any-glob-to-any-file: 'parser/**/*'
+  - changed-files:
+      - any-glob-to-any-file: "parser/Makefile"
+      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/__init__.py"
+      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/exception.py"
+      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/parser.py"
+      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/unparser.py"
+      - any-glob-to-any-file: "parser/pyproject.toml"
+      - any-glob-to-any-file: "parser/poetry.lock"
+      - any-glob-to-any-file: "parser/setup.cfg"
+      - any-glob-to-any-file: "parser/tests/__init__.py"
+      - any-glob-to-any-file: "parser/tests/conftest.py"
+      - any-glob-to-any-file: "parser/tests/data/test.txt"
+      - any-glob-to-any-file: "parser/tests/integration/__init__.py"
+      - any-glob-to-any-file: "parser/**/*"
 
 tests:
-  - any-glob-to-any-file: 'parser/tests/__init__.py'
-  - any-glob-to-any-file: 'parser/tests/conftest.py'
-  - any-glob-to-any-file: 'parser/tests/data/test.txt'
-  - any-glob-to-any-file: 'parser/tests/integration/__init__.py'
-  - any-glob-to-any-file: 'parser/tests/**/*'
+  - any-glob-to-any-file: "parser/tests/__init__.py"
+  - any-glob-to-any-file: "parser/tests/conftest.py"
+  - any-glob-to-any-file: "parser/tests/data/test.txt"
+  - any-glob-to-any-file: "parser/tests/integration/__init__.py"
+  - any-glob-to-any-file: "parser/tests/**/*"

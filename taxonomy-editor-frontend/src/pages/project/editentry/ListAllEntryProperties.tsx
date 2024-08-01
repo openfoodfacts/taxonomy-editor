@@ -28,7 +28,7 @@ const normalizeNameToDb = (name: string) => {
 };
 
 const collectProperties = (
-  entryNode: DestructuredEntryNode
+  entryNode: DestructuredEntryNode,
 ): RenderedPropertyType[] => {
   const renderedProperties: RenderedPropertyType[] = [];
   Object.keys(entryNode).forEach((key: string) => {
@@ -71,7 +71,7 @@ const validatePropertyName = (propertyName: string): boolean => {
 
 const isPropertyNameUnique = (
   propertyName: string,
-  otherProperties: RenderedPropertyType[]
+  otherProperties: RenderedPropertyType[],
 ): boolean => {
   for (const prop of otherProperties) {
     if (prop.propertyName === propertyName) return false;
@@ -144,7 +144,7 @@ const ListAllEntryProperties = ({
                     new Promise<void>((resolve, reject) => {
                       if (!isPropertyNameUnique(newRow.propertyName, data)) {
                         setErrorMessage(
-                          `${newRow.propertyName} already exists`
+                          `${newRow.propertyName} already exists`,
                         );
                         reject();
                       } else {
@@ -158,7 +158,7 @@ const ListAllEntryProperties = ({
                         // Add new key-value pair of a property in nodeObject
                         changePropertyData(
                           normalizeNameToDb(newRow.propertyName),
-                          newRow.propertyValue
+                          newRow.propertyValue,
                         );
                         resolve();
                       }
@@ -168,7 +168,7 @@ const ListAllEntryProperties = ({
                       // Delete property from rendered rows
                       const updatedRows = [...data];
                       const index = updatedRows.findIndex(
-                        (row) => row.id === selectedRow.id
+                        (row) => row.id === selectedRow.id,
                       );
                       updatedRows.splice(index, 1);
                       setData(updatedRows);
@@ -178,28 +178,28 @@ const ListAllEntryProperties = ({
                     }),
                   onRowUpdate: (
                     updatedRow: RenderedPropertyType,
-                    oldRow: RenderedPropertyType
+                    oldRow: RenderedPropertyType,
                   ) =>
                     new Promise<void>((resolve, reject) => {
                       const index = data.findIndex(
-                        (row) => row.id === updatedRow.id
+                        (row) => row.id === updatedRow.id,
                       );
                       const otherProperties = [...data];
                       otherProperties.splice(index, 1);
                       if (
                         !isPropertyNameUnique(
                           updatedRow.propertyName,
-                          otherProperties
+                          otherProperties,
                         )
                       ) {
                         setErrorMessage(
-                          `${updatedRow.propertyName} already exists`
+                          `${updatedRow.propertyName} already exists`,
                         );
                         reject();
                       } else {
                         // Update row in rendered rows
                         const updatedRows = data.map((el) =>
-                          el.id === oldRow.id ? updatedRow : el
+                          el.id === oldRow.id ? updatedRow : el,
                         );
                         setData(updatedRows);
                         // Updation takes place by deletion + addition
@@ -209,7 +209,7 @@ const ListAllEntryProperties = ({
                         // Add new property to nodeObject
                         changePropertyData(
                           normalizeNameToDb(updatedRow.propertyName),
-                          updatedRow.propertyValue
+                          updatedRow.propertyValue,
                         );
                         resolve();
                       }

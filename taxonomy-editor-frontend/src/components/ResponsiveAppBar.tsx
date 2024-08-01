@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import logoUrl from "@/assets/logosmall.jpg";
 
 const getDisplayedPages = (
-  params: Params<string>
+  params: Params<string>,
 ): Array<{ translationKey: string; url: string }> => {
   if (!params.taxonomyName || !params.branchName) {
     return [];
@@ -97,7 +97,7 @@ export const ResponsiveAppBar = () => {
                   <ListSubheader key={page.translationKey}>
                     {t(page.translationKey)}
                   </ListSubheader>
-                )
+                ),
               )}
             </Menu>
           </Box>

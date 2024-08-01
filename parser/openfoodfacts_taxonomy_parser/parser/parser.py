@@ -1,4 +1,3 @@
-import collections
 import logging
 import os
 import sys
@@ -55,7 +54,8 @@ class Parser:
                 self._create_other_node(tx, node, project_label)
 
         self.parser_logger.info(
-            f"Created {len(other_nodes)} TEXT, SYNONYMS and STOPWORDS nodes in {timeit.default_timer() - start_time} seconds"
+            f"Created {len(other_nodes)} TEXT, SYNONYMS and STOPWORDS nodes "
+            f"in {timeit.default_timer() - start_time} seconds"
         )
 
     def _create_entry_nodes(self, entry_nodes: list[NodeData], project_label: str):
@@ -98,7 +98,8 @@ class Parser:
         self.session.run(query, entry_nodes=[entry_node.to_dict() for entry_node in entry_nodes])
 
         self.parser_logger.info(
-            f"Created {len(entry_nodes)} ENTRY nodes in {timeit.default_timer() - start_time} seconds"
+            f"Created {len(entry_nodes)} ENTRY nodes "
+            f"in {timeit.default_timer() - start_time} seconds"
         )
 
     def _create_previous_links(self, previous_links: list[PreviousLink], project_label: str):
@@ -142,9 +143,9 @@ class Parser:
                 MATCH (p:{project_label}) USING INDEX p:{project_label}(id)
                 WHERE p.id = child_link.parent_id
                 MATCH (c:{project_label}) USING INDEX c:{project_label}(id)
+                WHERE c.id = child_link.id
             """
             + """
-                WHERE c.id = child_link.id
                 CREATE (c)-[relations:is_child_of {position: child_link.position}]->(p)
                 WITH relations
                 UNWIND relations AS relation
@@ -229,7 +230,9 @@ class Parser:
 
     def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
         project_label = get_project_name(taxonomy_name, branch_name)
-        # First create nodes, then create node indexes to accelerate relationship creation, then create relationships
+        # First create nodes,
+        # then create node indexes to accelerate relationship creation,
+        # then create relationships
         self._create_other_nodes(taxonomy.other_nodes, project_label)
         self._create_entry_nodes(taxonomy.entry_nodes, project_label)
         self._create_node_indexes(project_label)
@@ -242,12 +245,13 @@ class Parser:
         external_filenames: list[str] | None,
         branch_name: str,
         taxonomy_name: str,
+        keep_unknown_parents=True,
     ):
         """Process the file"""
         start_time = timeit.default_timer()
 
         branch_name = normalize_text(branch_name, char="_")
-        taxonomy_parser = TaxonomyParser()
+        taxonomy_parser = TaxonomyParser(keep_unknown_parents=keep_unknown_parents)
         try:
             taxonomy = taxonomy_parser.parse_file(
                 main_filename, external_filenames, self.parser_logger

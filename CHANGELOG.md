@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.2...v1.1.0) (2024-07-26)
+
+
+### Features
+
+* make taxonomy more robust ([#524](https://github.com/openfoodfacts/taxonomy-editor/issues/524)) ([49d8e46](https://github.com/openfoodfacts/taxonomy-editor/commit/49d8e46ea30d7c8ca6b6edc73842005603058d1e))
+
+## [1.0.2](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.1...v1.0.2) (2024-07-24)
+
+
+### Bug Fixes
+
+* add a space after line identifier ([#520](https://github.com/openfoodfacts/taxonomy-editor/issues/520)) ([51f7b43](https://github.com/openfoodfacts/taxonomy-editor/commit/51f7b43c73b7a1f8504ce203c98627583cb31097))
+* avoid altering original entries at parsing time ([#519](https://github.com/openfoodfacts/taxonomy-editor/issues/519)) ([5fbaba9](https://github.com/openfoodfacts/taxonomy-editor/commit/5fbaba991ad3d37ccd48ce22f19014ac9d418b4f))
+* less transformations on comment lines and others ([#523](https://github.com/openfoodfacts/taxonomy-editor/issues/523)) ([d366218](https://github.com/openfoodfacts/taxonomy-editor/commit/d3662181e139243c8c709dffbe48124bb100b7fa))
+
+## [1.0.1](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.0...v1.0.1) (2024-07-17)
+
+
+### Bug Fixes
+
+* avoid confusing language prefixes and property names ([#513](https://github.com/openfoodfacts/taxonomy-editor/issues/513)) ([e0053b6](https://github.com/openfoodfacts/taxonomy-editor/commit/e0053b6213b7f3584fcb860eb7f577baebb34520))
+* language order as we dump taxonomies ([#512](https://github.com/openfoodfacts/taxonomy-editor/issues/512)) ([2bc56e6](https://github.com/openfoodfacts/taxonomy-editor/commit/2bc56e621829dd1676660a1a6a4407c5e036eb40))
+
 ## 1.0.0 (2024-07-12)
 
 

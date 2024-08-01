@@ -71,8 +71,28 @@ def test_calling(neo4j):
         results = session.run(query)
         expected_stopwords = {
             "id": "stopwords:0",
-            "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test normalisation"],
-            "tags_ids_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test-normalisation"],
+            "tags_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test normalisation",
+            ],
+            "tags_ids_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test-normalisation",
+            ],
             "preceding_lines": [],
         }
         for result in results:
@@ -101,7 +121,7 @@ def test_calling(neo4j):
             {
                 "tags_en": ["meat"],
                 "tags_ids_en": ["meat"],
-                "preceding_lines": ["# meat", ""],
+                "preceding_lines": ["# meat ", ""],
                 "prop_vegan_en": "no",
                 "prop_carbon_footprint_fr_foodges_value_fr": "10",
             },
@@ -167,7 +187,12 @@ def test_calling(neo4j):
 def test_with_external_taxonomies(neo4j):
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
-        test_parser(TEST_TAXONOMY_TXT, [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT], "branch", "test")
+        test_parser(
+            TEST_TAXONOMY_TXT,
+            [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT],
+            "branch",
+            "test",
+        )
 
         # total number of nodes (TEXT, ENTRY, SYNONYMS, STOPWORDS) + 1 ERROR node
         query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
@@ -210,8 +235,28 @@ def test_with_external_taxonomies(neo4j):
         results = session.run(query)
         expected_stopwords = {
             "id": "stopwords:0",
-            "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test normalisation"],
-            "tags_ids_fr": ["aux", "au", "de", "le", "du", "la", "a", "et", "test-normalisation"],
+            "tags_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test normalisation",
+            ],
+            "tags_ids_fr": [
+                "aux",
+                "au",
+                "de",
+                "le",
+                "du",
+                "la",
+                "a",
+                "et",
+                "test-normalisation",
+            ],
             "preceding_lines": [],
         }
         for result in results:
@@ -240,7 +285,7 @@ def test_with_external_taxonomies(neo4j):
             {
                 "tags_en": ["meat"],
                 "tags_ids_en": ["meat"],
-                "preceding_lines": ["# meat", ""],
+                "preceding_lines": ["# meat ", ""],
                 "prop_vegan_en": "no",
                 "prop_carbon_footprint_fr_foodges_value_fr": "10",
             },
@@ -351,3 +396,55 @@ def test_error_log(neo4j, tmp_path, caplog):
         assert "duplicate id in file at line 12" in error
         assert "The two nodes will be merged, keeping the last" in error
         assert "values in case of conflicts." in error
+
+
+def test_properties_confused_lang(neo4j, tmp_path):
+    """Test that short property names don't get confused with language prefixes"""
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
+        fpath = str(
+            pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt"
+        )
+        test_parser(fpath, None, "branch", "test")
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:1-for-planet' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        # "web:en" was not confused with a language prefix "web:"
+        assert "prop_web_en" in node.keys()
+
+
+def test_comment_below_parent(neo4j, tmp_path):
+    """Test that if a comment is below a parent, it is not added to preceeding_lines"""
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
+        fpath = str(pathlib.Path(__file__).parent.parent / "data" / "test_comment_below_parent.txt")
+        test_parser(fpath, None, "branch", "test")
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:cow-milk' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert node["preceding_lines"] == ["# a comment above the parent"]
+        assert node["tags_en_comments"] == ["# a comment below the parent"]
+
+
+def test_broken_taxonomy(neo4j, tmp_path):
+    """Test that if some taxonomy lines are broken, we are able to parse it"""
+    with neo4j.session() as session:
+        test_parser = parser.Parser(session)
+        fpath = str(pathlib.Path(__file__).parent.parent / "data" / "test_broken_taxonomy.txt")
+        test_parser(fpath, None, "branch", "test")
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:milk' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert node["prop_okprop_en"] == "this is ok"
+        # isolated property
+        assert node["prop_another_en"] == "this is ok too"
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:cow-milk' RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert node
+        # errors are there
+        query = "MATCH (n:p_test_branch:ERRORS) RETURN n"
+        result = session.run(query)
+        node = result.value()[0]
+        assert len(node["errors"]) == 2
+        assert len(node["warnings"]) == 1

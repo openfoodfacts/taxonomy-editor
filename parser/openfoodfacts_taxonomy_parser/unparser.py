@@ -17,7 +17,8 @@ class WriteTaxonomy:
         this function use the relationships between nodes"""
         # This query first lists all the nodes in the "is_before" order
         # then for each node in the path, it finds its parents
-        # and finally it returns the node and its parents (the parents are ordered in the same order as in the original file)
+        # and finally it returns the node and its parents
+        # (the parents are ordered in the same order as in the original file)
         # Note: OPTIONAL MATCH is used to return nodes without parents
         query = f"""
             MATCH path = ShortestPath(
@@ -46,25 +47,40 @@ class WriteTaxonomy:
         for property in node:
             if property.startswith(key):
                 lc_list.append(property.split("_", dash_before_lc)[dash_before_lc])
-        lc_list.sort()
+        # we sort, but with a priority for xx and en language codes
+        priority = {"en": 1, "xx": 0}
+        lc_list.sort(key=lambda name: (priority.get(name[:2], 100), name))
         return lc_list
 
     def get_tags_line(self, node, lc):
         """return a string that should look like the original line"""
         line = (", ").join(node["tags_" + lc])
-        return lc + ":" + line
+        return lc + ": " + line
+
+    @staticmethod
+    def property_sort_key(property):
+        name, lang_code = property.rsplit("_", 1)
+        # give priority to xx and en language codes
+        priority = {"en": 1, "xx": 0}
+        return (name, priority.get(lang_code, 100), lang_code)
 
     def list_property_and_lc(self, node):
         """return an ordered list of properties with their language code (lc)"""
         # there is no rule for the order of properties
         # properties will be arranged in alphabetical order
-        return sorted([property[5:] for property in node if property.startswith("prop_") and not property.endswith("_comments")])
+        values = [
+            property[5:]
+            for property in node
+            if property.startswith("prop_") and not property.endswith("_comments")
+        ]
+        # note: using the fact that we are sure to find language code after the first underscore
+        return sorted(values, key=self.property_sort_key)
 
     def get_property_line(self, node, property):
         """return a string that should look like the original property line"""
         property_name, lc = property.rsplit("_", 1)
         property_value = node["prop_" + property]
-        line = property_name + ":" + lc + ":" + property_value
+        line = property_name + ":" + lc + ": " + property_value
         return line
 
     def get_parents_lines(self, parents):
@@ -72,7 +88,7 @@ class WriteTaxonomy:
             parent = dict(parent)
             lc = parent["main_language"]
             parent_id = parent["tags_" + lc][0]
-            yield "<" + lc + ":" + parent_id
+            yield "< " + lc + ":" + parent_id
 
     def iter_lines(self, project_label):
         previous_block_id = ""

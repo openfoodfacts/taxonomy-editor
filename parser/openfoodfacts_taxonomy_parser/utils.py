@@ -4,10 +4,20 @@ import unicodedata
 import unidecode
 
 
-def normalize_text(line: str, lang: str = "default", char: str = "-", stopwords: dict[str, list[str]] | None = None) -> str:
+def normalize_text(
+    line: str,
+    lang: str = "default",
+    char: str = "-",
+    stopwords: dict[str, list[str]] | None = None,
+) -> str:
     """Normalize a string depending on the language code"""
     if stopwords is None:
         stopwords = {}
+
+    # replace ’ (typographique quote) to simple quote '
+    line = line.replace("’", "'")
+    # removes parenthesis for roman numeral
+    line = re.sub(r"\(([ivx]+)\)", r"\1", line, flags=re.I)
 
     line = unicodedata.normalize("NFC", line)
 

@@ -34,7 +34,7 @@ const EntryTitle = ({ id }: { id: string }) => {
 
 const getTranslations = (
   tags: Record<string, string[]>,
-  shownLanguageCodes: string[]
+  shownLanguageCodes: string[],
 ) => {
   const result: string[] = [];
 
@@ -76,7 +76,7 @@ export const EntryNodesTableBody = ({
         localStorageShownLanguages = localStorageShownLanguages.filter(
           (item) => {
             return item === "xx" || ISO6391.validate(item);
-          }
+          },
         );
       } else {
         localStorageShownLanguages = [];

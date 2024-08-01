@@ -1,0 +1,23 @@
+# test a bug found with labels taxonomy
+
+stopwords:en:ingredients, agricultural, from, with, of, by, the, verified, certified, approved, 100%, pure, guaranty, guaranteed, product guaranteed, product certified, standard, during, period, phase, label, mark, logo
+
+en:1% for the planet, 1 percent for the planet, one percent for the planet
+bg:1% за планетата
+ca:1% pel planeta
+de:1% für den Planeten
+es:1% para el planeta, uno por ciento para el planeta
+fi:1% planeetalle, prosentti planeetalle
+fr:1% pour la planète
+it:1% per il pianeta
+nl:1% voor de planeet
+pt:1% para o planeta, 1 porcento para o planeta, 1 por cento para o planeta, um por cento para o planeta, um porcento para o planeta
+description:en:Commit to donating at least 1% of annual sales to environmental organizations.
+image:en:1-for-the-planet.75x90.png
+label_categories:en: en:Environnment
+web:en:https://www.onepercentfortheplanet.org/
+
+
+en:100% natural
+bg:100% натурално
+ca:100% natural

@@ -19,7 +19,7 @@ import type { OnCancel } from "./CancelablePromise";
 import type { OpenAPIConfig } from "./OpenAPI";
 
 export const isDefined = <T>(
-  value: T | null | undefined
+  value: T | null | undefined,
 ): value is Exclude<T, null | undefined> => {
   return value !== undefined && value !== null;
 };
@@ -116,7 +116,7 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
 };
 
 export const getFormData = (
-  options: ApiRequestOptions
+  options: ApiRequestOptions,
 ): FormData | undefined => {
   if (options.formData) {
     const formData = new FormData();
@@ -148,7 +148,7 @@ type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
 
 export const resolve = async <T>(
   options: ApiRequestOptions,
-  resolver?: T | Resolver<T>
+  resolver?: T | Resolver<T>,
 ): Promise<T | undefined> => {
   if (typeof resolver === "function") {
     return (resolver as Resolver<T>)(options);
@@ -159,7 +159,7 @@ export const resolve = async <T>(
 export const getHeaders = async (
   config: OpenAPIConfig,
   options: ApiRequestOptions,
-  formData?: FormData
+  formData?: FormData,
 ): Promise<Record<string, string>> => {
   const [token, username, password, additionalHeaders] = await Promise.all([
     resolve(options, config.TOKEN),
@@ -184,7 +184,7 @@ export const getHeaders = async (
         ...headers,
         [key]: String(value),
       }),
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
   if (isStringWithValue(token)) {
@@ -226,7 +226,7 @@ export const sendRequest = async <T>(
   formData: FormData | undefined,
   headers: Record<string, string>,
   onCancel: OnCancel,
-  axiosClient: AxiosInstance
+  axiosClient: AxiosInstance,
 ): Promise<AxiosResponse<T>> => {
   const source = axios.CancelToken.source();
 
@@ -254,7 +254,7 @@ export const sendRequest = async <T>(
 
 export const getResponseHeader = (
   response: AxiosResponse<any>,
-  responseHeader?: string
+  responseHeader?: string,
 ): string | undefined => {
   if (responseHeader) {
     const content = response.headers[responseHeader];
@@ -274,7 +274,7 @@ export const getResponseBody = (response: AxiosResponse<any>): any => {
 
 export const catchErrorCodes = (
   options: ApiRequestOptions,
-  result: ApiResult
+  result: ApiResult,
 ): void => {
   const errors: Record<number, string> = {
     400: "Bad Request",
@@ -306,7 +306,7 @@ export const catchErrorCodes = (
     throw new ApiError(
       options,
       result,
-      `Generic Error: status: ${errorStatus}; status text: ${errorStatusText}; body: ${errorBody}`
+      `Generic Error: status: ${errorStatus}; status text: ${errorStatusText}; body: ${errorBody}`,
     );
   }
 };
@@ -322,7 +322,7 @@ export const catchErrorCodes = (
 export const request = <T>(
   config: OpenAPIConfig,
   options: ApiRequestOptions,
-  axiosClient: AxiosInstance = axios
+  axiosClient: AxiosInstance = axios,
 ): CancelablePromise<T> => {
   return new CancelablePromise(async (resolve, reject, onCancel) => {
     try {
@@ -340,12 +340,12 @@ export const request = <T>(
           formData,
           headers,
           onCancel,
-          axiosClient
+          axiosClient,
         );
         const responseBody = getResponseBody(response);
         const responseHeader = getResponseHeader(
           response,
-          options.responseHeader
+          options.responseHeader,
         );
 
         const result: ApiResult = {

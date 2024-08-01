@@ -58,13 +58,13 @@ def test_round_trip(neo4j):
     for line in original_lines:
         # first tweak: spaces between stopwords
         if line.startswith("stopwords:fr: aux"):
-            line = "stopwords:fr:aux, au, de, le, du, la, a, et, test normalisation"
+            line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("<fr:yaourts fruit de la passion"):
-            line = "<en:Passion fruit yogurts"
-        # third tweak: removing unexisting parents
-        elif line.startswith("<en:milk"):
-            continue
+        elif line.startswith("< fr:yaourts fruit de la passion"):
+            line = "< en:Passion fruit yogurts"
+        # third tweak: commenting non existing parents
+        elif line.startswith("< en:milk"):
+            line = "# < en:milk"
         expected_lines.append(line)
 
     assert expected_lines == lines
@@ -103,13 +103,13 @@ def test_two_branch_round_trip(neo4j):
     for line in original_lines:
         # first tweak: spaces between stopwords
         if line.startswith("stopwords:fr: aux"):
-            line = "stopwords:fr:aux, au, de, le, du, la, a, et, test normalisation"
+            line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("<fr:yaourts fruit de la passion"):
-            line = "<en:Passion fruit yogurts"
-        # third tweak: removing unexisting parents
-        elif line.startswith("<en:milk"):
-            continue
+        elif line.startswith("< fr:yaourts fruit de la passion"):
+            line = "< en:Passion fruit yogurts"
+        # third tweak: commenting non existing parents
+        elif line.startswith("< en:milk"):
+            line = "# < en:milk"
         expected_lines.append(line)
 
     assert expected_lines == lines_branch1
@@ -122,7 +122,12 @@ def test_round_trip_with_external_taxonomies(neo4j):
         test_parser = parser.Parser(session)
 
         # parse taxonomy
-        test_parser(TEST_TAXONOMY_TXT, [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT], "branch", "test")
+        test_parser(
+            TEST_TAXONOMY_TXT,
+            [TEST_EXTERNAL_1_TXT, TEST_EXTERNAL_2_TXT],
+            "branch",
+            "test",
+        )
         # just quick check it runs ok with total number of nodes
         query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
         result = session.run(query)
@@ -139,10 +144,10 @@ def test_round_trip_with_external_taxonomies(neo4j):
     for line in original_lines:
         # first tweak: spaces between stopwords
         if line.startswith("stopwords:fr: aux"):
-            line = "stopwords:fr:aux, au, de, le, du, la, a, et, test normalisation"
+            line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("<fr:yaourts fruit de la passion"):
-            line = "<en:Passion fruit yogurts"
+        elif line.startswith("< fr:yaourts fruit de la passion"):
+            line = "< en:Passion fruit yogurts"
         expected_lines.append(line)
 
     assert expected_lines == lines
