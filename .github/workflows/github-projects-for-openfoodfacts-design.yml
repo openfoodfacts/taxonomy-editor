@@ -7,7 +7,7 @@ on:
 
 jobs:
   add-to-project:
-    name: 🎨 Add issue to the openfoodfacts-design project
+    name: Add issues to the 🎨 openfoodfacts-design or 📚 documentation project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/add-to-project@main
