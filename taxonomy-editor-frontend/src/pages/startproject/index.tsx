@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -22,16 +23,8 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
-function formatDate(date) {
-  const map = {
-    mm: ("0" + (date.getMonth() + 1)).slice(-2),
-    dd: ("0" + date.getDate()).slice(-2),
-    yy: ("0" + date.getFullYear()).slice(-2),
-    HH: ("0" + date.getHours()).slice(-2),
-    MinMin: ("0" + date.getMinutes()).slice(-2),
-  };
-
-  return `${map.mm}${map.dd}${map.yy}_${map.HH}_${map.MinMin}`;
+function formatDate(date: Date): string {
+  return format(date, "yyMMdd_HH_mm");
 }
 
 export const StartProject = () => {
