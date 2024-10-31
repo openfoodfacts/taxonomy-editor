@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.1.0...v1.2.0) (2024-10-31)
+
+
+### Features
+
+* wip on: ([b5bcefc](https://github.com/openfoodfacts/taxonomy-editor/commit/b5bcefc2a22d4f0257868db9f357a866aabe8f90))
+
 ## [1.1.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.2...v1.1.0) (2024-07-26)
 
 
