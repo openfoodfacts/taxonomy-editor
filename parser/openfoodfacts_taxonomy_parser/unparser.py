@@ -1,5 +1,3 @@
-"""This module takes a taxonomy from a Neo4j database and write it down as a text file"""
-
 import os
 import sys
 

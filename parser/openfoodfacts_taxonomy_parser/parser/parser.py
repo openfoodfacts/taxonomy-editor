@@ -34,8 +34,7 @@ class Parser:
         base_properties_query = """
             id: $id,
             preceding_lines: $preceding_lines,
-            src_position: $src_position,
-            src_lines: $src_lines
+            src_position: $src_position
         """
 
         properties_query = ",\n".join([base_properties_query, *node_tags_queries])
@@ -229,8 +228,7 @@ class Parser:
 
         self.parser_logger.info(f"Created indexes in {timeit.default_timer() - start_time} seconds")
 
-    def _write_nodes_to_db(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
-        """Create the taxonomy objects in the database: nodes and link between them"""
+    def _write_to_database(self, taxonomy: Taxonomy, taxonomy_name: str, branch_name: str):
         project_label = get_project_name(taxonomy_name, branch_name)
         # First create nodes,
         # then create node indexes to accelerate relationship creation,
@@ -240,16 +238,6 @@ class Parser:
         self._create_node_indexes(project_label)
         self._create_child_links(taxonomy.child_links, project_label)
         self._create_previous_links(taxonomy.previous_links, project_label)
-
-    def _add_text_to_project(self, filename: str, taxonomy_name: str, branch_name: str):
-        """Add file content to the db"""
-        project_label = get_project_name(taxonomy_name, branch_name)
-        query = f"""
-            MATCH (n:{project_label})
-            SET n.original_text = $original_text
-        """
-        params = {"original_text": open(filename, "r", encoding="utf-8").read()}
-        self.session.run(query, params)
 
     def __call__(
         self,
@@ -268,9 +256,8 @@ class Parser:
             taxonomy = taxonomy_parser.parse_file(
                 main_filename, external_filenames, self.parser_logger
             )
-            # add file content to the db
-            self._add_text_to_project(main_filename, taxonomy_name, branch_name)
-            self._write_nodes_to_db(taxonomy, taxonomy_name, branch_name)
+
+            self._write_to_database(taxonomy, taxonomy_name, branch_name)
 
             self.parser_logger.info(
                 f"Finished parsing {taxonomy_name} in {timeit.default_timer() - start_time} seconds"

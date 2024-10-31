@@ -184,7 +184,7 @@ async def find_all_nodes(response: Response, branch: str, taxonomy_name: str):
     Get all nodes within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    all_nodes = await taxonomy.get_all_nodes()
+    all_nodes = await taxonomy.get_all_nodes("")
     return all_nodes
 
 
