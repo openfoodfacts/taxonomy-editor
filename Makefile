@@ -177,11 +177,11 @@ config_quality: ## Run quality checks on configuration files
 
 tests: backend_tests ## Run all tests
 
-backend_tests: ## Run python tests
+backend_tests: ## Run python tests, you might provide additional arguments witr args="…"
 	@echo "🍜 Running python tests"
 	${DOCKER_COMPOSE_TEST} up -d neo4j
-	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /parser
-	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests
+	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /parser ${args}
+	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests ${args}
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
 checks: quality tests ## Run all checks (quality + tests)
