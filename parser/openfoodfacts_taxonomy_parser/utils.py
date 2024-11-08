@@ -62,3 +62,9 @@ def normalize_filename(filename: str) -> str:
 def get_project_name(taxonomy_name: str, branch_name: str) -> str:
     """Create a project name for given branch and taxonomy"""
     return "p_" + taxonomy_name + "_" + branch_name
+
+
+def src_lines(src_lines_str: list[str]):
+    for line in src_lines_str:
+        start, end = line.split(",")
+        yield int(start), int(end)

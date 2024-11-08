@@ -245,10 +245,15 @@ class Parser:
         """Add file content to the db"""
         project_label = get_project_name(taxonomy_name, branch_name)
         query = f"""
-            MATCH (n:{project_label})
+            MATCH (n:PROJECT)
+            WHERE n.branch_name = $branch_name AND n.taxonomy_name = $taxonomy_name
             SET n.original_text = $original_text
         """
-        params = {"original_text": open(filename, "r", encoding="utf-8").read()}
+        params = {
+            "branch_name": branch_name,
+            "taxonomy_name": taxonomy_name,
+            "original_text": open(filename, "r", encoding="utf-8").read(),
+        }
         self.session.run(query, params)
 
     def __call__(

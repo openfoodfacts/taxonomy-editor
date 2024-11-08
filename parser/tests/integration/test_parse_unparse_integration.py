@@ -1,8 +1,9 @@
+import datetime
 import pathlib
 
 import pytest
 
-from openfoodfacts_taxonomy_parser import parser, unparser
+from openfoodfacts_taxonomy_parser import parser, patcher, unparser
 
 # taxonomy in text format : test.txt
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -35,6 +36,14 @@ def test_setup(neo4j):
     neo4j.session().run(query2)
 
 
+def add_project_node(session, branch_name, taxonomy_name):
+    query = f"""CREATE (p:PROJECT)
+    SET p.branch_name = "{branch_name}"
+    SET p.taxonomy_name = "{taxonomy_name}"
+    """
+    session.run(query)
+
+
 def test_round_trip(neo4j):
     """test parsing and dumping back a taxonomy"""
     with neo4j.session() as session:
@@ -50,7 +59,7 @@ def test_round_trip(neo4j):
 
         # dump taxonomy back
         test_dumper = unparser.WriteTaxonomy(session)
-        lines = list(test_dumper.iter_lines("p_test_branch"))
+        lines = list(test_dumper.iter_lines("branch", "test"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
@@ -94,8 +103,8 @@ def test_two_branch_round_trip(neo4j):
 
         # dump taxonomy back
         test_dumper = unparser.WriteTaxonomy(session)
-        lines_branch1 = list(test_dumper.iter_lines("p_test_branch1"))
-        lines_branch2 = list(test_dumper.iter_lines("p_test_branch2"))
+        lines_branch1 = list(test_dumper.iter_lines("branch1", "test"))
+        lines_branch2 = list(test_dumper.iter_lines("branch2", "test"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
@@ -136,7 +145,7 @@ def test_round_trip_with_external_taxonomies(neo4j):
 
         # dump taxonomy back
         test_dumper = unparser.WriteTaxonomy(session)
-        lines = list(test_dumper.iter_lines("p_test_branch"))
+        lines = list(test_dumper.iter_lines("branch", "test"))
 
     original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
     # expected result is close to original file with a few tweaks
@@ -151,3 +160,108 @@ def test_round_trip_with_external_taxonomies(neo4j):
         expected_lines.append(line)
 
     assert expected_lines == lines
+
+
+def test_round_trip_patcher(neo4j):
+    """test parsing and dumping back a taxonomy"""
+    with neo4j.session() as session:
+        add_project_node(session, "branch", "test")
+        test_parser = parser.Parser(session)
+
+        # parse taxonomy
+        test_parser(TEST_TAXONOMY_TXT, None, "branch", "test")
+        # just quick check it runs ok with total number of nodes
+        query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
+        result = session.run(query)
+        number_of_nodes = result.value()[0]
+        assert number_of_nodes == 14
+
+        # dump taxonomy back
+        test_dumper = patcher.PatchTaxonomy(session)
+        lines = list(test_dumper.iter_lines("branch", "test"))
+
+    original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
+
+    # no tweak with patcher
+    assert original_lines == lines
+
+
+pytest.mark.skip(reason="not finished yet")
+
+
+def test_patcher_with_modifications(neo4j):
+    """test parsing, modifying and dumping back a taxonomy"""
+    with neo4j.session() as session:
+        add_project_node(session, "branch", "test")
+        test_parser = parser.Parser(session)
+
+        # parse taxonomy
+        test_parser(TEST_TAXONOMY_TXT, None, "branch", "test")
+
+        # make some modifications
+        modified = datetime.datetime.now().timestamp()
+        # modify entry yogourts
+        result = session.run(
+            f"""
+            MATCH (n:p_test_branch)
+            WHERE n.id = "en:yogurts"
+            SET n.tags_en = ["en:yogurts", "en:yogurt", "en:yooghurt"], n.modified = {modified}
+            RETURN n.id
+        """
+        )
+        assert result.values() == [["en:yogurts"]]
+        # remove a node parent
+        result = session.run(
+            f"""
+            MATCH (n:p_test_branch) - [r:is_child_of] -> (m:p_test_branch)
+            WHERE m.id = "en:yogurts" AND n.id = "en:banana-yogurts"
+            DELETE r
+            RETURN n.id, m.id
+        """
+        )
+        assert result.values() == [["en:yogurts", "en:banana-yogurts"]]
+        result = session.run(
+            f"""
+            MATCH (n:p_test_branch)
+            WHERE n.id = "en:banana-yogurts"
+            SET n.modified = {modified}
+            RETURN n.id
+        """
+        )
+        assert result.values() == [["en:banana-yogurts"]]
+        # delete an entry
+        result = session.run(
+            f"""
+            MATCH (n:p_test_branch) - [] - (m:p_test_branch)
+            WHERE m.id = "en:passion-fruit-yogurts"
+            DETACH DELETE m
+        """
+        )
+        assert result.values() == [1]
+        # TODO:
+        # add new entry with parents
+        # add new entry child of this one --> end of file
+        # add new entry without parents --> end of file
+        session.run(
+            f"""
+            MATCH (n:p_test_branch)
+            WHERE n.id = "en:yogurts"
+            SET n.tags_en = ["en:yogurts", "en:yogurt", "en:yooghurt"]
+            modified = {modified}
+        """
+        )
+
+        # just quick check it runs ok with total number of nodes
+        query = "MATCH (n:p_test_branch) RETURN COUNT(*)"
+        result = session.run(query)
+        number_of_nodes = result.value()[0]
+        assert number_of_nodes == 14
+
+        # dump taxonomy back
+        test_dumper = patcher.PatchTaxonomy(session)
+        lines = list(test_dumper.iter_lines("branch", "test"))
+
+    original_lines = [line.rstrip("\n") for line in open(TEST_TAXONOMY_TXT)]
+
+    # no tweak with patcher
+    assert original_lines == lines

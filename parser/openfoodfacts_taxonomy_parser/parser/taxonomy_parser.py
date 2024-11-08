@@ -27,9 +27,10 @@ class NodeData:
     preceding_lines: list[str] = field(default_factory=list)
     parent_tags: list[tuple[str, int]] = field(default_factory=list)
     src_position: int | None = None
-    # lines taken by this entry in the source file
-    # this can be more than (start, end) if we merged duplicates
-    src_lines: list[tuple[int, int]] | None = None
+    # lines taken by this entry in the source file,
+    # stored a "start,end" strings, because nested collections are not supported
+    # this can be more than )start, end) if we merged duplicates
+    src_lines: list[str] | None = None
     properties: dict[str, str] = field(default_factory=dict)
     tags: dict[str, list[str]] = field(default_factory=dict)
     comments: dict[str, list[str]] = field(default_factory=dict)
@@ -236,7 +237,7 @@ class TaxonomyParser:
 
     def finalize_data(self, data, comments, saved_nodes, line_number: int):
         data = self._remove_separating_line(data)
-        data.src_lines = [(data.src_position, line_number)]
+        data.src_lines = [f"{data.src_position},{line_number}"]
         if data.get_node_type() == NodeType.ENTRY:
             self._add_comments(data, comments, "end")
         if data.id in saved_nodes:
@@ -598,7 +599,7 @@ class TaxonomyParser:
                 id="__header__",
                 preceding_lines=harvested_header_data,
                 src_position=1,
-                src_lines=[(1, entries_start_line - 1)],
+                src_lines=[f"1,{entries_start_line - 1}"],
             )
         ]
         previous_links: list[PreviousLink] = []

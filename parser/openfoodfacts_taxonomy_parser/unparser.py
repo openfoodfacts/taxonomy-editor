@@ -22,6 +22,8 @@ class WriteTaxonomy:
         # and finally it returns the node and its parents
         # (the parents are ordered in the same order as in the original file)
         # Note: OPTIONAL MATCH is used to return nodes without parents
+        # Note that as we follow the is_before relation,
+        # we won't get removed nodes, as intended
         query = f"""
             MATCH path = ShortestPath(
                 (h:{project_label}:TEXT)-[:is_before*]->(f:{project_label}:TEXT)
@@ -92,11 +94,12 @@ class WriteTaxonomy:
             parent_id = parent["tags_" + lc][0]
             yield "< " + lc + ":" + parent_id
 
-    def iter_lines(self, project_label):
+    def iter_lines(self, branch_name, taxonomy_name):
+        project_label = get_project_name(taxonomy_name, branch_name)
         previous_block_id = ""
         for node, parents in self.get_all_nodes(project_label):
-            node = dict(node)
             has_content = node["id"] not in ["__header__", "__footer__"]
+            node = dict(node)
             # eventually add a blank line but in specific case
             following_synonyms = node["id"].startswith("synonyms") and previous_block_id.startswith(
                 "synonyms"
@@ -107,35 +110,39 @@ class WriteTaxonomy:
             add_blank = has_content and not (following_synonyms or following_stopwords)
             if add_blank:
                 yield ""
-            # comments
-            yield from node.get("preceding_lines", [])
-            if has_content:
-                tags_lc = self.list_tags_lc(node)
-                if node["id"].startswith("stopwords"):
-                    yield "stopwords:" + self.get_tags_line(node, tags_lc[0])
-                elif node["id"].startswith("synonyms"):
-                    yield "synonyms:" + self.get_tags_line(node, tags_lc[0])
-                else:
-                    # parents
-                    yield from node.get("parent_comments", [])
-                    yield from self.get_parents_lines(parents)
-                    # main language synonyms first
-                    main_language = node.pop("main_language")
-                    tags_lc.remove(main_language)
-                    yield from node.get("tags_" + main_language + "_comments", [])
-                    yield self.get_tags_line(node, main_language)
-                    # more synonyms after
-                    for lc in tags_lc:
-                        yield from node.get("tags_" + lc + "_comments", [])
-                        yield self.get_tags_line(node, lc)
-                    # properties
-                    properties_list = self.list_property_and_lc(node)
-                    for property in properties_list:
-                        yield from node.get("prop_" + property + "_comments", [])
-                        yield self.get_property_line(node, property)
-                    # final comments
-                    yield from node.get("end_comments", [])
+            yield from self.iter_node_lines(node, parents)
             previous_block_id = node["id"]
+
+    def iter_node_lines(self, node, parents):
+        has_content = node["id"] not in ["__header__", "__footer__"]
+        # comments
+        yield from node.get("preceding_lines", [])
+        if has_content:
+            tags_lc = self.list_tags_lc(node)
+            if node["id"].startswith("stopwords"):
+                yield "stopwords:" + self.get_tags_line(node, tags_lc[0])
+            elif node["id"].startswith("synonyms"):
+                yield "synonyms:" + self.get_tags_line(node, tags_lc[0])
+            else:
+                # parents
+                yield from node.get("parent_comments", [])
+                yield from self.get_parents_lines(parents)
+                # main language synonyms first
+                main_language = node.pop("main_language")
+                tags_lc.remove(main_language)
+                yield from node.get("tags_" + main_language + "_comments", [])
+                yield self.get_tags_line(node, main_language)
+                # more synonyms after
+                for lc in tags_lc:
+                    yield from node.get("tags_" + lc + "_comments", [])
+                    yield self.get_tags_line(node, lc)
+                # properties
+                properties_list = self.list_property_and_lc(node)
+                for property in properties_list:
+                    yield from node.get("prop_" + property + "_comments", [])
+                    yield self.get_property_line(node, property)
+                # final comments
+                yield from node.get("end_comments", [])
 
     def rewrite_file(self, filename, lines):
         """Write a .txt file with the given name"""
@@ -147,8 +154,7 @@ class WriteTaxonomy:
     def __call__(self, filename, branch_name, taxonomy_name):
         filename = normalize_filename(filename)
         branch_name = normalize_text(branch_name, char="_")
-        project_label = get_project_name(taxonomy_name, branch_name)
-        lines = self.iter_lines(project_label)
+        lines = self.iter_lines(branch_name, taxonomy_name)
         self.rewrite_file(filename, lines)
 
 
