@@ -3,6 +3,7 @@ Database helper functions for API
 """
 
 import asyncio
+import datetime
 import logging
 import shutil
 import tempfile
@@ -32,7 +33,7 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
-from .models.node_models import EntryNode, EntryNodeCreate
+from .models.node_models import EntryNode, EntryNodeCreate, NodeType
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
 from .settings import EXTERNAL_TAXONOMIES
 

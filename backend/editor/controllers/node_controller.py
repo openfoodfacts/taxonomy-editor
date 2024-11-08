@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
@@ -38,7 +39,7 @@ async def create_entry_node(
         "id": language_code + ":" + normalized_name,
         f"tags_{language_code}": [name],
         f"tags_ids_{language_code}": [normalized_name],
-        f"modified": datetime.datetime.now().timestamp(),
+        "modified": datetime.datetime.now().timestamp(),
     }
     params = {"entry_node": entry_node_data}
 
