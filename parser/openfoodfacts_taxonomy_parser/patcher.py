@@ -12,10 +12,13 @@ class PatchTaxonomy(WriteTaxonomy):
     only modifying lines corresponding to nodes that where modified or added
     """
 
+    def is_removed(self, node):
+        return any(label.startswith("REMOVED") for label in node.labels)
+
     def get_all_nodes(self, project_label):
         """Get modified and removed nodes, in the start line  order"""
         query = f"""
-            MATCH (n:{project_label})
+            MATCH (n:({project_label}|REMOVED_{project_label}))
             WHERE
                 // no external node
                 n.is_external = false
@@ -50,27 +53,30 @@ class PatchTaxonomy(WriteTaxonomy):
             return result.values()[0]
 
     def iter_lines(self, branch_name, taxonomy_name):
-        nodes_by_lines = self.nodes_by_lines(branch_name, taxonomy_name)
-        # get lines to replace and put them in a dict with the line number
         original_text = self.get_original_text(branch_name, taxonomy_name)
+        # get lines to replace and put them in a dict with the line number
         nodes_by_lines = self.nodes_by_lines(branch_name, taxonomy_name)
         # get lines to skip in original text
         skip_lines = {
             num_line
             for node, _ in nodes_by_lines.values()
-            for start, end in src_lines(node.src_lines)
-            for num_line in range(start, end)
+            for start, end in src_lines(node["src_lines"])
+            # line 1 is 1, not 0, so slide of 1, and put every lines
+            # we also add the following blank line in case of removed item
+            for num_line in range(start - 1, end + (1 if self.is_removed(node) else 0))
         }
         previous_line = None
+        node = None
         for line_num, line in enumerate(original_text.split("\n")):
-            if line_num in nodes_by_lines and not node.labels.startswith("REMOVED"):
-                if previous_line != "":
-                    # we need a blank line between 2 nodes
-                    yield ""
+            if line_num in nodes_by_lines:
                 node, parents = nodes_by_lines.pop(line_num)
-                node_lines = list(self.iter_node_lines(dict(node), parents))
-                yield from lines
-                previous_line = lines[-1]
+                if not self.is_removed(node):
+                    node_lines = list(self.iter_node_lines(dict(node), parents))
+                    if previous_line != "":
+                        # we need a blank line between 2 nodes
+                        yield ""
+                    yield from node_lines
+                    previous_line = node_lines[-1]
             # this is not a elif, because previous entry might not replace content (new entry)
             if line_num in skip_lines:
                 continue
@@ -91,14 +97,14 @@ class PatchTaxonomy(WriteTaxonomy):
         nodes_by_lines = {}
         new_lines = -1  # we will use negative positions to add new nodes at the end
         for node, parents in self.get_all_nodes(project_label):
-            node_position = node.src_position
+            node_position = node["src_position"]
             if not node_position:
                 # this is a new node
                 # we try to add it nearby it's latest parent, if it's not possible, we add it at the end
-                parents_with_position = filter(lambda x: x.src_position is not None, parents)
-                parents_positions = sorted(parents_with_position, key=lambda x: x.src_position)
+                parents_with_position = filter(lambda x: x["src_position"] is not None, parents)
+                parents_positions = sorted(parents_with_position, key=lambda x: x["src_position"])
                 if parents_positions:
-                    node_position = int(parents_positions[-1].src_lines[-1][-1].split(",")[-1])
+                    node_position = int(parents_positions[-1]["src_lines"][-1][-1].split(",")[-1])
                 else:
                     node_position = new_lines
                     new_lines -= 1

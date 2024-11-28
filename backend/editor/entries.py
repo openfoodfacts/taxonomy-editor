@@ -397,8 +397,9 @@ class TaxonomyGraph:
         Helper function used for deleting a node with given id and label
 
         We don't really delete it because we have to keep track of modified nodes.
-        We set the entry type lable to REMOVED_<label>
+        We set the entry type label to REMOVED_<label>
         """
+        modified = datetime.datetime.now().timestamp()
         # Remove node from is_before relation and attach node previous node to next node
         query = f"""
             // Find node to be deleted using node ID
@@ -410,11 +411,27 @@ class TaxonomyGraph:
             // Rebuild relationships after deletion
             CREATE (previous_node)-[:is_before]->(next_node)
         """
+        await get_current_transaction().run(query, {"id": entry})
+        # transfert child parent relations, and mark child nodes as modified
+        query = f"""
+            // Find relations to be removed using node ID
+            MATCH (child_node)-[:is_child_of]->(deleted_node:{self.project_name}:{label})
+                WHERE deleted_node.id = $id
+            MATCH (deleted_node)-[:is_child_of]->(parent_node)
+            DETACH (deleted_node)
+            // transfer child
+            CREATE (child_node) -[:is_child_of]->(parent_node)
+            // mark modified
+            SET child_node.modified = $modified
+        """
+        await get_current_transaction().run(query, {"id": entry, "modified": modified})
         # change label of node to be deleted
         query = f"""
             MATCH (deleted_node:{self.project_name}:{label}) WHERE deleted_node.id = $id
             REMOVE deleted_node:{label}
             SET deleted_node:REMOVED_{label}
+            // and mark modification date also
+            SET deleted_node.modified = $modified
         """
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)

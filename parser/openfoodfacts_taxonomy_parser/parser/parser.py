@@ -84,6 +84,7 @@ class Parser:
             id: entry_node.id,
             preceding_lines: entry_node.preceding_lines,
             src_position: entry_node.src_position,
+            src_lines: entry_node.src_lines,
             main_language: entry_node.main_language,
             is_external: entry_node.is_external,
             original_taxonomy: entry_node.original_taxonomy
