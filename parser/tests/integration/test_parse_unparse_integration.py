@@ -258,14 +258,72 @@ def test_patcher_with_modifications(neo4j):
         assert result.values() == [["en:passion-fruit-yogurts"]] * 4
         assert result._metadata['stats'] == {'contains-updates': True, 'relationships-deleted': 4, 'labels-added': 1, 'labels-removed': 1, 'properties-set': 4}
         # TODO:
-        # add new entry with parents
+        # add new entry with a parent inside the file
+        result = session.run(f"""
+            CREATE (n:p_test_branch:ENTRY {{
+            id: "en:smashed-banana-yogurts",
+            // preceding_lines: null,
+            // src_position: null,
+            // src_lines: null,
+            is_external: false,
+            main_language: "en",
+            tags_en: ["smashed banana yogurts", "squashed banana yogurts"],
+            tags_ids_en: ["smashed-banana-yogurts", "squashed-banana-yogurts"],
+            tags_fr: ["yaourts à la banane écrasée"],
+            tags_ids_fr: ["yaourts-banane-ecrase"],
+            modified: {modified}
+            }})
+            WITH n
+            MATCH (m:p_test_branch)
+            WHERE m.id = "en:banana-yogurts"
+            CREATE (n) - [:is_child_of {{position: 1}}] -> (m)
+            RETURN n.id, m.id
+        """)
+        assert result.values() == [["en:smashed-banana-yogurts", "en:banana-yogurts"]]
         # add new entry child of this one --> end of file
+        result = session.run(f"""
+            CREATE (n:p_test_branch:ENTRY {{
+            id: "en:smashed-green-banana-yogurts",
+            // preceding_lines: null,
+            // src_position: null,
+            // src_lines: null,
+            is_external: false,
+            main_language: "en",
+            tags_en: ["smashed green banana yogurts"],
+            tags_ids_en: ["smashed-green-banana-yogurts"],
+            modified: {modified}
+            }})
+            WITH n
+            MATCH (m:p_test_branch)
+            WHERE m.id = "en:smashed-banana-yogurts"
+            CREATE (n) - [:is_child_of {{position: 1}}] -> (m)
+            RETURN n.id, m.id
+        """)
+        assert result.values() == [["en:smashed-green-banana-yogurts", "en:smashed-banana-yogurts"]]
         # add new entry without parents --> end of file
+        result = session.run(f"""
+            CREATE (n:p_test_branch:ENTRY {{
+            id: "en:cookies",
+            // preceding_lines: null,
+            // src_position: null,
+            // src_lines: null,
+            is_external: false,
+            main_language: "en",
+            tags_en: ["Cookies"],
+            tags_ids_en: ["cookies"],
+            tags_fr: ["Gateaux", "Petits gateaux", "Biscuits"],
+            tags_ids_fr: ["gateaux", "petits-gateaux", "biscuits"],
+            prop_vegan_en: "maybe",
+            modified: {modified}
+            }})
+            RETURN n.id
+        """)
+        assert result.values() == [["en:cookies"]]
 
         # just quick check it runs ok with total number of nodes
         result = session.run("MATCH (n:p_test_branch) RETURN COUNT(*)")
         number_of_nodes = result.value()[0]
-        assert number_of_nodes == 13
+        assert number_of_nodes == 16
         result = session.run("MATCH (n:REMOVED_p_test_branch) RETURN COUNT(*)")
         number_of_nodes = result.value()[0]
         assert number_of_nodes == 1
@@ -279,6 +337,7 @@ def test_patcher_with_modifications(neo4j):
     # expected result is close to original file with a few tweaks
     expected_lines = []
     for num, (line, next_line) in enumerate(zip(original_lines, original_lines[1:] + [None])):
+        more_lines = []
         # changed parent
         if line.startswith("< fr:yaourts fruit de la passion"):
             line = "< en:yogurts"
@@ -294,5 +353,25 @@ def test_patcher_with_modifications(neo4j):
         # commenting non existing parents
         elif line.startswith("< en:milk"):
             line = "# < en:milk"
+        elif line.startswith("fr: yaourts à la banane"):
+            # added entry under this parent
+            more_lines = [
+                '',
+                '< en:banana yogurts',
+                'en: smashed banana yogurts, squashed banana yogurts',
+                'fr: yaourts à la banane écrasée',
+            ]
         expected_lines.append(line)
+        expected_lines.extend(more_lines)
+    # added lines
+    expected_lines.extend([
+        '',
+        '< en:smashed banana yogurts',
+        'en: smashed green banana yogurts',
+        '',
+        'en: Cookies',
+        'fr: Gateaux, Petits gateaux, Biscuits',
+        'vegan:en: maybe',
+        ''
+    ])
     assert expected_lines == lines

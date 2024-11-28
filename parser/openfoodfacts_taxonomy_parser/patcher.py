@@ -24,9 +24,7 @@ class PatchTaxonomy(WriteTaxonomy):
                 n.is_external = false
                 AND (
                     // modified nodes
-                    ((n:TEXT OR n:SYNONYMS OR n:STOPWORDS OR n:ENTRY) AND n.modified IS NOT NULL) OR
-                    // removed nodes
-                    (n:REMOVED_TEXT OR n:REMOVED_SYNONYMS OR n:REMOVED_STOPWORDS OR n:REMOVED_ENTRY)
+                    ((n:TEXT OR n:SYNONYMS OR n:STOPWORDS OR n:ENTRY) AND n.modified IS NOT NULL)
                 )
             // optional match for node might not have parents
             OPTIONAL
@@ -60,6 +58,8 @@ class PatchTaxonomy(WriteTaxonomy):
         skip_lines = {
             num_line
             for node, _ in nodes_by_lines.values()
+            # note that for new nodes src_lines
+            # is empty and that's what we want (no line to skip)
             for start, end in src_lines(node["src_lines"])
             # line 1 is 1, not 0, so slide of 1, and put every lines
             # we also add the following blank line in case of removed item
@@ -104,7 +104,7 @@ class PatchTaxonomy(WriteTaxonomy):
                 parents_with_position = filter(lambda x: x["src_position"] is not None, parents)
                 parents_positions = sorted(parents_with_position, key=lambda x: x["src_position"])
                 if parents_positions:
-                    node_position = int(parents_positions[-1]["src_lines"][-1][-1].split(",")[-1])
+                    node_position = int(parents_positions[-1]["src_lines"][-1].split(",")[-1])
                 else:
                     node_position = new_lines
                     new_lines -= 1
