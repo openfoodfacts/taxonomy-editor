@@ -39,7 +39,7 @@ class PatchTaxonomy(WriteTaxonomy):
 
     def get_original_text(self, branch_name, taxonomy_name):
         """Get the original text of the taxonomy"""
-        query = f"""
+        query = """
             MATCH (n:PROJECT)
             WHERE n.branch_name = $branch_name AND n.taxonomy_name = $taxonomy_name
             RETURN n.original_text
@@ -100,7 +100,8 @@ class PatchTaxonomy(WriteTaxonomy):
             node_position = node["src_position"]
             if not node_position:
                 # this is a new node
-                # we try to add it nearby it's latest parent, if it's not possible, we add it at the end
+                # we try to add it nearby it's latest parent,
+                # if it's not possible, we add it at the end
                 parents_with_position = filter(lambda x: x["src_position"] is not None, parents)
                 parents_positions = sorted(parents_with_position, key=lambda x: x["src_position"])
                 if parents_positions:

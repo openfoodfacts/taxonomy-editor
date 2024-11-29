@@ -244,8 +244,7 @@ class Parser:
 
     def _add_text_to_project(self, filename: str, taxonomy_name: str, branch_name: str):
         """Add file content to the db"""
-        project_label = get_project_name(taxonomy_name, branch_name)
-        query = f"""
+        query = """
             MATCH (n:PROJECT)
             WHERE n.branch_name = $branch_name AND n.taxonomy_name = $taxonomy_name
             SET n.original_text = $original_text
