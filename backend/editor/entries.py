@@ -550,7 +550,7 @@ class TaxonomyGraph:
         query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
 
         modified = datetime.datetime.now().timestamp()
-        query.append(f"""\nSET n.modified * ${modified}""")
+        query.append(f"""\nSET n.modified = {modified}""")
 
         # Delete keys removed by user
         deleted_keys = (
@@ -591,7 +591,7 @@ class TaxonomyGraph:
         modified = datetime.datetime.now().timestamp()
         # Parse node ids from Neo4j Record object
         current_children = [record["child.id"] for record in list(await self.get_children(entry))]
-        deleted_children = set(current_children) - set(new_children_ids)
+        deleted_children = list(set(current_children) - set(new_children_ids))
         added_children = set(new_children_ids) - set(current_children)
 
         # Delete relationships
