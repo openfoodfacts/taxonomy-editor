@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate} from "react-router-dom";
 import {
   Typography,
   Box,
@@ -40,6 +39,7 @@ export const StartProject = () => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
   const navigate = useNavigate();
 
   const findDefaultBranchName = useCallback(() => {
@@ -49,11 +49,34 @@ export const StartProject = () => {
       .toLowerCase();
   }, [ownerName, taxonomyName]);
 
+  
   const [branchName, setBranchName] = useState(findDefaultBranchName());
-
+  
   useEffect(() => {
     setBranchName(findDefaultBranchName());
   }, [ownerName, taxonomyName, findDefaultBranchName]);
+  
+  // Function to check if form is dirty
+  const isFormDirty = () => {
+    return taxonomyName.length > 0 || ownerName.length > 0 || description.length > 0;
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if(taxonomyName || ownerName || branchName || description) { // Show warning only if the form is dirty
+        console.log("event warning back triggered");
+        event.preventDefault();
+        event.returnValue =
+          "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isFormDirty, taxonomyName, ownerName, branchName, description]);
 
   const handleSubmit = () => {
     if (!taxonomyName || !branchName || !ownerName) return;
@@ -88,13 +111,17 @@ export const StartProject = () => {
 
   const isInvalidBranchName = branchNameRegEx.test(branchName);
 
-  const isOwnerNameInvalid = (name: string) => {
+  const isOwnerNameInvalid = (name) => {
     if (name === "") return false;
     const pattern = /^[a-zA-Z0-9 _-]+$/;
     if (!pattern.test(name)) {
       return true;
     }
     return false;
+  };
+
+  const handleFieldChange = (setter) => (event) => {
+    setter(event.target.value);
   };
 
   return (
@@ -122,7 +149,7 @@ export const StartProject = () => {
                 id="taxonomy-name"
                 value={taxonomyName}
                 label="Taxonomy"
-                onChange={(event) => setTaxonomyName(event.target.value)}
+                onChange={handleFieldChange(setTaxonomyName)}
               >
                 {TAXONOMY_NAMES.map((taxonomyItem) => (
                   <MenuItem value={taxonomyItem} key={taxonomyItem}>
@@ -141,9 +168,7 @@ export const StartProject = () => {
             }
             size="small"
             sx={{ width: 265, mt: 2 }}
-            onChange={(event) => {
-              setOwnerName(event.target.value);
-            }}
+            onChange={handleFieldChange(setOwnerName)}
             value={ownerName}
             variant="outlined"
             label="Your Name"
@@ -165,9 +190,7 @@ export const StartProject = () => {
             }
             size="small"
             sx={{ width: 265, mt: 2 }}
-            onChange={(event) => {
-              setBranchName(event.target.value);
-            }}
+            onChange={handleFieldChange(setBranchName)}
             value={branchName}
             variant="outlined"
             label="Branch Name"
@@ -178,9 +201,7 @@ export const StartProject = () => {
             sx={{ width: 265, mt: 2 }}
             minRows={4}
             multiline
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
+            onChange={handleFieldChange(setDescription)}
             value={description}
             variant="outlined"
             label="Description"
