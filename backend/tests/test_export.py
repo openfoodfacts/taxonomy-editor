@@ -37,13 +37,14 @@ async def test_taxonomy(database_lifespan):
         await background_tasks.run()
         async with graph_db.TransactionCtx() as session:
             # clone template project as test project
-            await project_controller.clone_project("test", "template", "branch")
-    return TaxonomyGraph("test", "branch")
+            await project_controller.clone_project("template", "test", "branch")
+    return TaxonomyGraph("branch", "test")
 
 
 @pytest.mark.anyio
 async def test_no_modification(test_taxonomy):
     background_tasks = FakeBackgroundTask()
-    file_path = await test_taxonomy.dump_taxonomy(background_tasks)
+    file_path = test_taxonomy.dump_taxonomy(background_tasks)
     assert open(file_path).read() == open("tests/data/test.txt").read()
+    # clean files
     background_tasks.run()
