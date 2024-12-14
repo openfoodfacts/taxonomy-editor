@@ -8,6 +8,7 @@ import logging
 import shutil
 import tempfile
 import urllib.request  # Sending requests
+from typing import Optional
 
 from fastapi import BackgroundTasks, HTTPException, UploadFile
 
@@ -15,11 +16,12 @@ from fastapi import BackgroundTasks, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
+from openfoodfacts_taxonomy_parser import patcher
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from . import settings, utils
 from .controllers.node_controller import create_entry_node, get_error_node
-from .controllers.project_controller import create_project, edit_project, get_project
+from .controllers.project_controller import get_project_id, create_project, edit_project, get_project
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
@@ -50,7 +52,7 @@ class TaxonomyGraph:
     def __init__(self, branch_name, taxonomy_name):
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
-        self.project_name = "p_" + taxonomy_name + "_" + branch_name
+        self.project_name = get_project_id(branch_name, taxonomy_name)
 
     def taxonomy_path_in_repository(self, taxonomy_name):
         return utils.taxonomy_path_in_repository(taxonomy_name)
@@ -200,18 +202,18 @@ class TaxonomyGraph:
         background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
         return True
 
-    def dump_taxonomy(self, background_tasks: BackgroundTasks):
+    def dump_taxonomy(self, background_tasks: BackgroundTasks, dump_cls: unparser.WriteTaxonomy=patcher.PatchTaxonomy):
         """
         Helper function to create the txt file of a taxonomy
         """
         # Create unparser object and pass a sync session to it
         with SyncTransactionCtx() as session:
-            unparser_object = unparser.WriteTaxonomy(session)
+            dumper = dump_cls(session)
             # Creates a unique file for dumping the taxonomy
             filename = self.project_name + ".txt"
             try:
                 # Dump taxonomy with given file name and branch name
-                unparser_object(filename, self.branch_name, self.taxonomy_name)
+                dumper(filename, self.branch_name, self.taxonomy_name)
                 # Program file removal in the background
                 background_tasks.add_task(utils.file_cleanup, filename)
                 return filename
@@ -436,13 +438,15 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def get_all_nodes(self, label):
+    async def get_all_nodes(self, label: Optional[str]=None, removed: bool=False):
         """
         Helper function used for getting all nodes with/without given label
         """
-        qualifier = f"{label}" if label else "|".join(label.value for label in NodeType)
+        labels = [label] if label else [label.value for label in NodeType]
+        if removed:
+            labels = [f"REMOVED_{label}" for label in labels]
         query = f"""
-            MATCH (n:{self.project_name}:{qualifier}) RETURN n
+            MATCH (n:{self.project_name}:{"|".join(labels)}) RETURN n
         """
         result = await get_current_transaction().run(query)
         return await async_list(result)

@@ -22,6 +22,8 @@ services:
       - ./parser:/parser
       # for linting / checks purpose
       - ./backend/pyproject.toml:/code/pyproject.toml
+      - ./backend/poetry.toml:/code/poetry.toml
+      - ./backend/poetry.lock:/code/poetry.lock
       - ./backend/setup.cfg:/code/setup.cfg
     # uvicorn with live reload
     command:

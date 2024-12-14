@@ -395,7 +395,7 @@ async def upload_taxonomy(
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique(from_github=False):
@@ -467,5 +467,5 @@ async def delete_project(branch: str, taxonomy_name: str):
     """
     Delete a project
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    await project_controller.delete_project(taxonomy.project_name)
+    project_id = project_controller.get_project_id(branch, taxonomy_name)
+    await project_controller.delete_project(project_id)

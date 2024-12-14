@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 async def delete_project_nodes(project_id: str):
     """
     Remove all nodes for project.
-    This includes entries, stopwords, synonyms and errors
+    This includes entries, stopwords, synonyms, errors and removed entries
     """
 
     query = f"""
