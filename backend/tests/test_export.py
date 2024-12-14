@@ -24,20 +24,21 @@ async def test_taxonomy(database_lifespan):
     from .utils import clean_neo4j_db
     # TEMPORARY
     await clean_neo4j_db(database_lifespan)
-    async with graph_db.TransactionCtx() as session:
-        # clean the test project
-        await project_controller.delete_project("p_test_branch")
-        taxonomy = TaxonomyGraph("template", "test")
-        import pdb;pdb.set_trace();
-        if not await taxonomy.does_project_exist():
-            with open("tests/data/test.txt", "r") as test_file:
+    with open("tests/data/test.txt", "rb") as test_file:
+        async with graph_db.TransactionCtx() as session:
+            # clean the test project
+            await project_controller.delete_project("p_test_branch")
+            taxonomy = TaxonomyGraph("template", "test")
+            if not await taxonomy.does_project_exist():
                 # if the template project is not there, we create it
                 background_tasks = FakeBackgroundTask()
-                await taxonomy.import_taxonomy("test taxonomy", "unknown", background_tasks, UploadFile(file=test_file))
-                await background_tasks.run()
-        # clone template project as test project
-        await project_controller.clone_project("test", "template", "branch")
-        return TaxonomyGraph("test", "branch")
+                await taxonomy.import_taxonomy("test taxonomy", "unknown", background_tasks, UploadFile(file=test_file, filename="test.txt"))
+        # this runs in its own transaction
+        await background_tasks.run()
+        async with graph_db.TransactionCtx() as session:
+            # clone template project as test project
+            await project_controller.clone_project("test", "template", "branch")
+    return TaxonomyGraph("test", "branch")
 
 
 @pytest.mark.anyio
