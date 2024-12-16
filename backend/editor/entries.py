@@ -57,18 +57,18 @@ class TaxonomyGraph:
     def taxonomy_path_in_repository(self, taxonomy_name):
         return utils.taxonomy_path_in_repository(taxonomy_name)
 
-    def get_label(self, id):
+    def get_label(self, id) -> NodeType:
         """
         Helper function for getting the label for a given id
         """
         if id.startswith("stopword"):
-            return "STOPWORDS"
+            return NodeType.STOPWORDS
         elif id.startswith("synonym"):
-            return "SYNONYMS"
+            return NodeType.SYNONYMS
         elif id.startswith("__header__") or id.startswith("__footer__"):
-            return "TEXT"
+            return NodeType.TEXT
         else:
-            return "ENTRY"
+            return NodeType.ENTRY
 
     async def create_entry_node(self, name, main_language_code) -> str:
         """
@@ -343,7 +343,7 @@ class TaxonomyGraph:
 
         return [item async for result_list in query_result for item in result_list]
 
-    async def add_node_to_end(self, label, entry):
+    async def add_node_to_end(self, label: NodeType, entry):
         """
         Helper function which adds an a newly created node to end of taxonomy
         """
@@ -360,8 +360,8 @@ class TaxonomyGraph:
         # Rebuild relationships by inserting incoming node at the end
         query = []
         query = f"""
-            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
-            MATCH (last_node:{self.project_name}:{end_node_label}) WHERE last_node.id = $endnodeid
+            MATCH (new_node:{self.project_name}:{label.value}) WHERE new_node.id = $id
+            MATCH (last_node:{self.project_name}:{end_node_label.value}) WHERE last_node.id = $endnodeid
             MATCH (footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__"
             CREATE (last_node)-[:is_before]->(new_node)
             CREATE (new_node)-[:is_before]->(footer)
@@ -369,7 +369,7 @@ class TaxonomyGraph:
         await get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
 
     # UNUSED FOR NOW
-    async def add_node_to_beginning(self, label, entry):
+    async def add_node_to_beginning(self, label: NodeType, entry):
         """
         Helper function which adds an existing node to beginning of taxonomy
         """
@@ -385,8 +385,8 @@ class TaxonomyGraph:
 
         # Rebuild relationships by inserting incoming node at the beginning
         query = f"""
-            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
-            MATCH (first_node:{self.project_name}:{start_node_label})
+            MATCH (new_node:{self.project_name}:{label.value}) WHERE new_node.id = $id
+            MATCH (first_node:{self.project_name}:{start_node_label.value})
                 WHERE first_node.id = $startnodeid
             MATCH (header:{self.project_name}:TEXT) WHERE header.id = "__header__"
             CREATE (new_node)-[:is_before]->(first_node)
@@ -394,7 +394,7 @@ class TaxonomyGraph:
         """
         await get_current_transaction().run(query, {"id": entry, "startnodeid": start_node["id"]})
 
-    async def delete_node(self, label, entry):
+    async def delete_node(self, label: NodeType, entry):
         """
         Helper function used for deleting a node with given id and label
 
@@ -405,7 +405,7 @@ class TaxonomyGraph:
         # Remove node from is_before relation and attach node previous node to next node
         query = f"""
             // Find node to be deleted using node ID
-            MATCH (deleted_node:{self.project_name}:{label})-[:is_before]->(next_node)
+            MATCH (deleted_node:{self.project_name}:{label.value})-[:is_before]->(next_node)
                 WHERE deleted_node.id = $id
             MATCH (previous_node)-[:is_before]->(deleted_node)
             // Remove node
@@ -417,7 +417,7 @@ class TaxonomyGraph:
         # transfert child parent relations, and mark child nodes as modified
         query = f"""
             // Find relations to be removed using node ID
-            MATCH (child_node)-[:is_child_of]->(deleted_node:{self.project_name}:{label})
+            MATCH (child_node)-[:is_child_of]->(deleted_node:{self.project_name}:{label.value})
                 WHERE deleted_node.id = $id
             MATCH (deleted_node)-[:is_child_of]->(parent_node)
             DETACH (deleted_node)
@@ -429,20 +429,21 @@ class TaxonomyGraph:
         await get_current_transaction().run(query, {"id": entry, "modified": modified})
         # change label of node to be deleted
         query = f"""
-            MATCH (deleted_node:{self.project_name}:{label}) WHERE deleted_node.id = $id
-            REMOVE deleted_node:{label}
-            SET deleted_node:REMOVED_{label}
+            MATCH (deleted_node:{self.project_name}:{label.value})
+            WHERE deleted_node.id = $id
+            REMOVE deleted_node:{label.value}
+            SET deleted_node:REMOVED_{label.value}
             // and mark modification date also
             SET deleted_node.modified = $modified
         """
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def get_all_nodes(self, label: Optional[str]=None, removed: bool=False):
+    async def get_all_nodes(self, label: Optional[NodeType]=None, removed: bool=False):
         """
         Helper function used for getting all nodes with/without given label
         """
-        labels = [label] if label else [label.value for label in NodeType]
+        labels = [label.value] if label else [label.value for label in NodeType]
         if removed:
             labels = [f"REMOVED_{label}" for label in labels]
         query = f"""
@@ -481,12 +482,12 @@ class TaxonomyGraph:
         error_node = (await result.data())[0]["error_node"]
         return error_node
 
-    async def get_nodes(self, label, entry):
+    async def get_nodes(self, label: NodeType, entry):
         """
         Helper function used for getting the node with given id and label
         """
         query = f"""
-            MATCH (n:{self.project_name}:{label}) WHERE n.id = $id
+            MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $id
             RETURN n
         """
         result = await get_current_transaction().run(query, {"id": entry})
@@ -538,7 +539,7 @@ class TaxonomyGraph:
         }
         return stopwords_dict
 
-    async def update_node(self, label, new_node: EntryNode):
+    async def update_node(self, label: NodeType, new_node: EntryNode):
         """
         Helper function used for updation of node with given id and label
         """
@@ -551,7 +552,7 @@ class TaxonomyGraph:
         new_node.recompute_tags_ids(stopwords)
 
         # Build query
-        query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
+        query = [f"""MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $id """]
 
         modified = datetime.datetime.now().timestamp()
         query.append(f"""\nSET n.modified = {modified}""")
@@ -636,7 +637,7 @@ class TaxonomyGraph:
             created_child_ids.append(created_node_id)
 
             # TODO: We would prefer to add the node just after its parent entry
-            await self.add_node_to_end("ENTRY", created_node_id)
+            await self.add_node_to_end(NodeType.ENTRY, created_node_id)
 
         # Stores result of last query executed
         result = []
