@@ -148,8 +148,12 @@ class WriteTaxonomy:
         """Write a .txt file with the given name"""
         filename = normalize_filename(filename)
         with open(filename, "w", encoding="utf8") as file:
+            first_line = True
             for line in lines:
-                file.write(line + "\n")
+                # we want to avoid adding an empty \n at the end of the file
+                file.write("\n" if not first_line else "")
+                file.write(line)
+                first_line = False
 
     def __call__(self, filename, branch_name, taxonomy_name):
         filename = normalize_filename(filename)
