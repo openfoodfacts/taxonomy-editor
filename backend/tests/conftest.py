@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 
-from editor.api import app
 from editor import graph_db
+from editor.api import app
 
 
 @pytest.fixture
@@ -15,9 +15,11 @@ def client():
     with TestClient(app) as client:
         yield client
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="session")
 def anyio_backend():
-    return 'asyncio'
+    return "asyncio"
+
 
 @pytest.fixture(scope="session")
 def neo4j():
@@ -36,7 +38,7 @@ def neo4j():
         yield driver
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def database_lifespan(neo4j):
     async with graph_db.database_lifespan() as driver:
         yield driver

@@ -21,7 +21,12 @@ from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from . import settings, utils
 from .controllers.node_controller import create_entry_node, get_error_node
-from .controllers.project_controller import get_project_id, create_project, edit_project, get_project
+from .controllers.project_controller import (
+    create_project,
+    edit_project,
+    get_project,
+    get_project_id,
+)
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
@@ -202,7 +207,11 @@ class TaxonomyGraph:
         background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
         return True
 
-    def dump_taxonomy(self, background_tasks: BackgroundTasks, dump_cls: unparser.WriteTaxonomy=patcher.PatchTaxonomy):
+    def dump_taxonomy(
+        self,
+        background_tasks: BackgroundTasks,
+        dump_cls: unparser.WriteTaxonomy = patcher.PatchTaxonomy,
+    ):
         """
         Helper function to create the txt file of a taxonomy
         """
@@ -439,7 +448,7 @@ class TaxonomyGraph:
         result = await get_current_transaction().run(query, {"id": entry})
         return await async_list(result)
 
-    async def get_all_nodes(self, label: Optional[NodeType]=None, removed: bool=False):
+    async def get_all_nodes(self, label: Optional[NodeType] = None, removed: bool = False):
         """
         Helper function used for getting all nodes with/without given label
         """

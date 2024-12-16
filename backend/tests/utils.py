@@ -1,5 +1,6 @@
 """Some utils related to testing"""
 
+
 class FakeBackgroundTask:
     """A fake background task to avoid running background tasks during tests"""
 

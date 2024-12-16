@@ -102,7 +102,11 @@ async def clone_project(source_branch: str, taxonomy_name: str, target_branch: s
         SET new_node.created_at = datetime(), new_node.branch_name = $target_branch, new_node.id = $target_id
         RETURN new_node
     """
-    params = {"project_id": source_id, "target_branch": target_branch, "target_id": get_project_id(target_branch, taxonomy_name)}
+    params = {
+        "project_id": source_id,
+        "target_branch": target_branch,
+        "target_id": get_project_id(target_branch, taxonomy_name),
+    }
     await get_current_transaction().run(query, params)
     # clone nodes thanks to apoc.refactor.cloneSubgraph
     query = f"""
