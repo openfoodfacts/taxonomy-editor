@@ -5,13 +5,12 @@ We use plain text export to avoid dealing with github
 """
 
 import pytest
-
 from fastapi import UploadFile
 
-from editor.controllers import project_controller
-from editor.models.node_models import NodeType, EntryNode
-from editor.entries import TaxonomyGraph
 from editor import graph_db
+from editor.controllers import project_controller
+from editor.entries import TaxonomyGraph
+from editor.models.node_models import EntryNode, NodeType
 
 from .utils import FakeBackgroundTask
 
@@ -23,6 +22,7 @@ async def taxonomy_test(database_lifespan):
     We cache the project by fully duplicating it so that setup is faster
     """
     from .utils import clean_neo4j_db
+
     # TEMPORARY use this to clean template in the db
     # await clean_neo4j_db(database_lifespan)
     with open("tests/data/test.txt", "rb") as test_file:
@@ -33,7 +33,12 @@ async def taxonomy_test(database_lifespan):
             if not await taxonomy.does_project_exist():
                 # if the template project is not there, we create it
                 background_tasks = FakeBackgroundTask()
-                await taxonomy.import_taxonomy("test taxonomy", "unknown", background_tasks, UploadFile(file=test_file, filename="test.txt"))
+                await taxonomy.import_taxonomy(
+                    "test taxonomy",
+                    "unknown",
+                    background_tasks,
+                    UploadFile(file=test_file, filename="test.txt"),
+                )
             else:
                 background_tasks = None
         # this runs in its own transaction
@@ -52,6 +57,7 @@ async def test_no_modification(taxonomy_test):
     assert open(file_path).read() == open("tests/data/test.txt").read()
     # clean files
     background_tasks.run()
+
 
 @pytest.mark.anyio
 async def test_remove_parent(taxonomy_test):
@@ -102,8 +108,10 @@ async def test_add_parent(taxonomy_test):
 async def test_add_synonym(taxonomy_test):
     async with graph_db.TransactionCtx() as session:
         # add synonym to yaourts au fruit de la passion
-        node_data, = await taxonomy_test.get_nodes(NodeType.ENTRY, "fr:yaourts-fruit-passion-alleges")
-        node = EntryNode(**dict(node_data['n']))
+        (node_data,) = await taxonomy_test.get_nodes(
+            NodeType.ENTRY, "fr:yaourts-fruit-passion-alleges"
+        )
+        node = EntryNode(**dict(node_data["n"]))
         node.tags["tags_fr"].append("yaourts allégé aux grenadilles")
         await taxonomy_test.update_node(NodeType.ENTRY, node)
     background_tasks = FakeBackgroundTask()
@@ -125,8 +133,8 @@ async def test_add_synonym(taxonomy_test):
 async def test_remove_synonym(taxonomy_test):
     async with graph_db.TransactionCtx() as session:
         # add synonym to yaourts au fruit de la passion
-        node_data, = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:yogurts")
-        node = EntryNode(**dict(node_data['n']))
+        (node_data,) = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:yogurts")
+        node = EntryNode(**dict(node_data["n"]))
         node.tags["tags_fr"].remove("yoghourts")
         await taxonomy_test.update_node(NodeType.ENTRY, node)
     background_tasks = FakeBackgroundTask()
@@ -149,8 +157,8 @@ async def test_no_comment_repeat(taxonomy_test):
     # test it
     async with graph_db.TransactionCtx() as session:
         # just do a null edit on an entry with comments above it
-        node_data, = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:soup")
-        node = EntryNode(**dict(node_data['n']))
+        (node_data,) = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:soup")
+        node = EntryNode(**dict(node_data["n"]))
         await taxonomy_test.update_node(NodeType.ENTRY, node)
     background_tasks = FakeBackgroundTask()
     file_path = taxonomy_test.dump_taxonomy(background_tasks)
@@ -175,7 +183,10 @@ async def test_add_new_entry_as_child(taxonomy_test):
             id="en:sweet-yogurts",
             preceding_lines=["# yogurts with sugar"],
             main_language="en",
-            tags={"tags_en": ["sweet yogurts", "yogurts with sugar"], "tags_fr": ["yaourts sucrés"]},
+            tags={
+                "tags_en": ["sweet yogurts", "yogurts with sugar"],
+                "tags_fr": ["yaourts sucrés"],
+            },
             properties={"wikipedia_en": "https://fr.wikipedia.org/wiki/Yaourt"},
         )
         await taxonomy_test.update_node(NodeType.ENTRY, node)
@@ -196,18 +207,16 @@ async def test_add_new_entry_as_child(taxonomy_test):
     # expected output
     expected = list(open("tests/data/test.txt"))
     # new entry inserted just after yogurts, the parent
-    expected[16:16] =[
-        '# yogurts with sugar\n',
-        '< en:yogurts\n',
-        'en: sweet yogurts, yogurts with sugar\n',
-        'fr: yaourts sucrés\n',
-        '\n'
+    expected[16:16] = [
+        "# yogurts with sugar\n",
+        "< en:yogurts\n",
+        "en: sweet yogurts, yogurts with sugar\n",
+        "fr: yaourts sucrés\n",
+        "\n",
+        "< en:sweet yogurts\n",
+        "en: edulcorated yogurts\n",
+        "\n",
     ]
-    # second entry added at the end
-    expected[-1] += "\n"
-    expected.extend([
-        '\n', '< en:sweet yogurts\n', 'en: edulcorated yogurts\n'
-    ])
     assert result == expected
     # clean files
     background_tasks.run()
@@ -248,16 +257,25 @@ async def test_add_new_root_entries(taxonomy_test):
     expected = list(open("tests/data/test.txt"))
     # second entry added at the end
     expected[-1] += "\n"
-    expected.extend([
-        '\n',
-        '< en:Potatoes\n', 'en: Blue Potatoes\n', '\n',
-        '# The real potatoes\n', 'en: Potatoes\n', 'fr: patates, pommes de terres\n', '\n',
-        'en: Cabbage\n', 'fr: Choux\n'
-    ])
+    expected.extend(
+        [
+            "\n",
+            "# The real potatoes\n",
+            "en: Potatoes\n",
+            "fr: patates, pommes de terres\n",
+            "\n",
+            "en: Cabbage\n",
+            "fr: Choux\n",
+            "\n",
+            "< en:Potatoes\n",
+            "en: Blue Potatoes\n",
+        ]
+    )
 
     assert result == expected
     # clean files
     background_tasks.run()
+
 
 @pytest.mark.anyio
 async def test_change_entry_id(taxonomy_test):
