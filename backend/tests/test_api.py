@@ -54,7 +54,7 @@ def test_add_taxonomy_invalid_branch_name(client):
         )
 
     assert response.status_code == 422
-    assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
+    assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
 
 
 def test_add_taxonomy_duplicate_project_name(client):

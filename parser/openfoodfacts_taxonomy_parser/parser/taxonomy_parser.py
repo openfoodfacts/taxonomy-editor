@@ -237,7 +237,7 @@ class TaxonomyParser:
 
     def finalize_data(self, data, comments, saved_nodes, line_number: int):
         data = self._remove_separating_line(data)
-        data.src_lines = [f"{data.src_position},{line_number}"]
+        data.src_lines = [f"{data.src_position - len(data.preceding_lines or [])},{line_number}"]
         if data.get_node_type() == NodeType.ENTRY:
             self._add_comments(data, comments, "end")
         if data.id in saved_nodes:

@@ -42,7 +42,7 @@ async def database_lifespan(neo4j):
         yield driver
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def neo4j_session(database_lifespan, anyio_backend):
     async with graph_db.TransactionCtx() as session:
         yield session
