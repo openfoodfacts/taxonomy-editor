@@ -605,7 +605,9 @@ class TaxonomyGraph:
             WHERE parent.id = $id
             SET child.modified = $modified
             """
-            await get_current_transaction().run(query, {"id": updated_node["id"], "modified": modified})
+            await get_current_transaction().run(
+                query, {"id": updated_node["id"], "modified": modified}
+            )
         return updated_node
 
     async def update_node_children(self, entry, new_children_ids):
