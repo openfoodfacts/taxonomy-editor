@@ -369,8 +369,10 @@ class TaxonomyGraph:
         # Rebuild relationships by inserting incoming node at the end
         query = []
         query = f"""
-            MATCH (new_node:{self.project_name}:{label.value}) WHERE new_node.id = $id
-            MATCH (last_node:{self.project_name}:{end_node_label.value}) WHERE last_node.id = $endnodeid
+            MATCH (new_node:{self.project_name}:{label.value})
+            WHERE new_node.id = $id
+            MATCH (last_node:{self.project_name}:{end_node_label.value})
+            WHERE last_node.id = $endnodeid
             MATCH (footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__"
             CREATE (last_node)-[:is_before]->(new_node)
             CREATE (new_node)-[:is_before]->(footer)
@@ -601,7 +603,10 @@ class TaxonomyGraph:
         if id_changed:
             # mark children as modified because the parent id has changed
             query = f"""
-            MATCH (child:{self.project_name}:ENTRY) - [:is_child_of] -> (parent:{self.project_name}:ENTRY)
+            MATCH
+                (child:{self.project_name}:ENTRY)
+                - [:is_child_of] ->
+                (parent:{self.project_name}:ENTRY)
             WHERE parent.id = $id
             SET child.modified = $modified
             """

@@ -1,6 +1,7 @@
 """Test export feature
 
-The idea is to see if changes made through the api are then correctly reflected in the exported file.
+The idea is to see if changes made through the api
+are then correctly reflected in the exported file.
 We use plain text export to avoid dealing with github
 """
 
@@ -21,12 +22,8 @@ async def taxonomy_test(database_lifespan):
 
     We cache the project by fully duplicating it so that setup is faster
     """
-    from .utils import clean_neo4j_db
-
-    # TEMPORARY use this to clean template in the db
-    # await clean_neo4j_db(database_lifespan)
     with open("tests/data/test.txt", "rb") as test_file:
-        async with graph_db.TransactionCtx() as session:
+        async with graph_db.TransactionCtx():
             # clean the test project
             await project_controller.delete_project("p_test_branch")
             taxonomy = TaxonomyGraph("template", "test")
@@ -44,7 +41,7 @@ async def taxonomy_test(database_lifespan):
         # this runs in its own transaction
         if background_tasks:
             await background_tasks.run()
-        async with graph_db.TransactionCtx() as session:
+        async with graph_db.TransactionCtx():
             # clone template project as test project
             await project_controller.clone_project("template", "test", "branch")
     return TaxonomyGraph("branch", "test")
@@ -61,7 +58,7 @@ async def test_no_modification(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_remove_parent(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # remove "yaourts allégés" for "yaourts au fruit de la passion allégés"
         children = await taxonomy_test.get_children("fr:yaourts-alleges")
         children_ids = [record["child.id"] for record in children]
@@ -83,7 +80,7 @@ async def test_remove_parent(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_add_parent(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # add "en: fake-stuff" to "yaourts au fruit de la passion allégés"
         children = await taxonomy_test.get_children("en:fake-stuff")
         children_ids = [record["child.id"] for record in children]
@@ -106,7 +103,7 @@ async def test_add_parent(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_add_synonym(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # add synonym to yaourts au fruit de la passion
         (node_data,) = await taxonomy_test.get_nodes(
             NodeType.ENTRY, "fr:yaourts-fruit-passion-alleges"
@@ -131,7 +128,7 @@ async def test_add_synonym(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_remove_synonym(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # add synonym to yaourts au fruit de la passion
         (node_data,) = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:yogurts")
         node = EntryNode(**dict(node_data["n"]))
@@ -155,7 +152,7 @@ async def test_remove_synonym(taxonomy_test):
 async def test_no_comment_repeat(taxonomy_test):
     # we had a bug of repeating comments when modifying an entry
     # test it
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # just do a null edit on an entry with comments above it
         (node_data,) = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:soup")
         node = EntryNode(**dict(node_data["n"]))
@@ -172,7 +169,7 @@ async def test_no_comment_repeat(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_add_new_entry_as_child(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # add as children to "en:yogurts"
         children = await taxonomy_test.get_children("en:yogurts")
         children_ids = [record["child.id"] for record in children]
@@ -224,7 +221,7 @@ async def test_add_new_entry_as_child(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_add_new_root_entries(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # add an entry potatoes
         await taxonomy_test.create_entry_node("Potatoes", "en")
         node = EntryNode(
@@ -279,7 +276,7 @@ async def test_add_new_root_entries(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_change_entry_id(taxonomy_test):
-    async with graph_db.TransactionCtx() as session:
+    async with graph_db.TransactionCtx():
         # change id of entry yogurts
         (node_data,) = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:yogurts")
         node = EntryNode(**dict(node_data["n"]))

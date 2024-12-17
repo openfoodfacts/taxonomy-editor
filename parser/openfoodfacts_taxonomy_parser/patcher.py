@@ -1,7 +1,9 @@
 """This module provide a function to dump a taxonomy from a neo4j database into a file,
 but taking the original taxonomy content and only modifying nodes that where modified or added
 """
+
 from collections import defaultdict
+
 from .unparser import WriteTaxonomy
 from .utils import get_project_name, src_lines
 
@@ -93,7 +95,9 @@ class PatchTaxonomy(WriteTaxonomy):
                 yield from self.iter_node_lines(dict(node), parents)
                 yield ""
 
-    def nodes_by_lines(self, branch_name, taxonomy_name) -> dict[int, list[tuple[dict, list[dict]]]]:
+    def nodes_by_lines(
+        self, branch_name, taxonomy_name
+    ) -> dict[int, list[tuple[dict, list[dict]]]]:
         """Get the lines to replace in the original text
 
         :return: dict association each line number
@@ -124,7 +128,11 @@ class PatchTaxonomy(WriteTaxonomy):
                 nodes_by_lines[node_position].append((node, parents))
         # we now try to see iteratively to see in nodes_without position
         # if node parents have acquired a position
-        ids_positions = {node["id"]: node_position for node_position, nodes in nodes_by_lines.items() for node, _ in nodes}
+        ids_positions = {
+            node["id"]: node_position
+            for node_position, nodes in nodes_by_lines.items()
+            for node, _ in nodes
+        }
         while True:
             position_found = []
             for i, (node, parents) in enumerate(nodes_without_position):
@@ -136,7 +144,7 @@ class PatchTaxonomy(WriteTaxonomy):
             if not position_found:
                 break  # no more progress, we are done
             for i in reversed(position_found):
-                    del nodes_without_position[i]
+                del nodes_without_position[i]
         # put the rest at the end
         if nodes_without_position:
             nodes_by_lines[-1].extend(nodes_without_position)

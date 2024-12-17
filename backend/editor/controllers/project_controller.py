@@ -99,7 +99,9 @@ async def clone_project(source_branch: str, taxonomy_name: str, target_branch: s
         CALL apoc.refactor.cloneNodes([p], true, ['id', 'branch'] )
         YIELD output as new_node
         WITH new_node
-        SET new_node.created_at = datetime(), new_node.branch_name = $target_branch, new_node.id = $target_id
+        SET new_node.created_at = datetime(),
+            new_node.branch_name = $target_branch,
+            new_node.id = $target_id
         RETURN new_node
     """
     params = {
