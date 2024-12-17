@@ -371,15 +371,15 @@ def test_patcher_with_modifications(neo4j):
                 "< en:banana yogurts",
                 "en: smashed banana yogurts, squashed banana yogurts",
                 "fr: yaourts à la banane écrasée",
+                "",
+                "< en:smashed banana yogurts",
+                "en: smashed green banana yogurts",
             ]
         expected_lines.append(line)
         expected_lines.extend(more_lines)
     # added lines
     expected_lines.extend(
         [
-            "",
-            "< en:smashed banana yogurts",
-            "en: smashed green banana yogurts",
             "",
             "en: Cookies",
             "fr: Gateaux, Petits gateaux, Biscuits",
