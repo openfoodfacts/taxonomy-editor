@@ -279,5 +279,25 @@ async def test_add_new_root_entries(taxonomy_test):
 
 @pytest.mark.anyio
 async def test_change_entry_id(taxonomy_test):
-    # yet to be implemented
-    assert False
+    async with graph_db.TransactionCtx() as session:
+        # change id of entry yogurts
+        (node_data,) = await taxonomy_test.get_nodes(NodeType.ENTRY, "en:yogurts")
+        node = EntryNode(**dict(node_data["n"]))
+        node.tags["tags_en"] = ["yoghurts", "yogurts"]
+        await taxonomy_test.update_node(NodeType.ENTRY, node)
+    background_tasks = FakeBackgroundTask()
+    file_path = taxonomy_test.dump_taxonomy(background_tasks)
+    result = list(open(file_path))
+    # expected output
+    expected = list(open("tests/data/test.txt"))
+    # entry yogurts renamed
+    expected[8] = "en: yoghurts, yogurts\n"
+    # parent renamed for banana yogurts, etc.
+    expected[16] = expected[25] = expected[32] = expected[35] = "< en:yoghurts\n"
+    # also properties were re-ordered on rewritten entries (linting)
+    expected.insert(11, expected.pop(13))
+    expected.insert(20, expected.pop(22))
+    expected.insert(39, expected.pop(41))
+    assert result == expected
+    # clean files
+    background_tasks.run()

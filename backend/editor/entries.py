@@ -583,7 +583,8 @@ class TaxonomyGraph:
 
         # Update id if first translation of the main language has changed
         new_node.recompute_id()
-        if new_node.id != curr_node.id:
+        id_changed = new_node.id != curr_node.id
+        if id_changed:
             # check it does not already exists
             if len(await self.get_nodes(label, new_node.id)) != 0:
                 raise HTTPException(
@@ -596,7 +597,16 @@ class TaxonomyGraph:
         params = dict(data)
         log.debug("update_node query: %s \nParam:%s", " ".join(query), params)
         result = await get_current_transaction().run(" ".join(query), params)
-        return (await async_list(result))[0]["n"]
+        updated_node = (await async_list(result))[0]["n"]
+        if id_changed:
+            # mark children as modified because the parent id has changed
+            query = f"""
+            MATCH (child:{self.project_name}:ENTRY) - [:is_child_of] -> (parent:{self.project_name}:ENTRY)
+            WHERE parent.id = $id
+            SET child.modified = $modified
+            """
+            await get_current_transaction().run(query, {"id": updated_node["id"], "modified": modified})
+        return updated_node
 
     async def update_node_children(self, entry, new_children_ids):
         """
