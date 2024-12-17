@@ -40,6 +40,7 @@ async def create_entry_node(
         f"tags_{language_code}": [name],
         f"tags_ids_{language_code}": [normalized_name],
         "modified": datetime.datetime.now().timestamp(),
+        "is_external": False,
     }
     params = {"entry_node": entry_node_data}
 

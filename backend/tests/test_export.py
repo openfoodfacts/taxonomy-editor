@@ -168,6 +168,30 @@ async def test_no_comment_repeat(taxonomy_test):
 
 
 @pytest.mark.anyio
+async def test_add_bare_child(taxonomy_test):
+    async with graph_db.TransactionCtx():
+        # add a children to "en:yogurts", without any other properties
+        children = await taxonomy_test.get_children("en:yogurts")
+        children_ids = [record["child.id"] for record in children]
+        children_ids.append("en:sweet yogurts")
+        await taxonomy_test.update_node_children("en:yogurts", children_ids)
+    background_tasks = FakeBackgroundTask()
+    file_path = taxonomy_test.dump_taxonomy(background_tasks)
+    result = list(open(file_path))
+    # expected output
+    expected = list(open("tests/data/test.txt"))
+    # new entry inserted just after yogurts, the parent
+    expected[16:16] = [
+        "< en:yogurts\n",
+        "en: sweet yogurts\n",
+        "\n",
+    ]
+    assert result == expected
+    # clean files
+    background_tasks.run()
+
+
+@pytest.mark.anyio
 async def test_add_new_entry_as_child(taxonomy_test):
     async with graph_db.TransactionCtx():
         # add as children to "en:yogurts"

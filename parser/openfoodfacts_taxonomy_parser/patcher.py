@@ -23,7 +23,7 @@ class PatchTaxonomy(WriteTaxonomy):
             MATCH (n:({project_label}|REMOVED_{project_label}))
             WHERE
                 // no external node
-                n.is_external = false
+                (n.is_external = false OR n.is_external IS NULL)
                 AND (
                     // modified nodes
                     ((n:TEXT OR n:SYNONYMS OR n:STOPWORDS OR n:ENTRY) AND n.modified IS NOT NULL)
