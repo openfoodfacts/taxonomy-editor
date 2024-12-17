@@ -322,3 +322,41 @@ async def test_change_entry_id(taxonomy_test):
     assert result == expected
     # clean files
     await background_tasks.run()
+
+
+@pytest.mark.anyio
+async def test_remove_entry(taxonomy_test):
+    async with graph_db.TransactionCtx():
+        # remove "yaourts allégés"
+        await taxonomy_test.delete_node(NodeType.ENTRY, "fr:yaourts-alleges")
+        # remove meat
+        await taxonomy_test.delete_node(NodeType.ENTRY, "en:meat")
+    background_tasks = FakeBackgroundTask()
+    file_path = taxonomy_test.dump_taxonomy(background_tasks)
+    result = list(open(file_path))
+    # expected output
+    expected = list(open("tests/data/test.txt"))
+    # entry removed
+    to_remove = [
+        32,
+        33,
+        34,  # yahourts alleges
+        62,
+        63,
+        64,
+        65,  # meat
+        66,
+        73,  # < en:meat
+    ]
+    # parent changed to "en:yogurts" for "yahourts alleges"
+    expected[45] = expected[51] = "< en:yogurts\n"
+    # parent normalized
+    expected[44] = "< en:Passion fruit yogurts\n"
+    expected[50] = "< en:lemon yogurts\n"
+    # properties reordered
+    # expected.insert(39, expected.pop(41))
+    for i in sorted(to_remove, reverse=True):
+        del expected[i]
+    assert result == expected
+    # clean files
+    await background_tasks.run()

@@ -20,13 +20,21 @@ class PatchTaxonomy(WriteTaxonomy):
     def get_all_nodes(self, project_label):
         """Get modified and removed nodes, in the start line  order"""
         query = f"""
-            MATCH (n:({project_label}|REMOVED_{project_label}))
+            MATCH (n:{project_label})
             WHERE
                 // no external node
                 (n.is_external = false OR n.is_external IS NULL)
                 AND (
                     // modified nodes
-                    ((n:TEXT OR n:SYNONYMS OR n:STOPWORDS OR n:ENTRY) AND n.modified IS NOT NULL)
+                    (
+                        (
+                            n:TEXT OR n:SYNONYMS OR n:STOPWORDS OR n:ENTRY OR
+                            n:REMOVED_TEXT OR n:REMOVED_SYNONYMS OR
+                            n:REMOVED_STOPWORDS OR n:REMOVED_ENTRY
+                        )
+                        AND
+                        n.modified IS NOT NULL
+                    )
                 )
             // optional match for node might not have parents
             OPTIONAL

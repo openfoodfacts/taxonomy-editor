@@ -418,9 +418,9 @@ class TaxonomyGraph:
             // Find node to be deleted using node ID
             MATCH (deleted_node:{self.project_name}:{label.value})-[:is_before]->(next_node)
                 WHERE deleted_node.id = $id
-            MATCH (previous_node)-[:is_before]->(deleted_node)
+            MATCH (previous_node)-[r:is_before]->(deleted_node)
             // Remove node
-            DETACH (deleted_node)
+            DELETE r
             // Rebuild relationships after deletion
             CREATE (previous_node)-[:is_before]->(next_node)
         """
@@ -428,13 +428,23 @@ class TaxonomyGraph:
         # transfert child parent relations, and mark child nodes as modified
         query = f"""
             // Find relations to be removed using node ID
-            MATCH (child_node)-[:is_child_of]->(deleted_node:{self.project_name}:{label.value})
+            MATCH (child_node)-[r:is_child_of]->(deleted_node:{self.project_name}:{label.value})
                 WHERE deleted_node.id = $id
             MATCH (deleted_node)-[:is_child_of]->(parent_node)
-            DETACH (deleted_node)
+            DELETE r
             // transfer child
             CREATE (child_node) -[:is_child_of]->(parent_node)
             // mark modified
+            SET child_node.modified = $modified
+        """
+        await get_current_transaction().run(query, {"id": entry, "modified": modified})
+        # or if no transfer is needed, just mark modified
+        query = f"""
+            // Find relations to be removed using node ID
+            MATCH (child_node)-[r:is_child_of]->(deleted_node:{self.project_name}:{label.value})
+                WHERE deleted_node.id = $id
+            DELETE r
+            // mark children as modified
             SET child_node.modified = $modified
         """
         await get_current_transaction().run(query, {"id": entry, "modified": modified})
@@ -447,7 +457,7 @@ class TaxonomyGraph:
             // and mark modification date also
             SET deleted_node.modified = $modified
         """
-        result = await get_current_transaction().run(query, {"id": entry})
+        result = await get_current_transaction().run(query, {"id": entry, "modified": modified})
         return await async_list(result)
 
     async def get_all_nodes(self, label: Optional[NodeType] = None, removed: bool = False):
