@@ -9,6 +9,16 @@ from neo4j.exceptions import ServiceUnavailable
 from editor import graph_db
 from editor.api import app
 
+from .utils import clean_neo4j_db
+
+
+def pytest_addoption(parser):
+    """Add an option to clean the database before running the tests
+
+    This is useful after changes in the parser
+    """
+    parser.addoption("--clean-db", action="store_true", default=False)
+
 
 @pytest.fixture
 def client():
@@ -48,3 +58,10 @@ async def database_lifespan(neo4j):
 async def neo4j_session(database_lifespan, anyio_backend):
     async with graph_db.TransactionCtx() as session:
         yield session
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def clean_db(request, database_lifespan):
+    """clean_db if --clean-db was passed"""
+    if request.config.getoption("--clean-db"):
+        await clean_neo4j_db(database_lifespan)
