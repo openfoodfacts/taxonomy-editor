@@ -17,7 +17,7 @@ from .utils import FakeBackgroundTask
 
 
 @pytest.fixture()
-async def taxonomy_test(database_lifespan):
+async def taxonomy_test(database_lifespan, anyio_backend):
     """We will import a project to work with
 
     We cache the project by fully duplicating it so that setup is faster
@@ -53,7 +53,7 @@ async def test_no_modification(taxonomy_test):
     file_path = taxonomy_test.dump_taxonomy(background_tasks)
     assert open(file_path).read() == open("tests/data/test.txt").read()
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -75,7 +75,7 @@ async def test_remove_parent(taxonomy_test):
     del expected[45]
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -98,7 +98,7 @@ async def test_add_parent(taxonomy_test):
     expected.insert(46, "< en:fake-stuff\n")
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -123,7 +123,7 @@ async def test_add_synonym(taxonomy_test):
     expected[46] = "fr: yaourts au fruit de la passion allégés, yaourts allégé aux grenadilles\n"
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -145,7 +145,7 @@ async def test_remove_synonym(taxonomy_test):
     expected.insert(11, expected.pop(13))
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -164,7 +164,7 @@ async def test_no_comment_repeat(taxonomy_test):
     expected = list(open("tests/data/test.txt"))
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -188,7 +188,7 @@ async def test_add_bare_child(taxonomy_test):
     ]
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -240,7 +240,7 @@ async def test_add_new_entry_as_child(taxonomy_test):
     ]
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -295,7 +295,7 @@ async def test_add_new_root_entries(taxonomy_test):
 
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()
 
 
 @pytest.mark.anyio
@@ -321,4 +321,4 @@ async def test_change_entry_id(taxonomy_test):
     expected.insert(39, expected.pop(41))
     assert result == expected
     # clean files
-    background_tasks.run()
+    await background_tasks.run()

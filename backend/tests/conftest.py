@@ -32,7 +32,7 @@ def anyio_backend():
 
 
 @pytest.fixture(scope="session")
-def neo4j():
+def wait_neo4j():
     """waiting for neo4j to be ready"""
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     with GraphDatabase.driver(uri) as driver:
@@ -45,11 +45,10 @@ def neo4j():
                     time.sleep(1)
                 else:
                     connected = True
-        yield driver
 
 
 @pytest.fixture(scope="session")
-async def database_lifespan(neo4j):
+async def database_lifespan(wait_neo4j, anyio_backend):
     async with graph_db.database_lifespan() as driver:
         yield driver
 

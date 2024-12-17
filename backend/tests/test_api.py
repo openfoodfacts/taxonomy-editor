@@ -8,15 +8,15 @@ from sample.load import load_file
 
 
 @pytest.fixture(autouse=True)
-def test_setup(neo4j):
+async def test_setup(database_lifespan, anyio_backend):
     # delete all the nodes and relations in the database
-    with neo4j.session() as session:
+    async with database_lifespan.session() as session:
         query = "MATCH (n) DETACH DELETE n"
-        session.run(query)
+        await session.run(query)
         query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
-        session.run(query)
+        await session.run(query)
         query = "DROP INDEX p_test_branch_SearchTagsIds IF EXISTS"
-        session.run(query)
+        await session.run(query)
 
 
 def test_hello(client):

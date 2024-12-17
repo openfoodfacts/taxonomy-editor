@@ -1,5 +1,7 @@
 """Some utils related to testing"""
 
+import inspect
+
 
 class FakeBackgroundTask:
     """A fake background task to avoid running background tasks during tests"""
@@ -13,7 +15,10 @@ class FakeBackgroundTask:
     async def run(self):
         while self.tasks:
             fn, args, kwargs = self.tasks.pop()
-            await fn(*args, **kwargs)
+            if inspect.iscoroutinefunction(fn):
+                await fn(*args, **kwargs)
+            else:
+                fn(*args, **kwargs)
 
 
 async def clean_neo4j_db(neo4j):
