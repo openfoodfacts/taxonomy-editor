@@ -17,8 +17,6 @@ def test_setup(neo4j):
     for label in ["p_test_branch", "p_test_branch1", "p_test_branch2"]:
         query = f"MATCH (n:{label}) DETACH DELETE n"
         neo4j.session().run(query)
-        query = f"MATCH (n:REMOVED_{label}) DETACH DELETE n"
-        neo4j.session().run(query)
         query = f"DROP INDEX {label}_SearchIds IF EXISTS"
         neo4j.session().run(query)
         query = f"DROP INDEX {label}_SearchTagsIds IF EXISTS"
@@ -175,9 +173,6 @@ def test_round_trip_patcher(neo4j):
     assert original_lines == lines
 
 
-pytest.mark.skip(reason="not finished yet")
-
-
 def test_patcher_with_modifications(neo4j):
     """test parsing, modifying and dumping back a taxonomy"""
     with neo4j.session() as session:
@@ -248,8 +243,8 @@ def test_patcher_with_modifications(neo4j):
             MATCH (n:p_test_branch) - [r] - (m:p_test_branch)
             WHERE m.id = "en:passion-fruit-yogurts"
             DELETE r
-            REMOVE m:p_test_branch
-            SET m:REMOVED_p_test_branch
+            REMOVE m:ENTRY
+            SET m:REMOVED_ENTRY
             SET m.modified = {modified}
             RETURN m.id
         """
@@ -262,7 +257,6 @@ def test_patcher_with_modifications(neo4j):
             "labels-removed": 1,
             "properties-set": 4,
         }
-        # TODO:
         # add new entry with a parent inside the file
         result = session.run(
             f"""
@@ -332,10 +326,10 @@ def test_patcher_with_modifications(neo4j):
         assert result.values() == [["en:cookies"]]
 
         # just quick check it runs ok with total number of nodes
-        result = session.run("MATCH (n:p_test_branch) RETURN COUNT(*)")
+        result = session.run("MATCH (n:(p_test_branch&(ENTRY|TEXT|SYNONYMS|STOPWORDS))) RETURN COUNT(*)")
         number_of_nodes = result.value()[0]
-        assert number_of_nodes == 16
-        result = session.run("MATCH (n:REMOVED_p_test_branch) RETURN COUNT(*)")
+        assert number_of_nodes == 15
+        result = session.run("MATCH (n:p_test_branch:REMOVED_ENTRY) RETURN COUNT(*)")
         number_of_nodes = result.value()[0]
         assert number_of_nodes == 1
 
