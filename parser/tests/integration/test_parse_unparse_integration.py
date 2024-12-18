@@ -326,7 +326,9 @@ def test_patcher_with_modifications(neo4j):
         assert result.values() == [["en:cookies"]]
 
         # just quick check it runs ok with total number of nodes
-        result = session.run("MATCH (n:(p_test_branch&(ENTRY|TEXT|SYNONYMS|STOPWORDS))) RETURN COUNT(*)")
+        result = session.run(
+            "MATCH (n:(p_test_branch&(ENTRY|TEXT|SYNONYMS|STOPWORDS))) RETURN COUNT(*)"
+        )
         number_of_nodes = result.value()[0]
         assert number_of_nodes == 15
         result = session.run("MATCH (n:p_test_branch:REMOVED_ENTRY) RETURN COUNT(*)")
