@@ -18,7 +18,7 @@ import { ProjectPage, projectLoader } from "./pages/project";
 import { ProjectNotFound } from "./pages/project/ProjectNotFound";
 import { PageNotFound } from "./pages/PageNotFound";
 import { RootLayout } from "./pages/RootLayout";
-
+import { AppProvider } from "./components/UseContext";
 const theme = createTheme({
   typography: {
     fontFamily: "Plus Jakarta Sans",
@@ -79,12 +79,14 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <AppProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </AppProvider>
   );
 }
 

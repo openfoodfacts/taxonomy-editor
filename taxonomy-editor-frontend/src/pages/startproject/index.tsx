@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Box,
@@ -18,6 +18,7 @@ import {
 
 import { TAXONOMY_NAMES } from "@/constants";
 import { createBaseURL, toSnakeCase } from "@/utils";
+import { useAppContext } from "@/components/UseContext";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
@@ -34,12 +35,9 @@ function formatDate(date) {
 }
 
 export const StartProject = () => {
-  const [ownerName, setOwnerName] = useState("");
-  const [taxonomyName, setTaxonomyName] = useState("");
-  const [description, setDescription] = useState("");
+  const { taxonomyName, setTaxonomyName, ownerName, setOwnerName, description, setDescription } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
   const navigate = useNavigate();
 
   const findDefaultBranchName = useCallback(() => {
@@ -49,25 +47,17 @@ export const StartProject = () => {
       .toLowerCase();
   }, [ownerName, taxonomyName]);
 
-  
   const [branchName, setBranchName] = useState(findDefaultBranchName());
-  
+
   useEffect(() => {
     setBranchName(findDefaultBranchName());
   }, [ownerName, taxonomyName, findDefaultBranchName]);
-  
-  // Function to check if form is dirty
-  const isFormDirty = () => {
-    return taxonomyName.length > 0 || ownerName.length > 0 || description.length > 0;
-  };
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      if(taxonomyName || ownerName || branchName || description) { // Show warning only if the form is dirty
-        console.log("event warning back triggered");
+      if (taxonomyName.length > 0 || ownerName.length > 0 || description.length > 0) {
         event.preventDefault();
-        event.returnValue =
-          "You have unsaved changes. Are you sure you want to leave?";
+        event.returnValue = "You have unsaved changes. Are you sure you want to leave?";
       }
     };
 
@@ -76,14 +66,14 @@ export const StartProject = () => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [isFormDirty, taxonomyName, ownerName, branchName, description]);
+  }, [taxonomyName, ownerName, description]);
 
   const handleSubmit = () => {
     if (!taxonomyName || !branchName || !ownerName) return;
 
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
-    const dataToBeSent = { description: description, ownerName: ownerName };
+    const dataToBeSent = { description, ownerName };
     let errorMessage = "Unable to import";
 
     fetch(`${baseUrl}import`, {
@@ -110,15 +100,6 @@ export const StartProject = () => {
   };
 
   const isInvalidBranchName = branchNameRegEx.test(branchName);
-
-  const isOwnerNameInvalid = (name) => {
-    if (name === "") return false;
-    const pattern = /^[a-zA-Z0-9 _-]+$/;
-    if (!pattern.test(name)) {
-      return true;
-    }
-    return false;
-  };
 
   const handleFieldChange = (setter) => (event) => {
     setter(event.target.value);
@@ -161,11 +142,6 @@ export const StartProject = () => {
           </div>
 
           <TextField
-            error={isOwnerNameInvalid(ownerName)}
-            helperText={
-              isOwnerNameInvalid(ownerName) &&
-              "Special characters are not allowed"
-            }
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={handleFieldChange(setOwnerName)}
@@ -175,19 +151,7 @@ export const StartProject = () => {
             required={true}
           />
 
-          <FormHelperText
-            sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
-          >
-            Please use your Github account username if possible, or eventually
-            your id on open food facts slack (so that we can contact you)
-          </FormHelperText>
-
           <TextField
-            error={isInvalidBranchName}
-            helperText={
-              isInvalidBranchName &&
-              "Special characters, capital letters and white spaces are not allowed"
-            }
             size="small"
             sx={{ width: 265, mt: 2 }}
             onChange={handleFieldChange(setBranchName)}
@@ -206,14 +170,6 @@ export const StartProject = () => {
             variant="outlined"
             label="Description"
           />
-
-          <FormHelperText
-            sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
-          >
-            Explain what is your goal with this new project, what changes are
-            you going to bring. Remember to privilege small projects (do big
-            project as a succession of small one).
-          </FormHelperText>
 
           <Button
             variant="contained"

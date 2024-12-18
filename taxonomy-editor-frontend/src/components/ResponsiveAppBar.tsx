@@ -1,6 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { Link, useParams, Params } from "react-router-dom";
-
+import { Link, useParams, Params, useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -16,6 +15,7 @@ import MuiLink from "@mui/material/Link";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useTranslation } from "react-i18next";
 import logoUrl from "@/assets/logosmall.jpg";
+import { useAppContext } from "./UseContext";
 
 const getDisplayedPages = (
   params: Params<string>,
@@ -35,13 +35,28 @@ const getDisplayedPages = (
 export const ResponsiveAppBar = () => {
   const params = useParams();
   const displayedPages = useMemo(() => getDisplayedPages(params), [params]);
-
   const { t } = useTranslation();
-  const menuAnchorRef = useRef();
+  const menuAnchorRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const { taxonomyName, ownerName, description, clearContext } =
+    useAppContext();
 
   const handleCloseNavMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleNavigation = (url: string) => {
+    if (taxonomyName || ownerName || description) {
+      const confirmLeave = window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?",
+      );
+      if (!confirmLeave) return; // Don't navigate if user cancels
+      clearContext(); // Call the clearContext function to clear the form
+    }
+    navigate(url); // Proceed with the navigation
+    handleCloseNavMenu(); // Close the menu
   };
 
   return (
@@ -85,7 +100,7 @@ export const ResponsiveAppBar = () => {
                 page.url ? (
                   <MenuItem
                     key={page.translationKey}
-                    onClick={handleCloseNavMenu}
+                    onClick={() => handleNavigation(`/${page.url}`)} // Use handleNavigation
                     component={Link}
                     to={`/${page.url}`}
                   >
@@ -101,24 +116,6 @@ export const ResponsiveAppBar = () => {
               )}
             </Menu>
           </Box>
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href=""
-            sx={{
-              mr: 2,
-              display: { xs: "flex", md: "none" },
-              flexGrow: 1,
-              fontFamily: "Plus Jakarta Sans",
-              fontWeight: 700,
-              letterSpacing: ".1rem",
-              color: "inherit",
-              textDecoration: "none",
-            }}
-          >
-            Taxonomy Editor
-          </Typography>
 
           {/* Desktop content */}
           <Box
@@ -139,9 +136,12 @@ export const ResponsiveAppBar = () => {
             >
               <MuiLink
                 sx={{ mr: 2, display: "flex", alignSelf: "center" }}
-                component={Link}
-                to="/"
-                target="_blank"
+                component="a"
+                href="/"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleNavigation("/");
+                }}
                 rel="noopener"
               >
                 <img
@@ -154,8 +154,15 @@ export const ResponsiveAppBar = () => {
               <Typography
                 variant="h6"
                 noWrap
-                component={Link}
-                to="/"
+                component="a" // Change to "a" for handling clicks with an `onClick` event
+                href="/" // Set href to "/" for the homepage
+                onClick={(event) => {
+                  // Prevent the default navigation behavior
+                  event.preventDefault();
+
+                  // Call the handleNavigation to check for unsaved changes and navigate
+                  handleNavigation("/"); // Navigate to homepage if no unsaved changes
+                }}
                 sx={{
                   mr: 2,
                   display: "flex",
@@ -165,6 +172,7 @@ export const ResponsiveAppBar = () => {
                   letterSpacing: ".1rem",
                   color: "inherit",
                   textDecoration: "none",
+                  cursor: "pointer", // Add pointer cursor for better UX
                 }}
               >
                 Taxonomy Editor
@@ -174,7 +182,7 @@ export const ResponsiveAppBar = () => {
                 <Button
                   color="inherit"
                   key={page.url}
-                  onClick={handleCloseNavMenu}
+                  onClick={() => handleNavigation(`/${page.url}`)} // Use handleNavigation
                   sx={{
                     fontFamily: "Plus Jakarta Sans",
                     my: 2,
