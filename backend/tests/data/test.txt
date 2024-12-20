@@ -73,9 +73,9 @@ en: roast-beef
 
 <en: meat
 en: fake-meat
-vegan:en: yes
 # undef will stop parents from transmitting a value
 carbon_footprint_fr_foodges_value:fr: undef
+vegan:en: yes
 
 en: fake-stuff
 

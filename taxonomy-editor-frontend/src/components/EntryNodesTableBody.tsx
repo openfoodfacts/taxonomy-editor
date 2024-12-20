@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ISO6391 from "iso-639-1";
 import { useEffect, useState } from "react";
 import { SHOWN_LANGUAGES_KEY } from "@/pages/project/editentry/ListTranslations";
@@ -59,6 +59,8 @@ export const EntryNodesTableBody = ({
 }: Props) => {
   const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     // get shown languages from local storage if it exists else use main language
     try {
@@ -95,8 +97,9 @@ export const EntryNodesTableBody = ({
           <TableRow
             key={id}
             hover
-            component={Link}
-            to={`/${taxonomyName}/${branchName}/entry/${id}`}
+            onClick={() => {
+              navigate(`/${taxonomyName}/${branchName}/entry/${id}`);
+            }}
             sx={{ textDecoration: "none" }}
           >
             <TableCell align="left" component="td" scope="row">

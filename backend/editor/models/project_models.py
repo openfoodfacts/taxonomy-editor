@@ -31,6 +31,7 @@ class Project(ProjectCreate):
     github_checkout_commit_sha: str | None = None
     github_file_latest_sha: str | None = None
     github_pr_url: str | None = None
+    original_text: str | None = None
 
 
 class ProjectEdit(BaseModel):
