@@ -59,7 +59,6 @@ export const EntryNodesTableBody = ({
 }: Props) => {
   const [shownLanguageCodes, setShownLanguageCodes] = useState<string[]>([]);
 
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -99,9 +98,7 @@ export const EntryNodesTableBody = ({
             key={id}
             hover
             onClick={() => {
-              navigate(
-                `/${taxonomyName}/${branchName}/entry/${id}`,
-              );
+              navigate(`/${taxonomyName}/${branchName}/entry/${id}`);
             }}
             sx={{ textDecoration: "none" }}
           >
