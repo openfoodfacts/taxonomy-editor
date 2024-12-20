@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
 import {
   Typography,
   Box,
@@ -19,6 +18,7 @@ import {
 
 import { TAXONOMY_NAMES } from "@/constants";
 import { createBaseURL, toSnakeCase } from "@/utils";
+import { useAppContext } from "@/components/UseContext";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
@@ -35,9 +35,7 @@ function formatDate(date) {
 }
 
 export const StartProject = () => {
-  const [ownerName, setOwnerName] = useState("");
-  const [taxonomyName, setTaxonomyName] = useState("");
-  const [description, setDescription] = useState("");
+  const { taxonomyName, setTaxonomyName, ownerName, setOwnerName, description, setDescription } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
@@ -55,12 +53,27 @@ export const StartProject = () => {
     setBranchName(findDefaultBranchName());
   }, [ownerName, taxonomyName, findDefaultBranchName]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (taxonomyName.length > 0 || ownerName.length > 0 || description.length > 0) {
+        event.preventDefault();
+        event.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [taxonomyName, ownerName, description]);
+
   const handleSubmit = () => {
     if (!taxonomyName || !branchName || !ownerName) return;
 
     const baseUrl = createBaseURL(toSnakeCase(taxonomyName), branchName);
     setLoading(true);
-    const dataToBeSent = { description: description, ownerName: ownerName };
+    const dataToBeSent = { description, ownerName };
     let errorMessage = "Unable to import";
 
     fetch(`${baseUrl}import`, {
@@ -88,13 +101,8 @@ export const StartProject = () => {
 
   const isInvalidBranchName = branchNameRegEx.test(branchName);
 
-  const isOwnerNameInvalid = (name: string) => {
-    if (name === "") return false;
-    const pattern = /^[a-zA-Z0-9 _-]+$/;
-    if (!pattern.test(name)) {
-      return true;
-    }
-    return false;
+  const handleFieldChange = (setter) => (event) => {
+    setter(event.target.value);
   };
 
   return (
@@ -122,7 +130,7 @@ export const StartProject = () => {
                 id="taxonomy-name"
                 value={taxonomyName}
                 label="Taxonomy"
-                onChange={(event) => setTaxonomyName(event.target.value)}
+                onChange={handleFieldChange(setTaxonomyName)}
               >
                 {TAXONOMY_NAMES.map((taxonomyItem) => (
                   <MenuItem value={taxonomyItem} key={taxonomyItem}>
@@ -134,40 +142,19 @@ export const StartProject = () => {
           </div>
 
           <TextField
-            error={isOwnerNameInvalid(ownerName)}
-            helperText={
-              isOwnerNameInvalid(ownerName) &&
-              "Special characters are not allowed"
-            }
             size="small"
             sx={{ width: 265, mt: 2 }}
-            onChange={(event) => {
-              setOwnerName(event.target.value);
-            }}
+            onChange={handleFieldChange(setOwnerName)}
             value={ownerName}
             variant="outlined"
             label="Your Name"
             required={true}
           />
 
-          <FormHelperText
-            sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
-          >
-            Please use your Github account username if possible, or eventually
-            your id on open food facts slack (so that we can contact you)
-          </FormHelperText>
-
           <TextField
-            error={isInvalidBranchName}
-            helperText={
-              isInvalidBranchName &&
-              "Special characters, capital letters and white spaces are not allowed"
-            }
             size="small"
             sx={{ width: 265, mt: 2 }}
-            onChange={(event) => {
-              setBranchName(event.target.value);
-            }}
+            onChange={handleFieldChange(setBranchName)}
             value={branchName}
             variant="outlined"
             label="Branch Name"
@@ -178,21 +165,11 @@ export const StartProject = () => {
             sx={{ width: 265, mt: 2 }}
             minRows={4}
             multiline
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
+            onChange={handleFieldChange(setDescription)}
             value={description}
             variant="outlined"
             label="Description"
           />
-
-          <FormHelperText
-            sx={{ width: "75%", textAlign: "center", maxWidth: "600px" }}
-          >
-            Explain what is your goal with this new project, what changes are
-            you going to bring. Remember to privilege small projects (do big
-            project as a succession of small one).
-          </FormHelperText>
 
           <Button
             variant="contained"
