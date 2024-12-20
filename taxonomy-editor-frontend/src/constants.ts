@@ -52,4 +52,6 @@ export const TAXONOMY_NAMES = [
   "Vitamins",
   "Beauty Categories",
   "Beauty Labels",
+  "Product Categories",
+  "Product Labels",
 ];
