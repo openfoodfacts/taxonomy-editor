@@ -68,6 +68,8 @@ services:
       - ./taxonomy-editor-frontend/index.html:/opt/taxonomy-editor/index.html
       - ./taxonomy-editor-frontend/tsconfig.js:/opt/taxonomy-editor/tsconfig.js
       - ./taxonomy-editor-frontend/vite.config.ts:/opt/taxonomy-editor/vite.config.ts
+      - ./taxonomy-editor-frontend/package.json:/opt/taxonomy-editor/package.json
+      - ./taxonomy-editor-frontend/package-lock.json:/opt/taxonomy-editor/package-lock.json
       - ./backend/openapi/openapi.json:/opt/backend/openapi/openapi.json
   taxonomy_frontend:
     image: taxonomy-editor/taxonomy_frontend:dev
