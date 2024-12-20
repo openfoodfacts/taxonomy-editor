@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.1.0...v1.2.0) (2024-12-20)
+
+
+### Features
+
+* first beauty and product taxonomies ([#559](https://github.com/openfoodfacts/taxonomy-editor/issues/559)) ([e66db34](https://github.com/openfoodfacts/taxonomy-editor/commit/e66db34213dd449a351d2948a427107d0a1c9194))
+* more readable default project names ([#557](https://github.com/openfoodfacts/taxonomy-editor/issues/557)) ([4036188](https://github.com/openfoodfacts/taxonomy-editor/commit/4036188278b142b58aea1e7cf2beddb3d6b9069e))
+* taxonomy patch instead of re-generating ([#554](https://github.com/openfoodfacts/taxonomy-editor/issues/554)) ([928dfd0](https://github.com/openfoodfacts/taxonomy-editor/commit/928dfd0e7b27d62425ef47ed2f969b3db3596c09))
+* wip on: ([b5bcefc](https://github.com/openfoodfacts/taxonomy-editor/commit/b5bcefc2a22d4f0257868db9f357a866aabe8f90))
+
+
+### Bug Fixes
+
+* bad tables dom on errors and search results ([#556](https://github.com/openfoodfacts/taxonomy-editor/issues/556)) ([31243c7](https://github.com/openfoodfacts/taxonomy-editor/commit/31243c7ecbc26986bb5e04df2126cd529e510670))
+
 ## [1.1.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.0.2...v1.1.0) (2024-07-26)
 
 
