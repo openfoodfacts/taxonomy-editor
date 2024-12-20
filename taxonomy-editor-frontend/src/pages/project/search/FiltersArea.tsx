@@ -23,7 +23,8 @@ export const FiltersArea = ({
   setQ,
   filters,
 }: FiltersAreaProps) => {
-  const [nodesLevel, setNodesLevel] = useState<string>("root");
+  const [isModified, setIsModified] = useState<string>("modified");
+  const [nodesLevel, setNodesLevel] = useState<string>("both");
   const [taxonomyScope, setTaxonomyScope] = useState<string>("both");
   const [chosenLanguagesCodes, setChosenLanguagesCodes] = useState<string[]>(
     [],
@@ -32,13 +33,15 @@ export const FiltersArea = ({
     useState<string[]>([]);
 
   const initializeFilters = (): {
+    isModified: string;
     nodesLevel: string;
     taxonomyScopeMode: string; //"in" -> in taxonomy, "out" -> outside taxonomy, "" -> filter not selected
     chosenLanguagesCodes: string[];
     withoutChosenLanguagesCodes: string[];
   } => {
     return {
-      nodesLevel: "root",
+      isModified: "modified",
+      nodesLevel: "both",
       taxonomyScopeMode: "",
       chosenLanguagesCodes: [],
       withoutChosenLanguagesCodes: [],
@@ -46,9 +49,13 @@ export const FiltersArea = ({
   };
 
   const updateFiltersStates = useCallback((updatedFilters) => {
+    // start by initializing to default values
     const filtersStates = initializeFilters();
+    // track if each filter is present or note
     let hasScopeFilterInQ = false;
     let hasLevelFilterInQ = false;
+    let hasModifiedFilterInQ = false;
+    // read filters and impact values
     for (const filter of updatedFilters) {
       switch (filter.filterType) {
         case "is":
@@ -65,6 +72,14 @@ export const FiltersArea = ({
               filtersStates.taxonomyScopeMode = "not:external";
               hasScopeFilterInQ = true;
               break;
+            case "modified":
+              filtersStates.isModified = "modified";
+              hasModifiedFilterInQ = true;
+              break;
+            case "not:modified":
+              filtersStates.isModified = "not:modified";
+              hasModifiedFilterInQ = true;
+              break;
           }
           break;
         case "language":
@@ -80,6 +95,8 @@ export const FiltersArea = ({
           break;
       }
     }
+    // modify filters display consequently
+    setIsModified(hasModifiedFilterInQ ? filtersStates.isModified : "both");
     setNodesLevel(hasLevelFilterInQ ? filtersStates.nodesLevel : "both");
     setTaxonomyScope(
       hasScopeFilterInQ ? filtersStates.taxonomyScopeMode : "both",
@@ -92,6 +109,12 @@ export const FiltersArea = ({
     updateFiltersStates(filters);
   }, [filters, updateFiltersStates]);
 
+  // mapping from names to value
+  const modifiedOptions = {
+    All: "both",
+    "Only Modified": "modified",
+    "Only not modified": "not:modified",
+  };
   const scopeOptions = {
     "Only Outside Current Taxonomy": "external",
     "Only In Current Taxonomy": "not:external",
@@ -117,6 +140,15 @@ export const FiltersArea = ({
         alignItems: "center",
       }}
     >
+      <SingleSelectFilter
+        label="Status"
+        filterValue={isModified}
+        listOfChoices={Object.keys(modifiedOptions)}
+        mapValueToCode={(value: string) => modifiedOptions[value]}
+        setQ={setQ}
+        keySearchTerm="is"
+        setCurrentPage={setCurrentPage}
+      />
       <SingleSelectFilter
         label="Hierarchy Level"
         filterValue={nodesLevel}

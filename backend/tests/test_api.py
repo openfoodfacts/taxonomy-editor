@@ -8,15 +8,15 @@ from sample.load import load_file
 
 
 @pytest.fixture(autouse=True)
-def test_setup(neo4j):
+async def test_setup(database_lifespan, anyio_backend):
     # delete all the nodes and relations in the database
-    with neo4j.session() as session:
+    async with database_lifespan.session() as session:
         query = "MATCH (n) DETACH DELETE n"
-        session.run(query)
+        await session.run(query)
         query = "DROP INDEX p_test_branch_SearchIds IF EXISTS"
-        session.run(query)
+        await session.run(query)
         query = "DROP INDEX p_test_branch_SearchTagsIds IF EXISTS"
-        session.run(query)
+        await session.run(query)
 
 
 def test_hello(client):
@@ -54,7 +54,7 @@ def test_add_taxonomy_invalid_branch_name(client):
         )
 
     assert response.status_code == 422
-    assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
+    assert response.json() == {"detail": "branch_name: Enter a valid branch name!"}
 
 
 def test_add_taxonomy_duplicate_project_name(client):

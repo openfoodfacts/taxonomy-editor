@@ -22,16 +22,14 @@ import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
 
-function formatDate(date) {
-  const map = {
+function dateComponents(date) {
+  return {
     mm: ("0" + (date.getMonth() + 1)).slice(-2),
     dd: ("0" + date.getDate()).slice(-2),
-    yy: ("0" + date.getFullYear()).slice(-2),
+    yy: ("000" + date.getFullYear()).slice(-4),
     HH: ("0" + date.getHours()).slice(-2),
     MinMin: ("0" + date.getMinutes()).slice(-2),
   };
-
-  return `${map.mm}${map.dd}${map.yy}_${map.HH}_${map.MinMin}`;
 }
 
 export const StartProject = () => {
@@ -44,7 +42,8 @@ export const StartProject = () => {
 
   const findDefaultBranchName = useCallback(() => {
     if (taxonomyName === "" || ownerName === "") return "";
-    return `${formatDate(new Date())}_${taxonomyName}_${ownerName}`
+    const date = dateComponents(new Date());
+    return `${date.yy}_${date.mm}_${date.dd}_${ownerName}_${taxonomyName}`
       .replace(/[\s-]+/g, "_")
       .toLowerCase();
   }, [ownerName, taxonomyName]);
@@ -191,7 +190,7 @@ export const StartProject = () => {
           >
             Explain what is your goal with this new project, what changes are
             you going to bring. Remember to privilege small projects (do big
-            project as a succession of small one).
+            project as a succession of small ones).
           </FormHelperText>
 
           <Button

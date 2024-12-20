@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from openfoodfacts_taxonomy_parser import utils as parser_utils
@@ -12,7 +13,7 @@ log = logging.getLogger(__name__)
 async def delete_project_nodes(project_id: str):
     """
     Remove all nodes for project.
-    This includes entries, stopwords, synonyms and errors
+    This includes entries, stopwords, synonyms, errors and removed entries
     """
 
     query = f"""
@@ -38,6 +39,8 @@ async def create_entry_node(
         "id": language_code + ":" + normalized_name,
         f"tags_{language_code}": [name],
         f"tags_ids_{language_code}": [normalized_name],
+        "modified": datetime.datetime.now().timestamp(),
+        "is_external": False,
     }
     params = {"entry_node": entry_node_data}
 

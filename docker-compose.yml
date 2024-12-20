@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   neo4j:
-    restart: ${RESTART_POLICY:-no}
+    restart: ${RESTART_POLICY:-always}
     image: neo4j:5.14.0-community
     ports:
       # admin console
@@ -28,7 +28,7 @@ services:
       # directory for neo4j imports
     command: neo4j
   taxonomy_api:
-    restart: ${RESTART_POLICY:-no}
+    restart: ${RESTART_POLICY:-always}
     image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_api:${DOCKER_TAG}
     environment:
       NEO4J_URI: "bolt://neo4j:7687"
@@ -40,6 +40,7 @@ services:
       FORWARDED_ALLOW_IPS: "*"
   taxonomy_frontend:
     # this is the nginx frontend serving react static version or redirecting queries
+    restart: ${RESTART_POLICY:-always}
     image: ghcr.io/openfoodfacts/taxonomy-editor/taxonomy_frontend:${DOCKER_TAG}
     depends_on:
       - taxonomy_api

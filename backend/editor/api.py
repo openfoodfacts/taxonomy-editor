@@ -184,7 +184,7 @@ async def find_all_nodes(response: Response, branch: str, taxonomy_name: str):
     Get all nodes within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    all_nodes = await taxonomy.get_all_nodes("")
+    all_nodes = await taxonomy.get_all_nodes()
     return all_nodes
 
 
@@ -235,7 +235,7 @@ async def find_one_synonym(response: Response, branch: str, taxonomy_name: str, 
     Get synonym corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    one_synonym = await taxonomy.get_nodes("SYNONYMS", synonym)
+    one_synonym = await taxonomy.get_nodes(NodeType.SYNONYMS, synonym)
 
     check_single(one_synonym)
 
@@ -248,7 +248,7 @@ async def find_all_synonyms(response: Response, branch: str, taxonomy_name: str)
     Get all synonyms within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    all_synonyms = await taxonomy.get_all_nodes("SYNONYMS")
+    all_synonyms = await taxonomy.get_all_nodes(NodeType.SYNONYMS)
     return all_synonyms
 
 
@@ -258,7 +258,7 @@ async def find_one_stopword(response: Response, branch: str, taxonomy_name: str,
     Get stopword corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    one_stopword = await taxonomy.get_nodes("STOPWORDS", stopword)
+    one_stopword = await taxonomy.get_nodes(NodeType.STOPWORDS, stopword)
 
     check_single(one_stopword)
 
@@ -271,7 +271,7 @@ async def find_all_stopwords(response: Response, branch: str, taxonomy_name: str
     Get all stopwords within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    all_stopwords = await taxonomy.get_all_nodes("STOPWORDS")
+    all_stopwords = await taxonomy.get_all_nodes(NodeType.STOPWORDS)
     return all_stopwords
 
 
@@ -281,7 +281,7 @@ async def find_header(response: Response, branch: str, taxonomy_name: str):
     Get __header__ within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    header = await taxonomy.get_nodes("TEXT", "__header__")
+    header = await taxonomy.get_nodes(NodeType.TEXT, "__header__")
     return header[0]
 
 
@@ -291,7 +291,7 @@ async def find_footer(response: Response, branch: str, taxonomy_name: str):
     Get __footer__ within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    footer = await taxonomy.get_nodes("TEXT", "__footer__")
+    footer = await taxonomy.get_nodes(NodeType.TEXT, "__footer__")
     return footer[0]
 
 
@@ -395,7 +395,7 @@ async def upload_taxonomy(
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     if not taxonomy.is_valid_branch_name():
-        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
+        raise HTTPException(status_code=422, detail="branch_name: Enter a valid branch name!")
     if await taxonomy.does_project_exist():
         raise HTTPException(status_code=409, detail="Project already exists!")
     if not await taxonomy.is_branch_unique(from_github=False):
@@ -431,7 +431,7 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     incoming_data = await request.json()
     incoming_data["id"] = entry
     new_entry = EntryNode(**incoming_data)
-    updated_entry = await taxonomy.update_node("ENTRY", new_entry)
+    updated_entry = await taxonomy.update_node(NodeType.ENTRY, new_entry)
     return updated_entry
 
 
@@ -467,5 +467,5 @@ async def delete_project(branch: str, taxonomy_name: str):
     """
     Delete a project
     """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    await project_controller.delete_project(taxonomy.project_name)
+    project_id = project_controller.get_project_id(branch, taxonomy_name)
+    await project_controller.delete_project(project_id)

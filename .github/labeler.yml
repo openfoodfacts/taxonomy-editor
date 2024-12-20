@@ -1,11 +1,11 @@
 # Add labels to any any pull request with changes to the specified paths
 # for reference, see https://github.com/actions/labeler
 
-github:
+GitHub:
   - changed-files:
       - any-glob-to-any-file: ".github/**/*"
 
-documentation:
+📚 Documentation:
   - changed-files:
       - any-glob-to-any-file: "CONTRIBUTING.md"
       - any-glob-to-any-file: "LICENSE"
@@ -18,14 +18,14 @@ documentation:
       - any-glob-to-any-file: "doc/assets/.empty"
       - any-glob-to-any-file: "doc/**/*"
 
-docker:
+🐳 Docker:
   - changed-files:
       - any-glob-to-any-file: "backend/Dockerfile"
       - any-glob-to-any-file: "taxonomy-editor-frontend/Dockerfile"
       - any-glob-to-any-file: "docker-compose.yml"
       - any-glob-to-any-file: "docker/dev.yml"
 
-backend:
+Backend:
   - changed-files:
       - any-glob-to-any-file: "backend/editor/__init__.py"
       - any-glob-to-any-file: "backend/editor/api.py"
@@ -44,11 +44,11 @@ backend:
       - any-glob-to-any-file: "backend/sample/test.txt"
       - any-glob-to-any-file: "backend/**/*"
 
-frontend:
+Frontend:
   - changed-files:
       - any-glob-to-any-file: "taxonomy-editor-frontend/**/*"
 
-dependencies:
+Dependencies:
   - changed-files:
       - any-glob-to-any-file: "backend/pyproject.toml"
       - any-glob-to-any-file: "backend/poetry.lock"
@@ -56,19 +56,19 @@ dependencies:
       - any-glob-to-any-file: "parser/poetry.lock"
       - any-glob-to-any-file: "taxonomy-editor-frontend/package.json"
 
-api:
+API:
   - changed-files:
       - any-glob-to-any-file: "backend/editor/api.py"
 
-nginx:
+NGINX:
   - changed-files:
       - any-glob-to-any-file: "conf/nginx.conf"
 
-neo4j:
+Neo4j:
   - changed-files:
       - any-glob-to-any-file: "neo4j/**/*"
 
-parser:
+Parser:
   - changed-files:
       - any-glob-to-any-file: "parser/Makefile"
       - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/__init__.py"
@@ -84,7 +84,7 @@ parser:
       - any-glob-to-any-file: "parser/tests/integration/__init__.py"
       - any-glob-to-any-file: "parser/**/*"
 
-tests:
+🧪 tests:
   - any-glob-to-any-file: "parser/tests/__init__.py"
   - any-glob-to-any-file: "parser/tests/conftest.py"
   - any-glob-to-any-file: "parser/tests/data/test.txt"

@@ -3,10 +3,12 @@ Database helper functions for API
 """
 
 import asyncio
+import datetime
 import logging
 import shutil
 import tempfile
 import urllib.request  # Sending requests
+from typing import Optional
 
 from fastapi import BackgroundTasks, HTTPException, UploadFile
 
@@ -14,11 +16,17 @@ from fastapi import BackgroundTasks, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from openfoodfacts_taxonomy_parser import parser  # Parser for taxonomies
 from openfoodfacts_taxonomy_parser import unparser  # Unparser for taxonomies
+from openfoodfacts_taxonomy_parser import patcher
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 from . import settings, utils
 from .controllers.node_controller import create_entry_node, get_error_node
-from .controllers.project_controller import create_project, edit_project, get_project
+from .controllers.project_controller import (
+    create_project,
+    edit_project,
+    get_project,
+    get_project_id,
+)
 from .exceptions import GithubBranchExistsError  # Custom exceptions
 from .exceptions import (
     GithubUploadError,
@@ -32,7 +40,7 @@ from .graph_db import (  # Neo4J transactions context managers
     TransactionCtx,
     get_current_transaction,
 )
-from .models.node_models import EntryNode, EntryNodeCreate
+from .models.node_models import EntryNode, EntryNodeCreate, NodeType
 from .models.project_models import ProjectCreate, ProjectEdit, ProjectStatus
 from .settings import EXTERNAL_TAXONOMIES
 
@@ -49,23 +57,23 @@ class TaxonomyGraph:
     def __init__(self, branch_name, taxonomy_name):
         self.taxonomy_name = taxonomy_name
         self.branch_name = branch_name
-        self.project_name = "p_" + taxonomy_name + "_" + branch_name
+        self.project_name = get_project_id(branch_name, taxonomy_name)
 
     def taxonomy_path_in_repository(self, taxonomy_name):
         return utils.taxonomy_path_in_repository(taxonomy_name)
 
-    def get_label(self, id):
+    def get_label(self, id) -> NodeType:
         """
         Helper function for getting the label for a given id
         """
         if id.startswith("stopword"):
-            return "STOPWORDS"
+            return NodeType.STOPWORDS
         elif id.startswith("synonym"):
-            return "SYNONYMS"
+            return NodeType.SYNONYMS
         elif id.startswith("__header__") or id.startswith("__footer__"):
-            return "TEXT"
+            return NodeType.TEXT
         else:
-            return "ENTRY"
+            return NodeType.ENTRY
 
     async def create_entry_node(self, name, main_language_code) -> str:
         """
@@ -199,18 +207,22 @@ class TaxonomyGraph:
         background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
         return True
 
-    def dump_taxonomy(self, background_tasks: BackgroundTasks):
+    def dump_taxonomy(
+        self,
+        background_tasks: BackgroundTasks,
+        dump_cls: unparser.WriteTaxonomy = patcher.PatchTaxonomy,
+    ):
         """
         Helper function to create the txt file of a taxonomy
         """
         # Create unparser object and pass a sync session to it
         with SyncTransactionCtx() as session:
-            unparser_object = unparser.WriteTaxonomy(session)
+            dumper = dump_cls(session)
             # Creates a unique file for dumping the taxonomy
             filename = self.project_name + ".txt"
             try:
                 # Dump taxonomy with given file name and branch name
-                unparser_object(filename, self.branch_name, self.taxonomy_name)
+                dumper(filename, self.branch_name, self.taxonomy_name)
                 # Program file removal in the background
                 background_tasks.add_task(utils.file_cleanup, filename)
                 return filename
@@ -340,9 +352,9 @@ class TaxonomyGraph:
 
         return [item async for result_list in query_result for item in result_list]
 
-    async def add_node_to_end(self, label, entry):
+    async def add_node_to_end(self, label: NodeType, entry):
         """
-        Helper function which adds an existing node to end of taxonomy
+        Helper function which adds an a newly created node to end of taxonomy
         """
         # Delete relationship between current last node and __footer__
         query = f"""
@@ -357,8 +369,10 @@ class TaxonomyGraph:
         # Rebuild relationships by inserting incoming node at the end
         query = []
         query = f"""
-            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
-            MATCH (last_node:{self.project_name}:{end_node_label}) WHERE last_node.id = $endnodeid
+            MATCH (new_node:{self.project_name}:{label.value})
+            WHERE new_node.id = $id
+            MATCH (last_node:{self.project_name}:{end_node_label.value})
+            WHERE last_node.id = $endnodeid
             MATCH (footer:{self.project_name}:TEXT) WHERE footer.id = "__footer__"
             CREATE (last_node)-[:is_before]->(new_node)
             CREATE (new_node)-[:is_before]->(footer)
@@ -366,7 +380,7 @@ class TaxonomyGraph:
         await get_current_transaction().run(query, {"id": entry, "endnodeid": end_node["id"]})
 
     # UNUSED FOR NOW
-    async def add_node_to_beginning(self, label, entry):
+    async def add_node_to_beginning(self, label: NodeType, entry):
         """
         Helper function which adds an existing node to beginning of taxonomy
         """
@@ -382,8 +396,8 @@ class TaxonomyGraph:
 
         # Rebuild relationships by inserting incoming node at the beginning
         query = f"""
-            MATCH (new_node:{self.project_name}:{label}) WHERE new_node.id = $id
-            MATCH (first_node:{self.project_name}:{start_node_label})
+            MATCH (new_node:{self.project_name}:{label.value}) WHERE new_node.id = $id
+            MATCH (first_node:{self.project_name}:{start_node_label.value})
                 WHERE first_node.id = $startnodeid
             MATCH (header:{self.project_name}:TEXT) WHERE header.id = "__header__"
             CREATE (new_node)-[:is_before]->(first_node)
@@ -391,31 +405,70 @@ class TaxonomyGraph:
         """
         await get_current_transaction().run(query, {"id": entry, "startnodeid": start_node["id"]})
 
-    async def delete_node(self, label, entry):
+    async def delete_node(self, label: NodeType, entry):
         """
         Helper function used for deleting a node with given id and label
+
+        We don't really delete it because we have to keep track of modified nodes.
+        We set the entry type label to REMOVED_<label>
         """
-        # Finding node to be deleted using node ID
+        modified = datetime.datetime.now().timestamp()
+        # Remove node from is_before relation and attach node previous node to next node
         query = f"""
             // Find node to be deleted using node ID
-            MATCH (deleted_node:{self.project_name}:{label})-[:is_before]->(next_node)
+            MATCH (deleted_node:{self.project_name}:{label.value})-[:is_before]->(next_node)
                 WHERE deleted_node.id = $id
-            MATCH (previous_node)-[:is_before]->(deleted_node)
+            MATCH (previous_node)-[r:is_before]->(deleted_node)
             // Remove node
-            DETACH DELETE (deleted_node)
+            DELETE r
             // Rebuild relationships after deletion
             CREATE (previous_node)-[:is_before]->(next_node)
         """
-        result = await get_current_transaction().run(query, {"id": entry})
+        await get_current_transaction().run(query, {"id": entry})
+        # transfert child parent relations, and mark child nodes as modified
+        query = f"""
+            // Find relations to be removed using node ID
+            MATCH (child_node)-[r:is_child_of]->(deleted_node:{self.project_name}:{label.value})
+                WHERE deleted_node.id = $id
+            MATCH (deleted_node)-[:is_child_of]->(parent_node)
+            DELETE r
+            // transfer child
+            CREATE (child_node) -[:is_child_of]->(parent_node)
+            // mark modified
+            SET child_node.modified = $modified
+        """
+        await get_current_transaction().run(query, {"id": entry, "modified": modified})
+        # or if no transfer is needed, just mark modified
+        query = f"""
+            // Find relations to be removed using node ID
+            MATCH (child_node)-[r:is_child_of]->(deleted_node:{self.project_name}:{label.value})
+                WHERE deleted_node.id = $id
+            DELETE r
+            // mark children as modified
+            SET child_node.modified = $modified
+        """
+        await get_current_transaction().run(query, {"id": entry, "modified": modified})
+        # change label of node to be deleted
+        query = f"""
+            MATCH (deleted_node:{self.project_name}:{label.value})
+            WHERE deleted_node.id = $id
+            REMOVE deleted_node:{label.value}
+            SET deleted_node:REMOVED_{label.value}
+            // and mark modification date also
+            SET deleted_node.modified = $modified
+        """
+        result = await get_current_transaction().run(query, {"id": entry, "modified": modified})
         return await async_list(result)
 
-    async def get_all_nodes(self, label):
+    async def get_all_nodes(self, label: Optional[NodeType] = None, removed: bool = False):
         """
         Helper function used for getting all nodes with/without given label
         """
-        qualifier = f":{label}" if label else ""
+        labels = [label.value] if label else [label.value for label in NodeType]
+        if removed:
+            labels = [f"REMOVED_{label}" for label in labels]
         query = f"""
-            MATCH (n:{self.project_name}{qualifier}) RETURN n
+            MATCH (n:{self.project_name}:{"|".join(labels)}) RETURN n
         """
         result = await get_current_transaction().run(query)
         return await async_list(result)
@@ -450,12 +503,12 @@ class TaxonomyGraph:
         error_node = (await result.data())[0]["error_node"]
         return error_node
 
-    async def get_nodes(self, label, entry):
+    async def get_nodes(self, label: NodeType, entry):
         """
         Helper function used for getting the node with given id and label
         """
         query = f"""
-            MATCH (n:{self.project_name}:{label}) WHERE n.id = $id
+            MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $id
             RETURN n
         """
         result = await get_current_transaction().run(query, {"id": entry})
@@ -507,7 +560,7 @@ class TaxonomyGraph:
         }
         return stopwords_dict
 
-    async def update_node(self, label, new_node: EntryNode):
+    async def update_node(self, label: NodeType, new_node: EntryNode):
         """
         Helper function used for updation of node with given id and label
         """
@@ -520,7 +573,10 @@ class TaxonomyGraph:
         new_node.recompute_tags_ids(stopwords)
 
         # Build query
-        query = [f"""MATCH (n:{self.project_name}:{label}) WHERE n.id = $id """]
+        query = [f"""MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $id """]
+
+        modified = datetime.datetime.now().timestamp()
+        query.append(f"""\nSET n.modified = {modified}""")
 
         # Delete keys removed by user
         deleted_keys = (
@@ -539,7 +595,8 @@ class TaxonomyGraph:
 
         # Update id if first translation of the main language has changed
         new_node.recompute_id()
-        if new_node.id != curr_node.id:
+        id_changed = new_node.id != curr_node.id
+        if id_changed:
             # check it does not already exists
             if len(await self.get_nodes(label, new_node.id)) != 0:
                 raise HTTPException(
@@ -552,30 +609,53 @@ class TaxonomyGraph:
         params = dict(data)
         log.debug("update_node query: %s \nParam:%s", " ".join(query), params)
         result = await get_current_transaction().run(" ".join(query), params)
-        return (await async_list(result))[0]["n"]
+        updated_node = (await async_list(result))[0]["n"]
+        if id_changed:
+            # mark children as modified because the parent id has changed
+            query = f"""
+            MATCH
+                (child:{self.project_name}:ENTRY)
+                - [:is_child_of] ->
+                (parent:{self.project_name}:ENTRY)
+            WHERE parent.id = $id
+            SET child.modified = $modified
+            """
+            await get_current_transaction().run(
+                query, {"id": updated_node["id"], "modified": modified}
+            )
+        return updated_node
 
     async def update_node_children(self, entry, new_children_ids):
         """
         Helper function used for updation of node children with given id
         """
+        modified = datetime.datetime.now().timestamp()
         # Parse node ids from Neo4j Record object
         current_children = [record["child.id"] for record in list(await self.get_children(entry))]
-        deleted_children = set(current_children) - set(new_children_ids)
+        deleted_children = list(set(current_children) - set(new_children_ids))
         added_children = set(new_children_ids) - set(current_children)
 
         # Delete relationships
-        for child in deleted_children:
-            query = f"""
-                MATCH
-                    (deleted_child:{self.project_name}:ENTRY)
-                    -[rel:is_child_of]->
-                    (parent:{self.project_name}:ENTRY)
-                WHERE parent.id = $id AND deleted_child.id = $child
-                DELETE rel
-            """
-            await get_current_transaction().run(query, {"id": entry, "child": child})
+        query = f"""
+            MATCH
+                (deleted_child:{self.project_name}:ENTRY)
+                -[rel:is_child_of]->
+                (parent:{self.project_name}:ENTRY)
+            WHERE parent.id = $id AND deleted_child.id IN $children
+            DELETE rel
+        """
+        await get_current_transaction().run(query, {"id": entry, "children": deleted_children})
+        # update children modified property
+        query = f"""
+            MATCH (child:{self.project_name}:ENTRY)
+            WHERE child.id in $children
+            SET child.modified = $modified
+        """
+        await get_current_transaction().run(
+            query, {"children": deleted_children, "modified": modified}
+        )
 
-        # Create non-existing nodes
+        # get non-existing nodes
         query = f"""
             MATCH (child:{self.project_name}:ENTRY)
                 WHERE child.id in $ids RETURN child.id
@@ -586,14 +666,14 @@ class TaxonomyGraph:
 
         # Normalising new children node ID
         created_child_ids = []
-
+        # create new nodes
         for child in to_create:
             main_language_code, child_name = child.split(":", 1)
             created_node_id = await self.create_entry_node(child_name, main_language_code)
             created_child_ids.append(created_node_id)
 
             # TODO: We would prefer to add the node just after its parent entry
-            await self.add_node_to_end("ENTRY", created_node_id)
+            await self.add_node_to_end(NodeType.ENTRY, created_node_id)
 
         # Stores result of last query executed
         result = []
@@ -612,5 +692,13 @@ class TaxonomyGraph:
                 query, {"id": entry, "child_id": child_id}
             )
             result = list(await _result.value())
+        # update modified of existing but added children entries
+        # update children modified property
+        query = f"""
+            MATCH (child:{self.project_name}:ENTRY)
+            WHERE child.id in $children
+            SET child.modified = $modified
+        """
+        await get_current_transaction().run(query, {"children": existing_ids, "modified": modified})
 
         return result

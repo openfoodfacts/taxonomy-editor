@@ -10,6 +10,7 @@ import {
   TableBody,
   TableHead,
   TableContainer,
+  TableRow,
   Stack,
 } from "@mui/material";
 import MaterialTable from "@material-table/core";
@@ -69,22 +70,26 @@ export const Errors = () => {
       <TableContainer sx={{ mb: 2 }}>
         <Table style={{ border: "solid", borderWidth: 1.5 }}>
           <TableHead>
-            <TableCell align="left">
-              <Typography variant="h6">Taxonomy Name</Typography>
-            </TableCell>
-            <TableCell align="left">
-              <Typography variant="h6">Branch Name</Typography>
-            </TableCell>
+            <TableRow>
+              <TableCell align="left">
+                <Typography variant="h6">Taxonomy Name</Typography>
+              </TableCell>
+              <TableCell align="left">
+                <Typography variant="h6">Branch Name</Typography>
+              </TableCell>
+            </TableRow>
           </TableHead>
           <TableBody>
-            <TableCell align="left" component="td" scope="row">
-              <Typography variant="body1">
-                {toTitleCase(taxonomyName || "")}
-              </Typography>
-            </TableCell>
-            <TableCell align="left" component="td" scope="row">
-              <Typography variant="body1">{branchName}</Typography>
-            </TableCell>
+            <TableRow>
+              <TableCell align="left" component="td" scope="row">
+                <Typography variant="body1">
+                  {toTitleCase(taxonomyName || "")}
+                </Typography>
+              </TableCell>
+              <TableCell align="left" component="td" scope="row">
+                <Typography variant="body1">{branchName}</Typography>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>

@@ -51,7 +51,7 @@ async def database_lifespan():
     uri = settings.uri
     driver = neo4j.AsyncGraphDatabase.driver(uri)
     try:
-        yield
+        yield driver
     finally:
         await driver.close()
 

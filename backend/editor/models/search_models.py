@@ -42,7 +42,13 @@ class AbstractFilterSearchTerm(BaseModel, ABC):
 
 class IsFilterSearchTerm(AbstractFilterSearchTerm):
     filter_type: Literal["is"]
-    filter_value: Literal["root"] | Literal["external"] | Literal["not:external"]
+    filter_value: (
+        Literal["root"]
+        | Literal["external"]
+        | Literal["not:external"]
+        | Literal["modified"]
+        | Literal["not:modified"]
+    )
 
     def build_cypher_query(self, _param_name: str) -> CypherQuery:
         match self.filter_value:
@@ -52,6 +58,10 @@ class IsFilterSearchTerm(AbstractFilterSearchTerm):
                 return CypherQuery("n.is_external = true")
             case "not:external":
                 return CypherQuery("(n.is_external IS NULL OR n.is_external = false)")
+            case "modified":
+                return CypherQuery("n.modified IS NOT NULL")
+            case "not:modified":
+                return CypherQuery("n.modified IS NULL")
             case _:
                 raise ValueError("Invalid filter value")
 

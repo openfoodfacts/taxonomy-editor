@@ -99,8 +99,13 @@ local_config_quality: ## Run on lint configuration files
 
 build: ## Build docker images
 	@echo "🍜 Building docker images"
-	${DOCKER_COMPOSE} build
+	${DOCKER_COMPOSE} build ${args}
 	@echo "🍜 Project setup done"
+
+backend_poetry_update: ## Update poetry.lock file
+	@echo "🍜 Updating poetry.lock file"
+	${DOCKER_COMPOSE} run --user root --rm taxonomy_api bash -c "pip install poetry==1.4.2 && poetry lock --no-update"
+
 
 up: ## Run the project
 	@echo "🍜 Running project (ctrl+C to stop)"
@@ -177,11 +182,11 @@ config_quality: ## Run quality checks on configuration files
 
 tests: backend_tests ## Run all tests
 
-backend_tests: ## Run python tests
+backend_tests: ## Run python tests, you might provide additional arguments with args="…"
 	@echo "🍜 Running python tests"
 	${DOCKER_COMPOSE_TEST} up -d neo4j
-	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /parser
-	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests
+	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /parser ${args}
+	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests ${args}
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
 checks: quality tests ## Run all checks (quality + tests)
