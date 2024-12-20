@@ -27,6 +27,10 @@ class NodeData:
     preceding_lines: list[str] = field(default_factory=list)
     parent_tags: list[tuple[str, int]] = field(default_factory=list)
     src_position: int | None = None
+    # lines taken by this entry in the source file,
+    # stored a "start,end" strings, because nested collections are not supported
+    # this can be more than )start, end) if we merged duplicates
+    src_lines: list[str] | None = None
     properties: dict[str, str] = field(default_factory=dict)
     tags: dict[str, list[str]] = field(default_factory=dict)
     comments: dict[str, list[str]] = field(default_factory=dict)
@@ -39,6 +43,7 @@ class NodeData:
             "main_language": self.main_language,
             "preceding_lines": self.preceding_lines,
             "src_position": self.src_position,
+            "src_lines": self.src_lines,
             "is_external": self.is_external,
             "original_taxonomy": self.original_taxonomy,
             **self.properties,
@@ -230,8 +235,9 @@ class TaxonomyParser:
             )
         return False
 
-    def finalize_data(self, data, comments, saved_nodes):
+    def finalize_data(self, data, comments, saved_nodes, line_number: int):
         data = self._remove_separating_line(data)
+        data.src_lines = [f"{data.src_position - len(data.preceding_lines or [])},{line_number}"]
         if data.get_node_type() == NodeType.ENTRY:
             self._add_comments(data, comments, "end")
         if data.id in saved_nodes:
@@ -376,7 +382,7 @@ class TaxonomyParser:
                     # another function will use data to create a node
                     if previous_data is not None:
                         yield previous_data  # it's ok with this one
-                    previous_data = self.finalize_data(data, comments, saved_nodes)
+                    previous_data = self.finalize_data(data, comments, saved_nodes, line_number)
                     # if data was a duplicate (is_before is None) reuse same is_before
                     is_before = data.id if data.is_before else is_before
                     data = NodeData(is_before=is_before)
@@ -562,6 +568,8 @@ class TaxonomyParser:
                     )
                 # union of the preceding_lines comments
                 first_node.preceding_lines.extend(node.preceding_lines)
+                # union of src_lines
+                first_node.src_lines.extend(node.src_lines)
             else:
                 unique_entry_nodes.append(node)
                 ids_to_nodes[node.id] = node
@@ -587,7 +595,12 @@ class TaxonomyParser:
         entry_nodes: list[NodeData] = []
         entry_nodes.extend(external_entry_nodes)
         other_nodes = [
-            NodeData(id="__header__", preceding_lines=harvested_header_data, src_position=1)
+            NodeData(
+                id="__header__",
+                preceding_lines=harvested_header_data,
+                src_position=1,
+                src_lines=[f"1,{entries_start_line - 1}"],
+            )
         ]
         previous_links: list[PreviousLink] = []
         raw_child_links: list[ChildLink] = []
