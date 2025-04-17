@@ -18,6 +18,7 @@ SPLIT_WITH_SLASH = {
     "food_ingredients",
     "food_categories",
     "beauty_categories",
+    "beauty_ingredients",
     "beauty_labels",
     "product_categories",
     "product_labels",
