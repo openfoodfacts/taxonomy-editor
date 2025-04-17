@@ -20,8 +20,19 @@ SPLIT_WITH_SLASH = {
     "beauty_categories",
     "beauty_ingredients",
     "beauty_labels",
+    "beauty_abbreviations",
+    "beauty_allergens",
+    "beauty_body_parts",
+    "beauty_brands",
+    "beauty_eu_lists",
+    "beauty_inci_functions",
+    "beauty_safety",
+    "beauty_special_ingredients",
+    "beauty_warnings",
     "product_categories",
     "product_labels",
+    "petfood_ingredients",
+    "petfood_categories",
 }
 
 
