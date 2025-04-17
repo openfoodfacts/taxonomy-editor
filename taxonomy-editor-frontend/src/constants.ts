@@ -60,7 +60,6 @@ export const TAXONOMY_NAMES = [
   "Beauty Safety",
   "Beauty Special Ingredients",
   "Beauty Warnings",
-  "Brands",
   "Beauty Categories",
   "Beauty Labels",
   "Product Categories",
