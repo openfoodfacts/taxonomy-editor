@@ -18,6 +18,12 @@ def pytest_addoption(parser):
     This is useful after changes in the parser
     """
     parser.addoption("--clean-db", action="store_true", default=False)
+    parser.addoption(
+        "--update-test-results",
+        action="store_true",
+        default=False,
+        help="Regenerate dumps that we use to compare test results"
+    )
 
 
 @pytest.fixture
@@ -64,3 +70,9 @@ async def clean_db(request, database_lifespan):
     """clean_db if --clean-db was passed"""
     if request.config.getoption("--clean-db"):
         await clean_neo4j_db(database_lifespan)
+
+
+@pytest.fixture(scope="session")
+async def update_test_results(request, clean_db):
+    """tells if --update-test-results was passed"""
+    yield request.config.getoption("--update-test-results")

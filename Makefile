@@ -186,7 +186,7 @@ backend_tests: ## Run python tests, you might provide additional arguments with 
 	@echo "🍜 Running python tests"
 	${DOCKER_COMPOSE_TEST} up -d neo4j
 	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /parser ${args}
-	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests ${args}
+	${DOCKER_COMPOSE_TEST}  run --rm taxonomy_api pytest /code/tests ${backend_args} ${args}
 	${DOCKER_COMPOSE_TEST} stop neo4j
 
 checks: quality tests ## Run all checks (quality + tests)
