@@ -56,6 +56,7 @@ This tool can help a lot:
 ## How to help
 
 We track priorities and on-going tasks in:
+
 - [GitHub Project](https://github.com/orgs/openfoodfacts/projects/108/views/1)
 - [Meeting Notes](https://docs.google.com/document/d/1tdYkUmoRU8BxFPdCwtewoUi7PV8PmDlXtExOcPYyu-I/edit#)
 
