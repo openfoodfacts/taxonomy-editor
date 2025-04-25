@@ -53,11 +53,9 @@ const EditEntry = ({ taxonomyName, branchName, id }: EditEntryProps) => {
   const baseUrl: string = createBaseURL(taxonomyName, branchName);
 
   const handleDeleteNode = (baseUrl: string) => {
-    const data = { id: id };
-    fetch(baseUrl + "nodes", {
+    fetch(baseUrl + "nodes/" + id, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
     }).then(() => {
       setOpenDeleteDialog(false);
       setOpenSuccessDialog(true);
