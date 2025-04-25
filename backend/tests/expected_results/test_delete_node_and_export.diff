@@ -1,0 +1,18 @@
+--- 
++++ 
+@@ -13,15 +13,6 @@
+ description:fr: un yaourt de n'importe quel type
+ color:en: white
+ flavour:en: undef
+-
+-<en: yogurts
+-en: banana yogurts
+-fr: yaourts à la banane
+-nl: bananenyoghurt
+-description:en: a banana yogurt
+-description:fr: un yaourt à la banane
+-color:en: yellow
+-flavour:en: banana
+ 
+ <en: yogurts
+ en: Passion fruit yogurts
