@@ -13,6 +13,7 @@ import re
 from sample.dump import dump_db_to_buffer
 from sample.load import load_file
 
+
 class FakeBackgroundTask:
     """A fake background task to avoid running background tasks during tests"""
 
@@ -63,7 +64,9 @@ def make_dump_comparable(data, check=True):
             # created_at will change: remove it
             if check:
                 # assert it's a timestamp
-                assert TIMESTAMP_RE.match(node["created_at"]), f"created_at is not a timestamp: {node['created_at']}"
+                assert TIMESTAMP_RE.match(
+                    node["created_at"]
+                ), f"created_at is not a timestamp: {node['created_at']}"
             node["created_at"] = "--date--"
     # Relation order does not matter: sort relations
     data["relations"].sort(key=json.dumps)
@@ -106,7 +109,7 @@ def compare_taxonomy(content, taxonomy_path, diff_path, update_test_results):
         with open(diff_path, "w") as f:
             f.write(diff_txt)
         return
-    expected =  open(diff_path).read()
+    expected = open(diff_path).read()
     assert diff_txt == expected
 
 

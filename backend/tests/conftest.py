@@ -22,7 +22,7 @@ def pytest_addoption(parser):
         "--update-test-results",
         action="store_true",
         default=False,
-        help="Regenerate dumps that we use to compare test results"
+        help="Regenerate dumps that we use to compare test results",
     )
 
 

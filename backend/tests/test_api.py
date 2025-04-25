@@ -46,7 +46,7 @@ def _upload_taxonomy(client, path="tests/data/test.txt"):
 
 def test_upload_taxonomy(client, update_test_results):
     _upload_taxonomy(client)
-    compare_db_with_dump("test_upload_taxonomy.json",update_test_results)
+    compare_db_with_dump("test_upload_taxonomy.json", update_test_results)
 
 
 def test_add_taxonomy_invalid_branch_name(client):
@@ -93,7 +93,9 @@ def test_delete_node_and_export(client, update_test_results):
     # export
     response = client.get("/test_taxonomy/test_branch/downloadexport")
     content = response.content.decode("utf-8")
-    compare_taxonomy(content, "tests/data/test.txt", "test_delete_node_and_export.diff", update_test_results)
+    compare_taxonomy(
+        content, "tests/data/test.txt", "test_delete_node_and_export.diff", update_test_results
+    )
 
 
 def test_add_and_delete_node_and_export(client):

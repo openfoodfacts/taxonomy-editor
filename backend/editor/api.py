@@ -450,6 +450,7 @@ async def edit_entry_children(request: Request, branch: str, taxonomy_name: str,
 
 # Delete methods
 
+
 # delete node
 @app.delete("/{taxonomy_name}/{branch}/nodes/{id}")
 async def delete_node(request: Request, branch: str, taxonomy_name: str, id: str):
@@ -457,18 +458,6 @@ async def delete_node(request: Request, branch: str, taxonomy_name: str, id: str
     Deleting given node from a taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    await taxonomy.delete_node(taxonomy.get_label(id), id)
-
-
-# FIXME remove this method, this is not correct to have JSON payload with "DELETE" method
-@app.delete("/{taxonomy_name}/{branch}/nodes")
-async def delete_node(request: Request, branch: str, taxonomy_name: str):
-    """
-    Deleting given node from a taxonomy
-    """
-    taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    incoming_data = await request.json()
-    id = incoming_data["id"]
     await taxonomy.delete_node(taxonomy.get_label(id), id)
 
 
