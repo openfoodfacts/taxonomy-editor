@@ -419,13 +419,13 @@ class TaxonomyGraph:
             MATCH (deleted_node:{self.project_name}:{label.value})-[:is_before]->(next_node)
                 WHERE deleted_node.id = $id
             MATCH (previous_node)-[r:is_before]->(deleted_node)
-            // Remove node
+            // Remove relation
             DELETE r
             // Rebuild relationships after deletion
             CREATE (previous_node)-[:is_before]->(next_node)
         """
         await get_current_transaction().run(query, {"id": entry})
-        # transfert child parent relations, and mark child nodes as modified
+        # transfer child parent relations, and mark child nodes as modified
         query = f"""
             // Find relations to be removed using node ID
             MATCH (child_node)-[r:is_child_of]->(deleted_node:{self.project_name}:{label.value})
@@ -438,7 +438,7 @@ class TaxonomyGraph:
             SET child_node.modified = $modified
         """
         await get_current_transaction().run(query, {"id": entry, "modified": modified})
-        # or if no transfer is needed, just mark modified
+        # or if no transfer is needed (no grand parent), just mark children as modified
         query = f"""
             // Find relations to be removed using node ID
             MATCH (child_node)-[r:is_child_of]->(deleted_node:{self.project_name}:{label.value})
@@ -456,9 +456,11 @@ class TaxonomyGraph:
             SET deleted_node:REMOVED_{label.value}
             // and mark modification date also
             SET deleted_node.modified = $modified
+            RETURN deleted_node
         """
         result = await get_current_transaction().run(query, {"id": entry, "modified": modified})
-        return await async_list(result)
+        result_data = await async_list(result)
+        return result_data
 
     async def get_all_nodes(self, label: Optional[NodeType] = None, removed: bool = False):
         """

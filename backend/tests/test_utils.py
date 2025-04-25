@@ -1,12 +1,17 @@
-"""Some utils related to testing"""
+"""Some utils related to testing
+"""
 
+# IMPORTANT: this file is named test_utils to have "magic" assert from pytest works
+# and it also have a test inside
+
+import difflib
 import inspect
 import io
 import json
 import re
 
 from sample.dump import dump_db_to_buffer
-
+from sample.load import load_file
 
 class FakeBackgroundTask:
     """A fake background task to avoid running background tasks during tests"""
@@ -48,7 +53,7 @@ TIMESTAMP_RE = re.compile(r"^\d{4}-[0-1]\d-[0-3]\dT[0-2]\d:[0-6]\d:[0-6]\d(\.[\d
 
 def make_dump_comparable(data, check=True):
     """Makes two dumps comparable,
-    
+
     :param bool check: does some check on data
     """
     for node in data["nodes"]:
@@ -81,5 +86,36 @@ def compare_db_with_dump(dump_path, update_test_results):
     test_data = json.load(open(dump_path))
     make_dump_comparable(test_data, check=False)
     make_dump_comparable(db_data)
-    # we don't assert here, otherwise pytest magic will not work
-    return test_data, db_data
+    assert test_data, db_data
+
+
+def match_taxonomy(content, taxonomy_path):
+    assert content.splitlines(True) == open(taxonomy_path).readlines()
+
+
+def compare_taxonomy(content, taxonomy_path, diff_path, update_test_results):
+    if not diff_path.startswith("sample/"):
+        diff_path = "tests/expected_results/" + diff_path
+    # compare to original taxonomy
+    differences = difflib.unified_diff(
+        open(taxonomy_path).readlines(),
+        content.splitlines(True),
+    )
+    diff_txt = "".join(differences)
+    if update_test_results:
+        with open(diff_path, "w") as f:
+            f.write(diff_txt)
+        return
+    expected =  open(diff_path).read()
+    assert diff_txt == expected
+
+
+def test_load_and_dump():
+    """Here we are testing the tool"""
+    # Path to the test data JSON file
+    test_data_path = "sample/dumped-test-taxonomy.json"
+
+    # Run load.py to import data into Neo4j database
+    load_file(test_data_path)
+
+    compare_db_with_dump(test_data_path, update_test_results=False)

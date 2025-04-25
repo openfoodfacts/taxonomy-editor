@@ -9,7 +9,7 @@ from neo4j.exceptions import ServiceUnavailable
 from editor import graph_db
 from editor.api import app
 
-from .utils import clean_neo4j_db
+from .test_utils import clean_neo4j_db
 
 
 def pytest_addoption(parser):

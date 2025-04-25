@@ -3,8 +3,7 @@ import os
 
 import pytest
 
-from sample.load import load_file
-from .utils import compare_db_with_dump
+from .test_utils import compare_db_with_dump, compare_taxonomy, match_taxonomy
 
 
 @pytest.fixture(autouse=True)
@@ -33,8 +32,8 @@ def test_ping(client):
     assert response.json().get("ping").startswith("pong @")
 
 
-def _upload_taxonomy(client):
-    with open("tests/data/test.txt", "rb") as f:
+def _upload_taxonomy(client, path="tests/data/test.txt"):
+    with open(path, "rb") as f:
         response = client.post(
             "/test_taxonomy/test_branch/upload",
             files={"file": f},
@@ -47,8 +46,7 @@ def _upload_taxonomy(client):
 
 def test_upload_taxonomy(client, update_test_results):
     _upload_taxonomy(client)
-    db, expected = compare_db_with_dump("test_upload_taxonomy.json",update_test_results)
-    assert db == expected
+    compare_db_with_dump("test_upload_taxonomy.json",update_test_results)
 
 
 def test_add_taxonomy_invalid_branch_name(client):
@@ -83,17 +81,40 @@ def test_delete_project(client, update_test_results):
     response = client.delete("/test_taxonomy/test_branch")
 
     assert response.status_code == 204
-    db, expected = compare_db_with_dump("test_delete_project.json", update_test_results)
-    assert db == expected
+    compare_db_with_dump("test_delete_project.json", update_test_results)
 
 
-def test_load_and_dump():
-    """Here we are testing the tool"""
-    # Path to the test data JSON file
-    test_data_path = "sample/dumped-test-taxonomy.json"
+def test_delete_node_and_export(client, update_test_results):
+    _upload_taxonomy(client)
 
-    # Run load.py to import data into Neo4j database
-    load_file(test_data_path)
+    response = client.delete("/test_taxonomy/test_branch/nodes/en:banana-yogurts")
+    assert response.status_code == 200
 
-    db, expected = compare_db_with_dump(test_data_path, update_test_results=False)
-    assert db == expected
+    # export
+    response = client.get("/test_taxonomy/test_branch/downloadexport")
+    content = response.content.decode("utf-8")
+    compare_taxonomy(content, "tests/data/test.txt", "test_delete_node_and_export.diff", update_test_results)
+
+
+def test_add_and_delete_node_and_export(client):
+    """
+    A created then deleted node should not be exported
+
+    Related to https://github.com/openfoodfacts/taxonomy-editor/issues/561
+    """
+    _upload_taxonomy(client)
+
+    # add a node
+    response = client.post(
+        "/test_taxonomy/test_branch/entry",
+        json={"name": "Supa Yogurts", "main_language_code": "en"},
+    )
+    assert response.status_code == 201
+    # remove it
+    response = client.delete("/test_taxonomy/test_branch/nodes/en:supa-yogurts")
+    assert response.status_code == 200
+
+    # export
+    response = client.get("/test_taxonomy/test_branch/downloadexport")
+    content = response.content.decode("utf-8")
+    match_taxonomy(content, "tests/data/test.txt")

@@ -119,7 +119,7 @@ class PatchTaxonomy(WriteTaxonomy):
         # first pass for the easy ones
         for node, parents in self.get_all_nodes(project_label):
             node_position = node["src_position"]
-            if not node_position:
+            if not node_position and not self.is_removed(node):
                 # this is a new node
                 # we try to add it nearby it's latest parent,
                 # if it's not possible, we add it at the end
