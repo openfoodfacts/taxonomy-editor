@@ -1,6 +1,3 @@
-import json
-import os
-
 import pytest
 
 from .test_utils import compare_db_with_dump, compare_taxonomy, match_taxonomy

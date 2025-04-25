@@ -56,7 +56,7 @@ def get_options(args=None):
 
 def dump_db(file_path, url=DEFAULT_URL):
     with open(file_path, "w") as f:
-        dump_db_to_file(f, url)
+        dump_db_to_buffer(f, url)
 
 
 def dump_db_to_buffer(buffer, url=DEFAULT_URL):
