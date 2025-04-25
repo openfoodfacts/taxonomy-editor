@@ -170,39 +170,6 @@
             }
           }
         }
-      },
-      "delete": {
-        "summary": "Delete Node",
-        "description": "Deleting given node from a taxonomy",
-        "operationId": "delete_node__taxonomy_name___branch__nodes_delete",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
       }
     },
     "/{taxonomy_name}/{branch}/rootentries": {
@@ -484,45 +451,6 @@
             }
           }
         }
-      },
-      "post": {
-        "summary": "Edit Synonyms",
-        "description": "Editing a synonym in a taxonomy.\nNew key-value pairs can be added, old key-value pairs can be updated.\nURL will be of format '/synonym/<id>'",
-        "operationId": "edit_synonyms__taxonomy_name___branch__synonym__synonym__post",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          },
-          {
-            "name": "synonym",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Synonym" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
       }
     },
     "/{taxonomy_name}/{branch}/synonym": {
@@ -565,45 +493,6 @@
         "summary": "Find One Stopword",
         "description": "Get stopword corresponding to id within taxonomy",
         "operationId": "find_one_stopword__taxonomy_name___branch__stopword__stopword__get",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          },
-          {
-            "name": "stopword",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Stopword" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Edit Stopwords",
-        "description": "Editing a stopword in a taxonomy.\nNew key-value pairs can be added, old key-value pairs can be updated.\nURL will be of format '/stopword/<id>'",
-        "operationId": "edit_stopwords__taxonomy_name___branch__stopword__stopword__post",
         "parameters": [
           {
             "name": "branch",
@@ -708,47 +597,6 @@
             }
           }
         }
-      },
-      "post": {
-        "summary": "Edit Header",
-        "description": "Editing the __header__ in a taxonomy.",
-        "operationId": "edit_header__taxonomy_name___branch__header_post",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Header" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
       }
     },
     "/{taxonomy_name}/{branch}/footer": {
@@ -770,47 +618,6 @@
             "schema": { "type": "string", "title": "Taxonomy Name" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": {} } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Edit Footer",
-        "description": "Editing the __footer__ in a taxonomy.",
-        "operationId": "edit_footer__taxonomy_name___branch__footer_post",
-        "parameters": [
-          {
-            "name": "branch",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Branch" }
-          },
-          {
-            "name": "taxonomy_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Taxonomy Name" }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Footer" }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1115,6 +922,47 @@
         }
       }
     },
+    "/{taxonomy_name}/{branch}/nodes/{id}": {
+      "delete": {
+        "summary": "Delete Node",
+        "description": "Deleting given node from a taxonomy",
+        "operationId": "delete_node__taxonomy_name___branch__nodes__id__delete",
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Branch" }
+          },
+          {
+            "name": "taxonomy_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Taxonomy Name" }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/{taxonomy_name}/{branch}": {
       "delete": {
         "summary": "Delete Project",
@@ -1192,9 +1040,9 @@
           "precedingLines": {
             "items": { "type": "string" },
             "type": "array",
-            "title": "Precedinglines"
+            "title": "Precedinglines",
+            "default": []
           },
-          "srcPosition": { "type": "integer", "title": "Srcposition" },
           "mainLanguage": { "type": "string", "title": "Mainlanguage" },
           "tags": {
             "additionalProperties": {
@@ -1203,6 +1051,14 @@
             },
             "type": "object",
             "title": "Tags"
+          },
+          "tagsIds": {
+            "additionalProperties": {
+              "items": { "type": "string" },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Tagsids"
           },
           "properties": {
             "additionalProperties": { "type": "string" },
@@ -1230,10 +1086,9 @@
         "type": "object",
         "required": [
           "id",
-          "precedingLines",
-          "srcPosition",
           "mainLanguage",
           "tags",
+          "tagsIds",
           "properties",
           "comments"
         ],
@@ -1329,7 +1184,6 @@
         ],
         "title": "ErrorNode"
       },
-      "Footer": { "properties": {}, "type": "object", "title": "Footer" },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1341,7 +1195,6 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "Header": { "properties": {}, "type": "object", "title": "Header" },
       "IsFilterSearchTerm": {
         "properties": {
           "filterType": { "const": "is", "title": "Filtertype" },
@@ -1349,7 +1202,9 @@
             "anyOf": [
               { "const": "root" },
               { "const": "external" },
-              { "const": "not:external" }
+              { "const": "not:external" },
+              { "const": "modified" },
+              { "const": "not:modified" }
             ],
             "title": "Filtervalue"
           }
@@ -1426,6 +1281,10 @@
           "githubPrUrl": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Githubprurl"
+          },
+          "originalText": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Originaltext"
           }
         },
         "type": "object",
