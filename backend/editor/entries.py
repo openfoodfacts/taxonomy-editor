@@ -79,12 +79,9 @@ class TaxonomyGraph:
         """
         Helper function used to create an entry node with given name and main language
         """
-        stopwords = await self.get_stopwords_dict()
-
         return await create_entry_node(
             self.project_name,
             EntryNodeCreate(name=name, main_language_code=main_language_code),
-            stopwords,
         )
 
     async def get_local_taxonomy_file(self, tmpdir: str, uploadfile: UploadFile):
@@ -571,8 +568,7 @@ class TaxonomyGraph:
         curr_node = EntryNode(**result[0]["n"])
 
         # Recompute normalized tags ids corresponding to entry tags
-        stopwords = await self.get_stopwords_dict()
-        new_node.recompute_tags_ids(stopwords)
+        new_node.recompute_tags_ids()
 
         # Build query
         query = [f"""MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $id """]

@@ -18,7 +18,7 @@ fr: yaourts à la banane
 en: Passion fruit yogurts
 fr: yaourts au fruit de la passion
 
-< fr:yaourts fruit de la passion
+< fr:yaourts au fruit de la passion
 fr: yaourts au fruit de la passion allégés
 
 # meat 

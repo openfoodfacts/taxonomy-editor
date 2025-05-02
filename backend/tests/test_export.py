@@ -62,7 +62,7 @@ async def test_remove_parent(taxonomy_test):
         # remove "yaourts allégés" for "yaourts au fruit de la passion allégés"
         children = await taxonomy_test.get_children("fr:yaourts-alleges")
         children_ids = [record["child.id"] for record in children]
-        children_ids.remove("fr:yaourts-fruit-passion-alleges")
+        children_ids.remove("fr:yaourts-au-fruit-de-la-passion-alleges")
         await taxonomy_test.update_node_children("fr:yaourts-alleges", children_ids)
     background_tasks = FakeBackgroundTask()
     file_path = taxonomy_test.dump_taxonomy(background_tasks)
@@ -84,7 +84,7 @@ async def test_add_parent(taxonomy_test):
         # add "en: fake-stuff" to "yaourts au fruit de la passion allégés"
         children = await taxonomy_test.get_children("en:fake-stuff")
         children_ids = [record["child.id"] for record in children]
-        children_ids.append("fr:yaourts-fruit-passion-alleges")
+        children_ids.append("fr:yaourts-au-fruit-de-la-passion-alleges")
         await taxonomy_test.update_node_children("en:fake-stuff", children_ids)
     background_tasks = FakeBackgroundTask()
     file_path = taxonomy_test.dump_taxonomy(background_tasks)
@@ -106,7 +106,7 @@ async def test_add_synonym(taxonomy_test):
     async with graph_db.TransactionCtx():
         # add synonym to yaourts au fruit de la passion
         (node_data,) = await taxonomy_test.get_nodes(
-            NodeType.ENTRY, "fr:yaourts-fruit-passion-alleges"
+            NodeType.ENTRY, "fr:yaourts-au-fruit-de-la-passion-alleges"
         )
         node = EntryNode(**dict(node_data["n"]))
         node.tags["tags_fr"].append("yaourts allégé aux grenadilles")

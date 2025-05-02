@@ -56,7 +56,7 @@ def test_calling(neo4j):
             {
                 "id": "synonyms:1",
                 "tags_fr": ["fruit de la passion", "maracuja", "passion"],
-                "tags_ids_fr": ["fruit-passion", "maracuja", "passion"],
+                "tags_ids_fr": ["fruit-de-la-passion", "maracuja", "passion"],
                 "preceding_lines": [""],
                 "src_position": 7,
             },
@@ -115,7 +115,7 @@ def test_calling(neo4j):
                 "tags_en": ["banana yogurts"],
                 "tags_ids_en": ["banana-yogurts"],
                 "tags_fr": ["yaourts à la banane"],
-                "tags_ids_fr": ["yaourts-banane"],
+                "tags_ids_fr": ["yaourts-a-la-banane"],
                 "preceding_lines": [],
             },
             {
@@ -146,7 +146,7 @@ def test_calling(neo4j):
         expected_pairs = [
             ["en:banana-yogurts", "en:yogurts"],
             ["en:passion-fruit-yogurts", "en:yogurts"],
-            ["fr:yaourts-fruit-passion-alleges", "en:passion-fruit-yogurts"],
+            ["fr:yaourts-au-fruit-de-la-passion-alleges", "en:passion-fruit-yogurts"],
             ["en:fake-meat", "en:meat"],
             ["en:fake-duck-meat", "en:fake-meat"],
             ["en:fake-duck-meat", "en:fake-stuff"],
@@ -173,8 +173,8 @@ def test_calling(neo4j):
             ["synonyms:1", "en:yogurts"],
             ["en:yogurts", "en:banana-yogurts"],
             ["en:banana-yogurts", "en:passion-fruit-yogurts"],
-            ["en:passion-fruit-yogurts", "fr:yaourts-fruit-passion-alleges"],
-            ["fr:yaourts-fruit-passion-alleges", "en:meat"],
+            ["en:passion-fruit-yogurts", "fr:yaourts-au-fruit-de-la-passion-alleges"],
+            ["fr:yaourts-au-fruit-de-la-passion-alleges", "en:meat"],
             ["en:meat", "en:fake-meat"],
             ["en:fake-meat", "en:fake-stuff"],
             ["en:fake-stuff", "en:fake-duck-meat"],
@@ -220,7 +220,7 @@ def test_with_external_taxonomies(neo4j):
             {
                 "id": "synonyms:1",
                 "tags_fr": ["fruit de la passion", "maracuja", "passion"],
-                "tags_ids_fr": ["fruit-passion", "maracuja", "passion"],
+                "tags_ids_fr": ["fruit-de-la-passion", "maracuja", "passion"],
                 "preceding_lines": [""],
                 "src_position": 7,
             },
@@ -279,7 +279,7 @@ def test_with_external_taxonomies(neo4j):
                 "tags_en": ["banana yogurts"],
                 "tags_ids_en": ["banana-yogurts"],
                 "tags_fr": ["yaourts à la banane"],
-                "tags_ids_fr": ["yaourts-banane"],
+                "tags_ids_fr": ["yaourts-a-la-banane"],
                 "preceding_lines": [],
             },
             {
@@ -311,7 +311,7 @@ def test_with_external_taxonomies(neo4j):
             ["en:yogurts", "en:milk"],
             ["en:banana-yogurts", "en:yogurts"],
             ["en:passion-fruit-yogurts", "en:yogurts"],
-            ["fr:yaourts-fruit-passion-alleges", "en:passion-fruit-yogurts"],
+            ["fr:yaourts-au-fruit-de-la-passion-alleges", "en:passion-fruit-yogurts"],
             ["en:fake-meat", "en:meat"],
             ["en:fake-duck-meat", "en:fake-meat"],
             ["en:fake-duck-meat", "en:fake-stuff"],
@@ -338,8 +338,8 @@ def test_with_external_taxonomies(neo4j):
             ["synonyms:1", "en:yogurts"],
             ["en:yogurts", "en:banana-yogurts"],
             ["en:banana-yogurts", "en:passion-fruit-yogurts"],
-            ["en:passion-fruit-yogurts", "fr:yaourts-fruit-passion-alleges"],
-            ["fr:yaourts-fruit-passion-alleges", "en:meat"],
+            ["en:passion-fruit-yogurts", "fr:yaourts-au-fruit-de-la-passion-alleges"],
+            ["fr:yaourts-au-fruit-de-la-passion-alleges", "en:meat"],
             ["en:meat", "en:fake-meat"],
             ["en:fake-meat", "en:fake-stuff"],
             ["en:fake-stuff", "en:fake-duck-meat"],
@@ -406,7 +406,7 @@ def test_properties_confused_lang(neo4j, tmp_path):
             pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt"
         )
         test_parser(fpath, None, "branch", "test")
-        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:1-for-planet' RETURN n"
+        query = "MATCH (n:p_test_branch) WHERE n.id = 'en:1-for-the-planet' RETURN n"
         result = session.run(query)
         node = result.value()[0]
         # "web:en" was not confused with a language prefix "web:"

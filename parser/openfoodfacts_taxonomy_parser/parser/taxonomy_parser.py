@@ -111,7 +111,7 @@ class TaxonomyParser:
         """
         raw_id = raw_id.strip()
         lc, main_tag = raw_id.split(":", 1)
-        normalized_main_tag = normalize_text(main_tag, lc, stopwords=self.stopwords)
+        normalized_main_tag = normalize_text(main_tag, lc)
         normalized_id = f"{lc}:{normalized_main_tag}"
         return normalized_id
 
@@ -138,11 +138,11 @@ class TaxonomyParser:
         text = re.sub(r"\\‚", "\\,", text)
         return text
 
-    def _get_lc_value(self, line: str, remove_stopwords=True) -> tuple[str, list[str]]:
+    def _get_lc_value(self, line: str, remove_stopwords=False) -> tuple[str, list[str]]:
         """Get the language code "lc" and a list of values and normalized values"""
         lc, line = line.split(":", 1)
         values = [self.undo_normalize_text(word.strip()) for word in line.split(",")]
-        stopwords = self.stopwords if remove_stopwords else []
+        stopwords = self.stopwords if remove_stopwords else None
         tags = [normalize_text(word, lc, stopwords=stopwords) for word in values]
         return lc, values, tags
 
@@ -264,7 +264,7 @@ class TaxonomyParser:
         # remove "stopwords:" part
         line = line[10:]
         try:
-            lc, tags, tags_ids = self._get_lc_value(line, remove_stopwords=False)
+            lc, tags, tags_ids = self._get_lc_value(line)
         except ValueError:
             self.parser_logger.error(
                 f"Missing language code at line {line_number + 1} ? "
@@ -317,7 +317,7 @@ class TaxonomyParser:
         tagsids_list = []
         for word in line.split(","):
             tags_list.append(self.undo_normalize_text(word.strip()))
-            word_normalized = normalize_text(word, lang, stopwords=self.stopwords)
+            word_normalized = normalize_text(word, lang)
             if word_normalized not in tagsids_list:
                 # in case 2 normalized synonyms are the same
                 tagsids_list.append(word_normalized)
@@ -553,7 +553,7 @@ class TaxonomyParser:
                         # because two tags can have the same normalized value
                         language_code = key.split("_")[1]
                         first_node.tags[f"tags_ids_{language_code}"] = [
-                            normalize_text(tag, language_code, stopwords=self.stopwords)
+                            normalize_text(tag, language_code)
                             for tag in first_node.tags[key]
                         ]
                 for key, value in node.properties.items():

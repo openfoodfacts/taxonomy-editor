@@ -2,34 +2,82 @@
   "nodes": [
     {
       "id": "__header__",
-      "labels": ["TEXT", "p_test_taxonomy_test_branch"],
-      "preceding_lines": ["# test taxonomy"],
-      "src_lines": ["1,1"],
+      "labels": [
+        "p_test_taxonomy_test_branch",
+        "TEXT"
+      ],
+      "preceding_lines": [
+        "# test taxonomy"
+      ],
+      "src_lines": [
+        "1,1"
+      ],
       "src_position": 1
     },
     {
       "id": "stopwords:0",
-      "labels": ["STOPWORDS", "p_test_taxonomy_test_branch"],
+      "labels": [
+        "STOPWORDS",
+        "p_test_taxonomy_test_branch"
+      ],
       "preceding_lines": [],
-      "src_lines": ["3,3"],
+      "src_lines": [
+        "3,3"
+      ],
       "src_position": 3,
-      "tags_fr": ["aux", "au", "de", "le", "du", "la", "a", "et"],
-      "tags_ids_fr": ["aux", "au", "de", "le", "du", "la", "a", "et"]
+      "tags_fr": [
+        "aux",
+        "au",
+        "de",
+        "le",
+        "du",
+        "la",
+        "a",
+        "et"
+      ],
+      "tags_ids_fr": [
+        "aux",
+        "au",
+        "de",
+        "le",
+        "du",
+        "la",
+        "a",
+        "et"
+      ]
     },
     {
       "id": "synonyms:0",
-      "labels": ["SYNONYMS", "p_test_taxonomy_test_branch"],
+      "labels": [
+        "SYNONYMS",
+        "p_test_taxonomy_test_branch"
+      ],
       "preceding_lines": [],
-      "src_lines": ["5,5"],
+      "src_lines": [
+        "5,5"
+      ],
       "src_position": 5,
-      "tags_en": ["passion fruit", "passionfruit"],
-      "tags_ids_en": ["passion-fruit", "passionfruit"]
+      "tags_en": [
+        "passion fruit",
+        "passionfruit"
+      ],
+      "tags_ids_en": [
+        "passion-fruit",
+        "passionfruit"
+      ]
     },
     {
       "id": "synonyms:1",
-      "labels": ["SYNONYMS", "p_test_taxonomy_test_branch"],
-      "preceding_lines": [""],
-      "src_lines": ["6,7"],
+      "labels": [
+        "SYNONYMS",
+        "p_test_taxonomy_test_branch"
+      ],
+      "preceding_lines": [
+        ""
+      ],
+      "src_lines": [
+        "6,7"
+      ],
       "src_position": 7,
       "tags_fr": [
         "fruit de la passion",
@@ -37,12 +85,20 @@
         "maracuja",
         "passion"
       ],
-      "tags_ids_fr": ["fruit-passion", "fruits-passion", "maracuja", "passion"]
+      "tags_ids_fr": [
+        "fruit-de-la-passion",
+        "fruits-de-la-passion",
+        "maracuja",
+        "passion"
+      ]
     },
     {
       "id": "en:yogurts",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
@@ -50,19 +106,42 @@
       "prop_description_en": "a yogurts of whatever type",
       "prop_description_fr": "un yaourt de n'importe quel type",
       "prop_flavour_en": "undef",
-      "src_lines": ["9,15"],
+      "src_lines": [
+        "9,15"
+      ],
       "src_position": 9,
-      "tags_en": ["yogurts", "yoghurts"],
-      "tags_fr": ["yaourts", "yoghourts", "yogourts"],
-      "tags_ids_en": ["yogurts", "yoghurts"],
-      "tags_ids_fr": ["yaourts", "yoghourts", "yogourts"],
-      "tags_ids_nl": ["yoghurts"],
-      "tags_nl": ["yoghurts"]
+      "tags_en": [
+        "yogurts",
+        "yoghurts"
+      ],
+      "tags_fr": [
+        "yaourts",
+        "yoghourts",
+        "yogourts"
+      ],
+      "tags_ids_en": [
+        "yogurts",
+        "yoghurts"
+      ],
+      "tags_ids_fr": [
+        "yaourts",
+        "yoghourts",
+        "yogourts"
+      ],
+      "tags_ids_nl": [
+        "yoghurts"
+      ],
+      "tags_nl": [
+        "yoghurts"
+      ]
     },
     {
       "id": "en:banana-yogurts",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
@@ -70,49 +149,92 @@
       "prop_description_en": "a banana yogurt",
       "prop_description_fr": "un yaourt \u00e0 la banane",
       "prop_flavour_en": "banana",
-      "src_lines": ["17,24"],
+      "src_lines": [
+        "17,24"
+      ],
       "src_position": 17,
-      "tags_en": ["banana yogurts"],
-      "tags_fr": ["yaourts \u00e0 la banane"],
-      "tags_ids_en": ["banana-yogurts"],
-      "tags_ids_fr": ["yaourts-banane"],
-      "tags_ids_nl": ["bananenyoghurt"],
-      "tags_nl": ["bananenyoghurt"]
+      "tags_en": [
+        "banana yogurts"
+      ],
+      "tags_fr": [
+        "yaourts \u00e0 la banane"
+      ],
+      "tags_ids_en": [
+        "banana-yogurts"
+      ],
+      "tags_ids_fr": [
+        "yaourts-a-la-banane"
+      ],
+      "tags_ids_nl": [
+        "bananenyoghurt"
+      ],
+      "tags_nl": [
+        "bananenyoghurt"
+      ]
     },
     {
       "id": "en:passion-fruit-yogurts",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
       "prop_color_en": "undef",
       "prop_flavour_en": "passion fruit",
-      "src_lines": ["26,31"],
+      "src_lines": [
+        "26,31"
+      ],
       "src_position": 26,
-      "tags_en": ["Passion fruit yogurts"],
-      "tags_fr": ["yaourts au fruit de la passion"],
-      "tags_ids_en": ["passion-fruit-yogurts"],
-      "tags_ids_fr": ["yaourts-fruit-passion"],
-      "tags_ids_nl": ["yoghurts-met-passievrucht"],
-      "tags_nl": ["yoghurts met passievrucht"]
+      "tags_en": [
+        "Passion fruit yogurts"
+      ],
+      "tags_fr": [
+        "yaourts au fruit de la passion"
+      ],
+      "tags_ids_en": [
+        "passion-fruit-yogurts"
+      ],
+      "tags_ids_fr": [
+        "yaourts-au-fruit-de-la-passion"
+      ],
+      "tags_ids_nl": [
+        "yoghurts-met-passievrucht"
+      ],
+      "tags_nl": [
+        "yoghurts met passievrucht"
+      ]
     },
     {
       "id": "fr:yaourts-alleges",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["33,34"],
+      "src_lines": [
+        "33,34"
+      ],
       "src_position": 33,
-      "tags_fr": ["yaourts all\u00e9g\u00e9s"],
-      "tags_ids_fr": ["yaourts-alleges"]
+      "tags_fr": [
+        "yaourts all\u00e9g\u00e9s"
+      ],
+      "tags_ids_fr": [
+        "yaourts-alleges"
+      ]
     },
     {
       "id": "en:lemon-yogurts",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
@@ -120,104 +242,191 @@
       "prop_description_en": "a yogurts with lemon inside",
       "prop_description_fr": "un yaourt avec du citron",
       "prop_flavour_en": "lemon",
-      "src_lines": ["36,43"],
+      "src_lines": [
+        "36,43"
+      ],
       "src_position": 36,
-      "tags_en": ["lemon yogurts"],
-      "tags_fr": ["yaourts au citron"],
-      "tags_ids_en": ["lemon-yogurts"],
-      "tags_ids_fr": ["yaourts-citron"],
-      "tags_ids_nl": ["yoghurts-met-citroen"],
-      "tags_nl": ["yoghurts met citroen"]
+      "tags_en": [
+        "lemon yogurts"
+      ],
+      "tags_fr": [
+        "yaourts au citron"
+      ],
+      "tags_ids_en": [
+        "lemon-yogurts"
+      ],
+      "tags_ids_fr": [
+        "yaourts-au-citron"
+      ],
+      "tags_ids_nl": [
+        "yoghurts-met-citroen"
+      ],
+      "tags_nl": [
+        "yoghurts met citroen"
+      ]
     },
     {
-      "id": "fr:yaourts-fruit-passion-alleges",
+      "id": "fr:yaourts-au-fruit-de-la-passion-alleges",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["45,48"],
+      "src_lines": [
+        "45,48"
+      ],
       "src_position": 45,
-      "tags_fr": ["yaourts au fruit de la passion all\u00e9g\u00e9s"],
-      "tags_ids_fr": ["yaourts-fruit-passion-alleges"],
-      "tags_ids_nl": ["magere-yoghurts-met-passievrucht"],
-      "tags_nl": ["magere yoghurts met passievrucht"]
+      "tags_fr": [
+        "yaourts au fruit de la passion all\u00e9g\u00e9s"
+      ],
+      "tags_ids_fr": [
+        "yaourts-au-fruit-de-la-passion-alleges"
+      ],
+      "tags_ids_nl": [
+        "magere-yoghurts-met-passievrucht"
+      ],
+      "tags_nl": [
+        "magere yoghurts met passievrucht"
+      ]
     },
     {
-      "id": "fr:yaourts-citron-alleges",
+      "id": "fr:yaourts-au-citron-alleges",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
-      "preceding_lines": [""],
+      "preceding_lines": [
+        ""
+      ],
       "prop_description_en": "for light yogurts with lemon",
-      "src_lines": ["50,55"],
+      "src_lines": [
+        "50,55"
+      ],
       "src_position": 51,
-      "tags_fr": ["yaourts au citron all\u00e9g\u00e9s"],
-      "tags_ids_fr": ["yaourts-citron-alleges"],
-      "tags_ids_nl": ["magere-citroenyoghurt"],
-      "tags_nl": ["magere citroenyoghurt"]
+      "tags_fr": [
+        "yaourts au citron all\u00e9g\u00e9s"
+      ],
+      "tags_ids_fr": [
+        "yaourts-au-citron-alleges"
+      ],
+      "tags_ids_nl": [
+        "magere-citroenyoghurt"
+      ],
+      "tags_nl": [
+        "magere citroenyoghurt"
+      ]
     },
     {
-      "id": "fr:yaourts-myrtille",
+      "id": "fr:yaourts-a-la-myrtille",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
-      "parent_comments": ["# < fr:yaourt"],
+      "parent_comments": [
+        "# < fr:yaourt"
+      ],
       "preceding_lines": [],
       "prop_flavour_en": "blueberry",
       "prop_flavour_fr": "myrtille",
-      "src_lines": ["57,61"],
+      "src_lines": [
+        "57,61"
+      ],
       "src_position": 57,
-      "tags_fr": ["yaourts \u00e0 la myrtille"],
-      "tags_ids_fr": ["yaourts-myrtille"],
-      "tags_ids_nl": ["bosbessenyoghurt"],
-      "tags_nl": ["bosbessenyoghurt"]
+      "tags_fr": [
+        "yaourts \u00e0 la myrtille"
+      ],
+      "tags_ids_fr": [
+        "yaourts-a-la-myrtille"
+      ],
+      "tags_ids_nl": [
+        "bosbessenyoghurt"
+      ],
+      "tags_nl": [
+        "bosbessenyoghurt"
+      ]
     },
     {
       "id": "en:meat",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
       "prop_carbon_footprint_fr_foodges_value_fr": "10",
       "prop_vegan_en": "no",
-      "src_lines": ["63,65"],
+      "src_lines": [
+        "63,65"
+      ],
       "src_position": 63,
-      "tags_en": ["meat"],
-      "tags_ids_en": ["meat"]
+      "tags_en": [
+        "meat"
+      ],
+      "tags_ids_en": [
+        "meat"
+      ]
     },
     {
       "id": "en:beef",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
       "prop_carbon_footprint_fr_foodges_value_fr": "15",
-      "src_lines": ["67,69"],
+      "src_lines": [
+        "67,69"
+      ],
       "src_position": 67,
-      "tags_en": ["beef"],
-      "tags_ids_en": ["beef"]
+      "tags_en": [
+        "beef"
+      ],
+      "tags_ids_en": [
+        "beef"
+      ]
     },
     {
       "id": "en:roast-beef",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["71,72"],
+      "src_lines": [
+        "71,72"
+      ],
       "src_position": 71,
-      "tags_en": ["roast-beef"],
-      "tags_ids_en": ["roast-beef"]
+      "tags_en": [
+        "roast-beef"
+      ],
+      "tags_ids_en": [
+        "roast-beef"
+      ]
     },
     {
       "id": "en:fake-meat",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
@@ -226,62 +435,104 @@
         "# undef will stop parents from transmitting a value"
       ],
       "prop_vegan_en": "yes",
-      "src_lines": ["74,78"],
+      "src_lines": [
+        "74,78"
+      ],
       "src_position": 74,
-      "tags_en": ["fake-meat"],
-      "tags_ids_en": ["fake-meat"]
+      "tags_en": [
+        "fake-meat"
+      ],
+      "tags_ids_en": [
+        "fake-meat"
+      ]
     },
     {
       "id": "en:fake-stuff",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["80,80"],
+      "src_lines": [
+        "80,80"
+      ],
       "src_position": 80,
-      "tags_en": ["fake-stuff"],
-      "tags_ids_en": ["fake-stuff"]
+      "tags_en": [
+        "fake-stuff"
+      ],
+      "tags_ids_en": [
+        "fake-stuff"
+      ]
     },
     {
       "id": "en:fake-duck-meat",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["82,84"],
+      "src_lines": [
+        "82,84"
+      ],
       "src_position": 82,
-      "tags_en": ["fake-duck-meat"],
-      "tags_ids_en": ["fake-duck-meat"]
+      "tags_en": [
+        "fake-duck-meat"
+      ],
+      "tags_ids_en": [
+        "fake-duck-meat"
+      ]
     },
     {
       "id": "en:vegetable",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
       "prop_vegan_en": "yes",
-      "src_lines": ["86,87"],
+      "src_lines": [
+        "86,87"
+      ],
       "src_position": 86,
-      "tags_en": ["vegetable"],
-      "tags_ids_en": ["vegetable"]
+      "tags_en": [
+        "vegetable"
+      ],
+      "tags_ids_en": [
+        "vegetable"
+      ]
     },
     {
       "id": "en:soup",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [
         "# the soup yogourt synonym is used to test suggestions matching xx: synonyms"
       ],
       "prop_vegan_en": "maybe",
-      "src_lines": ["89,92"],
+      "src_lines": [
+        "89,92"
+      ],
       "src_position": 90,
-      "tags_en": ["soup"],
-      "tags_ids_en": ["soup"],
+      "tags_en": [
+        "soup"
+      ],
+      "tags_ids_en": [
+        "soup"
+      ],
       "tags_ids_xx": [
         "something-that-means-soup-in-every-language",
         "something-else-that-means-soup-in-every-language"
@@ -294,71 +545,130 @@
     {
       "id": "en:vegan-soup",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
       "prop_vegan_en": "yes",
-      "src_lines": ["94,96"],
+      "src_lines": [
+        "94,96"
+      ],
       "src_position": 94,
-      "tags_en": ["vegan-soup"],
-      "tags_ids_en": ["vegan-soup"]
+      "tags_en": [
+        "vegan-soup"
+      ],
+      "tags_ids_en": [
+        "vegan-soup"
+      ]
     },
     {
       "id": "en:fish-soup",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
       "prop_vegan_en": "no",
-      "src_lines": ["98,100"],
+      "src_lines": [
+        "98,100"
+      ],
       "src_position": 98,
-      "tags_en": ["fish-soup"],
-      "tags_ids_en": ["fish-soup"]
+      "tags_en": [
+        "fish-soup"
+      ],
+      "tags_ids_en": [
+        "fish-soup"
+      ]
     },
     {
       "id": "de:sp\u00e4tzle",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "de",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["102,102"],
+      "src_lines": [
+        "102,102"
+      ],
       "src_position": 102,
-      "tags_de": ["Sp\u00e4tzle"],
-      "tags_ids_de": ["sp\u00e4tzle"]
+      "tags_de": [
+        "Sp\u00e4tzle"
+      ],
+      "tags_ids_de": [
+        "sp\u00e4tzle"
+      ]
     },
     {
       "id": "en:kale",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["104,105"],
+      "src_lines": [
+        "104,105"
+      ],
       "src_position": 104,
-      "tags_de": ["Gr\u00fcnkohl"],
-      "tags_en": ["Kale"],
-      "tags_ids_de": ["gr\u00fcnkohl"],
-      "tags_ids_en": ["kale"]
+      "tags_de": [
+        "Gr\u00fcnkohl"
+      ],
+      "tags_en": [
+        "Kale"
+      ],
+      "tags_ids_de": [
+        "gr\u00fcnkohl"
+      ],
+      "tags_ids_en": [
+        "kale"
+      ]
     },
     {
       "id": "en:kefir-2.5",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["107,110"],
+      "src_lines": [
+        "107,110"
+      ],
       "src_position": 107,
-      "tags_de": ["Kefir 2.5 %"],
-      "tags_en": ["Kefir 2.5 %"],
-      "tags_fr": ["K\u00e9fir 2,5 %"],
-      "tags_ids_de": ["kefir-2.5"],
-      "tags_ids_en": ["kefir-2.5"],
-      "tags_ids_fr": ["kefir-2-5"],
-      "tags_ids_ru": ["\u043a\u0435\u0444\u0438\u0440-2.5"],
+      "tags_de": [
+        "Kefir 2.5 %"
+      ],
+      "tags_en": [
+        "Kefir 2.5 %"
+      ],
+      "tags_fr": [
+        "K\u00e9fir 2,5 %"
+      ],
+      "tags_ids_de": [
+        "kefir-2.5"
+      ],
+      "tags_ids_en": [
+        "kefir-2.5"
+      ],
+      "tags_ids_fr": [
+        "kefir-2-5"
+      ],
+      "tags_ids_ru": [
+        "\u043a\u0435\u0444\u0438\u0440-2.5"
+      ],
       "tags_ru": [
         "\u041a\u0435\u0444\u0438\u0440 2.5 %",
         "\u041a\u0435\u0444\u0438\u0440 2.5%"
@@ -367,77 +677,141 @@
     {
       "id": "fr:french-entry",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["112,113"],
+      "src_lines": [
+        "112,113"
+      ],
       "src_position": 112,
-      "tags_de": ["Special value for German"],
-      "tags_fr": ["French entry"],
-      "tags_ids_de": ["special-value-for-german"],
-      "tags_ids_fr": ["french-entry"]
+      "tags_de": [
+        "Special value for German"
+      ],
+      "tags_fr": [
+        "French entry"
+      ],
+      "tags_ids_de": [
+        "special-value-for-german"
+      ],
+      "tags_ids_fr": [
+        "french-entry"
+      ]
     },
     {
       "id": "fr:french-entry-with-default-value",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["115,117"],
+      "src_lines": [
+        "115,117"
+      ],
       "src_position": 115,
-      "tags_de": ["Special value for German 2"],
-      "tags_fr": ["French entry with default value"],
-      "tags_ids_de": ["special-value-for-german-2"],
-      "tags_ids_fr": ["french-entry-with-default-value"],
-      "tags_ids_xx": ["french-entry-with-default-value"],
-      "tags_xx": ["French entry with default value"]
+      "tags_de": [
+        "Special value for German 2"
+      ],
+      "tags_fr": [
+        "French entry with default value"
+      ],
+      "tags_ids_de": [
+        "special-value-for-german-2"
+      ],
+      "tags_ids_fr": [
+        "french-entry-with-default-value"
+      ],
+      "tags_ids_xx": [
+        "french-entry-with-default-value"
+      ],
+      "tags_xx": [
+        "French entry with default value"
+      ]
     },
     {
       "id": "xx:language-less-entry",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "xx",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["119,120"],
+      "src_lines": [
+        "119,120"
+      ],
       "src_position": 119,
-      "tags_de": ["Special value for German 3"],
-      "tags_ids_de": ["special-value-for-german-3"],
-      "tags_ids_xx": ["language-less-entry"],
-      "tags_xx": ["Language-less entry"]
+      "tags_de": [
+        "Special value for German 3"
+      ],
+      "tags_ids_de": [
+        "special-value-for-german-3"
+      ],
+      "tags_ids_xx": [
+        "language-less-entry"
+      ],
+      "tags_xx": [
+        "Language-less entry"
+      ]
     },
     {
       "id": "sv:\u00e4-m\u00e4rket",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "sv",
       "original_taxonomy": "test.txt",
       "preceding_lines": [
         "# xx: entry with accents, need to match unaccented version"
       ],
-      "src_lines": ["122,124"],
+      "src_lines": [
+        "122,124"
+      ],
       "src_position": 123,
-      "tags_ids_sv": ["\u00e4-m\u00e4rket"],
-      "tags_ids_xx": ["\u00e4-m\u00e4rket"],
-      "tags_sv": ["\u00c4-m\u00e4rket"],
-      "tags_xx": ["\u00c4-m\u00e4rket"]
+      "tags_ids_sv": [
+        "\u00e4-m\u00e4rket"
+      ],
+      "tags_ids_xx": [
+        "\u00e4-m\u00e4rket"
+      ],
+      "tags_sv": [
+        "\u00c4-m\u00e4rket"
+      ],
+      "tags_xx": [
+        "\u00c4-m\u00e4rket"
+      ]
     },
     {
       "id": "__footer__",
-      "labels": ["TEXT", "p_test_taxonomy_test_branch"],
+      "labels": [
+        "p_test_taxonomy_test_branch",
+        "TEXT"
+      ],
       "preceding_lines": [],
       "src_position": 125
     },
     {
       "id": "en:entry-with-parentheses-and-some-characters",
       "is_external": false,
-      "labels": ["p_test_taxonomy_test_branch", "ENTRY"],
+      "labels": [
+        "ENTRY",
+        "p_test_taxonomy_test_branch"
+      ],
       "main_language": "en",
       "original_taxonomy": "test.txt",
       "preceding_lines": [],
-      "src_lines": ["126,124"],
+      "src_lines": [
+        "126,124"
+      ],
       "src_position": 126,
       "tags_en": [
         "Entry with (parentheses) and some *!#{}@$ characters",
@@ -450,158 +824,280 @@
     },
     {
       "branch_name": "test_branch",
-      "created_at": "2025-04-24T14:52:55.479000000+00:00",
+      "created_at": "2025-05-02T17:52:06.511000000+00:00",
       "description": "test_description",
       "errors_count": 1,
       "id": "p_test_taxonomy_test_branch",
       "is_from_github": false,
-      "labels": ["PROJECT"],
-      "original_text": "# test taxonomy\n\nstopwords:fr: aux,au,de,le,du,la,a,et\n\nsynonyms:en: passion fruit, passionfruit\n\nsynonyms:fr: fruit de la passion, fruits de la passion, maracuja, passion\n\nen: yogurts, yoghurts\nfr: yaourts, yoghourts, yogourts\nnl: yoghurts\ndescription:en: a yogurts of whatever type\ndescription:fr: un yaourt de n'importe quel type\ncolor:en: white\nflavour:en: undef\n\n<en: yogurts\nen: banana yogurts\nfr: yaourts \u00e0 la banane\nnl: bananenyoghurt\ndescription:en: a banana yogurt\ndescription:fr: un yaourt \u00e0 la banane\ncolor:en: yellow\nflavour:en: banana\n\n<en: yogurts\nen: Passion fruit yogurts\nfr: yaourts au fruit de la passion\nnl: yoghurts met passievrucht\ncolor:en: undef\nflavour:en: passion fruit\n\n<en: yogurts\nfr: yaourts all\u00e9g\u00e9s\n\n<fr: yoghourts\nen: lemon yogurts\nfr: yaourts au citron\nnl: yoghurts met citroen\ndescription:en: a yogurts with lemon inside\ndescription:fr: un yaourt avec du citron\ncolor:en: yellow\nflavour:en: lemon\n\n<fr: yaourts fruit de la passion\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au fruit de la passion all\u00e9g\u00e9s\nnl: magere yoghurts met passievrucht\n\n\n<fr: yaourts au citron\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au citron all\u00e9g\u00e9s\nnl: magere citroenyoghurt\ndescription:en: for light yogurts with lemon\n\n<fr: yaourt\nfr: yaourts \u00e0 la myrtille\nnl: bosbessenyoghurt\nflavour:en: blueberry\nflavour:fr: myrtille\n\nen: meat\nvegan:en: no\ncarbon_footprint_fr_foodges_value:fr: 10\n\n<en: meat\nen: beef\ncarbon_footprint_fr_foodges_value:fr: 15\n\n<en: beef\nen: roast-beef\n\n<en: meat\nen: fake-meat\n# undef will stop parents from transmitting a value\ncarbon_footprint_fr_foodges_value:fr: undef\nvegan:en: yes\n\nen: fake-stuff\n\n<en: fake-stuff\n<en: fake-meat\nen: fake-duck-meat\n\nen: vegetable\nvegan:en: yes\n\n# the soup yogourt synonym is used to test suggestions matching xx: synonyms\nen: soup\nxx: something that means soup in every language, something else that means soup in every language\nvegan:en: maybe\n\n<en:soup\nen:vegan-soup\nvegan:en:yes\n\n<en:soup\nen:fish-soup\nvegan:en:no\n\nde:Sp\u00e4tzle\n\nen:Kale\nde:Gr\u00fcnkohl\n\nen:Kefir 2.5 %\nde:Kefir 2.5 %\nfr:K\u00e9fir 2,5 %\nru:\u041a\u0435\u0444\u0438\u0440 2.5 %, \u041a\u0435\u0444\u0438\u0440 2.5%\n\nfr:French entry\nde:Special value for German\n\nfr:French entry with default value\nxx:French entry with default value\nde:Special value for German 2\n\nxx:Language-less entry\nde:Special value for German 3\n\n# xx: entry with accents, need to match unaccented version\nsv:\u00c4-m\u00e4rket\nxx:\u00c4-m\u00e4rket\n\nen:Entry with (parentheses) and some *!#{}@$ characters, synonym with *%@$(]% chars",
+      "labels": [
+        "PROJECT"
+      ],
+      "original_text": "# test taxonomy\n\nstopwords:fr: aux,au,de,le,du,la,a,et\n\nsynonyms:en: passion fruit, passionfruit\n\nsynonyms:fr: fruit de la passion, fruits de la passion, maracuja, passion\n\nen: yogurts, yoghurts\nfr: yaourts, yoghourts, yogourts\nnl: yoghurts\ndescription:en: a yogurts of whatever type\ndescription:fr: un yaourt de n'importe quel type\ncolor:en: white\nflavour:en: undef\n\n<en: yogurts\nen: banana yogurts\nfr: yaourts \u00e0 la banane\nnl: bananenyoghurt\ndescription:en: a banana yogurt\ndescription:fr: un yaourt \u00e0 la banane\ncolor:en: yellow\nflavour:en: banana\n\n<en: yogurts\nen: Passion fruit yogurts\nfr: yaourts au fruit de la passion\nnl: yoghurts met passievrucht\ncolor:en: undef\nflavour:en: passion fruit\n\n<en: yogurts\nfr: yaourts all\u00e9g\u00e9s\n\n<fr: yoghourts\nen: lemon yogurts\nfr: yaourts au citron\nnl: yoghurts met citroen\ndescription:en: a yogurts with lemon inside\ndescription:fr: un yaourt avec du citron\ncolor:en: yellow\nflavour:en: lemon\n\n<fr: yaourts au fruit de la passion\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au fruit de la passion all\u00e9g\u00e9s\nnl: magere yoghurts met passievrucht\n\n\n<fr: yaourts au citron\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au citron all\u00e9g\u00e9s\nnl: magere citroenyoghurt\ndescription:en: for light yogurts with lemon\n\n<fr: yaourt\nfr: yaourts \u00e0 la myrtille\nnl: bosbessenyoghurt\nflavour:en: blueberry\nflavour:fr: myrtille\n\nen: meat\nvegan:en: no\ncarbon_footprint_fr_foodges_value:fr: 10\n\n<en: meat\nen: beef\ncarbon_footprint_fr_foodges_value:fr: 15\n\n<en: beef\nen: roast-beef\n\n<en: meat\nen: fake-meat\n# undef will stop parents from transmitting a value\ncarbon_footprint_fr_foodges_value:fr: undef\nvegan:en: yes\n\nen: fake-stuff\n\n<en: fake-stuff\n<en: fake-meat\nen: fake-duck-meat\n\nen: vegetable\nvegan:en: yes\n\n# the soup yogourt synonym is used to test suggestions matching xx: synonyms\nen: soup\nxx: something that means soup in every language, something else that means soup in every language\nvegan:en: maybe\n\n<en:soup\nen:vegan-soup\nvegan:en:yes\n\n<en:soup\nen:fish-soup\nvegan:en:no\n\nde:Sp\u00e4tzle\n\nen:Kale\nde:Gr\u00fcnkohl\n\nen:Kefir 2.5 %\nde:Kefir 2.5 %\nfr:K\u00e9fir 2,5 %\nru:\u041a\u0435\u0444\u0438\u0440 2.5 %, \u041a\u0435\u0444\u0438\u0440 2.5%\n\nfr:French entry\nde:Special value for German\n\nfr:French entry with default value\nxx:French entry with default value\nde:Special value for German 2\n\nxx:Language-less entry\nde:Special value for German 3\n\n# xx: entry with accents, need to match unaccented version\nsv:\u00c4-m\u00e4rket\nxx:\u00c4-m\u00e4rket\n\nen:Entry with (parentheses) and some *!#{}@$ characters, synonym with *%@$(]% chars",
       "owner_name": "unknown",
       "status": "OPEN",
       "taxonomy_name": "test_taxonomy"
     },
     {
       "branch_name": "test_branch",
-      "created_at": "2025-04-24T14:52:55.772000000+00:00",
+      "created_at": "2025-05-02T17:52:06.958000000+00:00",
       "errors": [
-        "Missing child link at line 57 for fr:yaourts-myrtille: parent_id yaourt not found in tags_ids_fr"
+        "Missing child link at line 57 for fr:yaourts-a-la-myrtille: parent_id yaourt not found in tags_ids_fr"
       ],
       "id": "p_test_taxonomy_test_branch",
-      "labels": ["ERRORS", "p_test_taxonomy_test_branch"],
+      "labels": [
+        "ERRORS",
+        "p_test_taxonomy_test_branch"
+      ],
       "taxonomy_name": "test_taxonomy",
       "warnings": []
     }
   ],
   "relations": [
     {
-      "is_child_of": ["en:banana-yogurts", "en:yogurts"]
-    },
-    {
-      "is_child_of": ["en:passion-fruit-yogurts", "en:yogurts"]
-    },
-    {
-      "is_child_of": ["fr:yaourts-alleges", "en:yogurts"]
-    },
-    {
-      "is_child_of": ["fr:yaourts-fruit-passion-alleges", "fr:yaourts-alleges"]
-    },
-    {
-      "is_child_of": ["fr:yaourts-citron-alleges", "fr:yaourts-alleges"]
-    },
-    {
-      "is_child_of": ["en:beef", "en:meat"]
-    },
-    {
-      "is_child_of": ["en:roast-beef", "en:beef"]
-    },
-    {
-      "is_child_of": ["en:fake-meat", "en:meat"]
-    },
-    {
-      "is_child_of": ["en:fake-duck-meat", "en:fake-stuff"]
-    },
-    {
-      "is_child_of": ["en:fake-duck-meat", "en:fake-meat"]
-    },
-    {
-      "is_child_of": ["en:vegan-soup", "en:soup"]
-    },
-    {
-      "is_child_of": ["en:fish-soup", "en:soup"]
-    },
-    {
-      "is_child_of": ["en:lemon-yogurts", "en:yogurts"]
+      "is_child_of": [
+        "en:banana-yogurts",
+        "en:yogurts"
+      ]
     },
     {
       "is_child_of": [
-        "fr:yaourts-fruit-passion-alleges",
+        "en:passion-fruit-yogurts",
+        "en:yogurts"
+      ]
+    },
+    {
+      "is_child_of": [
+        "fr:yaourts-alleges",
+        "en:yogurts"
+      ]
+    },
+    {
+      "is_child_of": [
+        "fr:yaourts-au-fruit-de-la-passion-alleges",
+        "fr:yaourts-alleges"
+      ]
+    },
+    {
+      "is_child_of": [
+        "fr:yaourts-au-citron-alleges",
+        "fr:yaourts-alleges"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:beef",
+        "en:meat"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:roast-beef",
+        "en:beef"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:fake-meat",
+        "en:meat"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:fake-duck-meat",
+        "en:fake-stuff"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:fake-duck-meat",
+        "en:fake-meat"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:vegan-soup",
+        "en:soup"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:fish-soup",
+        "en:soup"
+      ]
+    },
+    {
+      "is_child_of": [
+        "en:lemon-yogurts",
+        "en:yogurts"
+      ]
+    },
+    {
+      "is_child_of": [
+        "fr:yaourts-au-fruit-de-la-passion-alleges",
         "en:passion-fruit-yogurts"
       ]
     },
     {
-      "is_child_of": ["fr:yaourts-citron-alleges", "en:lemon-yogurts"]
-    },
-    {
-      "is_before": ["__header__", "stopwords:0"]
-    },
-    {
-      "is_before": ["stopwords:0", "synonyms:0"]
-    },
-    {
-      "is_before": ["synonyms:0", "synonyms:1"]
-    },
-    {
-      "is_before": ["synonyms:1", "en:yogurts"]
-    },
-    {
-      "is_before": ["en:yogurts", "en:banana-yogurts"]
-    },
-    {
-      "is_before": ["en:banana-yogurts", "en:passion-fruit-yogurts"]
-    },
-    {
-      "is_before": ["en:passion-fruit-yogurts", "fr:yaourts-alleges"]
-    },
-    {
-      "is_before": ["fr:yaourts-alleges", "en:lemon-yogurts"]
-    },
-    {
-      "is_before": ["en:lemon-yogurts", "fr:yaourts-fruit-passion-alleges"]
-    },
-    {
-      "is_before": [
-        "fr:yaourts-fruit-passion-alleges",
-        "fr:yaourts-citron-alleges"
+      "is_child_of": [
+        "fr:yaourts-au-citron-alleges",
+        "en:lemon-yogurts"
       ]
     },
     {
-      "is_before": ["fr:yaourts-citron-alleges", "fr:yaourts-myrtille"]
+      "is_before": [
+        "__header__",
+        "stopwords:0"
+      ]
     },
     {
-      "is_before": ["fr:yaourts-myrtille", "en:meat"]
+      "is_before": [
+        "stopwords:0",
+        "synonyms:0"
+      ]
     },
     {
-      "is_before": ["en:meat", "en:beef"]
+      "is_before": [
+        "synonyms:0",
+        "synonyms:1"
+      ]
     },
     {
-      "is_before": ["en:beef", "en:roast-beef"]
+      "is_before": [
+        "synonyms:1",
+        "en:yogurts"
+      ]
     },
     {
-      "is_before": ["en:roast-beef", "en:fake-meat"]
+      "is_before": [
+        "en:yogurts",
+        "en:banana-yogurts"
+      ]
     },
     {
-      "is_before": ["en:fake-meat", "en:fake-stuff"]
+      "is_before": [
+        "en:banana-yogurts",
+        "en:passion-fruit-yogurts"
+      ]
     },
     {
-      "is_before": ["en:fake-stuff", "en:fake-duck-meat"]
+      "is_before": [
+        "en:passion-fruit-yogurts",
+        "fr:yaourts-alleges"
+      ]
     },
     {
-      "is_before": ["en:fake-duck-meat", "en:vegetable"]
+      "is_before": [
+        "fr:yaourts-alleges",
+        "en:lemon-yogurts"
+      ]
     },
     {
-      "is_before": ["en:vegetable", "en:soup"]
+      "is_before": [
+        "en:lemon-yogurts",
+        "fr:yaourts-au-fruit-de-la-passion-alleges"
+      ]
     },
     {
-      "is_before": ["en:soup", "en:vegan-soup"]
+      "is_before": [
+        "fr:yaourts-au-fruit-de-la-passion-alleges",
+        "fr:yaourts-au-citron-alleges"
+      ]
     },
     {
-      "is_before": ["en:vegan-soup", "en:fish-soup"]
+      "is_before": [
+        "fr:yaourts-au-citron-alleges",
+        "fr:yaourts-a-la-myrtille"
+      ]
     },
     {
-      "is_before": ["en:fish-soup", "de:sp\u00e4tzle"]
+      "is_before": [
+        "fr:yaourts-a-la-myrtille",
+        "en:meat"
+      ]
     },
     {
-      "is_before": ["de:sp\u00e4tzle", "en:kale"]
+      "is_before": [
+        "en:meat",
+        "en:beef"
+      ]
     },
     {
-      "is_before": ["en:kale", "en:kefir-2.5"]
+      "is_before": [
+        "en:beef",
+        "en:roast-beef"
+      ]
     },
     {
-      "is_before": ["en:kefir-2.5", "fr:french-entry"]
+      "is_before": [
+        "en:roast-beef",
+        "en:fake-meat"
+      ]
     },
     {
-      "is_before": ["fr:french-entry", "fr:french-entry-with-default-value"]
+      "is_before": [
+        "en:fake-meat",
+        "en:fake-stuff"
+      ]
+    },
+    {
+      "is_before": [
+        "en:fake-stuff",
+        "en:fake-duck-meat"
+      ]
+    },
+    {
+      "is_before": [
+        "en:fake-duck-meat",
+        "en:vegetable"
+      ]
+    },
+    {
+      "is_before": [
+        "en:vegetable",
+        "en:soup"
+      ]
+    },
+    {
+      "is_before": [
+        "en:soup",
+        "en:vegan-soup"
+      ]
+    },
+    {
+      "is_before": [
+        "en:vegan-soup",
+        "en:fish-soup"
+      ]
+    },
+    {
+      "is_before": [
+        "en:fish-soup",
+        "de:sp\u00e4tzle"
+      ]
+    },
+    {
+      "is_before": [
+        "de:sp\u00e4tzle",
+        "en:kale"
+      ]
+    },
+    {
+      "is_before": [
+        "en:kale",
+        "en:kefir-2.5"
+      ]
+    },
+    {
+      "is_before": [
+        "en:kefir-2.5",
+        "fr:french-entry"
+      ]
+    },
+    {
+      "is_before": [
+        "fr:french-entry",
+        "fr:french-entry-with-default-value"
+      ]
     },
     {
       "is_before": [
@@ -610,7 +1106,10 @@
       ]
     },
     {
-      "is_before": ["xx:language-less-entry", "sv:\u00e4-m\u00e4rket"]
+      "is_before": [
+        "xx:language-less-entry",
+        "sv:\u00e4-m\u00e4rket"
+      ]
     },
     {
       "is_before": [

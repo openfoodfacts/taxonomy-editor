@@ -10,7 +10,14 @@ def normalize_text(
     char: str = "-",
     stopwords: dict[str, list[str]] | None = None,
 ) -> str:
-    """Normalize a string depending on the language code"""
+    """Normalize a string depending on the language code
+
+    :param stopwords: associate a language code to a list of stopwords,
+        stopwords will be removed from the normalized text.
+
+        It should only be used while we are trying to extend synonym matching.
+        Most of the time (computing entry id), you should not account for stopwords.
+    """
     if stopwords is None:
         stopwords = {}
 
@@ -44,6 +51,7 @@ def normalize_text(
     line = line.strip(char)
 
     # Remove stopwords
+    # Be careful, this must not be used to compute entry id
     if lang in stopwords:
         stopwords = stopwords[lang]
         line_surrounded_by_char = char + line + char
