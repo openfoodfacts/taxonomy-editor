@@ -64,9 +64,7 @@ class EntryNode(BaseModel):
             keys_language_code = key.split("_", 1)[1]
             normalised_value = []
             for value in values:
-                normalised_value.append(
-                    parser_utils.normalize_text(value, keys_language_code)
-                )
+                normalised_value.append(parser_utils.normalize_text(value, keys_language_code))
             self.tags_ids["tags_ids" + key[4:]] = normalised_value
 
     def recompute_id(self):

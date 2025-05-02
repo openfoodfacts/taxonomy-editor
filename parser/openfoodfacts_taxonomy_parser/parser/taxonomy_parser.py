@@ -553,8 +553,7 @@ class TaxonomyParser:
                         # because two tags can have the same normalized value
                         language_code = key.split("_")[1]
                         first_node.tags[f"tags_ids_{language_code}"] = [
-                            normalize_text(tag, language_code)
-                            for tag in first_node.tags[key]
+                            normalize_text(tag, language_code) for tag in first_node.tags[key]
                         ]
                 for key, value in node.properties.items():
                     # overwrite the value if the property already exists in the first node

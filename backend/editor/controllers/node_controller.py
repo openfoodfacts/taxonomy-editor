@@ -23,8 +23,7 @@ async def delete_project_nodes(project_id: str):
     await get_current_transaction().run(query)
 
 
-async def create_entry_node(
-    project_id: str, entry_node: EntryNodeCreate) -> str:
+async def create_entry_node(project_id: str, entry_node: EntryNodeCreate) -> str:
     """
     Creates a new entry node in the database
     """
