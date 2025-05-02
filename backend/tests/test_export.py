@@ -13,7 +13,7 @@ from editor.controllers import project_controller
 from editor.entries import TaxonomyGraph
 from editor.models.node_models import EntryNode, NodeType
 
-from .utils import FakeBackgroundTask
+from .test_utils import FakeBackgroundTask
 
 
 @pytest.fixture()

@@ -132,25 +132,29 @@ export class DefaultService {
    * Deleting given node from a taxonomy
    * @param branch
    * @param taxonomyName
+   * @param id
    * @returns any Successful Response
    * @throws ApiError
    */
-  public static deleteNodeTaxonomyNameBranchNodesDelete(
+  public static deleteNodeTaxonomyNameBranchNodesIdDelete(
     branch: string,
     taxonomyName: string,
+    id: string,
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "DELETE",
-      url: "/{taxonomy_name}/{branch}/nodes",
+      url: "/{taxonomy_name}/{branch}/nodes/{id}",
       path: {
         branch: branch,
         taxonomy_name: taxonomyName,
+        id: id,
       },
       errors: {
         422: `Validation Error`,
       },
     });
   }
+
   /**
    * Find All Root Nodes
    * Get all root nodes within taxonomy
@@ -342,35 +346,6 @@ export class DefaultService {
     });
   }
   /**
-   * Edit Synonyms
-   * Editing a synonym in a taxonomy.
-   * New key-value pairs can be added, old key-value pairs can be updated.
-   * URL will be of format '/synonym/<id>'
-   * @param branch
-   * @param taxonomyName
-   * @param synonym
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static editSynonymsTaxonomyNameBranchSynonymSynonymPost(
-    branch: string,
-    taxonomyName: string,
-    synonym: string,
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/{taxonomy_name}/{branch}/synonym/{synonym}",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-        synonym: synonym,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
    * Find All Synonyms
    * Get all synonyms within taxonomy
    * @param branch
@@ -410,35 +385,6 @@ export class DefaultService {
   ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/{taxonomy_name}/{branch}/stopword/{stopword}",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-        stopword: stopword,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
-   * Edit Stopwords
-   * Editing a stopword in a taxonomy.
-   * New key-value pairs can be added, old key-value pairs can be updated.
-   * URL will be of format '/stopword/<id>'
-   * @param branch
-   * @param taxonomyName
-   * @param stopword
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static editStopwordsTaxonomyNameBranchStopwordStopwordPost(
-    branch: string,
-    taxonomyName: string,
-    stopword: string,
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "POST",
       url: "/{taxonomy_name}/{branch}/stopword/{stopword}",
       path: {
         branch: branch,
@@ -499,34 +445,6 @@ export class DefaultService {
     });
   }
   /**
-   * Edit Header
-   * Editing the __header__ in a taxonomy.
-   * @param branch
-   * @param taxonomyName
-   * @param requestBody
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static editHeaderTaxonomyNameBranchHeaderPost(
-    branch: string,
-    taxonomyName: string,
-    requestBody: Header,
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/{taxonomy_name}/{branch}/header",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-      },
-      body: requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
    * Find Footer
    * Get __footer__ within taxonomy
    * @param branch
@@ -545,34 +463,6 @@ export class DefaultService {
         branch: branch,
         taxonomy_name: taxonomyName,
       },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-  /**
-   * Edit Footer
-   * Editing the __footer__ in a taxonomy.
-   * @param branch
-   * @param taxonomyName
-   * @param requestBody
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static editFooterTaxonomyNameBranchFooterPost(
-    branch: string,
-    taxonomyName: string,
-    requestBody: Footer,
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/{taxonomy_name}/{branch}/footer",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-      },
-      body: requestBody,
-      mediaType: "application/json",
       errors: {
         422: `Validation Error`,
       },

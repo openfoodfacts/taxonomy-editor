@@ -55,13 +55,17 @@ def get_options(args=None):
 
 
 def dump_db(file_path, url=DEFAULT_URL):
-    session = get_session(url)
     with open(file_path, "w") as f:
-        f.write('{"nodes": [')
-        dump_nodes(session, f)
-        f.write('], "relations": [')
-        dump_relations(session, f)
-        f.write("]}")
+        dump_db_to_buffer(f, url)
+
+
+def dump_db_to_buffer(buffer, url=DEFAULT_URL):
+    session = get_session(url)
+    buffer.write('{"nodes": [')
+    dump_nodes(session, buffer)
+    buffer.write('], "relations": [')
+    dump_relations(session, buffer)
+    buffer.write("]}")
 
 
 if __name__ == "__main__":
