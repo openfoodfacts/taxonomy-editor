@@ -93,7 +93,13 @@ This documentation tries to follow as much as possible the documentation system 
 
 </details>
 
+
+
+## 🎨 Design & User interface
+- We strive to thoughfully design every feature before we move on to implementation, so that we respect Open Food Facts' graphic charter and nascent design system, while having efficient user flows.
 - [![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?logo=figma&logoColor=white) Mockups on the current design and future plans to discuss](https://www.figma.com/file/7QxD2pOnVntjDPqbHHPGHv/Taxonomy-Editor?t=4YadI2GgSAXcPnlo-0)
+- Are you a designer ? [Join the design team](https://github.com/openfoodfacts/openfoodfacts-design)
+
 
 ## Contributors
 
