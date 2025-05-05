@@ -56,7 +56,7 @@ def test_round_trip(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("< fr:yaourts fruit de la passion"):
+        elif line.startswith("< fr:yaourts au fruit de la passion"):
             line = "< en:Passion fruit yogurts"
         # third tweak: commenting non existing parents
         elif line.startswith("< en:milk"):
@@ -101,7 +101,7 @@ def test_two_branch_round_trip(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("< fr:yaourts fruit de la passion"):
+        elif line.startswith("< fr:yaourts au fruit de la passion"):
             line = "< en:Passion fruit yogurts"
         # third tweak: commenting non existing parents
         elif line.startswith("< en:milk"):
@@ -142,7 +142,7 @@ def test_round_trip_with_external_taxonomies(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("< fr:yaourts fruit de la passion"):
+        elif line.startswith("< fr:yaourts au fruit de la passion"):
             line = "< en:Passion fruit yogurts"
         expected_lines.append(line)
 
@@ -227,7 +227,7 @@ def test_patcher_with_modifications(neo4j):
         result = session.run(
             f"""
             MATCH (n:p_test_branch)
-            WHERE n.id = "fr:yaourts-fruit-passion-alleges"
+            WHERE n.id = "fr:yaourts-au-fruit-de-la-passion-alleges"
             SET n.modified = {modified}
             WITH n
             MATCH (m:p_test_branch)
@@ -236,7 +236,7 @@ def test_patcher_with_modifications(neo4j):
             RETURN n.id, m.id
             """
         )
-        assert result.values() == [["fr:yaourts-fruit-passion-alleges", "en:yogurts"]]
+        assert result.values() == [["fr:yaourts-au-fruit-de-la-passion-alleges", "en:yogurts"]]
         # detach the node and set the node as REMOVED
         result = session.run(
             f"""
@@ -346,7 +346,7 @@ def test_patcher_with_modifications(neo4j):
     for num, (line, next_line) in enumerate(zip(original_lines, original_lines[1:] + [None])):
         more_lines = []
         # changed parent
-        if line.startswith("< fr:yaourts fruit de la passion"):
+        if line.startswith("< fr:yaourts au fruit de la passion"):
             line = "< en:yogurts"
         # no more parent
         elif line.startswith("< en:yogurts") and next_line.startswith("en: banana yogurts"):

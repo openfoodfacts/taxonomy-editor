@@ -42,7 +42,7 @@ description:fr: un yaourt avec du citron
 color:en: yellow
 flavour:en: lemon
 
-<fr: yaourts fruit de la passion
+<fr: yaourts au fruit de la passion
 <fr: yaourts allégés
 fr: yaourts au fruit de la passion allégés
 nl: magere yoghurts met passievrucht

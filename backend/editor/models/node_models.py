@@ -55,7 +55,7 @@ class EntryNode(BaseModel):
         del flat_data["comments"]
         return flat_data
 
-    def recompute_tags_ids(self, stopwords: dict[str, list[str]]):
+    def recompute_tags_ids(self):
         """Recompute the tags_ids dictionary based on the tags dictionary
         and the provided stopwords."""
         self.tags_ids = {}
@@ -64,9 +64,7 @@ class EntryNode(BaseModel):
             keys_language_code = key.split("_", 1)[1]
             normalised_value = []
             for value in values:
-                normalised_value.append(
-                    parser_utils.normalize_text(value, keys_language_code, stopwords=stopwords)
-                )
+                normalised_value.append(parser_utils.normalize_text(value, keys_language_code))
             self.tags_ids["tags_ids" + key[4:]] = normalised_value
 
     def recompute_id(self):

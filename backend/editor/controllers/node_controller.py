@@ -23,14 +23,12 @@ async def delete_project_nodes(project_id: str):
     await get_current_transaction().run(query)
 
 
-async def create_entry_node(
-    project_id: str, entry_node: EntryNodeCreate, stopwords: dict[str, list[str]]
-) -> str:
+async def create_entry_node(project_id: str, entry_node: EntryNodeCreate) -> str:
     """
     Creates a new entry node in the database
     """
     name, language_code = entry_node.name, entry_node.main_language_code
-    normalized_name = parser_utils.normalize_text(name, language_code, stopwords=stopwords)
+    normalized_name = parser_utils.normalize_text(name, language_code)
 
     # Create params dict
     entry_node_data = {
