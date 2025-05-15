@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.2.0...v1.3.0) (2025-05-15)
+
+
+### Features
+
+* add Beauty ingredients taxonomy ([#571](https://github.com/openfoodfacts/taxonomy-editor/issues/571)) ([b914696](https://github.com/openfoodfacts/taxonomy-editor/commit/b9146964472ec6556e68033d0e0a12c6398bb9cd))
+
+
+### Bug Fixes
+
+* do not account for stopwords for ids ([#579](https://github.com/openfoodfacts/taxonomy-editor/issues/579)) ([03112a8](https://github.com/openfoodfacts/taxonomy-editor/commit/03112a815264a90e4d77e47bcaa017ec317eb0da)), closes [#540](https://github.com/openfoodfacts/taxonomy-editor/issues/540)
+* newly added then deleted node should not be exported ([#576](https://github.com/openfoodfacts/taxonomy-editor/issues/576)) ([1b5ef0d](https://github.com/openfoodfacts/taxonomy-editor/commit/1b5ef0d6053ca594235a85710708a59a7cb9d352)), closes [#561](https://github.com/openfoodfacts/taxonomy-editor/issues/561)
+* Update README.md with design promo ([40f1eff](https://github.com/openfoodfacts/taxonomy-editor/commit/40f1eff08da758f20ca5dbe9bb6b796f85c5389f))
+
 ## [1.2.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.1.0...v1.2.0) (2024-12-20)
 
 
