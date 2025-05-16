@@ -64,9 +64,9 @@ You can join our [slack](https://slack.openfoodfacts.org) in **#taxonomy-editor*
 
 ## Getting Started
 
-- Check out the Taxonomy Editor in our pre-production environment:
-  - The UI: https://ui.taxonomy.openfoodfacts.net/
-  - The API: https://api.taxonomy.openfoodfacts.net/
+- Check out the Taxonomy Editor in our production environment:
+  - The UI: https://ui.taxonomy.openfoodfacts.org/
+  - The API: https://api.taxonomy.openfoodfacts.org/
 - Developer documentation:
   - [Setup a dev environment](./doc/introduction/setup-dev.md)
   - [Docker Compose Setup](./doc/how-to-guides/docker-compose-setup.md)
