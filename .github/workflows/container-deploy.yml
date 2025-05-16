@@ -25,7 +25,7 @@ jobs:
         run: |
           # deploy target
           echo "SSH_HOST=10.1.0.200" >> $GITHUB_ENV
-          echo "SSH_PROXY_HOST=ovh1.openfoodfacts.org" >> $GITHUB_ENV
+          echo "SSH_PROXY_HOST=ovh2.openfoodfacts.org" >> $GITHUB_ENV
           echo "SSH_USERNAME=off" >> $GITHUB_ENV
           # expose port
           echo "TAXONOMY_EDITOR_EXPOSE=8052" >> $GITHUB_ENV
@@ -39,7 +39,7 @@ jobs:
         run: |
           # deploy target
           echo "SSH_HOST=10.1.0.201" >> $GITHUB_ENV
-          echo "SSH_PROXY_HOST=ovh1.openfoodfacts.org" >> $GITHUB_ENV
+          echo "SSH_PROXY_HOST=ovh2.openfoodfacts.org" >> $GITHUB_ENV
           echo "SSH_USERNAME=off" >> $GITHUB_ENV
           # expose port
           echo "TAXONOMY_EDITOR_EXPOSE=8052" >> $GITHUB_ENV
