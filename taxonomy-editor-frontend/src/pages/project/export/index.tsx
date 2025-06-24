@@ -94,7 +94,7 @@ const ExportTaxonomyToGithub = ({
             Feel free to add a quick description of your changes for better
             context.
             <br />
-            Additionnally, it&apos;s also important to monitor the PR to respond
+            Additionally, it&apos;s also important to monitor the PR to respond
             to any comments from other contributors.
           </DialogContentText>
         </DialogContent>
