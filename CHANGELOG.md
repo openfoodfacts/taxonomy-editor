@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.3.0...v1.3.1) (2025-07-02)
+
+
+### Bug Fixes
+
+* Fix typo in PR dialog text ([#580](https://github.com/openfoodfacts/taxonomy-editor/issues/580)) ([9bf3187](https://github.com/openfoodfacts/taxonomy-editor/commit/9bf31877bc5a4c8faea45af5db5f0ba767869e0d))
+
 ## [1.3.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.2.0...v1.3.0) (2025-05-15)
 
 
