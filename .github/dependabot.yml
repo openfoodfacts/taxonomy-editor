@@ -2,6 +2,7 @@
 version: 2
 enable-beta-ecosystems: true
 updates:
+  # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -11,6 +12,60 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # Python backend dependencies (Poetry)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      python-runtime:
+        patterns:
+          - "fastapi*"
+          - "uvicorn*"
+          - "neo4j*"
+          - "githubkit*"
+          - "python-multipart*"
+          - "apscheduler*"
+        update-types:
+          - "minor"
+          - "patch"
+      python-dev-tools:
+        patterns:
+          - "black*"
+          - "flake8*"
+          - "isort*"
+          - "pytest*"
+          - "httpx*"
+          - "anyio*"
+          - "*mock*"
+        update-types:
+          - "minor"
+          - "patch"
+      python-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # Frontend dependencies (npm)
   - package-ecosystem: "npm"
     directory: "/taxonomy-editor-frontend"
     schedule:
@@ -20,8 +75,90 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      frontend-runtime:
+        patterns:
+          - "react*"
+          - "@mui/*"
+          - "@emotion/*"
+          - "react-router*"
+          - "@tanstack/*"
+          - "@material-table/*"
+          - "@yaireo/*"
+          - "axios*"
+          - "iso-639-1*"
+          - "fast-deep-equal*"
+          - "web-vitals*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-dev-tools:
+        patterns:
+          - "typescript*"
+          - "@types/*"
+          - "eslint*"
+          - "prettier*"
+          - "@typescript-eslint/*"
+          - "vite*"
+          - "@vitejs/*"
+          - "@craco/*"
+          - "@testing-library/*"
+          - "husky*"
+          - "lint-staged*"
+          - "openapi-typescript-codegen*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # Root dev tools (npm)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      root-dev-tools:
+        patterns:
+          - "prettier*"
+          - "*prettier*"
+        update-types:
+          - "minor"
+          - "patch"
+      root-dev-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # Docker dependencies
   - package-ecosystem: docker
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 30
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      docker-images:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      docker-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
