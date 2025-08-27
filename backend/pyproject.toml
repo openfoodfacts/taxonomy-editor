@@ -43,13 +43,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = { extras = ["all"], version = "^0.104.1" }
-githubkit = { version = "^0.11.0a4", allow-prereleases = true }
-uvicorn = { extras = ["standard"], version = "^0.23.2" }
-neo4j = "^5.14.0"
+fastapi = { extras = ["all"], version = "^0.115.6" }
+githubkit = { version = "^0.13.1", allow-prereleases = true }
+uvicorn = { extras = ["standard"], version = "^0.35.0" }
+neo4j = "^5.28.2"
 openfoodfacts_taxonomy_parser = { path = "../parser", develop = true }
-python-multipart = "^0.0.7"
-apscheduler = "^3.10.4"
+python-multipart = "^0.0.20"
+apscheduler = "^3.11.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.3.0"
