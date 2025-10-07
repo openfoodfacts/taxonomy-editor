@@ -61,7 +61,6 @@ Ready to contribute code? Here's how to set up Taxonomy Editor for local develop
 4.  code!
 
 5.  Ensure your code is properly formatted:
-
     - If you have formatting issues detected by the CI checks, you can use the `/lint_code` command on your pull request to automatically format your code with Prettier.
     - Simply comment `/lint_code` on your PR and the GitHub Action will automatically format the code and commit the changes.
     - You can also run `npm run lint` locally to format code before committing.
