@@ -20,7 +20,7 @@
 
 ## What is this project about?
 
-TLDR: Taxonomies are at the 🧡 of Open Food Facts data structure. This project provides an user-friendly editor for editing taxonomies easily.
+TL;DR: Taxonomies are at the 🧡 of Open Food Facts data structure. This project provides an user-friendly editor for editing taxonomies easily.
 
 The Open Food Facts database contains a lot of information on food products, such as ingredients, labels, additives etc.
 
