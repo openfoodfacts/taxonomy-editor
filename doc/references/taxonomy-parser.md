@@ -14,7 +14,6 @@ You must be able to query the database on it's relations, but also on nodes prop
 
 1. a language code is a two character code. We write `LC` to signify a language code in this document.
 1. every line has one of the following forms:
-
    - _blank line_: it only contains space characters or no character at all
    - _comment line_: first character is a `#`
    - _parent line_: fist character is `<`
