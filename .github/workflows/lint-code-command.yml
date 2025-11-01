@@ -22,7 +22,7 @@ jobs:
           reactions: eyes
 
       - name: Get PR branch
-        uses: xt0rted/pull-request-comment-branch@v2
+        uses: xt0rted/pull-request-comment-branch@v3
         id: comment-branch
 
       - name: Checkout PR branch
