@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.4.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.3.0...v1.4.0) (2026-01-23)
+
+
+### Features
+
+* add GitHub Action for automatic code formatting via /lint_code command ([#598](https://github.com/openfoodfacts/taxonomy-editor/issues/598)) ([92912a5](https://github.com/openfoodfacts/taxonomy-editor/commit/92912a532ce131478608373ecac034fd403b4661))
+* implement smart Dependabot dependency grouping to reduce PR noise ([#583](https://github.com/openfoodfacts/taxonomy-editor/issues/583)) ([0822286](https://github.com/openfoodfacts/taxonomy-editor/commit/08222864ecb983789e52388f4bd7fd05a0a83040))
+
+
+### Bug Fixes
+
+* Fix typo in PR dialog text ([#580](https://github.com/openfoodfacts/taxonomy-editor/issues/580)) ([9bf3187](https://github.com/openfoodfacts/taxonomy-editor/commit/9bf31877bc5a4c8faea45af5db5f0ba767869e0d))
+* Fix typo in TLDR section of README ([#601](https://github.com/openfoodfacts/taxonomy-editor/issues/601)) ([83ccbfd](https://github.com/openfoodfacts/taxonomy-editor/commit/83ccbfddb0982ad6649c8ed08b6cc0d891f625df))
+* Rename dependabot-groups.MD to DEPENDABOT_GROUPS.md ([b99cb60](https://github.com/openfoodfacts/taxonomy-editor/commit/b99cb60ec60615001518c8d4ad78496bf9efe971))
+* Rename dependabot-groups.md to dependabot-groups.MD ([2b47c74](https://github.com/openfoodfacts/taxonomy-editor/commit/2b47c74740e28bfc050c329a1643cf36cce25479))
+
 ## [1.3.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.2.0...v1.3.0) (2025-05-15)
 
 
