@@ -1,7 +1,7 @@
 {
   "//": "This file is for global dev tools only ! For frontend see in taxonomy-editor-frontend folder",
   "devDependencies": {
-    "prettier": "3.6.2",
+    "prettier": "3.8.1",
     "prettier-plugin-toml": "^1.0.0"
   },
   "scripts": {
