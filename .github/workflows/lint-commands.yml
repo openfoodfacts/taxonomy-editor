@@ -1,4 +1,4 @@
-name: Lint Code on Command
+name: Lint Repository on Command
 
 on:
   issue_comment:
@@ -15,22 +15,26 @@ jobs:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '/lint_code')
     runs-on: ubuntu-latest
     steps:
-      - name: Add reaction to comment
+      - &react-seen
+        name: Add reaction to comment
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
 
-      - name: Get PR branch
+      - &get-pr-branch
+        name: Get PR branch
         uses: xt0rted/pull-request-comment-branch@v3
         id: comment-branch
 
-      - name: Checkout PR branch
+      - &checkout-pr-branch
+        name: Checkout PR branch
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
 
-      - name: Setup Node.js
+      - &setup-node
+        name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
@@ -55,7 +59,8 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Add success reaction
+      - &react-success
+        name: Add success reaction
         if: success()
         uses: peter-evans/create-or-update-comment@v5
         with:
@@ -78,9 +83,60 @@ jobs:
           body: |
             ℹ️ No formatting changes needed - code is already properly formatted.
 
-      - name: Add failure reaction
+      - &react-failure
+        name: Add failure reaction
         if: failure()
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: confused
+
+  lint:
+    # Only run on pull request comments
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '/lint')
+    runs-on: ubuntu-latest
+    steps:
+      - *react-seen
+      - *get-pr-branch
+      - *checkout-pr-branch
+      - *setup-node
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Run Prettier
+        run: make lint
+
+      - name: Commit and push changes
+        id: commit
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "style: reformatted repository"
+            git push
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - *react-success
+
+      - name: Comment on PR
+        if: steps.commit.outputs.has_changes == 'true'
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            ✅ Repository has been automatically formatted.
+
+      - name: Comment on PR if no changes
+        if: steps.commit.outputs.has_changes == 'false'
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            ℹ️ No formatting changes needed - repository is already properly formatted.
+
+      - *react-failure
