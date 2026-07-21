@@ -70,7 +70,7 @@ async def test_remove_parent(taxonomy_test):
     # expected output
     expected = list(open("tests/data/test.txt"))
     # remaining parent id is now canonical
-    expected[44] = "< en:Passion fruit yogurts\n"
+    expected[44] = "< en: Passion fruit yogurts\n"
     # remove the old parent line
     del expected[45]
     assert result == expected
@@ -92,10 +92,10 @@ async def test_add_parent(taxonomy_test):
     # expected output
     expected = list(open("tests/data/test.txt"))
     # parent ids are now canonical and linted
-    expected[44] = "< en:Passion fruit yogurts\n"
-    expected[45] = "< fr:yaourts allégés\n"
+    expected[44] = "< en: Passion fruit yogurts\n"
+    expected[45] = "< fr: yaourts allégés\n"
     # new parent added
-    expected.insert(46, "< en:fake-stuff\n")
+    expected.insert(46, "< en: fake-stuff\n")
     assert result == expected
     # clean files
     await background_tasks.run()
@@ -117,8 +117,8 @@ async def test_add_synonym(taxonomy_test):
     # expected output
     expected = list(open("tests/data/test.txt"))
     # parent ids are now canonical and linted
-    expected[44] = "< en:Passion fruit yogurts\n"
-    expected[45] = "< fr:yaourts allégés\n"
+    expected[44] = "< en: Passion fruit yogurts\n"
+    expected[45] = "< fr: yaourts allégés\n"
     # added the synonyms
     expected[46] = "fr: yaourts au fruit de la passion allégés, yaourts allégé aux grenadilles\n"
     assert result == expected
@@ -182,7 +182,7 @@ async def test_add_bare_child(taxonomy_test):
     expected = list(open("tests/data/test.txt"))
     # new entry inserted just after yogurts, the parent
     expected[16:16] = [
-        "< en:yogurts\n",
+        "< en: yogurts\n",
         "en: sweet yogurts\n",
         "\n",
     ]
@@ -230,11 +230,11 @@ async def test_add_new_entry_as_child(taxonomy_test):
     # new entry inserted just after yogurts, the parent
     expected[16:16] = [
         "# yogurts with sugar\n",
-        "< en:yogurts\n",
+        "< en: yogurts\n",
         "en: sweet yogurts, yogurts with sugar\n",
         "fr: yaourts sucrés\n",
         "\n",
-        "< en:sweet yogurts\n",
+        "< en: sweet yogurts\n",
         "en: edulcorated yogurts\n",
         "\n",
     ]
@@ -277,7 +277,6 @@ async def test_add_new_root_entries(taxonomy_test):
     # expected output
     expected = list(open("tests/data/test.txt"))
     # second entry added at the end
-    expected[-1] += "\n"
     expected.extend(
         [
             "\n",
@@ -288,7 +287,7 @@ async def test_add_new_root_entries(taxonomy_test):
             "en: Cabbage\n",
             "fr: Choux\n",
             "\n",
-            "< en:Potatoes\n",
+            "< en: Potatoes\n",
             "en: Blue Potatoes\n",
         ]
     )
@@ -314,7 +313,7 @@ async def test_change_entry_id(taxonomy_test):
     # entry yogurts renamed
     expected[8] = "en: yoghurts, yogurts\n"
     # parent renamed for banana yogurts, etc.
-    expected[16] = expected[25] = expected[32] = expected[35] = "< en:yoghurts\n"
+    expected[16] = expected[25] = expected[32] = expected[35] = "< en: yoghurts\n"
     # also properties were re-ordered on rewritten entries (linting)
     expected.insert(11, expected.pop(13))
     expected.insert(20, expected.pop(22))
@@ -349,10 +348,10 @@ async def test_remove_entry(taxonomy_test):
         73,  # < en:meat
     ]
     # parent changed to "en:yogurts" for "yahourts alleges"
-    expected[45] = expected[51] = "< en:yogurts\n"
+    expected[45] = expected[51] = "< en: yogurts\n"
     # parent normalized
-    expected[44] = "< en:Passion fruit yogurts\n"
-    expected[50] = "< en:lemon yogurts\n"
+    expected[44] = "< en: Passion fruit yogurts\n"
+    expected[50] = "< en: lemon yogurts\n"
     # properties reordered
     # expected.insert(39, expected.pop(41))
     for i in sorted(to_remove, reverse=True):

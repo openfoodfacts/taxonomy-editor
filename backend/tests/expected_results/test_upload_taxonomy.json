@@ -169,7 +169,7 @@
       "labels": ["ENTRY", "p_test_taxonomy_test_branch"],
       "main_language": "fr",
       "original_taxonomy": "test.txt",
-      "parent_comments": ["# < fr:yaourt"],
+      "parent_comments": ["# < fr: yaourt"],
       "preceding_lines": [],
       "prop_flavour_en": "blueberry",
       "prop_flavour_fr": "myrtille",
@@ -455,27 +455,27 @@
     },
     {
       "branch_name": "test_branch",
-      "created_at": "2025-05-02T17:52:06.511000000+00:00",
+      "created_at": "2026-07-21T11:20:48.356000000+00:00",
+      "errors": [
+        "Missing child link at line 57 for fr:yaourts-a-la-myrtille: parent_id yaourt not found in tags_ids_fr"
+      ],
+      "id": "p_test_taxonomy_test_branch",
+      "labels": ["p_test_taxonomy_test_branch", "ERRORS"],
+      "taxonomy_name": "test_taxonomy",
+      "warnings": []
+    },
+    {
+      "branch_name": "test_branch",
+      "created_at": "2026-07-21T11:20:47.893000000+00:00",
       "description": "test_description",
       "errors_count": 1,
       "id": "p_test_taxonomy_test_branch",
       "is_from_github": false,
       "labels": ["PROJECT"],
-      "original_text": "# test taxonomy\n\nstopwords:fr: aux,au,de,le,du,la,a,et\n\nsynonyms:en: passion fruit, passionfruit\n\nsynonyms:fr: fruit de la passion, fruits de la passion, maracuja, passion\n\nen: yogurts, yoghurts\nfr: yaourts, yoghourts, yogourts\nnl: yoghurts\ndescription:en: a yogurts of whatever type\ndescription:fr: un yaourt de n'importe quel type\ncolor:en: white\nflavour:en: undef\n\n<en: yogurts\nen: banana yogurts\nfr: yaourts \u00e0 la banane\nnl: bananenyoghurt\ndescription:en: a banana yogurt\ndescription:fr: un yaourt \u00e0 la banane\ncolor:en: yellow\nflavour:en: banana\n\n<en: yogurts\nen: Passion fruit yogurts\nfr: yaourts au fruit de la passion\nnl: yoghurts met passievrucht\ncolor:en: undef\nflavour:en: passion fruit\n\n<en: yogurts\nfr: yaourts all\u00e9g\u00e9s\n\n<fr: yoghourts\nen: lemon yogurts\nfr: yaourts au citron\nnl: yoghurts met citroen\ndescription:en: a yogurts with lemon inside\ndescription:fr: un yaourt avec du citron\ncolor:en: yellow\nflavour:en: lemon\n\n<fr: yaourts au fruit de la passion\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au fruit de la passion all\u00e9g\u00e9s\nnl: magere yoghurts met passievrucht\n\n\n<fr: yaourts au citron\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au citron all\u00e9g\u00e9s\nnl: magere citroenyoghurt\ndescription:en: for light yogurts with lemon\n\n<fr: yaourt\nfr: yaourts \u00e0 la myrtille\nnl: bosbessenyoghurt\nflavour:en: blueberry\nflavour:fr: myrtille\n\nen: meat\nvegan:en: no\ncarbon_footprint_fr_foodges_value:fr: 10\n\n<en: meat\nen: beef\ncarbon_footprint_fr_foodges_value:fr: 15\n\n<en: beef\nen: roast-beef\n\n<en: meat\nen: fake-meat\n# undef will stop parents from transmitting a value\ncarbon_footprint_fr_foodges_value:fr: undef\nvegan:en: yes\n\nen: fake-stuff\n\n<en: fake-stuff\n<en: fake-meat\nen: fake-duck-meat\n\nen: vegetable\nvegan:en: yes\n\n# the soup yogourt synonym is used to test suggestions matching xx: synonyms\nen: soup\nxx: something that means soup in every language, something else that means soup in every language\nvegan:en: maybe\n\n<en:soup\nen:vegan-soup\nvegan:en:yes\n\n<en:soup\nen:fish-soup\nvegan:en:no\n\nde:Sp\u00e4tzle\n\nen:Kale\nde:Gr\u00fcnkohl\n\nen:Kefir 2.5 %\nde:Kefir 2.5 %\nfr:K\u00e9fir 2,5 %\nru:\u041a\u0435\u0444\u0438\u0440 2.5 %, \u041a\u0435\u0444\u0438\u0440 2.5%\n\nfr:French entry\nde:Special value for German\n\nfr:French entry with default value\nxx:French entry with default value\nde:Special value for German 2\n\nxx:Language-less entry\nde:Special value for German 3\n\n# xx: entry with accents, need to match unaccented version\nsv:\u00c4-m\u00e4rket\nxx:\u00c4-m\u00e4rket\n\nen:Entry with (parentheses) and some *!#{}@$ characters, synonym with *%@$(]% chars",
+      "original_text": "# test taxonomy\n\nstopwords:fr: aux,au,de,le,du,la,a,et\n\nsynonyms:en: passion fruit, passionfruit\n\nsynonyms:fr: fruit de la passion, fruits de la passion, maracuja, passion\n\nen: yogurts, yoghurts\nfr: yaourts, yoghourts, yogourts\nnl: yoghurts\ndescription:en: a yogurts of whatever type\ndescription:fr: un yaourt de n'importe quel type\ncolor:en: white\nflavour:en: undef\n\n< en: yogurts\nen: banana yogurts\nfr: yaourts \u00e0 la banane\nnl: bananenyoghurt\ndescription:en: a banana yogurt\ndescription:fr: un yaourt \u00e0 la banane\ncolor:en: yellow\nflavour:en: banana\n\n< en: yogurts\nen: Passion fruit yogurts\nfr: yaourts au fruit de la passion\nnl: yoghurts met passievrucht\ncolor:en: undef\nflavour:en: passion fruit\n\n< en: yogurts\nfr: yaourts all\u00e9g\u00e9s\n\n<fr: yoghourts\nen: lemon yogurts\nfr: yaourts au citron\nnl: yoghurts met citroen\ndescription:en: a yogurts with lemon inside\ndescription:fr: un yaourt avec du citron\ncolor:en: yellow\nflavour:en: lemon\n\n<fr: yaourts au fruit de la passion\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au fruit de la passion all\u00e9g\u00e9s\nnl: magere yoghurts met passievrucht\n\n\n<fr: yaourts au citron\n<fr: yaourts all\u00e9g\u00e9s\nfr: yaourts au citron all\u00e9g\u00e9s\nnl: magere citroenyoghurt\ndescription:en: for light yogurts with lemon\n\n<fr: yaourt\nfr: yaourts \u00e0 la myrtille\nnl: bosbessenyoghurt\nflavour:en: blueberry\nflavour:fr: myrtille\n\nen: meat\nvegan:en: no\ncarbon_footprint_fr_foodges_value:fr: 10\n\n< en: meat\nen: beef\ncarbon_footprint_fr_foodges_value:fr: 15\n\n< en: beef\nen: roast-beef\n\n< en: meat\nen: fake-meat\n# undef will stop parents from transmitting a value\ncarbon_footprint_fr_foodges_value:fr: undef\nvegan:en: yes\n\nen: fake-stuff\n\n< en: fake-stuff\n< en: fake-meat\nen: fake-duck-meat\n\nen: vegetable\nvegan:en: yes\n\n# the soup yogourt synonym is used to test suggestions matching xx: synonyms\nen: soup\nxx: something that means soup in every language, something else that means soup in every language\nvegan:en: maybe\n\n< en:soup\nen:vegan-soup\nvegan:en:yes\n\n< en:soup\nen:fish-soup\nvegan:en:no\n\nde:Sp\u00e4tzle\n\nen:Kale\nde:Gr\u00fcnkohl\n\nen:Kefir 2.5 %\nde:Kefir 2.5 %\nfr:K\u00e9fir 2,5 %\nru:\u041a\u0435\u0444\u0438\u0440 2.5 %, \u041a\u0435\u0444\u0438\u0440 2.5%\n\nfr:French entry\nde:Special value for German\n\nfr:French entry with default value\nxx:French entry with default value\nde:Special value for German 2\n\nxx:Language-less entry\nde:Special value for German 3\n\n# xx: entry with accents, need to match unaccented version\nsv:\u00c4-m\u00e4rket\nxx:\u00c4-m\u00e4rket\n\nen:Entry with (parentheses) and some *!#{}@$ characters, synonym with *%@$(]% chars\n",
       "owner_name": "unknown",
       "status": "OPEN",
       "taxonomy_name": "test_taxonomy"
-    },
-    {
-      "branch_name": "test_branch",
-      "created_at": "2025-05-02T17:52:06.958000000+00:00",
-      "errors": [
-        "Missing child link at line 57 for fr:yaourts-a-la-myrtille: parent_id yaourt not found in tags_ids_fr"
-      ],
-      "id": "p_test_taxonomy_test_branch",
-      "labels": ["ERRORS", "p_test_taxonomy_test_branch"],
-      "taxonomy_name": "test_taxonomy",
-      "warnings": []
     }
   ],
   "relations": [
