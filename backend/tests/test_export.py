@@ -277,7 +277,6 @@ async def test_add_new_root_entries(taxonomy_test):
     # expected output
     expected = list(open("tests/data/test.txt"))
     # second entry added at the end
-    expected[-1] += "\n"
     expected.extend(
         [
             "\n",
