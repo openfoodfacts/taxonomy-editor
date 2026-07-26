@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   neo4j:
     restart: ${RESTART_POLICY:-always}
