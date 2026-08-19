@@ -5,6 +5,7 @@ from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Literal, Namespace
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
+TEST_PROPERTY_CONFUSED_LANG_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt")
 
 def test_rdf_parser():
     graph = parse_to_rdf(TEST_TAXONOMY_TXT)
@@ -43,3 +44,11 @@ def test_rdf_parser():
     
     # Properties
     assert (test.meat, OFF.carbon_footprint_fr_foodges_value, Literal("10", "fr")) in graph
+
+def test_rdf_description():
+    graph = parse_to_rdf(TEST_PROPERTY_CONFUSED_LANG_TXT)
+    
+    ns = Namespace("https://openfoodfacts.org/data/taxonomies/test_property_confused_lang#")
+
+    # Check that the description uses the SKOS definition
+    assert (ns['1-for-the-planet'], SKOS.definition, Literal("Commit to donating at least 1% of annual sales to environmental organizations.", "en")) in graph

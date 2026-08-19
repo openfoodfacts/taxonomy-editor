@@ -65,14 +65,18 @@ def parse_to_rdf(filename) -> Graph:
         # Properties
         for property_tag, value in node.properties.items():
             parts = property_tag.rsplit("_", 1)
-            property = OFF[parts[0][5:]]
-            graph.add((concept, property, Literal(value, parts[1])))
-            
-            # Add the property to the class definition if it hasn't been added yet
-            if (property, RDF.type, RDF.Property) not in graph:
-                graph.add((property, RDF.type, RDF.Property))
-                graph.add((property, RDFS.domain, OFF[class_name]))
-                graph.add((property, RDFS.range, RDF_XSD.string))
+            property_name = parts[0][5:]
+            if property_name == "description":
+                graph.add((concept, SKOS.definition, Literal(value, parts[1])))
+            else:
+                property = OFF[parts[0][5:]]
+                graph.add((concept, property, Literal(value, parts[1])))
+                
+                # Add the property to the class definition if it hasn't been added yet
+                if (property, RDF.type, RDF.Property) not in graph:
+                    graph.add((property, RDF.type, RDF.Property))
+                    graph.add((property, RDFS.domain, OFF[class_name]))
+                    graph.add((property, RDFS.range, RDF_XSD.string))
 
     graph.serialize(destination="debug.ttl")
     return graph
