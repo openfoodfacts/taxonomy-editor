@@ -1,7 +1,8 @@
 from pathlib import Path
 import re
+import sys
 
-from rdflib import RDF, SKOS, Graph, Literal, Namespace
+from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Graph, Literal, Namespace
 
 from .taxonomy_parser import TaxonomyParser
 
@@ -30,14 +31,18 @@ def parse_to_rdf(filename) -> Graph:
     scheme = OFF[scheme_id]
     graph.add((scheme, RDF.type, SKOS.ConceptScheme))
     graph.add((scheme, SKOS.prefLabel, Literal(scheme_label, "en")))
-    
+
+    # Create a class for each taxonomy entry
+    class_name = scheme_id.title()
+    graph.add((OFF[class_name], RDFS.subClassOf, SKOS.Concept))
+
     ns = Namespace(f"https://openfoodfacts.org/data/taxonomies/{scheme_id}#")
     graph.bind(scheme_id, ns)
 
     for node in taxonomy.entry_nodes:
         # As per decision document the language part is not used in the id
         concept = ns[node.id.split(":",1)[1]]
-        graph.add((concept, RDF.type, SKOS.Concept))
+        graph.add((concept, RDF.type, OFF[class_name]))
         graph.add((concept, SKOS.inScheme, scheme))
 
         # Add labels
@@ -49,6 +54,32 @@ def parse_to_rdf(filename) -> Graph:
                 for synonym in values[1:]:
                     graph.add((concept, SKOS.altLabel, Literal(synonym, lang)))
 
+        # Parents and top concepts
+        for parent in node.parent_tags:
+            parent_concept = ns[parent[0].split(":",1)[1]]
+            graph.add((concept, SKOS.broader, parent_concept))
+
+        if not node.parent_tags:
+            graph.add((concept, SKOS.topConceptOf, scheme))
+            
+        # Properties
+        for property_tag, value in node.properties.items():
+            parts = property_tag.rsplit("_", 1)
+            property = OFF[parts[0][5:]]
+            graph.add((concept, property, Literal(value, parts[1])))
+            
+            # Add the property to the class definition if it hasn't been added yet
+            if (property, RDF.type, RDF.Property) not in graph:
+                graph.add((property, RDF.type, RDF.Property))
+                graph.add((property, RDFS.domain, OFF[class_name]))
+                graph.add((property, RDFS.range, RDF_XSD.string))
 
     graph.serialize(destination="debug.ttl")
     return graph
+
+if __name__ == "__main__":
+    filename = sys.argv[1] if len(sys.argv) > 1 else "tests/data/test"
+
+    # Pass session variable to parser object
+    graph = parse_to_rdf(f"{filename}.txt")
+    graph.serialize(destination=f"{filename}.ttl")
