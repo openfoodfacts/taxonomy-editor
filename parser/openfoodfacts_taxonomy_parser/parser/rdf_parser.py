@@ -1,3 +1,11 @@
+"""
+Converts OpenFoodFacts taxonomy files to RDF format using the rdflib library.
+
+To use from the command line, run:
+    python -m openfoodfacts_taxonomy_parser.parser.rdf_parser <taxonomy_file without extension>
+    
+This will generate a corresponding .ttl file in the same directory as the input file.
+"""
 from pathlib import Path
 import re
 import sys
@@ -5,12 +13,14 @@ import inflect
 
 from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Graph, Literal, Namespace
 
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+
 from .taxonomy_parser import TaxonomyParser
 
 OFF = Namespace("https://openfoodfacts.org/data/taxonomies/core#")
 inflect_engine = inflect.engine()
 
-def parse_to_rdf(filename) -> Graph:
+def parse_to_rdf(filename, logger = None) -> Graph:
     """
     Parse a taxonomy file to RDF format.
 
@@ -20,8 +30,9 @@ def parse_to_rdf(filename) -> Graph:
     Returns:
         rdflib.Graph: The RDF graph containing the parsed taxonomy.
     """
+    logger = logger or ParserConsoleLogger()
     taxonomy_parser = TaxonomyParser()
-    taxonomy = taxonomy_parser.parse_file(filename)
+    taxonomy = taxonomy_parser.parse_file(filename, logger=logger)
     graph = Graph()
     
     # Create the core namespace prefix
@@ -45,8 +56,11 @@ def parse_to_rdf(filename) -> Graph:
     for node in taxonomy.entry_nodes:
         # As per decision document the language part is not used in the id
         concept = ns[node.id.split(":",1)[1]]
-        graph.add((concept, RDF.type, OFF[class_name]))
-        graph.add((concept, SKOS.inScheme, scheme))
+        if (concept, RDF.type, OFF[class_name]) not in graph:
+            graph.add((concept, RDF.type, OFF[class_name]))
+            graph.add((concept, SKOS.inScheme, scheme))
+        else:
+            logger.warning(f"Duplicate canonical identifier: {node.id}")
 
         # Add labels
         for tag, values in node.tags.items():

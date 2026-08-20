@@ -2,6 +2,7 @@ import pathlib
 
 from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Literal, Namespace
 
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -59,10 +60,14 @@ def test_rdf_description():
 
 
 def test_rdf_full():
-    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT)
+    logger = ParserConsoleLogger()
+    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, logger=logger)
     
     ns = Namespace("https://openfoodfacts.org/data/taxonomies/test_rdf_entries#")
 
     # Captialization of class name
     assert (OFF.TestRdfEntry, RDFS.subClassOf, SKOS.Concept) in graph
+    
+    # Warning about duplicate item
+    assert any("duplicate-item" in warning for warning in logger.parsing_warnings)
 
