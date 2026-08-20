@@ -1,0 +1,3 @@
+# Taxonomy to fully test RDF capabilities
+
+en: simple top level item

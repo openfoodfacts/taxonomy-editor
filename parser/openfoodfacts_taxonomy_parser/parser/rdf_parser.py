@@ -1,12 +1,14 @@
 from pathlib import Path
 import re
 import sys
+import inflect
 
 from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Graph, Literal, Namespace
 
 from .taxonomy_parser import TaxonomyParser
 
 OFF = Namespace("https://openfoodfacts.org/data/taxonomies/core#")
+inflect_engine = inflect.engine()
 
 def parse_to_rdf(filename) -> Graph:
     """
@@ -33,7 +35,8 @@ def parse_to_rdf(filename) -> Graph:
     graph.add((scheme, SKOS.prefLabel, Literal(scheme_label, "en")))
 
     # Create a class for each taxonomy entry
-    class_name = scheme_id.title()
+    class_name = scheme_id.title().replace("_", "")
+    class_name = inflect_engine.singular_noun(class_name) or class_name
     graph.add((OFF[class_name], RDFS.subClassOf, SKOS.Concept))
 
     ns = Namespace(f"https://openfoodfacts.org/data/taxonomies/{scheme_id}#")
