@@ -1,6 +1,6 @@
 import pathlib
 
-from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Literal, Namespace
+from rdflib import OWL, RDF, RDFS, SKOS, XSD as RDF_XSD, Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
@@ -63,11 +63,19 @@ def test_rdf_full():
     logger = ParserConsoleLogger()
     graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, logger=logger)
     
-    ns = Namespace("https://openfoodfacts.org/data/taxonomies/test_rdf_entries#")
+    NS = Namespace("https://openfoodfacts.org/data/taxonomies/test_rdf_entries#")
+    CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
 
     # Captialization of class name
     assert (OFF.TestRdfEntry, RDFS.subClassOf, SKOS.Concept) in graph
     
     # Warning about duplicate item
     assert any("duplicate-item" in warning for warning in logger.parsing_warnings)
-
+    
+    # Ciqual codes mapped correctly
+    assert (NS.tomato, OFF.ciqualCode, CIQUAL['20047']) in graph
+    
+    # CIQUAL property is defined in the graph
+    assert (OFF.ciqualCode, RDFS.subPropertyOf, SKOS.exactMatch) in graph
+    assert (OFF.ciqualCode, RDF.type, OWL.ObjectProperty) in graph
+    assert (OFF.ciqualCode, RDFS.domain, OFF.TestRdfEntry) in graph

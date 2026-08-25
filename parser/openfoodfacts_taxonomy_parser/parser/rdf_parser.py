@@ -11,13 +11,15 @@ import re
 import sys
 import inflect
 
-from rdflib import RDF, RDFS, SKOS, XSD as RDF_XSD, Graph, Literal, Namespace
+from rdflib import OWL, RDF, RDFS, SKOS, XSD as RDF_XSD, Graph, Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 
 from .taxonomy_parser import TaxonomyParser
 
 OFF = Namespace("https://openfoodfacts.org/data/taxonomies/core#")
+CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
+
 inflect_engine = inflect.engine()
 
 def parse_to_rdf(filename, logger = None) -> Graph:
@@ -81,10 +83,19 @@ def parse_to_rdf(filename, logger = None) -> Graph:
             
         # Properties
         for property_tag, value in node.properties.items():
-            parts = property_tag.rsplit("_", 1)
-            property_name = parts[0][5:]
+            parts = property_tag.rsplit("_", 1) # Extract the language suffix
+            property_name = parts[0][5:] # Remove the "prop_" prefix
             if property_name == "description":
                 graph.add((concept, SKOS.definition, Literal(value, parts[1])))
+            elif property_name == "ciqual_food_code":
+                # Add CIQUAL definitions to the graph if they aren't there
+                if (OFF.ciqualCode, None, None) not in graph:
+                    graph.bind("ciqual", CIQUAL)
+                    graph.add((OFF.ciqualCode, RDF.type, OWL.ObjectProperty))
+                    graph.add((OFF.ciqualCode, RDFS.subPropertyOf, SKOS.exactMatch))
+                    graph.add((OFF.ciqualCode, RDFS.domain, OFF[class_name]))
+                    # Note can't add a range as CIQUAL codes do not share a common ancestor
+                graph.add((concept, OFF.ciqualCode, CIQUAL[value]))
             else:
                 property = OFF[parts[0][5:]]
                 graph.add((concept, property, Literal(value, parts[1])))

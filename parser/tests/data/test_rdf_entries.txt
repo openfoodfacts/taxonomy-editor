@@ -6,3 +6,6 @@ en: simple top level item
 en: duplicate item
 
 fr: duplicate item
+
+en: tomato
+ciqual_food_code:en: 20047
