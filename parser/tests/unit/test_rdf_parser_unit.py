@@ -45,7 +45,7 @@ def test_rdf_parser():
     assert (test.yogurts, SKOS.topConceptOf, OFF.test) not in graph
     
     # Properties
-    assert (test.meat, OFF.carbon_footprint_fr_foodges_value, Literal("10", "fr")) in graph
+    assert (test.meat, OFF.carbonFootprintFrFoodgesValue, Literal("10", "fr")) in graph
 
 def test_rdf_description():
     graph = parse_to_rdf(TEST_PROPERTY_CONFUSED_LANG_TXT)
@@ -73,13 +73,23 @@ def test_rdf_full():
     assert any("duplicate-item" in warning for warning in logger.parsing_warnings)
     
     # Ciqual codes mapped correctly
-    assert (NS.tomato, OFF.ciqualCode, CIQUAL['20047']) in graph
+    assert (NS.tomato, OFF.ciqualFoodCode, CIQUAL['20047']) in graph
     
     # CIQUAL property is defined in the graph
-    assert (OFF.ciqualCode, RDFS.subPropertyOf, SKOS.exactMatch) in graph
-    assert (OFF.ciqualCode, RDF.type, OWL.ObjectProperty) in graph
-    assert (OFF.ciqualCode, RDFS.domain, OFF.TestRdfEntry) in graph
+    assert (OFF.ciqualFoodCode, RDFS.subPropertyOf, SKOS.exactMatch) in graph
+    assert (OFF.ciqualFoodCode, RDF.type, OWL.ObjectProperty) in graph
+    assert (OFF.ciqualFoodCode, RDFS.domain, OFF.TestRdfEntry) in graph
+    
+    assert(NS.tomato, OFF.ciqualFoodName, Literal("Tomato, raw", "en")) in graph
+    assert (OFF.ciqualFoodName, RDFS.subPropertyOf, SKOS.altLabel) in graph
+    assert (OFF.ciqualFoodName, RDF.type, OWL.AnnotationProperty) in graph
 
     # Ciqual proxy codes mapped correctly
-    assert (NS.pumpkin, OFF.ciqualProxyCode, CIQUAL['20139']) in graph
-    assert (OFF.ciqualProxyCode, RDFS.subPropertyOf, SKOS.closeMatch) in graph
+    assert (NS.pumpkin, OFF.ciqualProxyFoodCode, CIQUAL['20139']) in graph
+    assert (OFF.ciqualProxyFoodCode, RDFS.subPropertyOf, SKOS.closeMatch) in graph
+    assert(NS.pumpkin, OFF.ciqualProxyFoodName, Literal("Courge, crue", "fr")) in graph
+    assert (OFF.ciqualProxyFoodName, RDFS.subPropertyOf, SKOS.altLabel) in graph
+    
+    # Check naming of unknown properties
+    assert (NS.pumpkin, OFF.randomProperty, Literal("test", "en")) in graph
+    

@@ -22,6 +22,10 @@ CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/"
 
 inflect_engine = inflect.engine()
 
+def toLowerCamelCase(snake_str):
+    first, *others = snake_str.split('_')
+    return ''.join([first.lower(), *map(str.title, others)])
+
 def parse_to_rdf(filename, logger = None) -> Graph:
     """
     Parse a taxonomy file to RDF format.
@@ -89,24 +93,38 @@ def parse_to_rdf(filename, logger = None) -> Graph:
                 graph.add((concept, SKOS.definition, Literal(value, parts[1])))
             elif property_name == "ciqual_food_code":
                 # Add CIQUAL definitions to the graph if they aren't there
-                if (OFF.ciqualCode, None, None) not in graph:
+                if (OFF.ciqualFoodCode, None, None) not in graph:
                     graph.bind("ciqual", CIQUAL)
-                    graph.add((OFF.ciqualCode, RDF.type, OWL.ObjectProperty))
-                    graph.add((OFF.ciqualCode, RDFS.subPropertyOf, SKOS.exactMatch))
-                    graph.add((OFF.ciqualCode, RDFS.domain, OFF[class_name]))
+                    graph.add((OFF.ciqualFoodCode, RDF.type, OWL.ObjectProperty))
+                    graph.add((OFF.ciqualFoodCode, RDFS.subPropertyOf, SKOS.exactMatch))
+                    graph.add((OFF.ciqualFoodCode, RDFS.domain, OFF[class_name]))
                     # Note can't add a range as CIQUAL codes do not share a common ancestor
-                graph.add((concept, OFF.ciqualCode, CIQUAL[value]))
+                graph.add((concept, OFF.ciqualFoodCode, CIQUAL[value]))
+            elif property_name == "ciqual_food_name":
+                if (OFF.ciqualFoodName, None, None) not in graph:
+                    graph.add((OFF.ciqualFoodName, RDF.type, OWL.AnnotationProperty))
+                    graph.add((OFF.ciqualFoodName, RDFS.subPropertyOf, SKOS.altLabel))
+                    graph.add((OFF.ciqualFoodName, RDFS.domain, OFF[class_name]))
+                graph.add((concept, OFF.ciqualFoodName, Literal(value, parts[1])))
             elif property_name == "ciqual_proxy_food_code":
                 # Add CIQUAL definitions to the graph if they aren't there
-                if (OFF.ciqualProxyCode, None, None) not in graph:
+                if (OFF.ciqualProxyFoodCode, None, None) not in graph:
                     graph.bind("ciqual", CIQUAL)
-                    graph.add((OFF.ciqualProxyCode, RDF.type, OWL.ObjectProperty))
-                    graph.add((OFF.ciqualProxyCode, RDFS.subPropertyOf, SKOS.closeMatch))
-                    graph.add((OFF.ciqualProxyCode, RDFS.domain, OFF[class_name]))
+                    graph.add((OFF.ciqualProxyFoodCode, RDF.type, OWL.ObjectProperty))
+                    graph.add((OFF.ciqualProxyFoodCode, RDFS.subPropertyOf, SKOS.closeMatch))
+                    graph.add((OFF.ciqualProxyFoodCode, RDFS.domain, OFF[class_name]))
                     # Note can't add a range as CIQUAL codes do not share a common ancestor
-                graph.add((concept, OFF.ciqualProxyCode, CIQUAL[value]))
+                graph.add((concept, OFF.ciqualProxyFoodCode, CIQUAL[value]))
+            elif property_name == "ciqual_proxy_food_name":
+                if (OFF.ciqualProxyFoodName, None, None) not in graph:
+                    graph.add((OFF.ciqualProxyFoodName, RDF.type, OWL.AnnotationProperty))
+                    graph.add((OFF.ciqualProxyFoodName, RDFS.subPropertyOf, SKOS.altLabel))
+                    graph.add((OFF.ciqualProxyFoodName, RDFS.domain, OFF[class_name]))
+                graph.add((concept, OFF.ciqualProxyFoodName, Literal(value, parts[1])))
             else:
-                property = OFF[parts[0][5:]]
+                # Convert property names to lowerCamelCase for RDF representation as this follows industry norms
+                property_name = toLowerCamelCase(parts[0][5:])
+                property = OFF[property_name]
                 graph.add((concept, property, Literal(value, parts[1])))
                 
                 # Add the property to the class definition if it hasn't been added yet
