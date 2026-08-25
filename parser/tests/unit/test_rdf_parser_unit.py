@@ -79,3 +79,7 @@ def test_rdf_full():
     assert (OFF.ciqualCode, RDFS.subPropertyOf, SKOS.exactMatch) in graph
     assert (OFF.ciqualCode, RDF.type, OWL.ObjectProperty) in graph
     assert (OFF.ciqualCode, RDFS.domain, OFF.TestRdfEntry) in graph
+
+    # Ciqual proxy codes mapped correctly
+    assert (NS.pumpkin, OFF.ciqualProxyCode, CIQUAL['20139']) in graph
+    assert (OFF.ciqualProxyCode, RDFS.subPropertyOf, SKOS.closeMatch) in graph

@@ -96,6 +96,15 @@ def parse_to_rdf(filename, logger = None) -> Graph:
                     graph.add((OFF.ciqualCode, RDFS.domain, OFF[class_name]))
                     # Note can't add a range as CIQUAL codes do not share a common ancestor
                 graph.add((concept, OFF.ciqualCode, CIQUAL[value]))
+            elif property_name == "ciqual_proxy_food_code":
+                # Add CIQUAL definitions to the graph if they aren't there
+                if (OFF.ciqualProxyCode, None, None) not in graph:
+                    graph.bind("ciqual", CIQUAL)
+                    graph.add((OFF.ciqualProxyCode, RDF.type, OWL.ObjectProperty))
+                    graph.add((OFF.ciqualProxyCode, RDFS.subPropertyOf, SKOS.closeMatch))
+                    graph.add((OFF.ciqualProxyCode, RDFS.domain, OFF[class_name]))
+                    # Note can't add a range as CIQUAL codes do not share a common ancestor
+                graph.add((concept, OFF.ciqualProxyCode, CIQUAL[value]))
             else:
                 property = OFF[parts[0][5:]]
                 graph.add((concept, property, Literal(value, parts[1])))
