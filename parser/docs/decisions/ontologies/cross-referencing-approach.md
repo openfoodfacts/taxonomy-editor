@@ -23,11 +23,12 @@ This document considers the general approach for linking to these external ontol
 ## Considered Options
 
 * Direct references to other ontologies
-* Our own level of indirection
+* Indirection with generic property names
+* Indirection with specific property names
 
 ## Decision Outcome
 
-Chosen option: Use "Our own level of indirection" when referencing a foreign item that classifies our item, i.e. many of our items will reference the same foreign item, e.g. `isVegan`. Use "Direct references to other ontologies" where there is more of a one to one relationship, e.g. when cross-referencing an ingredient to its CIQUAL code.
+Chosen option: Use "Indirection with specific property names" when referencing a foreign item that classifies our item, i.e. many of our items will reference the same foreign item, e.g. `vegan`. Use "Direct references to other ontologies" where there is more of a one to one relationship, e.g. when cross-referencing an ingredient to its CIQUAL code.
 
 This gives us maximum flexibility to extend and translate our classification systems without introducing unnecessary levels of indirection.
 
@@ -50,12 +51,58 @@ This would involve referencing the foreign ontology directly from our own item. 
 * Bad: Foreign definition of the concept may not align with our own
 * Bad: Difficult to add cross-references to more than one ontology
 
-### Indirect References
+### Indirection with generic property names
 
 Using the same structure as above we might represent the vegan status on an ingredient with a triple like `ingredient:en-worcester-sauce off:maybe off:vegan` and then define `off:vegan` ourselves to include the following statement `off:vegan skos:exactMatch schema:VeganDiet`
 
 * Good: Allows maximum flexibility in defining the scope of our own classification system
 * Good: Supports multiple cross-references and cross-referencing methods
+* Bad: Generic property names do not match our own taxonomy structure
+* Bad: Difficult to define list of expected properties for auto-suggestion by an editing tool
 * Bad: Additional join in SPARQL queries when linking to the foreign ontology
 * Bad: May introduce some duplication with existing ontologies
+
+### Indirection with specific property names
+
+For properties like `vegan` or `vegatarian` which has options of `yes`, `no` and `maybe` we will need to have specific sub-classes for each possible value so that these can be mapped back to the cross-referenced ontology. For example:
+
+```turtle
+@prefix off: <https://openfoodfacts.org/data/taxonomies/core#> .
+@prefix ingredient: <https://openfoodfacts.org/data/taxonomies/ingredients#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix schema: <https://schema.org/> .
+
+ingredient:filling a off:ingredient;
+    skos:inScheme off:ingredients;
+    off:vegan off:maybeVegan
+
+off:veganStatus a owl:Class.
+
+off:maybeVegan a owl:Class;
+    rdfs:subClassOf off:veganStatus;
+    skos:closeMatch schema:VeganDiet
+    
+off:notVegan a owl:Class;
+    rdfs:subClassOf off:veganStatus;
+    owl:disjointWith schema:VeganDiet
+    
+off:isVegan a owl:Class;
+    rdfs:subClassOf off:veganStatus;
+    owl:equivalentClass schema:VeganDiet
+
+off:vegan a owl:ObjectProperty;
+    rdfs:range off:veganStatus.
+```
+
+* Good: Allows maximum flexibility in defining the scope of our own classification system
+* Good: Supports multiple cross-references and cross-referencing methods
+* Good: Specific property names match our own taxonomy structure
+* Good: Can define expected properties for auto-suggestion by an editing tool
+* Bad: Some redundancy as have to create "yes", "no" and "maybe" options for each property
+* Bad: Additional join in SPARQL queries when linking to the foreign ontology
+* Bad: May introduce some duplication with existing ontologies
+
+
 

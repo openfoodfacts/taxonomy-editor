@@ -93,3 +93,20 @@ def test_rdf_full():
     # Check naming of unknown properties
     assert (NS.pumpkin, OFF.randomProperty, Literal("test", "en")) in graph
     
+    # Vegan status
+    assert (NS.tomato, OFF.vegan, OFF.isVegan) in graph
+    assert (NS.filling, OFF.vegan, OFF.maybeVegan) in graph
+    
+    # Vegan metadata
+    assert (OFF.veganStatus, RDF.type, OWL.Class) in graph
+    assert (OFF.vegan, RDF.type, OWL.ObjectProperty) in graph
+    assert (OFF.isVegan, RDFS.subClassOf, OFF.veganStatus) in graph
+    assert (OFF.maybeVegan, RDFS.subClassOf, OFF.veganStatus) in graph
+    assert (OFF.notVegan, RDFS.subClassOf, OFF.veganStatus) in graph
+    assert (OFF.vegan, RDFS.domain, OFF.TestRdfEntry) in graph
+    assert (OFF.vegan, RDFS.range, OFF.veganStatus) in graph
+    
+    # Warning about unknown vegan status
+    assert any("unknown" in warning and "duplicate-item" in warning for warning in logger.parsing_warnings)
+    # But still added to the graph
+    assert (NS["duplicate-item"], OFF.vegan, Literal("unknown", "en")) in graph

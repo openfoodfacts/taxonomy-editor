@@ -4,14 +4,19 @@ en: simple top level item
 
 # Items with the same id (once the country is ignored). Should flag a warning
 en: duplicate item
+vegan:en: unknown
 
 fr: duplicate item
 
 en: tomato
 ciqual_food_code:en: 20047
 ciqual_food_name:en: Tomato, raw
+vegan:en: yes
 
 en: pumpkin
 ciqual_proxy_food_code:en: 20139
 ciqual_proxy_food_name:fr: Courge, crue
 random_property:en: test
+
+en: filling
+vegan:en: maybe
