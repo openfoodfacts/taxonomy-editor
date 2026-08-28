@@ -16,6 +16,7 @@ jobs:
         image_name:
           - taxonomy_frontend
           - taxonomy_api
+          - showvoc
     steps:
       - uses: actions/checkout@v7
         with:
@@ -33,6 +34,12 @@ jobs:
           # context is . for we need the parser directory
           echo "build_context=." >> $GITHUB_ENV
           echo "build_file=backend/Dockerfile" >> $GITHUB_ENV
+
+      - name: Set various env variables for showvoc
+        if: matrix.image_name == 'showvoc'
+        run: |
+          echo "build_context=showvoc" >> $GITHUB_ENV
+          echo "build_file=showvoc/Dockerfile" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4

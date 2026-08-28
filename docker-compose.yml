@@ -57,5 +57,16 @@ services:
     ports:
       - ${TAXONOMY_EDITOR_EXPOSE:-127.0.0.1:8091}:80
 
+  showvoc:
+    restart: ${RESTART_POLICY:-always}
+    image: ghcr.io/openfoodfacts/taxonomy-editor/showvoc:${DOCKER_TAG}
+    environment:
+     - JAVA_OPTS=-Dsemanticturkey.data.dir=/var/data/semanticturkey
+    volumes:
+      - showvoc-data:/var/data
+    ports:
+      - ${SHOWVOC_EXPOSE:-1983}:1983
+
 volumes:
   neo4j-data:
+  showvoc-data:
