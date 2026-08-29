@@ -41,6 +41,7 @@ def test_fileiter(neo4j):
 def test_normalizing(text: str, normalized_text: str, lang: str):
     assert utils.normalize_text(text, lang) == normalized_text
 
+
 def test_nodes():
     taxonomy_parser = parser.TaxonomyParser()
     taxonomy = taxonomy_parser.parse_file(TEST_TAXONOMY_TXT)

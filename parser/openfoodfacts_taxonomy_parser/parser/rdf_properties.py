@@ -31,7 +31,9 @@ class PropertyDefinition:
         graph_value = self.converter(value) if self.converter else Literal(value, lang)
         if graph_value is None:
             logger.warning(
-                f"Unknown value on {concept.fragment} for property {self.property.fragment}: {value}"
+                "Unknown value on {0} for property {1}: {2}".format(
+                    concept.fragment, self.property.fragment, value
+                )
             )
             # Add the raw value to the graph anyway
             graph.add((concept, self.property, Literal(value, lang)))

@@ -13,3 +13,6 @@ Full property definitions for standard properties, including:
 - Wikidata links
 - Wikipedia links
 
+Deal with taxonomies that are merged together, e.g. ingredients includes additives, vitamins, minerals, etc.
+
+Cross-referencing between taxonomies, e.g. expected ingredients in categories
