@@ -2,9 +2,13 @@
 Converts OpenFoodFacts taxonomy files to RDF format using the rdflib library.
 
 To use from the command line, run:
-    python -m openfoodfacts_taxonomy_parser.parser.rdf_parser <taxonomy_file without extension> <output_dir> <scheme_id>
 
-This will generate a corresponding .ttl file in the output directory, or the current directory if no output is specified.
+python -m openfoodfacts_taxonomy_parser.parser.rdf_parser <taxonomy_file> <output_dir> <scheme_id>
+
+Do not include the txt extension in the taxonomy file path.
+
+This will generate a corresponding .ttl file in the output directory,
+or the current directory if no output_dir is specified.
 
 If the scheme_id is not specified then the file name, without path, will be used.
 """
@@ -23,7 +27,7 @@ from .taxonomy_parser import TaxonomyParser
 inflect_engine = inflect.engine()
 
 
-def parse_to_rdf(filename, scheme_id = None, logger=None) -> Graph:
+def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
     """
     Parse a taxonomy file to RDF format.
 

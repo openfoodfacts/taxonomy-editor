@@ -75,7 +75,7 @@ def test_rdf_description():
 
 def test_rdf_full():
     logger = ParserConsoleLogger()
-    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, 'test_scheme', logger=logger)
+    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, "test_scheme", logger=logger)
 
     NS = Namespace("https://openfoodfacts.org/data/taxonomies/test_scheme#")
     CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
