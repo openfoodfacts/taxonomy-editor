@@ -1,4 +1,6 @@
-from rdflib import OWL, RDF, RDFS, SKOS, XSD as RDF_XSD, Graph, Literal, Namespace, URIRef
+from rdflib import OWL, RDF, RDFS, SKOS
+from rdflib import XSD as RDF_XSD
+from rdflib import Graph, Literal, Namespace, URIRef
 
 OFF = Namespace("https://openfoodfacts.org/data/taxonomies/core#")
 CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")

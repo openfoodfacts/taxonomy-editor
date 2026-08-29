@@ -7,17 +7,16 @@ To use from the command line, run:
 This will generate a corresponding .ttl file in the same directory as the input file.
 """
 
-from pathlib import Path
 import re
 import sys
-import inflect
+from pathlib import Path
 
+import inflect
 from rdflib import RDF, RDFS, SKOS, Graph, Literal, Namespace
 
 from .logger import ParserConsoleLogger
-from .rdf_properties import PROPERTY_MAP, CIQUAL, OFF, add_default_property
+from .rdf_properties import CIQUAL, OFF, PROPERTY_MAP, add_default_property
 from .taxonomy_parser import TaxonomyParser
-
 
 inflect_engine = inflect.engine()
 
@@ -76,8 +75,8 @@ def parse_to_rdf(filename, logger=None) -> Graph:
 
         # Parents and top concepts
         has_parent = False
-        for parent in [parent for parent in taxonomy.child_links if parent['id'] == node.id]:
-            parent_concept = ns[parent['parent_id'].split(":", 1)[1]]
+        for parent in [parent for parent in taxonomy.child_links if parent["id"] == node.id]:
+            parent_concept = ns[parent["parent_id"].split(":", 1)[1]]
             graph.add((concept, SKOS.broader, parent_concept))
             has_parent = True
 
@@ -105,4 +104,3 @@ if __name__ == "__main__":
     # Pass session variable to parser object
     graph = parse_to_rdf(f"{filename}.txt")
     graph.serialize(destination=f"{filename}.ttl")
-

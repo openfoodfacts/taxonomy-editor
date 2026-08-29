@@ -1,6 +1,8 @@
 import pathlib
 
-from rdflib import OWL, RDF, RDFS, SKOS, XSD as RDF_XSD, Literal, Namespace
+from rdflib import OWL, RDF, RDFS, SKOS
+from rdflib import XSD as RDF_XSD
+from rdflib import Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
@@ -42,7 +44,7 @@ def test_rdf_parser():
     assert (test.meat, SKOS.topConceptOf, OFF.test) in graph
     # Yogurt has a parent of milk which is not in the file, so shows as a top concept
     assert (test.yogurts, SKOS.topConceptOf, OFF.test) in graph
-    assert (test['banana-yogurts'], SKOS.topConceptOf, OFF.test) not in graph
+    assert (test["banana-yogurts"], SKOS.topConceptOf, OFF.test) not in graph
 
     # Properties
     assert (test.meat, OFF.carbonFootprintFrFoodgesValue, Literal("10", "fr")) in graph
