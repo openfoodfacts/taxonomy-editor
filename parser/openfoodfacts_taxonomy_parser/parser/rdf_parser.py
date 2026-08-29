@@ -75,11 +75,13 @@ def parse_to_rdf(filename, logger=None) -> Graph:
                     graph.add((concept, SKOS.altLabel, Literal(synonym, lang)))
 
         # Parents and top concepts
+        has_parent = False
         for parent in [parent for parent in taxonomy.child_links if parent['id'] == node.id]:
             parent_concept = ns[parent['parent_id'].split(":", 1)[1]]
             graph.add((concept, SKOS.broader, parent_concept))
+            has_parent = True
 
-        if not node.parent_tags:
+        if not has_parent:
             graph.add((concept, SKOS.topConceptOf, scheme))
 
         # Properties

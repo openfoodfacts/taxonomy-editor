@@ -40,7 +40,9 @@ def test_rdf_parser():
 
     # Top concepts
     assert (test.meat, SKOS.topConceptOf, OFF.test) in graph
-    assert (test.yogurts, SKOS.topConceptOf, OFF.test) not in graph
+    # Yogurt has a parent of milk which is not in the file, so shows as a top concept
+    assert (test.yogurts, SKOS.topConceptOf, OFF.test) in graph
+    assert (test['banana-yogurts'], SKOS.topConceptOf, OFF.test) not in graph
 
     # Properties
     assert (test.meat, OFF.carbonFootprintFrFoodgesValue, Literal("10", "fr")) in graph
@@ -122,6 +124,13 @@ def test_rdf_full():
     )
     # But still added to the graph
     assert (NS["duplicate-item"], OFF.vegan, Literal("unknown", "en")) in graph
-    
+
     # Use canonical id of parent when an alias is used in the taxonomy
-    assert (NS['apricot-filling'], SKOS.broader, NS.filling) in graph
+    assert (NS["apricot-filling"], SKOS.broader, NS.filling) in graph
+
+    # Entries with invalid parents should appear in the top level
+    assert (NS["has-invalid-parent"], SKOS.topConceptOf, OFF["test_rdf_entries"]) in graph
+    assert any(
+        "has-invalid-parent" in error and "invalid-parent" in error
+        for error in logger.parsing_errors
+    )
