@@ -122,3 +122,6 @@ def test_rdf_full():
     )
     # But still added to the graph
     assert (NS["duplicate-item"], OFF.vegan, Literal("unknown", "en")) in graph
+    
+    # Use canonical id of parent when an alias is used in the taxonomy
+    assert (NS['apricot-filling'], SKOS.broader, NS.filling) in graph

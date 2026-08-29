@@ -13,4 +13,3 @@ Full property definitions for standard properties, including:
 - Wikidata links
 - Wikipedia links
 
-Coping with cross-references that don't go to the canonical id. e.g. "en: Amber IPA" references "en: India Pale Ale (IPA)" as a parent but the canonical id is "ca: Cervesa IPA"

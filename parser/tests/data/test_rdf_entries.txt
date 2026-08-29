@@ -19,4 +19,10 @@ ciqual_proxy_food_name:fr: Courge, crue
 random_property:en: test
 
 en: filling
+fr: garniture, fourrage, farce, fourrage blanc, remplissage
 vegan:en: maybe
+
+< fr: fourrage blanc
+en: apricot filling
+fr: fourrage à l'abricot
+
