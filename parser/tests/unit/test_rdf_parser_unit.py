@@ -75,13 +75,13 @@ def test_rdf_description():
 
 def test_rdf_full():
     logger = ParserConsoleLogger()
-    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, logger=logger)
+    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, 'test_scheme', logger=logger)
 
-    NS = Namespace("https://openfoodfacts.org/data/taxonomies/test_rdf_entries#")
+    NS = Namespace("https://openfoodfacts.org/data/taxonomies/test_scheme#")
     CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
 
     # Captialization of class name
-    assert (OFF.TestRdfEntry, RDFS.subClassOf, SKOS.Concept) in graph
+    assert (OFF.TestScheme, RDFS.subClassOf, SKOS.Concept) in graph
 
     # Warning about duplicate item
     assert any("duplicate-item" in warning for warning in logger.parsing_warnings)
@@ -92,7 +92,7 @@ def test_rdf_full():
     # CIQUAL property is defined in the graph
     assert (OFF.ciqualFoodCode, RDFS.subPropertyOf, SKOS.exactMatch) in graph
     assert (OFF.ciqualFoodCode, RDF.type, OWL.ObjectProperty) in graph
-    assert (OFF.ciqualFoodCode, RDFS.domain, OFF.TestRdfEntry) in graph
+    assert (OFF.ciqualFoodCode, RDFS.domain, OFF.TestScheme) in graph
 
     assert (NS.tomato, OFF.ciqualFoodName, Literal("Tomato, raw", "en")) in graph
     assert (OFF.ciqualFoodName, RDFS.subPropertyOf, SKOS.altLabel) in graph
@@ -117,7 +117,7 @@ def test_rdf_full():
     assert (OFF.isVegan, RDFS.subClassOf, OFF.veganStatus) in graph
     assert (OFF.maybeVegan, RDFS.subClassOf, OFF.veganStatus) in graph
     assert (OFF.notVegan, RDFS.subClassOf, OFF.veganStatus) in graph
-    assert (OFF.vegan, RDFS.domain, OFF.TestRdfEntry) in graph
+    assert (OFF.vegan, RDFS.domain, OFF.TestScheme) in graph
     assert (OFF.vegan, RDFS.range, OFF.veganStatus) in graph
 
     # Warning about unknown vegan status
@@ -131,7 +131,7 @@ def test_rdf_full():
     assert (NS["apricot-filling"], SKOS.broader, NS.filling) in graph
 
     # Entries with invalid parents should appear in the top level
-    assert (NS["has-invalid-parent"], SKOS.topConceptOf, OFF["test_rdf_entries"]) in graph
+    assert (NS["has-invalid-parent"], SKOS.topConceptOf, OFF["test_scheme"]) in graph
     assert any(
         "has-invalid-parent" in error and "invalid-parent" in error
         for error in logger.parsing_errors

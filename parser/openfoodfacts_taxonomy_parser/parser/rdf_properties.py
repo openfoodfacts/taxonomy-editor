@@ -2,7 +2,8 @@ from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Graph, Literal, Namespace, URIRef
 
-OFF = Namespace("https://openfoodfacts.org/data/taxonomies/core#")
+ROOT = Namespace("https://openfoodfacts.org/data/taxonomies")
+OFF = Namespace(f"{ROOT}/core#")
 CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
 
 

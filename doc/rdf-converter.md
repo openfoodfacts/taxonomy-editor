@@ -4,8 +4,6 @@ Decisions relating to how these ontologies are structured are documented [here](
 
 ## TODO
 
-Namespacing for taxonomies that vary by product type, e.g. food vs beauty ingredients.
-
 Full property definitions for standard properties, including:
 
 - Agribalyse codes

@@ -2,9 +2,11 @@
 Converts OpenFoodFacts taxonomy files to RDF format using the rdflib library.
 
 To use from the command line, run:
-    python -m openfoodfacts_taxonomy_parser.parser.rdf_parser <taxonomy_file without extension>
+    python -m openfoodfacts_taxonomy_parser.parser.rdf_parser <taxonomy_file without extension> <output_dir> <scheme_id>
 
-This will generate a corresponding .ttl file in the same directory as the input file.
+This will generate a corresponding .ttl file in the output directory, or the current directory if no output is specified.
+
+If the scheme_id is not specified then the file name, without path, will be used.
 """
 
 import re
@@ -15,13 +17,13 @@ import inflect
 from rdflib import RDF, RDFS, SKOS, Graph, Literal, Namespace
 
 from .logger import ParserConsoleLogger
-from .rdf_properties import CIQUAL, OFF, PROPERTY_MAP, add_default_property
+from .rdf_properties import CIQUAL, OFF, PROPERTY_MAP, ROOT, add_default_property
 from .taxonomy_parser import TaxonomyParser
 
 inflect_engine = inflect.engine()
 
 
-def parse_to_rdf(filename, logger=None) -> Graph:
+def parse_to_rdf(filename, scheme_id = None, logger=None) -> Graph:
     """
     Parse a taxonomy file to RDF format.
 
@@ -41,7 +43,7 @@ def parse_to_rdf(filename, logger=None) -> Graph:
     graph.bind("ciqual", CIQUAL)
 
     # Create a concept scheme for the taxonomy
-    scheme_id = Path(filename).stem
+    scheme_id = scheme_id or Path(filename).stem
     scheme_label = scheme_id.replace("_", " ").title()
     scheme = OFF[scheme_id]
     graph.add((scheme, RDF.type, SKOS.ConceptScheme))
@@ -52,7 +54,7 @@ def parse_to_rdf(filename, logger=None) -> Graph:
     class_name = inflect_engine.singular_noun(class_name) or class_name
     graph.add((OFF[class_name], RDFS.subClassOf, SKOS.Concept))
 
-    ns = Namespace(f"https://openfoodfacts.org/data/taxonomies/{scheme_id}#")
+    ns = Namespace(f"{ROOT}/{scheme_id}#")
     graph.bind(scheme_id, ns)
 
     for node in taxonomy.entry_nodes:
@@ -94,13 +96,14 @@ def parse_to_rdf(filename, logger=None) -> Graph:
             else:
                 add_default_property(graph, OFF[class_name], concept, property_name, value, lang)
 
-    graph.serialize(destination="debug.ttl")
+    # graph.serialize(destination="debug.ttl")
     return graph
 
 
 if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else "tests/data/test"
+    output_dir = sys.argv[2] if len(sys.argv) > 2 else "."
+    scheme_id = sys.argv[3] if len(sys.argv) > 3 else Path(filename).stem
 
-    # Pass session variable to parser object
-    graph = parse_to_rdf(f"{filename}.txt")
-    graph.serialize(destination=f"{filename}.ttl")
+    graph = parse_to_rdf(f"{filename}.txt", scheme_id)
+    graph.serialize(destination=f"{output_dir}/{scheme_id}.ttl")
