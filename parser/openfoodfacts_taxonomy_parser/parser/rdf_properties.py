@@ -4,7 +4,10 @@ from rdflib import Graph, Literal, Namespace, URIRef
 
 ROOT = Namespace("https://openfoodfacts.org/data/taxonomies")
 OFF = Namespace(f"{ROOT}/core#")
+# This is not an official CIQUAL namespace, but seems to be the closest we've got
 CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
+# These are not RDF resources but at least creates something clickable
+AGRIBALYSE = Namespace("https://agribalyse.ademe.fr/app/aliments/")
 
 
 class PropertyDefinition:
@@ -75,45 +78,65 @@ def add_default_property(
 
 PROPERTY_MAP = {
     "description": PropertyDefinition(SKOS.definition),
-    "ciqual_food_code": PropertyDefinition(
-        OFF.ciqualFoodCode,
-        lambda x: CIQUAL[x],
+}
+
+
+def exactMatchProperty(property_name, namespace):
+    PROPERTY_MAP[property_name] = PropertyDefinition(
+        OFF[toLowerCamelCase(property_name)],
+        lambda value: namespace[value],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.exactMatch)],
-    ),
-    "ciqual_proxy_food_code": PropertyDefinition(
-        OFF.ciqualProxyFoodCode,
-        lambda x: CIQUAL[x],
+    )
+
+
+def closeMatchProperty(property_name, namespace):
+    PROPERTY_MAP[property_name] = PropertyDefinition(
+        OFF[toLowerCamelCase(property_name)],
+        lambda value: namespace[value],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.closeMatch)],
-    ),
-    "ciqual_food_name": PropertyDefinition(
-        OFF.ciqualFoodName,
+    )
+
+
+def externalAnnotationProperty(property_name):
+    PROPERTY_MAP[property_name] = PropertyDefinition(
+        OFF[toLowerCamelCase(property_name)],
         None,
         OWL.AnnotationProperty,
         [(RDFS.subPropertyOf, SKOS.altLabel)],
-    ),
-    "ciqual_proxy_food_name": PropertyDefinition(
-        OFF.ciqualProxyFoodName,
-        None,
-        OWL.AnnotationProperty,
-        [(RDFS.subPropertyOf, SKOS.altLabel)],
-    ),
-    "vegan": PropertyDefinition(
-        OFF.vegan,
-        lambda value: {"yes": OFF.isVegan, "no": OFF.notVegan, "maybe": OFF.maybeVegan}.get(
-            value.lower()
-        ),
+    )
+
+
+def dietaryStatusProperty(property_name):
+    is_uri = OFF[toLowerCamelCase(f"is_{property_name}")]
+    not_uri = OFF[toLowerCamelCase(f"not_{property_name}")]
+    maybe_uri = OFF[toLowerCamelCase(f"maybe_{property_name}")]
+    status_uri = OFF[toLowerCamelCase(f"{property_name}_status")]
+    PROPERTY_MAP[property_name] = PropertyDefinition(
+        OFF[toLowerCamelCase(property_name)],
+        lambda value: {"yes": is_uri, "no": not_uri, "maybe": maybe_uri}.get(value.lower()),
         OWL.ObjectProperty,
-        [(RDFS.range, OFF.veganStatus)],
+        [(RDFS.range, status_uri)],
         [
-            (OFF.veganStatus, RDF.type, OWL.Class),
-            (OFF.isVegan, RDF.type, OWL.Class),
-            (OFF.isVegan, RDFS.subClassOf, OFF.veganStatus),
-            (OFF.notVegan, RDF.type, OWL.Class),
-            (OFF.notVegan, RDFS.subClassOf, OFF.veganStatus),
-            (OFF.maybeVegan, RDF.type, OWL.Class),
-            (OFF.maybeVegan, RDFS.subClassOf, OFF.veganStatus),
+            (status_uri, RDF.type, OWL.Class),
+            (is_uri, RDF.type, OWL.Class),
+            (is_uri, RDFS.subClassOf, status_uri),
+            (not_uri, RDF.type, OWL.Class),
+            (not_uri, RDFS.subClassOf, status_uri),
+            (maybe_uri, RDF.type, OWL.Class),
+            (maybe_uri, RDFS.subClassOf, status_uri),
         ],
-    ),
-}
+    )
+
+
+exactMatchProperty("ciqual_food_code", CIQUAL)
+closeMatchProperty("ciqual_proxy_food_code", CIQUAL)
+externalAnnotationProperty("ciqual_food_name")
+externalAnnotationProperty("ciqual_proxy_food_name")
+exactMatchProperty("agribalyse_food_code", AGRIBALYSE)
+closeMatchProperty("agribalyse_proxy_food_code", AGRIBALYSE)
+externalAnnotationProperty("agribalyse_food_name")
+externalAnnotationProperty("agribalyse_proxy_food_name")
+dietaryStatusProperty("vegan")
+dietaryStatusProperty("vegetarian")

@@ -6,7 +6,6 @@ Decisions relating to how these ontologies are structured are documented [here](
 
 Full property definitions for standard properties, including:
 
-- Agribalyse codes
 - USDA codes
 - Wikidata links
 - Wikipedia links
@@ -14,3 +13,6 @@ Full property definitions for standard properties, including:
 Deal with taxonomies that are merged together, e.g. ingredients includes additives, vitamins, minerals, etc.
 
 Cross-referencing between taxonomies, e.g. expected ingredients in categories
+
+Add documentation to the properties
+
