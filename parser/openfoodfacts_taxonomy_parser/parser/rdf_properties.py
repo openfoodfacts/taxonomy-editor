@@ -4,6 +4,10 @@ from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Graph, Literal, Namespace, URIRef
 
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import Taxonomy
+from openfoodfacts_taxonomy_parser.utils import normalize_text
+
 ROOT = Namespace("https://openfoodfacts.org/data/taxonomies")
 OFF = Namespace(f"{ROOT}/core#")
 # This is not an official CIQUAL namespace, but seems to be the closest we've got
@@ -22,7 +26,7 @@ NAMESPACE_PREFIXES = {
 
 class PropertyDefinition:
     property: URIRef
-    converter: Callable[[str], URIRef] | Namespace
+    converter: Callable[[Taxonomy, ParserConsoleLogger, Namespace, str], URIRef] | Namespace
     type: URIRef
     properties: list[tuple[URIRef, URIRef]]
     additional_triples: list[tuple[URIRef, URIRef, URIRef]]
@@ -30,7 +34,9 @@ class PropertyDefinition:
     def __init__(
         self,
         property: URIRef,
-        converter: Callable[[str], URIRef] | Namespace = None,
+        converter: (
+            Callable[[Taxonomy, ParserConsoleLogger, Namespace, str], URIRef] | Namespace
+        ) = None,
         type: URIRef = None,
         properties: list[tuple[URIRef, URIRef]] = None,
         additional_triples: list[tuple[URIRef, URIRef, URIRef]] = None,
@@ -41,14 +47,24 @@ class PropertyDefinition:
         self.properties = properties or []
         self.additional_triples = additional_triples or []
 
-    def add(self, logger, graph: Graph, class_uri: URIRef, concept: URIRef, value, lang: str):
+    def add(
+        self,
+        logger,
+        taxonomy: Taxonomy,
+        graph: Graph,
+        namespace: Namespace,
+        class_uri: URIRef,
+        concept: URIRef,
+        value,
+        lang: str,
+    ):
         graph_value = (
             self.converter[
                 value.split()[0]
             ]  # When referencing URIs strip anything after whitespace, like comments
             if value and isinstance(self.converter, Namespace)
             else (
-                self.converter(value)
+                self.converter(taxonomy, logger, namespace, value)
                 if isinstance(self.converter, Callable)
                 else Literal(value, lang)
             )
@@ -86,6 +102,21 @@ def toLowerCamelCase(snake_str):
     return "".join([first.lower(), *map(str.title, others)])
 
 
+def canonical_id(taxonomy, logger, tag):
+    lc, main_tag = tag.strip().split(":", 1)
+    normalized_main_tag = normalize_text(main_tag, lc)
+    tag_id = f"tags_ids_{lc}"
+    matching_nodes = [
+        node for node in taxonomy.entry_nodes if normalized_main_tag in node.tags.get(tag_id, [])
+    ]
+    if matching_nodes:
+        if len(matching_nodes) > 1:
+            logger.warning(f"{normalized_main_tag} is ambiguous")
+        return matching_nodes[0].id.split(":", 1)[1]
+    logger.warning(f"{normalized_main_tag} not found")
+    return normalized_main_tag
+
+
 def add_default_property(
     graph: Graph, class_uri: URIRef, concept: URIRef, property_name: str, value: str, lang: str
 ):
@@ -104,6 +135,12 @@ def add_default_property(
 
 PROPERTY_MAP = {
     "description": PropertyDefinition(SKOS.definition),
+    "plant_alternative": PropertyDefinition(
+        OFF.plantAlternative,
+        lambda taxonomy, logger, namespace, tag: namespace[canonical_id(taxonomy, logger, tag)],
+        OWL.ObjectProperty,
+        [(RDFS.subPropertyOf, SKOS.related)],
+    ),
 }
 
 
@@ -141,7 +178,11 @@ def dietaryStatusProperty(property_name):
     status_uri = OFF[toLowerCamelCase(f"{property_name}_status")]
     PROPERTY_MAP[property_name] = PropertyDefinition(
         OFF[toLowerCamelCase(property_name)],
-        lambda value: {"yes": is_uri, "no": not_uri, "maybe": maybe_uri}.get(value.lower()),
+        lambda taxonomy, logger, namespace, value: {
+            "yes": is_uri,
+            "no": not_uri,
+            "maybe": maybe_uri,
+        }.get(value.lower()),
         OWL.ObjectProperty,
         [(RDFS.range, status_uri)],
         [

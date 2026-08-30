@@ -31,3 +31,14 @@ wikidata:en: Q3733836 # Some extra text
 en: has invalid parent
 Wikidata:en: Q1234 # Captialized property
 
+en: Meats
+plant_alternative:en: en:meat-analogues
+
+en: Meat substitutes, Meat analogues, Mock meats
+
+en: duplicate synonym
+
+fr: synonyme en double
+en: synonym is duplicated, duplicate synonym
+
+

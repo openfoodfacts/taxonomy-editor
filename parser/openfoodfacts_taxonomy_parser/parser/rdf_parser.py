@@ -95,7 +95,9 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
             lang = parts[1]
             property_definition = PROPERTY_MAP.get(property_name)
             if property_definition:
-                property_definition.add(logger, graph, OFF[class_name], concept, value, lang)
+                property_definition.add(
+                    logger, taxonomy, graph, ns, OFF[class_name], concept, value, lang
+                )
             else:
                 add_default_property(graph, OFF[class_name], concept, property_name, value, lang)
 

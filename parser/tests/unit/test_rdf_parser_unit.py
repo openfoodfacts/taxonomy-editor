@@ -6,7 +6,8 @@ from rdflib import Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
-from openfoodfacts_taxonomy_parser.parser.rdf_properties import WIKIDATA
+from openfoodfacts_taxonomy_parser.parser.rdf_properties import ROOT, WIKIDATA, canonical_id
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
 TEST_PROPERTY_CONFUSED_LANG_TXT = str(
@@ -26,7 +27,7 @@ def test_rdf_parser():
     assert (OFF.Test, RDFS.subClassOf, SKOS.Concept) in graph
 
     # Check that all concepts are present in the graph
-    test = Namespace("https://openfoodfacts.org/data/taxonomies/test#")
+    test = Namespace(f"{ROOT}/test#")
     assert (test.yogurts, RDF.type, OFF.Test) in graph
     assert (test.yogurts, SKOS.inScheme, OFF.test) in graph
 
@@ -59,7 +60,7 @@ def test_rdf_parser():
 def test_rdf_description():
     graph = parse_to_rdf(TEST_PROPERTY_CONFUSED_LANG_TXT)
 
-    ns = Namespace("https://openfoodfacts.org/data/taxonomies/test_property_confused_lang#")
+    ns = Namespace(f"{ROOT}/test_property_confused_lang#")
 
     # Check that the description uses the SKOS definition
     assert (
@@ -78,7 +79,7 @@ def test_rdf_full():
     logger = ParserConsoleLogger()
     graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, "test_scheme", logger=logger)
 
-    NS = Namespace("https://openfoodfacts.org/data/taxonomies/test_scheme#")
+    NS = Namespace(f"{ROOT}/test_scheme#")
     CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
 
     # Captialization of class name
@@ -142,3 +143,27 @@ def test_rdf_full():
     )
     # Uppercase Wikidata should not generate a new property definition
     assert (OFF.wikidata, RDF.type, RDF.Property) not in graph
+
+    # Cross-reference using synonym works
+    assert (NS.meats, OFF.plantAlternative, NS["meat-substitutes"]) in graph
+
+
+def test_canonical_id():
+    logger = ParserConsoleLogger()
+    taxonomy = TaxonomyParser().parse_file(TEST_RDF_ENTRIES_TXT)
+
+    assert canonical_id(taxonomy, logger, "en:meat analogues") == "meat-substitutes"
+    assert canonical_id(taxonomy, logger, "en:no matching tag") == "no-matching-tag"
+    assert any(
+        "no-matching-tag" in warning and "not found" in warning
+        for warning in logger.parsing_warnings
+    )
+
+    assert canonical_id(taxonomy, logger, "en:duplicate synonym") in [
+        "duplicate-synonym",
+        "synonyme-en-double",
+    ]
+    assert any(
+        "duplicate-synonym" in warning and "ambiguous" in warning
+        for warning in logger.parsing_warnings
+    )
