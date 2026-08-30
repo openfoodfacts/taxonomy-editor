@@ -6,14 +6,14 @@ In SKOS, every entry is a Concept which belongs to a Concept Scheme. The Concept
 
 ## Decision Drivers
 
-* Ontologies should be easy to maintain
-* Compatible with most ontology editing tools
+- Ontologies should be easy to maintain
+- Compatible with most ontology editing tools
 
 ## Considered Options
 
-* No class
-* Explicit class
-* Infer class
+- No class
+- Explicit class
+- Infer class
 
 ## Decision Outcome
 
@@ -46,8 +46,8 @@ ingredients:en-fruit a skos:Concept;
     skos:prefLabel "fruit"@en;
 ```
 
-* Good: Simple approach
-* Bad: Tools like VocBench won't suggest suitable properties, based on domain, when adding / editing entries
+- Good: Simple approach
+- Bad: Tools like VocBench won't suggest suitable properties, based on domain, when adding / editing entries
 
 ### Explicit Class
 
@@ -69,9 +69,9 @@ off:ingredients a skos:ConceptScheme;
 off:Ingredient rdfs:subClassOf skos:Concept ;
     rdfs:label "A specific ingredient"@en .
 
-# SHACL constraint    
+# SHACL constraint
 off:EnforceSchemeClassShape a sh:NodeShape ;
-    sh:targetSubjectsOf skos:inScheme ; 
+    sh:targetSubjectsOf skos:inScheme ;
 
     sh:sparql [
         a sh:SPARQLConstraint ;
@@ -95,10 +95,10 @@ ingredients:en-fruit a off:Ingredient;
     skos:prefLabel "fruit"@en;
 ```
 
-* Good: Can define expected properties (and their constraints) using `rdfs:domain` and `rdfs:range`, supporting auto-suggest in editing tools
-* Good: No reasoning required to determine class membership
-* Bad: Users must remember to make all entries an instance of this class
-* Bad: Tools like VocBench don't enforce SHACL rules by default
+- Good: Can define expected properties (and their constraints) using `rdfs:domain` and `rdfs:range`, supporting auto-suggest in editing tools
+- Good: No reasoning required to determine class membership
+- Bad: Users must remember to make all entries an instance of this class
+- Bad: Tools like VocBench don't enforce SHACL rules by default
 
 ### Inferred Class
 
@@ -134,6 +134,6 @@ ingredients:en-fruit a skos:Class;
     skos:prefLabel "fruit"@en;
 ```
 
-* Good: No redundancy
-* Good: Can define expected properties (and their constraints) using `rdfs:domain` and `rdfs:range`, supporting auto-suggest in editing that support class inference
-* Bad: Tools must be configured with an appropriate reasoner for this to work
+- Good: No redundancy
+- Good: Can define expected properties (and their constraints) using `rdfs:domain` and `rdfs:range`, supporting auto-suggest in editing that support class inference
+- Bad: Tools must be configured with an appropriate reasoner for this to work
