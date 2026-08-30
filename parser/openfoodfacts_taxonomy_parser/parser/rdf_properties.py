@@ -169,5 +169,6 @@ externalAnnotationProperty("agribalyse_food_name")
 externalAnnotationProperty("agribalyse_proxy_food_name")
 dietaryStatusProperty("vegan")
 dietaryStatusProperty("vegetarian")
+dietaryStatusProperty("from_palm_oil")
 # Note don't do anything special with Wikipedia links to retain different language links
 exactMatchProperty("wikidata", WIKIDATA)
