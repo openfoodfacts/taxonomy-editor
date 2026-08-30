@@ -25,7 +25,9 @@ vegan:en: maybe
 < fr: fourrage blanc
 en: apricot filling
 fr: fourrage à l'abricot
+wikidata:en: Q3733836 # Some extra text
 
 < en:invalid parent
 en: has invalid parent
+Wikidata:en: Q1234 # Captialized property
 

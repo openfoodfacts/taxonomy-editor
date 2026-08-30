@@ -6,6 +6,7 @@ from rdflib import Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
+from openfoodfacts_taxonomy_parser.parser.rdf_properties import WIKIDATA
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
 TEST_PROPERTY_CONFUSED_LANG_TXT = str(
@@ -130,9 +131,14 @@ def test_rdf_full():
     # Use canonical id of parent when an alias is used in the taxonomy
     assert (NS["apricot-filling"], SKOS.broader, NS.filling) in graph
 
+    # Strip whitespace after external links
+    assert (NS["apricot-filling"], OFF.wikidata, WIKIDATA.Q3733836) in graph
+
     # Entries with invalid parents should appear in the top level
     assert (NS["has-invalid-parent"], SKOS.topConceptOf, OFF["test_scheme"]) in graph
     assert any(
         "has-invalid-parent" in error and "invalid-parent" in error
         for error in logger.parsing_errors
     )
+    # Uppercase Wikidata should not generate a new property definition
+    assert (OFF.wikidata, RDF.type, RDF.Property) not in graph

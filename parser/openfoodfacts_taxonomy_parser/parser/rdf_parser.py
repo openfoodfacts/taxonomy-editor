@@ -21,7 +21,7 @@ import inflect
 from rdflib import RDF, RDFS, SKOS, Graph, Literal, Namespace
 
 from .logger import ParserConsoleLogger
-from .rdf_properties import CIQUAL, OFF, PROPERTY_MAP, ROOT, add_default_property
+from .rdf_properties import NAMESPACE_PREFIXES, OFF, PROPERTY_MAP, ROOT, add_default_property
 from .taxonomy_parser import TaxonomyParser
 
 inflect_engine = inflect.engine()
@@ -42,9 +42,8 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
     taxonomy = taxonomy_parser.parse_file(filename, logger=logger)
     graph = Graph()
 
-    # Create the core and commonly used namespace prefixes
-    graph.bind("off", OFF)
-    graph.bind("ciqual", CIQUAL)
+    # Create the core namespace prefix
+    graph.bind(NAMESPACE_PREFIXES[OFF], OFF)
 
     # Create a concept scheme for the taxonomy
     scheme_id = scheme_id or Path(filename).stem
@@ -91,7 +90,7 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
 
         # Properties
         for property_tag, value in node.properties.items():
-            parts = property_tag.rsplit("_", 1)  # Extract the language suffix
+            parts = property_tag.lower().rsplit("_", 1)  # Extract the language suffix
             property_name = parts[0][5:]  # Remove the "prop_" prefix
             lang = parts[1]
             property_definition = PROPERTY_MAP.get(property_name)

@@ -7,12 +7,12 @@ Decisions relating to how these ontologies are structured are documented [here](
 Full property definitions for standard properties, including:
 
 - USDA codes
-- Wikidata links
-- Wikipedia links
 
 Deal with taxonomies that are merged together, e.g. ingredients includes additives, vitamins, minerals, etc.
 
 Cross-referencing between taxonomies, e.g. expected ingredients in categories
 
-Add documentation to the properties
+Add documentation and international labels to the properties
+
+Figure out a way to get links working for things like CIQUAL, Agribalyse and Wikidata
 
