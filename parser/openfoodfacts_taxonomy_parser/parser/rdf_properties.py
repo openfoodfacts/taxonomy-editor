@@ -139,7 +139,6 @@ def dietaryStatusProperty(property_name):
     not_uri = OFF[toLowerCamelCase(f"not_{property_name}")]
     maybe_uri = OFF[toLowerCamelCase(f"maybe_{property_name}")]
     status_uri = OFF[toLowerCamelCase(f"{property_name}_status")]
-    label = property_name.title().replace("_", "")
     PROPERTY_MAP[property_name] = PropertyDefinition(
         OFF[toLowerCamelCase(property_name)],
         lambda value: {"yes": is_uri, "no": not_uri, "maybe": maybe_uri}.get(value.lower()),
@@ -149,13 +148,13 @@ def dietaryStatusProperty(property_name):
             (status_uri, RDF.type, OWL.Class),
             (is_uri, RDF.type, OWL.Class),
             (is_uri, RDFS.subClassOf, status_uri),
-            (is_uri, SKOS.prefLabel, Literal(f"Is {label}", "en")),
+            (is_uri, SKOS.prefLabel, Literal("Yes", "en")),
             (not_uri, RDF.type, OWL.Class),
             (not_uri, RDFS.subClassOf, status_uri),
-            (not_uri, SKOS.prefLabel, Literal(f"Is not {label}", "en")),
+            (not_uri, SKOS.prefLabel, Literal("No", "en")),
             (maybe_uri, RDF.type, OWL.Class),
             (maybe_uri, RDFS.subClassOf, status_uri),
-            (maybe_uri, SKOS.prefLabel, Literal(f"Might be {label}", "en")),
+            (maybe_uri, SKOS.prefLabel, Literal("Maybe", "en")),
         ],
     )
 
