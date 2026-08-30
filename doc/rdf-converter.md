@@ -15,4 +15,3 @@ Cross-referencing between taxonomies, e.g. expected ingredients in categories
 Add documentation and international labels to the properties
 
 Figure out a way to get links working for things like CIQUAL, Agribalyse and Wikidata
-

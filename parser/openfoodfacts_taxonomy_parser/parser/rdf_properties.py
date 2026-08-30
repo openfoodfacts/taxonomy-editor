@@ -77,7 +77,7 @@ class PropertyDefinition:
             if self.additional_triples:
                 for triple in self.additional_triples:
                     graph.add(triple)
-            graph.add((self.property, SKOS.altLabel, Literal(f"Added by {concept.fragment}")))
+            # graph.add((self.property, SKOS.altLabel, Literal(f"Added by {concept.fragment}")))
         graph.add((concept, self.property, graph_value))
 
 
@@ -99,7 +99,7 @@ def add_default_property(
         graph.add((property, RDF.type, RDF.Property))
         graph.add((property, RDFS.domain, class_uri))
         graph.add((property, RDFS.range, RDF_XSD.string))
-        graph.add((property, SKOS.altLabel, Literal(f"Added by {concept.fragment}")))
+        # graph.add((property, SKOS.altLabel, Literal(f"Added by {concept.fragment}")))
 
 
 PROPERTY_MAP = {
@@ -170,5 +170,5 @@ externalAnnotationProperty("agribalyse_food_name")
 externalAnnotationProperty("agribalyse_proxy_food_name")
 dietaryStatusProperty("vegan")
 dietaryStatusProperty("vegetarian")
-# Note don't do anything special with Wikipedia links so that we can retain different language versions
+# Note don't do anything special with Wikipedia links to retain different language links
 exactMatchProperty("wikidata", WIKIDATA)
