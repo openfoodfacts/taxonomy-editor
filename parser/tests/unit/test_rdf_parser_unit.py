@@ -168,6 +168,9 @@ def test_rdf_full():
     # Links to languages
     assert (NS.country, OFF.language, LANGUAGES.english) in graph
     assert (NS.country, OFF.language, LANGUAGES.welsh) in graph
+    
+    # Missing items
+    assert (NS['synonyme-en-double'], OFF.language, Literal("", "en"))
 
 
 def test_canonical_id():

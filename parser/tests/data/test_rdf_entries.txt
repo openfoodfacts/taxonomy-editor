@@ -42,6 +42,7 @@ en: duplicate synonym
 
 fr: synonyme en double
 en: synonym is duplicated, duplicate synonym
+language_codes:en:
 
 en: country
 country_code_2:en: UK

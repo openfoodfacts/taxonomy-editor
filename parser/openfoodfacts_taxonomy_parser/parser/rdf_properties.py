@@ -62,15 +62,6 @@ class PropertyDefinition:
         lang: str,
     ):
         converted_value = self.converter(context, value) if self.converter else value
-        if converted_value is None:
-            context.logger.warning(
-                "Unknown value on {0} for property {1}: {2}".format(
-                    context.concept.fragment, self.property.fragment, value
-                )
-            )
-            # Add the raw value to the graph anyway
-            context.graph.add((context.concept, self.property, Literal(value, lang)))
-            return
 
         if (self.property, None, None) not in context.graph:
             if self.namespace:
@@ -90,6 +81,16 @@ class PropertyDefinition:
 
         values = converted_value if isinstance(converted_value, list) else [converted_value]
         for graph_value in values:
+            if not graph_value:
+                context.logger.warning(
+                    "Unknown value on {0} for property {1}: {2}".format(
+                        context.concept.fragment, self.property.fragment, value
+                    )
+                )
+                # Add the raw value to the graph anyway
+                context.graph.add((context.concept, self.property, Literal(value, lang)))
+                return
+
             context.graph.add(
                 (
                     context.concept,
