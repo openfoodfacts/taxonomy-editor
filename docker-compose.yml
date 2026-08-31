@@ -1,4 +1,3 @@
-
 services:
   neo4j:
     restart: ${RESTART_POLICY:-always}
@@ -55,6 +54,5 @@ services:
       - ./conf/nginx.conf:/etc/nginx/templates/default.conf.template
     ports:
       - ${TAXONOMY_EDITOR_EXPOSE:-127.0.0.1:8091}:80
-
 volumes:
   neo4j-data:

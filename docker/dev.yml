@@ -1,4 +1,3 @@
-
 services:
   # in dev we want to use watch assets and recompile on the fly
   # also we want to build at start time in case some files changed, as we want to avoid recreating volumes
@@ -39,7 +38,6 @@ services:
         "--reload-dir",
         "/code/editor",
       ]
-
   taxonomy_node:
     image: taxonomy-editor/taxonomy_node:dev
     build:
@@ -84,7 +82,6 @@ services:
       # by setting PROD_UI_SUFFIX to "" and DEV_UI_SUFFIX to "-dev"
       PROD_UI_SUFFIX: "${PROD_UI_SUFFIX--static}"
       DEV_UI_SUFFIX: "${DEV_UI_SUFFIX-}"
-
   # we want to be able to run linting from a container
   taxonomy_editor_code:
     image: taxonomy-editor/taxonomy_editor_code:dev
