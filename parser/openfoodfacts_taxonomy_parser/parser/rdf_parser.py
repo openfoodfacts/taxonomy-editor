@@ -62,7 +62,7 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
 
     ns = Namespace(f"{ROOT}/{scheme_id}#")
     graph.bind(scheme_id, ns)
-    
+
     context = RdfContext(taxonomy, graph, ns, logger, class_uri)
 
     for node in taxonomy.entry_nodes:

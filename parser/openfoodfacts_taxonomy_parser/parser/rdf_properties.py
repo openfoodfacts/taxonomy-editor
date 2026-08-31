@@ -1,14 +1,12 @@
 import json
-from urllib import request
 from typing import Callable
+from urllib import request
 
 from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
-from rdflib import Graph, Literal, Namespace, URIRef
+from rdflib import Literal, Namespace, URIRef
 
-from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
-from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import Taxonomy
 from openfoodfacts_taxonomy_parser.utils import normalize_text
 
 ROOT = Namespace("https://openfoodfacts.org/data/taxonomies")
@@ -27,14 +25,16 @@ NAMESPACE_PREFIXES = {
     AGRIBALYSE: "agribalyse",
     WIKIDATA: "wd",
     FOOD_GROUPS: "food_groups",
-    LANGUAGES: "languages"
+    LANGUAGES: "languages",
 }
 
 languages_taxonomy = None
 
+
 class PropertyDefinition:
     property: URIRef
-    converter: Callable[[Taxonomy, ParserConsoleLogger, Namespace, Graph, str], URIRef] | Namespace
+    namespace: Namespace
+    converter: Callable[[RdfContext, str], URIRef]
     type: URIRef
     properties: list[tuple[URIRef, URIRef]]
     additional_triples: list[tuple[URIRef, URIRef, URIRef]]
@@ -42,15 +42,15 @@ class PropertyDefinition:
     def __init__(
         self,
         property: URIRef,
-        converter: (
-            Callable[[Taxonomy, ParserConsoleLogger, Namespace, Graph, str], URIRef] | Namespace
-        ) = None,
+        namespace: Namespace = None,
+        converter: Callable[[RdfContext, str], URIRef] = None,
         type: URIRef = None,
         properties: list[tuple[URIRef, URIRef]] = None,
         additional_triples: list[tuple[URIRef, URIRef, URIRef]] = None,
     ):
         self.property = property
         self.converter = converter
+        self.namespace = namespace
         self.type = type
         self.properties = properties or []
         self.additional_triples = additional_triples or []
@@ -61,18 +61,8 @@ class PropertyDefinition:
         value,
         lang: str,
     ):
-        graph_value = (
-            self.converter[
-                value.split()[0]
-            ]  # When referencing URIs strip anything after whitespace, like comments
-            if value and isinstance(self.converter, Namespace)
-            else (
-                self.converter(context, value)
-                if isinstance(self.converter, Callable)
-                else Literal(value, lang)
-            )
-        )
-        if graph_value is None:
+        converted_value = self.converter(context, value) if self.converter else value
+        if converted_value is None:
             context.logger.warning(
                 "Unknown value on {0} for property {1}: {2}".format(
                     context.concept.fragment, self.property.fragment, value
@@ -81,11 +71,12 @@ class PropertyDefinition:
             # Add the raw value to the graph anyway
             context.graph.add((context.concept, self.property, Literal(value, lang)))
             return
+
         if (self.property, None, None) not in context.graph:
-            if isinstance(self.converter, Namespace):
-                prefix = NAMESPACE_PREFIXES.get(self.converter)
+            if self.namespace:
+                prefix = NAMESPACE_PREFIXES.get(self.namespace)
                 if prefix:
-                    context.graph.bind(prefix, self.converter)
+                    context.graph.bind(prefix, self.namespace)
             if self.type:
                 context.graph.add((self.property, RDF.type, self.type))
                 # Always add a domain
@@ -96,11 +87,25 @@ class PropertyDefinition:
             if self.additional_triples:
                 for triple in self.additional_triples:
                     context.graph.add(triple)
-            # graph.add((self.property, SKOS.altLabel, Literal(f"Added by {concept.fragment}")))
 
-        graph_values = graph_value if isinstance(graph_value, list) else [graph_value]
-        for graph_val in graph_values:
-            context.graph.add((context.concept, self.property, graph_val))
+        values = converted_value if isinstance(converted_value, list) else [converted_value]
+        for graph_value in values:
+            context.graph.add(
+                (
+                    context.concept,
+                    self.property,
+                    (
+                        graph_value
+                        if isinstance(graph_value, URIRef)
+                        else (
+                            # We remove everything after the first whitespace for namespaced URIs
+                            self.namespace[graph_value.split()[0]]
+                            if self.namespace
+                            else Literal(graph_value, lang)
+                        )
+                    ),
+                )
+            )
 
 
 def toLowerCamelCase(snake_str):
@@ -115,10 +120,12 @@ def normalized_id(tag):
 
 
 def canonical_id(context, tag):
-    (normalized_main_tag, lc) = normalized_id(tag)
+    normalized_main_tag, lc = normalized_id(tag)
     tag_id = f"tags_ids_{lc}"
     matching_nodes = [
-        node for node in context.taxonomy.entry_nodes if normalized_main_tag in node.tags.get(tag_id, [])
+        node
+        for node in context.taxonomy.entry_nodes
+        if normalized_main_tag in node.tags.get(tag_id, [])
     ]
     if matching_nodes:
         if len(matching_nodes) > 1:
@@ -138,15 +145,23 @@ def get_language(context, value):
         )
     context.graph.bind(NAMESPACE_PREFIXES[LANGUAGES], LANGUAGES)
     value = value.strip()
-    matches = [id for id, language in languages_taxonomy.items() if value == language.get("language_code_2", {}).get("en")]
+    matches = [
+        id
+        for id, language in languages_taxonomy.items()
+        if value == language.get("language_code_2", {}).get("en")
+    ]
     if not matches:
-        matches = [id for id, language in languages_taxonomy.items() if value == language.get("language_code_3", {}).get("en")]
-        
+        matches = [
+            id
+            for id, language in languages_taxonomy.items()
+            if value == language.get("language_code_3", {}).get("en")
+        ]
+
     if not matches:
         context.logger.warning(f"Language {value} not found")
-        return LANGUAGES[value]
+        return value
 
-    return LANGUAGES[normalized_id(matches[0])[0]]
+    return normalized_id(matches[0])[0]
 
 
 LANGUAGE_LESS_PROPERTIES = [
@@ -156,13 +171,14 @@ LANGUAGE_LESS_PROPERTIES = [
     "langauge_code_3",
 ]
 
-def add_default_property(
-    context: RdfContext, property_name: str, value: str, lang: str
-):
+
+def add_default_property(context: RdfContext, property_name: str, value: str, lang: str):
     # Unknown property name
     # Convert property names to lowerCamelCase for RDF representation as this follows industry norms
     property = OFF[toLowerCamelCase(property_name)]
-    graph_value = Literal(value) if property_name in LANGUAGE_LESS_PROPERTIES else Literal(value, lang)
+    graph_value = (
+        Literal(value) if property_name in LANGUAGE_LESS_PROPERTIES else Literal(value, lang)
+    )
     context.graph.add((context.concept, property, graph_value))
 
     # Add the property to the class definition if it hasn't been added yet
@@ -177,12 +193,14 @@ PROPERTY_MAP = {
     "description": PropertyDefinition(SKOS.definition),
     "plant_alternative": PropertyDefinition(
         OFF.plantAlternative,
+        None,
         lambda context, tag: context.namespace[canonical_id(context, tag)],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.related)],
     ),
     "opposite": PropertyDefinition(
         OFF.opposite,
+        None,
         lambda context, tags: [
             context.namespace[canonical_id(context, tag)] for tag in tags.split(",")
         ],
@@ -191,20 +209,18 @@ PROPERTY_MAP = {
     ),
     "food_groups": PropertyDefinition(
         OFF.foodGroup,
-        lambda context, tags: [
-            FOOD_GROUPS[normalized_id(tag)[0]] for tag in tags.split(",")
-        ],
+        FOOD_GROUPS,
+        lambda context, tags: [normalized_id(tag)[0] for tag in tags.split(",")],
         OWL.ObjectProperty,
-        [(RDFS.subPropertyOf, SKOS.broader)],
+        [(RDFS.subPropertyOf, SKOS.broader), (RDFS.range, OFF.FoodGroup)],
     ),
     "languages": PropertyDefinition(
         OFF.language,
-        lambda context, tags: [
-            get_language(context, tag) for tag in tags.split(",")
-        ],
+        LANGUAGES,
+        lambda context, tags: [get_language(context, tag) for tag in tags.split(",")],
         OWL.ObjectProperty,
-        [(RDFS.subPropertyOf, SKOS.related)],
-    )
+        [(RDFS.subPropertyOf, SKOS.related), (RDFS.range, OFF.Language)],
+    ),
 }
 
 
@@ -212,6 +228,7 @@ def exactMatchProperty(property_name, namespace):
     PROPERTY_MAP[property_name] = PropertyDefinition(
         OFF[toLowerCamelCase(property_name)],
         namespace,
+        None,
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.exactMatch)],
     )
@@ -221,6 +238,7 @@ def closeMatchProperty(property_name, namespace):
     PROPERTY_MAP[property_name] = PropertyDefinition(
         OFF[toLowerCamelCase(property_name)],
         namespace,
+        None,
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.closeMatch)],
     )
@@ -229,6 +247,7 @@ def closeMatchProperty(property_name, namespace):
 def externalAnnotationProperty(property_name):
     PROPERTY_MAP[property_name] = PropertyDefinition(
         OFF[toLowerCamelCase(property_name)],
+        None,
         None,
         OWL.AnnotationProperty,
         [(RDFS.subPropertyOf, SKOS.altLabel)],
@@ -242,6 +261,7 @@ def dietaryStatusProperty(property_name):
     status_uri = OFF[toLowerCamelCase(f"{property_name}_status")]
     PROPERTY_MAP[property_name] = PropertyDefinition(
         OFF[toLowerCamelCase(property_name)],
+        None,
         lambda context, value: {
             "yes": is_uri,
             "no": not_uri,

@@ -1,13 +1,20 @@
 import pathlib
 
-from rdflib import OWL, RDF, RDFS, SKOS, Graph
+from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
-from rdflib import Literal, Namespace
+from rdflib import Graph, Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
-from openfoodfacts_taxonomy_parser.parser.rdf_properties import FOOD_GROUPS, LANGUAGES, ROOT, WIKIDATA, canonical_id, get_language
+from openfoodfacts_taxonomy_parser.parser.rdf_properties import (
+    FOOD_GROUPS,
+    LANGUAGES,
+    ROOT,
+    WIKIDATA,
+    canonical_id,
+    get_language,
+)
 from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -153,11 +160,11 @@ def test_rdf_full():
     assert (NS.pumpkin, OFF.opposite, NS.filling) in graph
 
     # Food groups
-    assert (NS.tomato, OFF.foodGroup, FOOD_GROUPS['fruits-and-vegetables']) in graph
-    
+    assert (NS.tomato, OFF.foodGroup, FOOD_GROUPS["fruits-and-vegetables"]) in graph
+
     # Language-less literals
     assert (NS.country, OFF.countryCode2, Literal("UK")) in graph
-    
+
     # Links to languages
     assert (NS.country, OFF.language, LANGUAGES.english) in graph
     assert (NS.country, OFF.language, LANGUAGES.welsh) in graph
@@ -188,11 +195,9 @@ def test_canonical_id():
 def test_get_language():
     logger = ParserConsoleLogger()
     context = RdfContext(None, Graph(), None, logger, None)
-    assert get_language(context, 'fr') == LANGUAGES.french
-    
-    assert get_language(context, 'invalid') == LANGUAGES.invalid
+    assert get_language(context, "fr") == "french"
+
+    assert get_language(context, "invalid") == "invalid"
     assert any(
-        "invalid" in warning and "not found" in warning
-        for warning in logger.parsing_warnings
+        "invalid" in warning and "not found" in warning for warning in logger.parsing_warnings
     )
-    
