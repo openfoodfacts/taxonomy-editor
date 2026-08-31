@@ -17,6 +17,7 @@ en: pumpkin
 ciqual_proxy_food_code:en: 20139
 ciqual_proxy_food_name:fr: Courge, crue
 random_property:en: test
+opposite:en: en:tomato, fr:farce
 
 en: filling
 fr: garniture, fourrage, farce, fourrage blanc, remplissage

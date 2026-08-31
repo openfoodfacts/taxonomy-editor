@@ -146,6 +146,10 @@ def test_rdf_full():
 
     # Cross-reference using synonym works
     assert (NS.meats, OFF.plantAlternative, NS["meat-substitutes"]) in graph
+    
+    # Handles items that are lists
+    assert (NS.pumpkin, OFF.opposite, NS.tomato) in graph
+    assert (NS.pumpkin, OFF.opposite, NS.filling) in graph
 
 
 def test_canonical_id():

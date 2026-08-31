@@ -94,7 +94,10 @@ class PropertyDefinition:
                 for triple in self.additional_triples:
                     graph.add(triple)
             # graph.add((self.property, SKOS.altLabel, Literal(f"Added by {concept.fragment}")))
-        graph.add((concept, self.property, graph_value))
+
+        graph_values = graph_value if isinstance(graph_value, list) else [graph_value]
+        for graph_val in graph_values:
+            graph.add((concept, self.property, graph_val))
 
 
 def toLowerCamelCase(snake_str):
@@ -138,6 +141,12 @@ PROPERTY_MAP = {
     "plant_alternative": PropertyDefinition(
         OFF.plantAlternative,
         lambda taxonomy, logger, namespace, tag: namespace[canonical_id(taxonomy, logger, tag)],
+        OWL.ObjectProperty,
+        [(RDFS.subPropertyOf, SKOS.related)],
+    ),
+    "opposite": PropertyDefinition(
+        OFF.opposite,
+        lambda taxonomy, logger, namespace, tags: [namespace[canonical_id(taxonomy, logger, tag)] for tag in tags.split(',')],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.related)],
     ),
