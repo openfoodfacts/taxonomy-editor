@@ -8,7 +8,7 @@ import requests
 
 # --- CONFIGURATION SETTINGS ---
 ST = "it.uniroma2.art.semanticturkey"
-CONFIG = (f"{ST}.extension.impl.repositoryimplconfigurer.predefined",)
+CONFIG = f"{ST}.extension.impl.repositoryimplconfigurer.predefined"
 ST_URL = "http://localhost:1983/semanticturkey"
 SHOWVOC_URL = f"{ST_URL}/{ST}"
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             "validationEnabled": "false",
             "mdrRegistration": json.dumps(
                 {
-                    "datasetAbstraction": f"{ST_URL}/mdr/dataset-{DATASET_NAME}'-abs",
+                    "datasetAbstraction": f"{ST_URL}/mdr/dataset-{DATASET_NAME}-abs",
                     "version": "1.0.0",
                     "currentVersion": True,
                 }
