@@ -5,7 +5,6 @@ Database helper functions for API
 import asyncio
 import datetime
 import logging
-import shutil
 import tempfile
 import urllib.request  # Sending requests
 from typing import Optional
@@ -131,7 +130,9 @@ class TaxonomyGraph:
                 # outer exception handler will put project status to FAILED
                 raise TaxonomyParsingError() from e
 
-    async def get_and_parse_taxonomy(self, file_content: bytes | None = None, filename: str | None = None):
+    async def get_and_parse_taxonomy(
+        self, file_content: bytes | None = None, filename: str | None = None
+    ):
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
                 filepath = await (
