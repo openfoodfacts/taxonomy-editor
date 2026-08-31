@@ -146,7 +146,9 @@ PROPERTY_MAP = {
     ),
     "opposite": PropertyDefinition(
         OFF.opposite,
-        lambda taxonomy, logger, namespace, tags: [namespace[canonical_id(taxonomy, logger, tag)] for tag in tags.split(',')],
+        lambda taxonomy, logger, namespace, tags: [
+            namespace[canonical_id(taxonomy, logger, tag)] for tag in tags.split(",")
+        ],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.related)],
     ),
