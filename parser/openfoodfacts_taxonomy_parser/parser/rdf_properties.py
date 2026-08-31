@@ -214,7 +214,7 @@ PROPERTY_MAP = {
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.broader), (RDFS.range, OFF.FoodGroup)],
     ),
-    "languages": PropertyDefinition(
+    "language_codes": PropertyDefinition(
         OFF.language,
         LANGUAGES,
         lambda context, tags: [get_language(context, tag) for tag in tags.split(",")],
