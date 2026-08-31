@@ -1,4 +1,3 @@
-version: "3.7"
 
 services:
   # in dev we want to use watch assets and recompile on the fly
