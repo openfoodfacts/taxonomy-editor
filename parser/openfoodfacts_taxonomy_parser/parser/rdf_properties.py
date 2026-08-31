@@ -127,13 +127,21 @@ def canonical_id(taxonomy, logger, tag):
     return normalized_main_tag
 
 
+LANGUAGE_LESS_PROPERTIES = [
+    "country_code_2",
+    "country_code_3",
+    "langauge_code_2",
+    "langauge_code_3",
+]
+
 def add_default_property(
     graph: Graph, class_uri: URIRef, concept: URIRef, property_name: str, value: str, lang: str
 ):
     # Unknown property name
     # Convert property names to lowerCamelCase for RDF representation as this follows industry norms
     property = OFF[toLowerCamelCase(property_name)]
-    graph.add((concept, property, Literal(value, lang)))
+    graph_value = Literal(value) if property_name in LANGUAGE_LESS_PROPERTIES else Literal(value, lang)
+    graph.add((concept, property, graph_value))
 
     # Add the property to the class definition if it hasn't been added yet
     if (property, RDF.type, RDF.Property) not in graph:

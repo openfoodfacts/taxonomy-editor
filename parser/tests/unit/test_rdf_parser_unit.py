@@ -153,6 +153,9 @@ def test_rdf_full():
 
     # Food groups
     assert (NS.tomato, OFF.foodGroup, FOOD_GROUPS['fruits-and-vegetables']) in graph
+    
+    # Language-less literals
+    assert (NS.country, OFF.countryCode2, Literal("UK")) in graph
 
 
 def test_canonical_id():
