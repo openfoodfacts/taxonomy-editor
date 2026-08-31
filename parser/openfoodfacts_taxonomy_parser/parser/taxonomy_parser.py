@@ -507,8 +507,10 @@ class TaxonomyParser:
                 f"parent_id {parent_id} not found in tags_ids_{lc}"
             )
             if self.keep_unknown_parents:
-                # add as a synonym
-                self._add_comments(node, [f"# < {child_link['parent_id']}"], "parent")
+                # add as a comment
+                # normalize space:
+                parent_str = child_link["parent_id"].replace(":", ": ", 1)
+                self._add_comments(node, [f"# < {parent_str}"], "parent")
 
         return valid_child_links
 

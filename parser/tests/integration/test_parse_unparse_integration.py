@@ -56,11 +56,11 @@ def test_round_trip(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("< fr:yaourts au fruit de la passion"):
-            line = "< en:Passion fruit yogurts"
+        elif line.startswith("< fr: yaourts au fruit de la passion"):
+            line = "< en: Passion fruit yogurts"
         # third tweak: commenting non existing parents
-        elif line.startswith("< en:milk"):
-            line = "# < en:milk"
+        elif line.startswith("< en: milk"):
+            line = "# < en: milk"
         expected_lines.append(line)
 
     assert expected_lines == lines
@@ -101,11 +101,11 @@ def test_two_branch_round_trip(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("< fr:yaourts au fruit de la passion"):
-            line = "< en:Passion fruit yogurts"
+        elif line.startswith("< fr: yaourts au fruit de la passion"):
+            line = "< en: Passion fruit yogurts"
         # third tweak: commenting non existing parents
-        elif line.startswith("< en:milk"):
-            line = "# < en:milk"
+        elif line.startswith("< en: milk"):
+            line = "# < en: milk"
         expected_lines.append(line)
 
     assert expected_lines == lines_branch1
@@ -142,8 +142,8 @@ def test_round_trip_with_external_taxonomies(neo4j):
         if line.startswith("stopwords:fr: aux"):
             line = "stopwords:fr: aux, au, de, le, du, la, a, et, test normalisation"
         # second tweak: renaming parent
-        elif line.startswith("< fr:yaourts au fruit de la passion"):
-            line = "< en:Passion fruit yogurts"
+        elif line.startswith("< fr: yaourts au fruit de la passion"):
+            line = "< en: Passion fruit yogurts"
         expected_lines.append(line)
 
     assert expected_lines == lines
@@ -346,10 +346,10 @@ def test_patcher_with_modifications(neo4j):
     for num, (line, next_line) in enumerate(zip(original_lines, original_lines[1:] + [None])):
         more_lines = []
         # changed parent
-        if line.startswith("< fr:yaourts au fruit de la passion"):
-            line = "< en:yogurts"
+        if line.startswith("< fr: yaourts au fruit de la passion"):
+            line = "< en: yogurts"
         # no more parent
-        elif line.startswith("< en:yogurts") and next_line.startswith("en: banana yogurts"):
+        elif line.startswith("< en: yogurts") and next_line.startswith("en: banana yogurts"):
             continue
         # removed entry
         elif num in range(16, 20):
@@ -358,17 +358,17 @@ def test_patcher_with_modifications(neo4j):
         elif line.startswith("en: yogurts, yoghurts"):
             line = "en: yogurts, yogurt, yooghurt"
         # commenting non existing parents
-        elif line.startswith("< en:milk"):
-            line = "# < en:milk"
+        elif line.startswith("< en: milk"):
+            line = "# < en: milk"
         elif line.startswith("fr: yaourts à la banane"):
             # added entry under this parent
             more_lines = [
                 "",
-                "< en:banana yogurts",
+                "< en: banana yogurts",
                 "en: smashed banana yogurts, squashed banana yogurts",
                 "fr: yaourts à la banane écrasée",
                 "",
-                "< en:smashed banana yogurts",
+                "< en: smashed banana yogurts",
                 "en: smashed green banana yogurts",
             ]
         expected_lines.append(line)

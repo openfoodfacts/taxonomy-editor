@@ -5,7 +5,7 @@
  color:en: white
  flavour:en: undef
 -
--<en: yogurts
+-< en: yogurts
 -en: banana yogurts
 -fr: yaourts à la banane
 -nl: bananenyoghurt
@@ -14,5 +14,5 @@
 -color:en: yellow
 -flavour:en: banana
  
- <en: yogurts
+ < en: yogurts
  en: Passion fruit yogurts
