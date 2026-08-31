@@ -84,11 +84,10 @@ class TaxonomyGraph:
             EntryNodeCreate(name=name, main_language_code=main_language_code),
         )
 
-    async def get_local_taxonomy_file(self, tmpdir: str, uploadfile: UploadFile):
-        filename = uploadfile.filename
+    async def get_local_taxonomy_file(self, tmpdir: str, file_content: bytes, filename: str):
         filepath = f"{tmpdir}/{filename}"
         with open(filepath, "wb") as f:
-            await run_in_threadpool(shutil.copyfileobj, uploadfile.file, f)
+            f.write(file_content)
         return filepath
 
     async def get_github_taxonomy_file(self, tmpdir: str, taxonomy_name: str):
@@ -132,13 +131,13 @@ class TaxonomyGraph:
                 # outer exception handler will put project status to FAILED
                 raise TaxonomyParsingError() from e
 
-    async def get_and_parse_taxonomy(self, uploadfile: UploadFile | None = None):
+    async def get_and_parse_taxonomy(self, file_content: bytes | None = None, filename: str | None = None):
         try:
             with tempfile.TemporaryDirectory(prefix="taxonomy-") as tmpdir:
                 filepath = await (
                     self.get_github_taxonomy_file(tmpdir, self.taxonomy_name)
-                    if uploadfile is None
-                    else self.get_local_taxonomy_file(tmpdir, uploadfile)
+                    if file_content is None
+                    else self.get_local_taxonomy_file(tmpdir, file_content, filename)
                 )
                 other_filepaths = None
                 if self.taxonomy_name in EXTERNAL_TAXONOMIES:
@@ -191,6 +190,9 @@ class TaxonomyGraph:
         """
         Helper function to import a taxonomy
         """
+        file_content = await uploadfile.read() if uploadfile else None
+        filename = uploadfile.filename if uploadfile else None
+
         await create_project(
             ProjectCreate(
                 id=self.project_name,
@@ -201,7 +203,7 @@ class TaxonomyGraph:
                 is_from_github=uploadfile is None,
             )
         )
-        background_tasks.add_task(self.get_and_parse_taxonomy, uploadfile)
+        background_tasks.add_task(self.get_and_parse_taxonomy, file_content, filename)
         return True
 
     def dump_taxonomy(
