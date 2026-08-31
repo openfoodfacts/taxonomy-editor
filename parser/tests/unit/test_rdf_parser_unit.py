@@ -1,12 +1,13 @@
 import pathlib
 
-from rdflib import OWL, RDF, RDFS, SKOS
+from rdflib import OWL, RDF, RDFS, SKOS, Graph
 from rdflib import XSD as RDF_XSD
 from rdflib import Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
-from openfoodfacts_taxonomy_parser.parser.rdf_properties import FOOD_GROUPS, ROOT, WIKIDATA, canonical_id
+from openfoodfacts_taxonomy_parser.parser.rdf_properties import FOOD_GROUPS, LANGUAGES, ROOT, WIKIDATA, canonical_id, get_language
 from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -156,20 +157,25 @@ def test_rdf_full():
     
     # Language-less literals
     assert (NS.country, OFF.countryCode2, Literal("UK")) in graph
+    
+    # Links to languages
+    assert (NS.country, OFF.language, LANGUAGES.english) in graph
+    assert (NS.country, OFF.language, LANGUAGES.welsh) in graph
 
 
 def test_canonical_id():
     logger = ParserConsoleLogger()
     taxonomy = TaxonomyParser().parse_file(TEST_RDF_ENTRIES_TXT)
 
-    assert canonical_id(taxonomy, logger, "en:meat analogues") == "meat-substitutes"
-    assert canonical_id(taxonomy, logger, "en:no matching tag") == "no-matching-tag"
+    context = RdfContext(taxonomy, None, None, logger, None)
+    assert canonical_id(context, "en:meat analogues") == "meat-substitutes"
+    assert canonical_id(context, "en:no matching tag") == "no-matching-tag"
     assert any(
         "no-matching-tag" in warning and "not found" in warning
         for warning in logger.parsing_warnings
     )
 
-    assert canonical_id(taxonomy, logger, "en:duplicate synonym") in [
+    assert canonical_id(context, "en:duplicate synonym") in [
         "duplicate-synonym",
         "synonyme-en-double",
     ]
@@ -177,3 +183,16 @@ def test_canonical_id():
         "duplicate-synonym" in warning and "ambiguous" in warning
         for warning in logger.parsing_warnings
     )
+
+
+def test_get_language():
+    logger = ParserConsoleLogger()
+    context = RdfContext(None, Graph(), None, logger, None)
+    assert get_language(context, 'fr') == LANGUAGES.french
+    
+    assert get_language(context, 'invalid') == LANGUAGES.invalid
+    assert any(
+        "invalid" in warning and "not found" in warning
+        for warning in logger.parsing_warnings
+    )
+    

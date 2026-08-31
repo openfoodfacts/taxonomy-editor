@@ -20,6 +20,8 @@ from pathlib import Path
 import inflect
 from rdflib import RDF, RDFS, SKOS, Graph, Literal, Namespace
 
+from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
+
 from .logger import ParserConsoleLogger
 from .rdf_properties import NAMESPACE_PREFIXES, OFF, PROPERTY_MAP, ROOT, add_default_property
 from .taxonomy_parser import TaxonomyParser
@@ -55,10 +57,13 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
     # Create a class for each taxonomy entry
     class_name = scheme_id.title().replace("_", "")
     class_name = inflect_engine.singular_noun(class_name) or class_name
-    graph.add((OFF[class_name], RDFS.subClassOf, SKOS.Concept))
+    class_uri = OFF[class_name]
+    graph.add((class_uri, RDFS.subClassOf, SKOS.Concept))
 
     ns = Namespace(f"{ROOT}/{scheme_id}#")
     graph.bind(scheme_id, ns)
+    
+    context = RdfContext(taxonomy, graph, ns, logger, class_uri)
 
     for node in taxonomy.entry_nodes:
         # As per decision document the language part is not used in the id
@@ -94,12 +99,11 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
             property_name = parts[0][5:]  # Remove the "prop_" prefix
             lang = parts[1]
             property_definition = PROPERTY_MAP.get(property_name)
+            context.concept = concept
             if property_definition:
-                property_definition.add(
-                    logger, taxonomy, graph, ns, OFF[class_name], concept, value, lang
-                )
+                property_definition.add(context, value, lang)
             else:
-                add_default_property(graph, OFF[class_name], concept, property_name, value, lang)
+                add_default_property(context, property_name, value, lang)
 
     # graph.serialize(destination="debug.ttl")
     return graph
