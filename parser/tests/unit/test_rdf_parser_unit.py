@@ -6,7 +6,7 @@ from rdflib import Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
-from openfoodfacts_taxonomy_parser.parser.rdf_properties import ROOT, WIKIDATA, canonical_id
+from openfoodfacts_taxonomy_parser.parser.rdf_properties import FOOD_GROUPS, ROOT, WIKIDATA, canonical_id
 from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
@@ -150,6 +150,9 @@ def test_rdf_full():
     # Handles items that are lists
     assert (NS.pumpkin, OFF.opposite, NS.tomato) in graph
     assert (NS.pumpkin, OFF.opposite, NS.filling) in graph
+
+    # Food groups
+    assert (NS.tomato, OFF.foodGroup, FOOD_GROUPS['fruits-and-vegetables']) in graph
 
 
 def test_canonical_id():

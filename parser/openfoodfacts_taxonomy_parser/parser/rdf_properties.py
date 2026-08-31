@@ -15,12 +15,14 @@ CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/"
 # These are not RDF resources but at least creates something clickable
 AGRIBALYSE = Namespace("https://agribalyse.ademe.fr/app/aliments/")
 WIKIDATA = Namespace("http://www.wikidata.org/entity/")
+FOOD_GROUPS = Namespace(f"{ROOT}/food_groups#")
 
 NAMESPACE_PREFIXES = {
     OFF: "off",
     CIQUAL: "ciqual",
     AGRIBALYSE: "agribalyse",
     WIKIDATA: "wd",
+    FOOD_GROUPS: "food_groups",
 }
 
 
@@ -105,9 +107,14 @@ def toLowerCamelCase(snake_str):
     return "".join([first.lower(), *map(str.title, others)])
 
 
-def canonical_id(taxonomy, logger, tag):
+def normalized_id(tag):
     lc, main_tag = tag.strip().split(":", 1)
     normalized_main_tag = normalize_text(main_tag, lc)
+    return (normalized_main_tag, lc)
+    
+    
+def canonical_id(taxonomy, logger, tag):
+    (normalized_main_tag, lc) = normalized_id(tag)
     tag_id = f"tags_ids_{lc}"
     matching_nodes = [
         node for node in taxonomy.entry_nodes if normalized_main_tag in node.tags.get(tag_id, [])
@@ -151,6 +158,14 @@ PROPERTY_MAP = {
         ],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.related)],
+    ),
+    "food_groups": PropertyDefinition(
+        OFF.foodGroup,
+        lambda taxonomy, logger, namespace, tags: [
+            FOOD_GROUPS[normalized_id(tag)[0]] for tag in tags.split(",")
+        ],
+        OWL.ObjectProperty,
+        [(RDFS.subPropertyOf, SKOS.broader)],
     ),
 }
 
