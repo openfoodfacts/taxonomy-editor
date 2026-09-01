@@ -86,6 +86,7 @@ class TaxonomyGraph:
     async def get_local_taxonomy_file(self, tmpdir: str, file_content: bytes, filename: str):
         filepath = f"{tmpdir}/{filename}"
         with open(filepath, "wb") as f:
+            # it's not async but it should be fast enough (and rare)
             f.write(file_content)
         return filepath
 
