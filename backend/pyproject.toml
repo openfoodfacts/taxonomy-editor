@@ -50,6 +50,7 @@ neo4j = "^5.14.0"
 openfoodfacts_taxonomy_parser = { path = "../parser", develop = true }
 python-multipart = ">=0.0.7,<0.0.33"
 apscheduler = "^3.10.4"
+hishel = ">=0.0.26"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.3.0"
