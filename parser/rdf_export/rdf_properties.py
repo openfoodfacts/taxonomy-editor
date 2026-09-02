@@ -6,7 +6,7 @@ from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Literal, Namespace, URIRef
 
-from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
+from rdf_export.rdf_context import RdfContext
 from openfoodfacts_taxonomy_parser.utils import normalize_text
 
 ROOT = Namespace("https://openfoodfacts.org/data/taxonomies")

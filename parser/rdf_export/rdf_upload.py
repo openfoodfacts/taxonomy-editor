@@ -7,10 +7,10 @@ import sys
 import requests
 
 # --- CONFIGURATION SETTINGS ---
-ST = "it.uniroma2.art.semanticturkey"
-CONFIG = f"{ST}.extension.impl.repositoryimplconfigurer.predefined"
-ST_URL = "http://localhost:1983/semanticturkey"
-SHOWVOC_URL = f"{ST_URL}/{ST}"
+ST_NS = "it.uniroma2.art.semanticturkey"
+CONFIG_NS = f"{ST_NS}.extension.impl.repositoryimplconfigurer.predefined"
+ST_URL = os.environ.get("ADMIN_EMAIL", "http://localhost:1983/semanticturkey")
+API_BASE = f"{ST_URL}/{ST_NS}"
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 
@@ -18,7 +18,7 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 def get_authenticated_session():
     """Helper to spin up a completely fresh, isolated connection context session."""
     new_session = requests.Session()
-    url = f"{SHOWVOC_URL}/st-core-services/Auth/login"
+    url = f"{API_BASE}/st-core-services/Auth/login"
     payload = {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
 
     response = new_session.post(url, data=payload)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     session = get_authenticated_session()
     res = session.post(
-        f"{SHOWVOC_URL}/st-metadata-registry-services/MetadataRegistry/createDatasetAbstraction",
+        f"{API_BASE}/st-metadata-registry-services/MetadataRegistry/createDatasetAbstraction",
         data={
             "shortName": DATASET_NAME,
             "uriSpace": BASE_URI,
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # Ignore already exists error
 
     res = session.post(
-        f"{SHOWVOC_URL}/st-core-services/Projects/createProject",
+        f"{API_BASE}/st-core-services/Projects/createProject",
         data={
             "consumer": "SYSTEM",
             "projectName": DATASET_NAME,
@@ -68,10 +68,10 @@ if __name__ == "__main__":
             "supportRepoID": "countries_support",
             "coreRepoSailConfigurerSpecification": json.dumps(
                 {
-                    "factoryId": f"{CONFIG}.RDF4JRepositoryConfigurer",
-                    "configType": f"{CONFIG}.RDF4JPersistentInMemorySailConfiguration",
+                    "factoryId": f"{CONFIG_NS}.RDF4JRepositoryConfigurer",
+                    "configType": f"{CONFIG_NS}.RDF4JPersistentInMemorySailConfiguration",
                     "configuration": {
-                        "@type": f"{CONFIG}.RDF4JPersistentInMemorySailConfiguration",
+                        "@type": f"{CONFIG_NS}.RDF4JPersistentInMemorySailConfiguration",
                         "syncDelay": 1000,
                         "directTypeInference": False,
                         "inferencer": "none",
@@ -101,18 +101,18 @@ if __name__ == "__main__":
     is_response_ok(res)
 
     res = session.post(
-        f"{SHOWVOC_URL}/st-core-services/Projects/makePublic?ctx_project={DATASET_NAME}"
+        f"{API_BASE}/st-core-services/Projects/makePublic?ctx_project={DATASET_NAME}"
     )
     is_response_ok(res)
 
     res = session.post(
-        f"{SHOWVOC_URL}/st-core-services/InputOutput/clearData?ctx_project={DATASET_NAME}"
+        f"{API_BASE}/st-core-services/InputOutput/clearData?ctx_project={DATASET_NAME}"
     )
     is_response_ok(res)
 
     with open(f"{DATASET_NAME}.ttl", "rb") as f:
         res = session.post(
-            f"{SHOWVOC_URL}/st-core-services/InputOutput/loadRDF?ctx_project={DATASET_NAME}",
+            f"{API_BASE}/st-core-services/InputOutput/loadRDF?ctx_project={DATASET_NAME}",
             # /st-core-services/InputOutput/loadRDF?ctx_project=countries&ctx_forceEditable=true&ctx_shard=main
             data={
                 "baseURI": BASE_URI,
@@ -127,9 +127,9 @@ if __name__ == "__main__":
         is_response_ok(res)
 
     res = session.post(
-        f"{SHOWVOC_URL}/st-core-services/Settings/storeSettingDefault?ctx_project={DATASET_NAME}",
+        f"{API_BASE}/st-core-services/Settings/storeSettingDefault?ctx_project={DATASET_NAME}",
         data={
-            "componentID": f"{ST}.settings.core.SemanticTurkeyCoreSettingsManager",
+            "componentID": f"{ST_NS}.settings.core.SemanticTurkeyCoreSettingsManager",
             "scope": "PROJECT_USER",
             "defaultScope": "PROJECT",
             "propertyName": "activeSchemes",

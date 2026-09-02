@@ -3,7 +3,7 @@ Converts OpenFoodFacts taxonomy files to RDF format using the rdflib library.
 
 To use from the command line, run:
 
-python -m openfoodfacts_taxonomy_parser.parser.rdf_parser <taxonomy_file> <output_dir> <scheme_id>
+python -m rdf_export.rdf_parser <taxonomy_file> <output_dir> <scheme_id>
 
 Do not include the txt extension in the taxonomy file path.
 
@@ -20,11 +20,11 @@ from pathlib import Path
 import inflect
 from rdflib import RDF, RDFS, SKOS, Graph, Literal, Namespace
 
-from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
+from rdf_export.rdf_context import RdfContext
 
-from .logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from .rdf_properties import NAMESPACE_PREFIXES, OFF, PROPERTY_MAP, ROOT, add_default_property
-from .taxonomy_parser import TaxonomyParser
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 inflect_engine = inflect.engine()
 

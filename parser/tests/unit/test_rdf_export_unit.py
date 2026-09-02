@@ -5,9 +5,9 @@ from rdflib import XSD as RDF_XSD
 from rdflib import Graph, Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
-from openfoodfacts_taxonomy_parser.parser.rdf_context import RdfContext
-from openfoodfacts_taxonomy_parser.parser.rdf_parser import OFF, parse_to_rdf
-from openfoodfacts_taxonomy_parser.parser.rdf_properties import (
+from rdf_export.rdf_context import RdfContext
+from rdf_export.rdf_parser import OFF, parse_to_rdf
+from rdf_export.rdf_properties import (
     FOOD_GROUPS,
     LANGUAGES,
     ROOT,
