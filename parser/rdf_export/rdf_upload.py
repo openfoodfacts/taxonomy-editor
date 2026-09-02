@@ -13,7 +13,7 @@ ST_NS = "it.uniroma2.art.semanticturkey"
 CONFIG_NS = f"{ST_NS}.extension.impl.repositoryimplconfigurer.predefined"
 ST_URL = os.environ.get("ST_URL", "http://localhost:1983/semanticturkey")
 API_BASE = f"{ST_URL}/{ST_NS}"
-CORE_SERVICES_API_BASE = f"{API_BASE}/st-core-services"
+CORE_SERVICES_BASE = f"{API_BASE}/st-core-services"
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
@@ -22,7 +22,7 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 def get_authenticated_session():
     """Helper to spin up a completely fresh, isolated connection context session."""
     new_session = requests.Session()
-    url = f"{CORE_SERVICES_API_BASE}/Auth/login"
+    url = f"{CORE_SERVICES_BASE}/Auth/login"
     payload = {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
 
     response = new_session.post(url, data=payload)
@@ -36,7 +36,11 @@ def is_response_ok(operation, response_obj):
     try:
         data = response_obj.json()
         response = data.get("stresponse", data)
-        ok = response.get("reply", {}).get("status") == "ok" or data.get("result") or "already in use" in response.get("msg")
+        ok = (
+            response.get("reply", {}).get("status") == "ok"
+            or data.get("result")
+            or "already in use" in response.get("msg")
+        )
         if not ok:
             print(f'{operation}: {response.get("msg", response)}')
         return ok
@@ -61,7 +65,7 @@ if __name__ == "__main__":
     is_response_ok("Create Dataset:", res)
 
     res = session.post(
-        f"{CORE_SERVICES_API_BASE}/Projects/createProject",
+        f"{CORE_SERVICES_BASE}/Projects/createProject",
         data={
             "consumer": "SYSTEM",
             "projectName": taxonomy_name,
@@ -104,17 +108,15 @@ if __name__ == "__main__":
     )
     is_response_ok("Create Project", res)
 
-    res = session.post(
-        f"{CORE_SERVICES_API_BASE}/Projects/makePublic?ctx_project={taxonomy_name}"
-    )
+    res = session.post(f"{CORE_SERVICES_BASE}/Projects/makePublic?ctx_project={taxonomy_name}")
     if is_response_ok("Make Public", res):
         res = session.post(
-            f"{CORE_SERVICES_API_BASE}/InputOutput/clearData?ctx_project={taxonomy_name}"
+            f"{CORE_SERVICES_BASE}/InputOutput/clearData?ctx_project={taxonomy_name}"
         )
         if is_response_ok("Clear Data", res):
             with open(f"{taxonomy_name}.ttl", "rb") as f:
                 res = session.post(
-                    f"{CORE_SERVICES_API_BASE}/InputOutput/loadRDF?ctx_project={taxonomy_name}",
+                    f"{CORE_SERVICES_BASE}/InputOutput/loadRDF?ctx_project={taxonomy_name}",
                     # /st-core-services/InputOutput/loadRDF?ctx_project=countries&ctx_forceEditable=true&ctx_shard=main
                     data={
                         "baseURI": BASE_URI,
@@ -132,7 +134,7 @@ if __name__ == "__main__":
                     print(f"Load RDF: result: {res_json}")
 
             res = session.post(
-                f"{API_BASE}/st-core-services/Settings/storeSettingDefault?ctx_project={taxonomy_name}",
+                f"{CORE_SERVICES_BASE}/Settings/storeSettingDefault?ctx_project={taxonomy_name}",
                 data={
                     "componentID": f"{ST_NS}.settings.core.SemanticTurkeyCoreSettingsManager",
                     "scope": "PROJECT_USER",

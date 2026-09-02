@@ -5,17 +5,11 @@ from rdflib import XSD as RDF_XSD
 from rdflib import Graph, Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 from rdf_export.rdf_config import NS_ROOT
 from rdf_export.rdf_context import RdfContext
 from rdf_export.rdf_parser import OFF, parse_to_rdf
-from rdf_export.rdf_properties import (
-    FOOD_GROUPS,
-    LANGUAGES,
-    WIKIDATA,
-    canonical_id,
-    get_language,
-)
-from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
+from rdf_export.rdf_properties import FOOD_GROUPS, LANGUAGES, WIKIDATA, canonical_id, get_language
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
 TEST_PROPERTY_CONFUSED_LANG_TXT = str(

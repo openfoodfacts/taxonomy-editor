@@ -20,12 +20,12 @@ from pathlib import Path
 import inflect
 from rdflib import RDF, RDFS, SKOS, Graph, Literal
 
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 from rdf_export.rdf_config import OFF, addTaxonomyNamespace, bindNamespace
 from rdf_export.rdf_context import RdfContext
 
-from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from .rdf_properties import PROPERTY_MAP, add_default_property
-from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 inflect_engine = inflect.engine()
 

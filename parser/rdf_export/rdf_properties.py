@@ -4,9 +4,15 @@ from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Literal, Namespace, URIRef
 
-from rdf_export.rdf_config import OFF, addNamespace, addTaxonomyNamespace, bindNamespace, getTaxonomyJson
-from rdf_export.rdf_context import RdfContext
 from openfoodfacts_taxonomy_parser.utils import normalize_text
+from rdf_export.rdf_config import (
+    OFF,
+    addNamespace,
+    addTaxonomyNamespace,
+    bindNamespace,
+    getTaxonomyJson,
+)
+from rdf_export.rdf_context import RdfContext
 
 # This is not an official CIQUAL namespace, but seems to be the closest we've got
 CIQUAL = addNamespace("ciqual", "https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
