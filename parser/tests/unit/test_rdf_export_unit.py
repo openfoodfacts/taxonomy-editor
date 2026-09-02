@@ -5,12 +5,12 @@ from rdflib import XSD as RDF_XSD
 from rdflib import Graph, Literal, Namespace
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from rdf_export.rdf_config import NS_ROOT
 from rdf_export.rdf_context import RdfContext
 from rdf_export.rdf_parser import OFF, parse_to_rdf
 from rdf_export.rdf_properties import (
     FOOD_GROUPS,
     LANGUAGES,
-    ROOT,
     WIKIDATA,
     canonical_id,
     get_language,
@@ -35,7 +35,7 @@ def test_rdf_parser():
     assert (OFF.Test, RDFS.subClassOf, SKOS.Concept) in graph
 
     # Check that all concepts are present in the graph
-    test = Namespace(f"{ROOT}/test#")
+    test = Namespace(f"{NS_ROOT}/test#")
     assert (test.yogurts, RDF.type, OFF.Test) in graph
     assert (test.yogurts, SKOS.inScheme, OFF.test) in graph
 
@@ -68,7 +68,7 @@ def test_rdf_parser():
 def test_rdf_description():
     graph = parse_to_rdf(TEST_PROPERTY_CONFUSED_LANG_TXT)
 
-    ns = Namespace(f"{ROOT}/test_property_confused_lang#")
+    ns = Namespace(f"{NS_ROOT}/test_property_confused_lang#")
 
     # Check that the description uses the SKOS definition
     assert (
@@ -87,7 +87,7 @@ def test_rdf_full():
     logger = ParserConsoleLogger()
     graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, "test_scheme", logger=logger)
 
-    NS = Namespace(f"{ROOT}/test_scheme#")
+    NS = Namespace(f"{NS_ROOT}/test_scheme#")
     CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
 
     # Captialization of class name

@@ -1,32 +1,20 @@
-import json
 from typing import Callable
-from urllib import request
 
 from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Literal, Namespace, URIRef
 
+from rdf_export.rdf_config import OFF, addNamespace, addTaxonomyNamespace, bindNamespace, getTaxonomyJson
 from rdf_export.rdf_context import RdfContext
 from openfoodfacts_taxonomy_parser.utils import normalize_text
 
-ROOT = Namespace("https://openfoodfacts.org/data/taxonomies")
-OFF = Namespace(f"{ROOT}/core#")
 # This is not an official CIQUAL namespace, but seems to be the closest we've got
-CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
+CIQUAL = addNamespace("ciqual", "https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
 # These are not RDF resources but at least creates something clickable
-AGRIBALYSE = Namespace("https://agribalyse.ademe.fr/app/aliments/")
-WIKIDATA = Namespace("http://www.wikidata.org/entity/")
-FOOD_GROUPS = Namespace(f"{ROOT}/food_groups#")
-LANGUAGES = Namespace(f"{ROOT}/languages#")
-
-NAMESPACE_PREFIXES = {
-    OFF: "off",
-    CIQUAL: "ciqual",
-    AGRIBALYSE: "agribalyse",
-    WIKIDATA: "wd",
-    FOOD_GROUPS: "food_groups",
-    LANGUAGES: "languages",
-}
+AGRIBALYSE = addNamespace("agribalyse", "https://agribalyse.ademe.fr/app/aliments/")
+WIKIDATA = addNamespace("wd", "http://www.wikidata.org/entity/")
+FOOD_GROUPS = addTaxonomyNamespace("food_groups")
+LANGUAGES = addTaxonomyNamespace("languages")
 
 languages_taxonomy = None
 
@@ -65,9 +53,7 @@ class PropertyDefinition:
 
         if (self.property, None, None) not in context.graph:
             if self.namespace:
-                prefix = NAMESPACE_PREFIXES.get(self.namespace)
-                if prefix:
-                    context.graph.bind(prefix, self.namespace)
+                bindNamespace(context.graph, self.namespace)
             if self.type:
                 context.graph.add((self.property, RDF.type, self.type))
                 # Always add a domain
@@ -139,12 +125,8 @@ def canonical_id(context, tag):
 def get_language(context, value):
     global languages_taxonomy
     if not languages_taxonomy:
-        languages_taxonomy = json.loads(
-            request.urlopen("https://static.openfoodfacts.org/data/taxonomies/languages.json")
-            .read()
-            .decode("utf-8")
-        )
-    context.graph.bind(NAMESPACE_PREFIXES[LANGUAGES], LANGUAGES)
+        languages_taxonomy = getTaxonomyJson("languages")
+    bindNamespace(context.graph, LANGUAGES)
     value = value.strip()
     matches = [
         id

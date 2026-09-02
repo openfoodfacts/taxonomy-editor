@@ -18,12 +18,13 @@ import sys
 from pathlib import Path
 
 import inflect
-from rdflib import RDF, RDFS, SKOS, Graph, Literal, Namespace
+from rdflib import RDF, RDFS, SKOS, Graph, Literal
 
+from rdf_export.rdf_config import OFF, addTaxonomyNamespace, bindNamespace
 from rdf_export.rdf_context import RdfContext
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
-from .rdf_properties import NAMESPACE_PREFIXES, OFF, PROPERTY_MAP, ROOT, add_default_property
+from .rdf_properties import PROPERTY_MAP, add_default_property
 from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 
 inflect_engine = inflect.engine()
@@ -44,8 +45,8 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
     taxonomy = taxonomy_parser.parse_file(filename, logger=logger)
     graph = Graph()
 
-    # Create the core namespace prefix
-    graph.bind(NAMESPACE_PREFIXES[OFF], OFF)
+    # Bind the core namespace prefix
+    bindNamespace(graph, OFF)
 
     # Create a concept scheme for the taxonomy
     scheme_id = scheme_id or Path(filename).stem
@@ -60,8 +61,8 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
     class_uri = OFF[class_name]
     graph.add((class_uri, RDFS.subClassOf, SKOS.Concept))
 
-    ns = Namespace(f"{ROOT}/{scheme_id}#")
-    graph.bind(scheme_id, ns)
+    ns = addTaxonomyNamespace(scheme_id)
+    bindNamespace(graph, ns)
 
     context = RdfContext(taxonomy, graph, ns, logger, class_uri)
 
@@ -110,7 +111,7 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
 
 
 if __name__ == "__main__":
-    filename = sys.argv[1] if len(sys.argv) > 1 else "tests/data/test"
+    filename = sys.argv[1] if len(sys.argv) > 1 else "tests/data/test_rdf_entries"
     output_dir = sys.argv[2] if len(sys.argv) > 2 else "."
     scheme_id = sys.argv[3] if len(sys.argv) > 3 else Path(filename).stem
 
