@@ -6,21 +6,22 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.13.0",
-    "@material-table/core": "^6.2.11",
+    "@material-table/core": "6.2.11",
     "@mui/icons-material": "^5.15.10",
     "@mui/material": "^5.14.20",
     "@mui/x-data-grid": "^6.19.6",
     "@tanstack/react-query": "^5.17.9",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@yaireo/dragsort": "^1.3.1",
-    "@yaireo/tagify": "^4.17.9",
+    "@yaireo/tagify": "4.17.9",
     "axios": "^1.18.0",
     "fast-deep-equal": "^3.1.3",
+    "i18next": "^23.16.8",
     "iso-639-1": "^2.1.15",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^11.18.3",
-    "react-router-dom": "^6.21.2",
+    "react-router-dom": "^7.18.3",
     "typescript": "^4.9.4",
     "web-vitals": "^3.5.0"
   },
@@ -34,13 +35,11 @@
     "generate:api": "openapi --input ../backend/openapi/openapi.json --output ./src/client --client axios && prettier --write ./src/client"
   },
   "devDependencies": {
-    "@craco/craco": "^5.9.0",
-    "@craco/types": "^7.1.0",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.2.6",
-    "@types/node": "^22.5.1",
+    "@types/node": "^22.12.0",
     "@types/react": "^18.2.52",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -53,9 +52,14 @@
     "lint-staged": "^15.2.0",
     "openapi-typescript-codegen": "^0.27.0",
     "prettier": "3.3.2",
-    "vite": "^5.4.21",
-    "vite-plugin-svgr": "^4.2.0",
+    "vite": "^8.2.2",
+    "vite-plugin-svgr": "^5.2.0",
     "vite-tsconfig-paths": "^4.3.1"
+  },
+  "overrides": {
+    "@material-table/core": {
+      "uuid": "^11.1.1"
+    }
   },
   "lint-staged": {
     "*.{js,css,md}": "prettier --write"
