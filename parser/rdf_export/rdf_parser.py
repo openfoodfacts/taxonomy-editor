@@ -13,8 +13,8 @@ or the current directory if no output_dir is specified.
 If the scheme_id is not specified then the file name, without path, will be used.
 """
 
+import argparse
 import re
-import sys
 from pathlib import Path
 
 import inflect
@@ -36,6 +36,10 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
 
     Args:
         filename (str): The path to the taxonomy file.
+        scheme_id (str, optional): The identifier for the concept scheme and class name.
+            Defaults to the file name without extension.
+        logger (ParserConsoleLogger, optional): Logger for logging messages.
+            Defaults to a new instance of ParserConsoleLogger.
 
     Returns:
         rdflib.Graph: The RDF graph containing the parsed taxonomy.
@@ -111,9 +115,27 @@ def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
 
 
 if __name__ == "__main__":
-    filename = sys.argv[1] if len(sys.argv) > 1 else "tests/data/test_rdf_entries"
-    output_dir = sys.argv[2] if len(sys.argv) > 2 else "."
-    scheme_id = sys.argv[3] if len(sys.argv) > 3 else Path(filename).stem
+    parser = argparse.ArgumentParser(description="Convert a taxonomy into an RDF Turtle file")
+    parser.add_argument(
+        "filename",
+        nargs="?",
+        help="Path to the taxonomy file (without .txt extension)",
+        default="tests/data/test_rdf_entries",
+    )
+    parser.add_argument(
+        "output_dir", nargs="?", help="Directory to save the output .ttl file", default="."
+    )
+    parser.add_argument(
+        "scheme_id",
+        nargs="?",
+        help="Identifier for the concept scheme and class name",
+        default=None,
+    )
+    args = parser.parse_args()
+
+    filename = args.filename
+    output_dir = args.output_dir
+    scheme_id = args.scheme_id or Path(filename).stem
 
     graph = parse_to_rdf(f"{filename}.txt", scheme_id)
     graph.serialize(destination=f"{output_dir}/{scheme_id}.ttl")

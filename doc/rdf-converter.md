@@ -1,4 +1,4 @@
-This project contains utilities for converting our taxonomies into RDF ontologies. The utility can be called as a libraryy or run from the command line following instructions in the [module](../parser/openfoodfacts_taxonomy_parser/parser/rdf_parser.py).
+This project contains utilities for converting our taxonomies into RDF ontologies. The utility can be called as a library or run from the command line following instructions in the [module](../parser/openfoodfacts_taxonomy_parser/parser/rdf_parser.py).
 
 Decisions relating to how these ontologies are structured are documented [here](decisions/ontologies/README.md)
 

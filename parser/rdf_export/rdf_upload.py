@@ -1,8 +1,8 @@
 """Uploads a taxonomy to ShowVoc"""
 
+import argparse
 import json
 import os
-import sys
 
 import requests
 
@@ -50,7 +50,13 @@ def is_response_ok(operation, response_obj):
 
 if __name__ == "__main__":
     # Dataset Settings
-    taxonomy_name = sys.argv[1]
+    parser = argparse.ArgumentParser(description="Upload a taxonomy RDF Turtle file to ShowVoc")
+    parser.add_argument(
+        "taxonomy_name",
+        help="The turtle file without extension. Assumed to be in current directory",
+    )
+    args = parser.parse_args()
+    taxonomy_name = args.taxonomy_name
     BASE_URI = str(addTaxonomyNamespace(taxonomy_name))
 
     session = get_authenticated_session()

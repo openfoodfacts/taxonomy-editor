@@ -79,15 +79,15 @@ jobs:
           timeoutSeconds: 600 # 10m
 
       - name: Do something if build isn't launched
-        if: steps.wait-build-frontend.outputs.conclusion == 'not found' || steps.wait-build-api.outputs.conclusion == 'not found'
+        if: steps.wait-build-frontend.outputs.conclusion == 'not found' || steps.wait-build-api.outputs.conclusion == 'not found' || steps.wait-build-showvoc.outputs.conclusion == 'not found'
         run: echo job does not exist && true
 
       - name: Do something if build fail
-        if: steps.wait-build-frontend.outputs.conclusion == 'failure' || steps.wait-build-api.outputs.conclusion == 'failure'
+        if: steps.wait-build-frontend.outputs.conclusion == 'failure' || steps.wait-build-api.outputs.conclusion == 'failure' || steps.wait-build-showvoc.outputs.conclusion == 'failure'
         run: echo fail && false # fail if build fail
 
       - name: Do something if build timeout
-        if: steps.wait-build-frontend.outputs.conclusion == 'timed_out' || steps.wait-build-api.outputs.conclusion == 'timed_out'
+        if: steps.wait-build-frontend.outputs.conclusion == 'timed_out' || steps.wait-build-api.outputs.conclusion == 'timed_out' || steps.wait-build-showvoc.outputs.conclusion == 'timed_out'
         run: echo Timeout && false # fail if build time out
 
       - name: Checkout git repository
