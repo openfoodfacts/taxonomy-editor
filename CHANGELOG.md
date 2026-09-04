@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.4.0...v1.5.0) (2026-09-04)
+
+
+### Features
+
+* Tool to Export OFF Taxonomies to RDF ([#722](https://github.com/openfoodfacts/taxonomy-editor/issues/722)) ([c1e86ef](https://github.com/openfoodfacts/taxonomy-editor/commit/c1e86ef3fdf5ab825adb08f2365b9aa333a8547b))
+
+
+### Bug Fixes
+
+* fix hishel version + avoid passing along uploadfile (just pass its content) ([#725](https://github.com/openfoodfacts/taxonomy-editor/issues/725)) ([86640b5](https://github.com/openfoodfacts/taxonomy-editor/commit/86640b5a2e26008cfd34f8010a992ef10715eb19))
+
 ## [1.4.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.3.0...v1.4.0) (2026-07-21)
 
 
