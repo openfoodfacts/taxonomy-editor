@@ -198,6 +198,7 @@ checks: quality tests ## Run all checks (quality + tests)
 create_external_volumes: ## Create external volumes (production only)
 	@echo "🍜 Creating external volumes (production only) …"
 	docker volume create ${COMPOSE_PROJECT_NAME}_neo4j-data
+	docker volume create ${COMPOSE_PROJECT_NAME}_showvoc-data
 
 
 #------------#

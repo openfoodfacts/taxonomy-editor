@@ -1,3 +1,5 @@
 {
-  "python.defaultInterpreterPath": "./.venv/bin/python3.11"
+  "python.defaultInterpreterPath": "./.venv/bin/python3.11",
+  "python-envs.defaultEnvManager": "ms-python.python:poetry",
+  "python-envs.defaultPackageManager": "ms-python.python:poetry"
 }

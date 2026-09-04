@@ -42,6 +42,12 @@ This tool can help a lot:
 - provide helpers to assist power contributors in enriching the taxonomy (eg. find corresponding wikidata entry)
 - offer an API to the taxonomy for third party applications (complementing the existing API)
 
+## RDF Converter
+
+This project also includes a utility for transforming our taxonomies into RDF format for use in semantic web tooling. A deployment of ShowVoc is also included to allow the taxonomies to be easily visualised.
+
+Further details on the RDF converter can be found here
+
 ## Why is this project appealing?
 
 - Python and ReactJS tech stack (a powerful combo)

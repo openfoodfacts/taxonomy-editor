@@ -4,3 +4,7 @@ volumes:
   neo4j-data:
     external: true
     name: "${COMPOSE_PROJECT_NAME}_neo4j-data"
+
+  showvoc-data:
+    external: true
+    name: "${COMPOSE_PROJECT_NAME}_showvoc-data"

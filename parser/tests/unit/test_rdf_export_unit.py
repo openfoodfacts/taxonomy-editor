@@ -1,0 +1,200 @@
+import pathlib
+
+from rdflib import OWL, RDF, RDFS, SKOS
+from rdflib import XSD as RDF_XSD
+from rdflib import Graph, Literal, Namespace
+
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
+from rdf_export.rdf_config import NS_ROOT
+from rdf_export.rdf_context import RdfContext
+from rdf_export.rdf_parser import OFF, parse_to_rdf
+from rdf_export.rdf_properties import FOOD_GROUPS, LANGUAGES, WIKIDATA, canonical_id, get_language
+
+TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
+TEST_PROPERTY_CONFUSED_LANG_TXT = str(
+    pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt"
+)
+TEST_RDF_ENTRIES_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_rdf_entries.txt")
+
+
+def test_rdf_parser():
+    graph = parse_to_rdf(TEST_TAXONOMY_TXT)
+
+    # Check concept scheme
+    assert (OFF.test, RDF.type, SKOS.ConceptScheme) in graph
+    assert (OFF.test, SKOS.prefLabel, Literal("Test", "en")) in graph
+
+    # Check class definition
+    assert (OFF.Test, RDFS.subClassOf, SKOS.Concept) in graph
+
+    # Check that all concepts are present in the graph
+    test = Namespace(f"{NS_ROOT}/test#")
+    assert (test.yogurts, RDF.type, OFF.Test) in graph
+    assert (test.yogurts, SKOS.inScheme, OFF.test) in graph
+
+    # Preferred labels
+    assert (test.yogurts, SKOS.prefLabel, Literal("yogurts", "en")) in graph
+    assert (test.yogurts, SKOS.prefLabel, Literal("yaourts", "fr")) in graph
+
+    # Synonyms
+    assert (test.yogurts, SKOS.altLabel, Literal("yoghurts", "en")) in graph
+    assert (test.yogurts, SKOS.altLabel, Literal("yoghourts", "fr")) in graph
+
+    # Parents
+    assert (test["passion-fruit-yogurts"], SKOS.broader, test.yogurts) in graph
+
+    # Top concepts
+    assert (test.meat, SKOS.topConceptOf, OFF.test) in graph
+    # Yogurt has a parent of milk which is not in the file, so shows as a top concept
+    assert (test.yogurts, SKOS.topConceptOf, OFF.test) in graph
+    assert (test["banana-yogurts"], SKOS.topConceptOf, OFF.test) not in graph
+
+    # Properties
+    assert (test.meat, OFF.carbonFootprintFrFoodgesValue, Literal("10", "fr")) in graph
+
+    # Check properties that have appeared on instances appear on the class
+    assert (OFF.carbonFootprintFrFoodgesValue, RDF.type, RDF.Property) in graph
+    assert (OFF.carbonFootprintFrFoodgesValue, RDFS.domain, OFF.Test) in graph
+    assert (OFF.carbonFootprintFrFoodgesValue, RDFS.range, RDF_XSD.string) in graph
+
+
+def test_rdf_description():
+    graph = parse_to_rdf(TEST_PROPERTY_CONFUSED_LANG_TXT)
+
+    ns = Namespace(f"{NS_ROOT}/test_property_confused_lang#")
+
+    # Check that the description uses the SKOS definition
+    assert (
+        ns["1-for-the-planet"],
+        SKOS.definition,
+        Literal(
+            "Commit to donating at least 1% of annual sales to environmental organizations.", "en"
+        ),
+    ) in graph
+
+    # Captialization of class name
+    assert (OFF.TestPropertyConfusedLang, RDFS.subClassOf, SKOS.Concept) in graph
+
+
+def test_rdf_full():
+    logger = ParserConsoleLogger()
+    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, "test_scheme", logger=logger)
+
+    NS = Namespace(f"{NS_ROOT}/test_scheme#")
+    CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
+
+    # Captialization of class name
+    assert (OFF.TestScheme, RDFS.subClassOf, SKOS.Concept) in graph
+
+    # Warning about duplicate item
+    assert any("duplicate-item" in warning for warning in logger.parsing_warnings)
+
+    # Ciqual codes mapped correctly
+    assert (NS.tomato, OFF.ciqualFoodCode, CIQUAL["20047"]) in graph
+
+    # CIQUAL property is defined in the graph
+    assert (OFF.ciqualFoodCode, RDFS.subPropertyOf, SKOS.exactMatch) in graph
+    assert (OFF.ciqualFoodCode, RDF.type, OWL.ObjectProperty) in graph
+    assert (OFF.ciqualFoodCode, RDFS.domain, OFF.TestScheme) in graph
+
+    assert (NS.tomato, OFF.ciqualFoodName, Literal("Tomato, raw", "en")) in graph
+    assert (OFF.ciqualFoodName, RDFS.subPropertyOf, SKOS.altLabel) in graph
+    assert (OFF.ciqualFoodName, RDF.type, OWL.AnnotationProperty) in graph
+
+    # Ciqual proxy codes mapped correctly
+    assert (NS.pumpkin, OFF.ciqualProxyFoodCode, CIQUAL["20139"]) in graph
+    assert (OFF.ciqualProxyFoodCode, RDFS.subPropertyOf, SKOS.closeMatch) in graph
+    assert (NS.pumpkin, OFF.ciqualProxyFoodName, Literal("Courge, crue", "fr")) in graph
+    assert (OFF.ciqualProxyFoodName, RDFS.subPropertyOf, SKOS.altLabel) in graph
+
+    # Check naming of unknown properties
+    assert (NS.pumpkin, OFF.randomProperty, Literal("test", "en")) in graph
+
+    # Vegan status
+    assert (NS.tomato, OFF.vegan, OFF.isVegan) in graph
+    assert (NS.filling, OFF.vegan, OFF.maybeVegan) in graph
+
+    # Vegan metadata
+    assert (OFF.veganStatus, RDF.type, OWL.Class) in graph
+    assert (OFF.vegan, RDF.type, OWL.ObjectProperty) in graph
+    assert (OFF.isVegan, RDFS.subClassOf, OFF.veganStatus) in graph
+    assert (OFF.maybeVegan, RDFS.subClassOf, OFF.veganStatus) in graph
+    assert (OFF.notVegan, RDFS.subClassOf, OFF.veganStatus) in graph
+    assert (OFF.vegan, RDFS.domain, OFF.TestScheme) in graph
+    assert (OFF.vegan, RDFS.range, OFF.veganStatus) in graph
+
+    # Warning about unknown vegan status
+    assert any(
+        "unknown" in warning and "duplicate-item" in warning for warning in logger.parsing_warnings
+    )
+    # But still added to the graph
+    assert (NS["duplicate-item"], OFF.vegan, Literal("unknown", "en")) in graph
+
+    # Use canonical id of parent when an alias is used in the taxonomy
+    assert (NS["apricot-filling"], SKOS.broader, NS.filling) in graph
+
+    # Strip whitespace after external links
+    assert (NS["apricot-filling"], OFF.wikidata, WIKIDATA.Q3733836) in graph
+
+    # Entries with invalid parents should appear in the top level
+    assert (NS["has-invalid-parent"], SKOS.topConceptOf, OFF["test_scheme"]) in graph
+    assert any(
+        "has-invalid-parent" in error and "invalid-parent" in error
+        for error in logger.parsing_errors
+    )
+    # Uppercase Wikidata should not generate a new property definition
+    assert (OFF.wikidata, RDF.type, RDF.Property) not in graph
+
+    # Cross-reference using synonym works
+    assert (NS.meats, OFF.plantAlternative, NS["meat-substitutes"]) in graph
+
+    # Handles items that are lists
+    assert (NS.pumpkin, OFF.opposite, NS.tomato) in graph
+    assert (NS.pumpkin, OFF.opposite, NS.filling) in graph
+
+    # Food groups
+    assert (NS.tomato, OFF.foodGroup, FOOD_GROUPS["fruits-and-vegetables"]) in graph
+
+    # Language-less literals
+    assert (NS.country, OFF.countryCode2, Literal("UK")) in graph
+
+    # Links to languages
+    assert (NS.country, OFF.language, LANGUAGES.english) in graph
+    assert (NS.country, OFF.language, LANGUAGES.welsh) in graph
+
+    # Missing items
+    assert (NS["synonyme-en-double"], OFF.language, Literal("", "en")) in graph
+
+
+def test_canonical_id():
+    logger = ParserConsoleLogger()
+    taxonomy = TaxonomyParser().parse_file(TEST_RDF_ENTRIES_TXT)
+
+    context = RdfContext(taxonomy, None, None, logger, None)
+    assert canonical_id(context, "en:meat analogues") == "meat-substitutes"
+    assert canonical_id(context, "en:no matching tag") == "no-matching-tag"
+    assert any(
+        "no-matching-tag" in warning and "not found" in warning
+        for warning in logger.parsing_warnings
+    )
+
+    assert canonical_id(context, "en:duplicate synonym") in [
+        "duplicate-synonym",
+        "synonyme-en-double",
+    ]
+    assert any(
+        "duplicate-synonym" in warning and "ambiguous" in warning
+        for warning in logger.parsing_warnings
+    )
+
+
+def test_get_language():
+    logger = ParserConsoleLogger()
+    context = RdfContext(None, Graph(), None, logger, None)
+    assert get_language(context, "fr") == "french"
+
+    assert get_language(context, "invalid") == "invalid"
+    assert any(
+        "invalid" in warning and "not found" in warning for warning in logger.parsing_warnings
+    )

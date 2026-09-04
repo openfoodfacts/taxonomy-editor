@@ -68,16 +68,26 @@ jobs:
           intervalSeconds: 10
           timeoutSeconds: 600 # 10m
 
+      - name: Wait for showvoc container build workflow
+        uses: tomchv/wait-my-workflow@v1.1.0
+        id: wait-build-showvoc
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: build (showvoc)
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          intervalSeconds: 10
+          timeoutSeconds: 600 # 10m
+
       - name: Do something if build isn't launched
-        if: steps.wait-build-frontend.outputs.conclusion == 'not found' || steps.wait-build-api.outputs.conclusion == 'not found'
+        if: steps.wait-build-frontend.outputs.conclusion == 'not found' || steps.wait-build-api.outputs.conclusion == 'not found' || steps.wait-build-showvoc.outputs.conclusion == 'not found'
         run: echo job does not exist && true
 
       - name: Do something if build fail
-        if: steps.wait-build-frontend.outputs.conclusion == 'failure' || steps.wait-build-api.outputs.conclusion == 'failure'
+        if: steps.wait-build-frontend.outputs.conclusion == 'failure' || steps.wait-build-api.outputs.conclusion == 'failure' || steps.wait-build-showvoc.outputs.conclusion == 'failure'
         run: echo fail && false # fail if build fail
 
       - name: Do something if build timeout
-        if: steps.wait-build-frontend.outputs.conclusion == 'timed_out' || steps.wait-build-api.outputs.conclusion == 'timed_out'
+        if: steps.wait-build-frontend.outputs.conclusion == 'timed_out' || steps.wait-build-api.outputs.conclusion == 'timed_out' || steps.wait-build-showvoc.outputs.conclusion == 'timed_out'
         run: echo Timeout && false # fail if build time out
 
       - name: Checkout git repository

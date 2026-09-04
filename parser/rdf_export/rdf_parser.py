@@ -1,0 +1,141 @@
+"""
+Converts OpenFoodFacts taxonomy files to RDF format using the rdflib library.
+
+To use from the command line, run:
+
+python -m rdf_export.rdf_parser <taxonomy_file> <output_dir> <scheme_id>
+
+Do not include the txt extension in the taxonomy file path.
+
+This will generate a corresponding .ttl file in the output directory,
+or the current directory if no output_dir is specified.
+
+If the scheme_id is not specified then the file name, without path, will be used.
+"""
+
+import argparse
+import re
+from pathlib import Path
+
+import inflect
+from rdflib import RDF, RDFS, SKOS, Graph, Literal
+
+from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
+from rdf_export.rdf_config import OFF, addTaxonomyNamespace, bindNamespace
+from rdf_export.rdf_context import RdfContext
+
+from .rdf_properties import PROPERTY_MAP, add_default_property
+
+inflect_engine = inflect.engine()
+
+
+def parse_to_rdf(filename, scheme_id=None, logger=None) -> Graph:
+    """
+    Parse a taxonomy file to RDF format.
+
+    Args:
+        filename (str): The path to the taxonomy file.
+        scheme_id (str, optional): The identifier for the concept scheme and class name.
+            Defaults to the file name without extension.
+        logger (ParserConsoleLogger, optional): Logger for logging messages.
+            Defaults to a new instance of ParserConsoleLogger.
+
+    Returns:
+        rdflib.Graph: The RDF graph containing the parsed taxonomy.
+    """
+    logger = logger or ParserConsoleLogger()
+    taxonomy_parser = TaxonomyParser()
+    taxonomy = taxonomy_parser.parse_file(filename, logger=logger)
+    graph = Graph()
+
+    # Bind the core namespace prefix
+    bindNamespace(graph, OFF)
+
+    # Create a concept scheme for the taxonomy
+    scheme_id = scheme_id or Path(filename).stem
+    scheme_label = scheme_id.replace("_", " ").title()
+    scheme = OFF[scheme_id]
+    graph.add((scheme, RDF.type, SKOS.ConceptScheme))
+    graph.add((scheme, SKOS.prefLabel, Literal(scheme_label, "en")))
+
+    # Create a class for each taxonomy entry
+    class_name = scheme_id.title().replace("_", "")
+    class_name = inflect_engine.singular_noun(class_name) or class_name
+    class_uri = OFF[class_name]
+    graph.add((class_uri, RDFS.subClassOf, SKOS.Concept))
+
+    ns = addTaxonomyNamespace(scheme_id)
+    bindNamespace(graph, ns)
+
+    context = RdfContext(taxonomy, graph, ns, logger, class_uri)
+
+    for node in taxonomy.entry_nodes:
+        # As per decision document the language part is not used in the id
+        concept = ns[node.id.split(":", 1)[1]]
+        if (concept, RDF.type, OFF[class_name]) not in graph:
+            graph.add((concept, RDF.type, OFF[class_name]))
+            graph.add((concept, SKOS.inScheme, scheme))
+        else:
+            logger.warning(f"Duplicate canonical identifier: {node.id}")
+
+        # Add labels
+        for tag, values in node.tags.items():
+            if match := re.search("tags_([^_]*)$", tag):
+                lang = match.group(1)
+                graph.add((concept, SKOS.prefLabel, Literal(values[0], lang)))
+
+                for synonym in values[1:]:
+                    graph.add((concept, SKOS.altLabel, Literal(synonym, lang)))
+
+        # Parents and top concepts
+        has_parent = False
+        for parent in [parent for parent in taxonomy.child_links if parent["id"] == node.id]:
+            parent_concept = ns[parent["parent_id"].split(":", 1)[1]]
+            graph.add((concept, SKOS.broader, parent_concept))
+            has_parent = True
+
+        if not has_parent:
+            graph.add((concept, SKOS.topConceptOf, scheme))
+
+        # Properties
+        for property_tag, value in node.properties.items():
+            parts = property_tag.lower().rsplit("_", 1)  # Extract the language suffix
+            property_name = parts[0][5:]  # Remove the "prop_" prefix
+            lang = parts[1]
+            property_definition = PROPERTY_MAP.get(property_name)
+            context.concept = concept
+            if property_definition:
+                property_definition.add(context, value, lang)
+            else:
+                add_default_property(context, property_name, value, lang)
+
+    # graph.serialize(destination="debug.ttl")
+    return graph
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Convert a taxonomy into an RDF Turtle file")
+    parser.add_argument(
+        "filename",
+        nargs="?",
+        help="Path to the taxonomy file (without .txt extension)",
+        default="tests/data/test_rdf_entries",
+    )
+    parser.add_argument(
+        "output_dir", nargs="?", help="Directory to save the output .ttl file", default="."
+    )
+    parser.add_argument(
+        "scheme_id",
+        nargs="?",
+        help="Identifier for the concept scheme and class name",
+        default=None,
+    )
+    args = parser.parse_args()
+
+    filename = args.filename
+    output_dir = args.output_dir
+    scheme_id = args.scheme_id or Path(filename).stem
+
+    graph = parse_to_rdf(f"{filename}.txt", scheme_id)
+    graph.serialize(destination=f"{output_dir}/{scheme_id}.ttl")
