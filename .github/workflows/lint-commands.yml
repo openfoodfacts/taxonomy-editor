@@ -4,46 +4,80 @@ on:
   issue_comment:
     types: [created]
 
+# The workflow commits formatting changes to same-repository PR branches and
+# comments on the PR. Do not add access to secrets to this workflow.
 permissions:
   contents: write
-  pull-requests: write
   issues: write
+  pull-requests: read
 
 jobs:
-  lint-code:
-    # Only run on pull request comments
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/lint_code')
+  lint:
+    name: Run ${{ github.event.comment.body }}
+    if: >-
+      github.event.issue.pull_request &&
+      (github.event.comment.body == '/lint' || github.event.comment.body == '/lint_code') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: lint-command-${{ github.event.issue.number }}
+      cancel-in-progress: false
+
     steps:
-      - &react-seen
-        name: Add reaction to comment
+      - name: Add reaction to comment
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
 
-      - &get-pr-branch
-        name: Get PR branch
+      - name: Get PR branch
         uses: xt0rted/pull-request-comment-branch@v3
         id: comment-branch
 
-      - &checkout-pr-branch
-        name: Checkout PR branch
+      - name: Verify PR belongs to this repository
+        id: pr
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput(
+              "same_repository",
+              String(pullRequest.head.repo?.full_name === `${context.repo.owner}/${context.repo.repo}`),
+            );
+
+      - name: Reject fork pull requests
+        if: steps.pr.outputs.same_repository != 'true'
+        run: |
+          echo "Formatting commands may only modify branches in this repository."
+          exit 1
+
+      - name: Check out PR branch
         uses: actions/checkout@v7
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
 
-      - &setup-node
-        name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: "lts/*"
+          cache: npm
 
-      - name: Install dependencies
-        run: npm install
+      - name: Format configuration files
+        if: github.event.comment.body == '/lint_code'
+        run: |
+          npm ci
+          npm run lint
 
-      - name: Run Prettier
-        run: npm run lint
+      - name: Format repository
+        if: github.event.comment.body == '/lint'
+        run: |
+          make install
+          make lint
 
       - name: Commit and push changes
         id: commit
@@ -52,91 +86,37 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add .
           if git diff --staged --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "style: auto-format code with Prettier"
+            git commit -m "style: auto-format repository"
             git push
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - &react-success
-        name: Add success reaction
+      - name: Add success reaction
         if: success()
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: rocket
 
-      - name: Comment on PR
+      - name: Comment on PR when changes were committed
         if: steps.commit.outputs.has_changes == 'true'
         uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.issue.number }}
-          body: |
-            ✅ Code has been automatically formatted with Prettier.
+          body: "✅ Repository has been automatically formatted."
 
-      - name: Comment on PR if no changes
+      - name: Comment on PR when no changes were needed
         if: steps.commit.outputs.has_changes == 'false'
         uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.issue.number }}
-          body: |
-            ℹ️ No formatting changes needed - code is already properly formatted.
+          body: "ℹ️ No formatting changes needed—the repository is already properly formatted."
 
-      - &react-failure
-        name: Add failure reaction
+      - name: Add failure reaction
         if: failure()
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: confused
-
-  lint:
-    # Only run on pull request comments
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/lint')
-    runs-on: ubuntu-latest
-    steps:
-      - *react-seen
-      - *get-pr-branch
-      - *checkout-pr-branch
-      - *setup-node
-
-      - name: Install dependencies
-        run: make install
-
-      - name: Run Prettier
-        run: make lint
-
-      - name: Commit and push changes
-        id: commit
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          if git diff --staged --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            git commit -m "style: reformatted repository"
-            git push
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
-
-      - *react-success
-
-      - name: Comment on PR
-        if: steps.commit.outputs.has_changes == 'true'
-        uses: peter-evans/create-or-update-comment@v5
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            ✅ Repository has been automatically formatted.
-
-      - name: Comment on PR if no changes
-        if: steps.commit.outputs.has_changes == 'false'
-        uses: peter-evans/create-or-update-comment@v5
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            ℹ️ No formatting changes needed - repository is already properly formatted.
-
-      - *react-failure
