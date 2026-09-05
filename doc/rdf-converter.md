@@ -8,8 +8,6 @@ Full property definitions for standard properties, including:
 
 - USDA codes
 
-Deal with taxonomies that are merged together, e.g. ingredients includes additives, vitamins, minerals, etc.
-
 Cross-referencing between taxonomies, e.g. expected ingredients in categories
 
 Add documentation and international labels to the properties

@@ -118,9 +118,9 @@ if __name__ == "__main__":
 
         res = session.post(f"{CORE_SERVICES_BASE}/Projects/makePublic?ctx_project={taxonomy_name}")
         if is_response_ok("Make Public", res):
-            res = session.post(
+            res = session.post((
                 f"{CORE_SERVICES_BASE}/InputOutput/clearData?ctx_project={taxonomy_name}"
-            )
+            ))
             if is_response_ok("Clear Data", res):
                 with open(f"{taxonomy_name}.ttl", "rb") as f:
                     res = session.post(

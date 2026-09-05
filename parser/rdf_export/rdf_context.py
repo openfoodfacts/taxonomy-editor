@@ -17,11 +17,9 @@ class RdfContext:
         taxonomy: Taxonomy,
         graph: Graph,
         namespace: Namespace,
-        logger: ParserConsoleLogger,
-        class_uri: URIRef,
+        logger: ParserConsoleLogger
     ):
         self.taxonomy = taxonomy
         self.graph = graph
         self.namespace = namespace
         self.logger = logger
-        self.class_uri = class_uri

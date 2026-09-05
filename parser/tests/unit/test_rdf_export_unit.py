@@ -12,6 +12,7 @@ from rdf_export.rdf_parser import OFF, parse_to_rdf
 from rdf_export.rdf_properties import FOOD_GROUPS, LANGUAGES, WIKIDATA, canonical_id, get_language
 
 TEST_TAXONOMY_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test.txt")
+TEST_EXTERNAL_1_TXT = str(pathlib.Path(__file__).parent.parent / "data" / "test_external1.txt")
 TEST_PROPERTY_CONFUSED_LANG_TXT = str(
     pathlib.Path(__file__).parent.parent / "data" / "test_property_confused_lang.txt"
 )
@@ -79,7 +80,7 @@ def test_rdf_description():
 
 def test_rdf_full():
     logger = ParserConsoleLogger()
-    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, "test_scheme", logger=logger)
+    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, None, "test_scheme", logger=logger)
 
     NS = Namespace(f"{NS_ROOT}/test_scheme#")
     CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
@@ -167,11 +168,26 @@ def test_rdf_full():
     assert (NS["synonyme-en-double"], OFF.language, Literal("", "en")) in graph
 
 
+def test_rdf_with_externals():
+    graph = parse_to_rdf(TEST_TAXONOMY_TXT, external_filenames=[TEST_EXTERNAL_1_TXT])
+    test = Namespace(f"{NS_ROOT}/test#")
+    external = Namespace(f"{NS_ROOT}/test_external1#")
+
+    # Yogurt has a parent of milk which is in the external file so should not show as a top concept
+    assert (test.yogurts, SKOS.topConceptOf, OFF.test) not in graph
+
+    # Class should be added for the external taxonomy
+    assert (OFF.TestExternal1, RDFS.subClassOf, SKOS.Concept) in graph
+    
+    # Parent reference should use namespace of parent taxonomy
+    assert (test.yogurts, SKOS.broader, external.milk) in graph
+
+
 def test_canonical_id():
     logger = ParserConsoleLogger()
     taxonomy = TaxonomyParser().parse_file(TEST_RDF_ENTRIES_TXT)
 
-    context = RdfContext(taxonomy, None, None, logger, None)
+    context = RdfContext(taxonomy, None, None, logger)
     assert canonical_id(context, "en:meat analogues") == "meat-substitutes"
     assert canonical_id(context, "en:no matching tag") == "no-matching-tag"
     assert any(
@@ -191,7 +207,7 @@ def test_canonical_id():
 
 def test_get_language():
     logger = ParserConsoleLogger()
-    context = RdfContext(None, Graph(), None, logger, None)
+    context = RdfContext(None, Graph(), None, logger)
     assert get_language(context, "fr") == "french"
 
     assert get_language(context, "invalid") == "invalid"
