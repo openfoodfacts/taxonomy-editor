@@ -32,7 +32,7 @@ inflect_engine = inflect.engine()
 
 
 def taxonomy_name(filename):
-    return(Path(filename).stem.replace(".properties", ""))
+    return Path(filename).stem.replace(".properties", "")
 
 
 def canonical_id(node):
@@ -62,9 +62,12 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
     """
     logger = logger or ParserConsoleLogger()
     taxonomy_parser = TaxonomyParser()
+
+    # Cater for .porperties files. Only do for the root taxonomy as they can be quite big
     properties_filename = filename.replace(".txt", ".properties.txt")
     if Path(properties_filename).exists():
         external_filenames.append(properties_filename)
+
     taxonomy = taxonomy_parser.parse_file(
         filename, external_filenames=external_filenames, logger=logger
     )
@@ -117,7 +120,7 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
 
         # As per decision document the language part is not used in the id
         concept = my_ns[canonical_id(node)]
-        
+
         # Don't add the concept for nodes from properties files to avoid duplicates
         if ".properties" not in node.original_taxonomy:
             if (concept, RDF.type, my_class) not in graph:
@@ -127,7 +130,9 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
                 if my_scheme != scheme:
                     graph.add((concept, SKOS.inScheme, my_scheme))
             else:
-                logger.warning(f"Duplicate canonical identifier: {node.id} in {node.original_taxonomy}")
+                logger.warning(
+                    f"Duplicate canonical identifier: {node.id} in {node.original_taxonomy}"
+                )
 
         # Add labels
         for tag, values in node.tags.items():
@@ -157,7 +162,8 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
                 ]
 
             parent_ns = ns
-            # If we find the parent node and it is from a different taxonomy, we need to use the namespace of that taxonomy
+            # If we find the parent node and it is from a different taxonomy,
+            # we need to use the namespace of that taxonomy
             if parent_nodes:
                 # Only set has_parent to True if we find a parent node in one of the taxonomies
                 # otherwise it will remain False and the concept will be added as a top concept
@@ -268,7 +274,9 @@ if __name__ == "__main__":
             str(Path(source_dir, f"{external_file}.txt")) for external_file in args.external_files
         ]
 
-        graph = parse_to_rdf(relative_filename, external_filenames=external_filenames, scheme_id=scheme_id)
+        graph = parse_to_rdf(
+            relative_filename, external_filenames=external_filenames, scheme_id=scheme_id
+        )
         relative_filename = f"{output_dir}/{scheme_id}.ttl"
         graph.serialize(destination=relative_filename, format="turtle")
         if args.upload:

@@ -13,11 +13,7 @@ class RdfContext:
     concept: URIRef
 
     def __init__(
-        self,
-        taxonomy: Taxonomy,
-        graph: Graph,
-        namespace: Namespace,
-        logger: ParserConsoleLogger
+        self, taxonomy: Taxonomy, graph: Graph, namespace: Namespace, logger: ParserConsoleLogger
     ):
         self.taxonomy = taxonomy
         self.graph = graph

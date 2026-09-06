@@ -18,4 +18,3 @@ Add a range to ObjectProperties that reference own taxonomy
 
 Import stopwords and synonyms
 
-Cater for .properties files

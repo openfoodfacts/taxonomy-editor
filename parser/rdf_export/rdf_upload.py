@@ -3,8 +3,8 @@
 import argparse
 import json
 import os
-
 from pathlib import Path
+
 import requests
 
 from rdf_export.rdf_config import OFF, addTaxonomyNamespace
@@ -112,9 +112,9 @@ def upload_file(taxonomy_file):
 
         res = session.post(f"{CORE_SERVICES_BASE}/Projects/makePublic?ctx_project={taxonomy_name}")
         if is_response_ok("Make Public", res):
-            res = session.post((
-                f"{CORE_SERVICES_BASE}/InputOutput/clearData?ctx_project={taxonomy_name}"
-            ))
+            res = session.post(
+                (f"{CORE_SERVICES_BASE}/InputOutput/clearData?ctx_project={taxonomy_name}")
+            )
             if is_response_ok("Clear Data", res):
                 with open(taxonomy_file, "rb") as f:
                     res = session.post(
@@ -149,7 +149,7 @@ def upload_file(taxonomy_file):
                     },
                 )
                 is_response_ok("Set active scheme", res)
-    
+
 
 if __name__ == "__main__":
     # Dataset Settings

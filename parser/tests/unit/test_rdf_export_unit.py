@@ -166,9 +166,13 @@ def test_rdf_full():
 
     # Missing items
     assert (NS["synonyme-en-double"], OFF.language, Literal("", "en")) in graph
-    
+
     # Properties from a .properties file
-    assert (NS.pumpkin, OFF.wikipedia, Literal("https://en.wikipedia.org/wiki/Pumpkin", "en")) in graph
+    assert (
+        NS.pumpkin,
+        OFF.wikipedia,
+        Literal("https://en.wikipedia.org/wiki/Pumpkin", "en"),
+    ) in graph
 
 
 def test_rdf_with_externals():
@@ -181,7 +185,7 @@ def test_rdf_with_externals():
 
     # Class should be added for the external taxonomy
     assert (OFF.TestExternal1, RDFS.subClassOf, SKOS.Concept) in graph
-    
+
     # Parent reference should use namespace of parent taxonomy
     assert (test.yogurts, SKOS.broader, external.milk) in graph
 
