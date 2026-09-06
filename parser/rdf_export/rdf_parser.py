@@ -117,14 +117,17 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
 
         # As per decision document the language part is not used in the id
         concept = my_ns[canonical_id(node)]
-        if (concept, RDF.type, my_class) not in graph:
-            graph.add((concept, RDF.type, my_class))
-            graph.add((concept, SKOS.inScheme, scheme))
-            # External entries are part of both concept schemes
-            if my_scheme != scheme:
-                graph.add((concept, SKOS.inScheme, my_scheme))
-        else:
-            logger.warning(f"Duplicate canonical identifier: {node.id}")
+        
+        # Don't add the concept for nodes from properties files to avoid duplicates
+        if ".properties" not in node.original_taxonomy:
+            if (concept, RDF.type, my_class) not in graph:
+                graph.add((concept, RDF.type, my_class))
+                graph.add((concept, SKOS.inScheme, scheme))
+                # External entries are part of both concept schemes
+                if my_scheme != scheme:
+                    graph.add((concept, SKOS.inScheme, my_scheme))
+            else:
+                logger.warning(f"Duplicate canonical identifier: {node.id} in {node.original_taxonomy}")
 
         # Add labels
         for tag, values in node.tags.items():
