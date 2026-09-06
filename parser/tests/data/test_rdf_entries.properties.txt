@@ -1,0 +1,4 @@
+# Properties file that goes with other RDF test file
+
+en: pumpkin
+wikipedia:en: https://en.wikipedia.org/wiki/Pumpkin

@@ -80,7 +80,7 @@ def test_rdf_description():
 
 def test_rdf_full():
     logger = ParserConsoleLogger()
-    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, None, "test_scheme", logger=logger)
+    graph = parse_to_rdf(TEST_RDF_ENTRIES_TXT, [], "test_scheme", logger=logger)
 
     NS = Namespace(f"{NS_ROOT}/test_scheme#")
     CIQUAL = Namespace("https://ico.iate.inra.fr/meatylab/origin_databases/2/foods/")
@@ -166,6 +166,9 @@ def test_rdf_full():
 
     # Missing items
     assert (NS["synonyme-en-double"], OFF.language, Literal("", "en")) in graph
+    
+    # Properties from a .properties file
+    assert (NS.pumpkin, OFF.wikipedia, Literal("https://en.wikipedia.org/wiki/Pumpkin", "en")) in graph
 
 
 def test_rdf_with_externals():

@@ -31,7 +31,21 @@ from .rdf_properties import PROPERTY_MAP, add_default_property
 inflect_engine = inflect.engine()
 
 
-def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None) -> Graph:
+def taxonomy_name(filename):
+    return(Path(filename).stem.replace(".properties", ""))
+
+
+def canonical_id(node):
+    """
+    Generate a canonical identifier for a taxonomy node.
+
+    Args:
+        node (TaxonomyNode): The taxonomy node.
+    """
+    return node.id.split(":", 1)[1].split("@")[0]
+
+
+def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -> Graph:
     """
     Parse a taxonomy file to RDF format.
 
@@ -48,6 +62,9 @@ def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None)
     """
     logger = logger or ParserConsoleLogger()
     taxonomy_parser = TaxonomyParser()
+    properties_filename = filename.replace(".txt", ".properties.txt")
+    if Path(properties_filename).exists():
+        external_filenames.append(properties_filename)
     taxonomy = taxonomy_parser.parse_file(
         filename, external_filenames=external_filenames, logger=logger
     )
@@ -57,7 +74,7 @@ def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None)
     bindNamespace(graph, OFF)
 
     # Create a concept scheme for the taxonomy
-    root_taxonomy = Path(filename).stem
+    root_taxonomy = taxonomy_name(filename)
     scheme_id = scheme_id or root_taxonomy
     scheme_label = scheme_id.replace("_", " ").title()
     scheme = OFF[scheme_id]
@@ -79,7 +96,7 @@ def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None)
         my_class = class_uri
         my_scheme = scheme
         my_ns = ns
-        my_taxonomy = Path(node.original_taxonomy).stem
+        my_taxonomy = taxonomy_name(node.original_taxonomy)
         if my_taxonomy != root_taxonomy:
             my_class_name = my_taxonomy.title().replace("_", "")
             my_class_name = inflect_engine.singular_noun(my_class_name) or my_class_name
@@ -99,7 +116,7 @@ def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None)
                 graph.add((my_class, RDFS.subClassOf, SKOS.Concept))
 
         # As per decision document the language part is not used in the id
-        concept = my_ns[node.id.split(":", 1)[1]]
+        concept = my_ns[canonical_id(node)]
         if (concept, RDF.type, my_class) not in graph:
             graph.add((concept, RDF.type, my_class))
             graph.add((concept, SKOS.inScheme, scheme))
@@ -145,7 +162,7 @@ def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None)
                 has_parent = True
                 parent_node = parent_nodes[0]
                 parent_taxonomy = Path(parent_node.original_taxonomy).stem
-                parent_id_tag = parent_node.id.split(":", 1)[1]
+                parent_id_tag = canonical_id(parent_node)
                 if parent_taxonomy != root_taxonomy:
                     parent_ns = addTaxonomyNamespace(parent_taxonomy)
             parent_concept = parent_ns[parent_id_tag]
