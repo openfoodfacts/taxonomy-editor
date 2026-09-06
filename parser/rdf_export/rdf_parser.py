@@ -24,13 +24,14 @@ from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
 from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
 from rdf_export.rdf_config import OFF, addTaxonomyNamespace, bindNamespace
 from rdf_export.rdf_context import RdfContext
+from rdf_export.rdf_upload import upload_file
 
 from .rdf_properties import PROPERTY_MAP, add_default_property
 
 inflect_engine = inflect.engine()
 
 
-def parse_to_rdf(filename, external_filenames = None,scheme_id=None, logger=None) -> Graph:
+def parse_to_rdf(filename, external_filenames=None, scheme_id=None, logger=None) -> Graph:
     """
     Parse a taxonomy file to RDF format.
 
@@ -47,7 +48,9 @@ def parse_to_rdf(filename, external_filenames = None,scheme_id=None, logger=None
     """
     logger = logger or ParserConsoleLogger()
     taxonomy_parser = TaxonomyParser()
-    taxonomy = taxonomy_parser.parse_file(filename, external_filenames=external_filenames, logger=logger)
+    taxonomy = taxonomy_parser.parse_file(
+        filename, external_filenames=external_filenames, logger=logger
+    )
     graph = Graph()
 
     # Bind the core namespace prefix
@@ -86,7 +89,13 @@ def parse_to_rdf(filename, external_filenames = None,scheme_id=None, logger=None
             if (my_scheme, RDF.type, SKOS.ConceptScheme) not in graph:
                 bindNamespace(graph, my_ns)
                 graph.add((my_scheme, RDF.type, SKOS.ConceptScheme))
-                graph.add((my_scheme, SKOS.prefLabel, Literal(my_taxonomy.replace("_", " ").title(), "en")))
+                graph.add(
+                    (
+                        my_scheme,
+                        SKOS.prefLabel,
+                        Literal(my_taxonomy.replace("_", " ").title(), "en"),
+                    )
+                )
                 graph.add((my_class, RDFS.subClassOf, SKOS.Concept))
 
         # As per decision document the language part is not used in the id
@@ -115,12 +124,18 @@ def parse_to_rdf(filename, external_filenames = None,scheme_id=None, logger=None
             parent_id_parts = parent_id.split(":", 1)
             parent_id_tag = parent_id_parts[1]
             parent_id_lang = parent_id_parts[0]
-            parent_nodes = [parent_node for parent_node in taxonomy.entry_nodes if parent_node.id == parent_id]
+            parent_nodes = [
+                parent_node for parent_node in taxonomy.entry_nodes if parent_node.id == parent_id
+            ]
             if not parent_nodes:
                 # Try finding by alias
                 tag_key = f"tags_ids_{parent_id_lang}"
-                parent_nodes = [parent_node for parent_node in taxonomy.entry_nodes if parent_id_tag in parent_node.tags.get(tag_key, [])]
-                
+                parent_nodes = [
+                    parent_node
+                    for parent_node in taxonomy.entry_nodes
+                    if parent_id_tag in parent_node.tags.get(tag_key, [])
+                ]
+
             parent_ns = ns
             # If we find the parent node and it is from a different taxonomy, we need to use the namespace of that taxonomy
             if parent_nodes:
@@ -168,27 +183,73 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "filename",
+        nargs="?",
         help="Name of the main taxonomy file, without extension",
-        default="test_rdf_entries",
     )
     parser.add_argument(
-        "external_files",
-        nargs="*",
-        help="Names of the external taxonomy files",
-        default=[]
+        "external_files", nargs="*", help="Names of the external taxonomy files", default=[]
     )
     parser.add_argument(
-        "-o", "--output_dir", nargs="?", help="Directory to save the output .ttl file", default="."
+        "-o", "--output_dir", help="Directory to save the output .ttl file", default="."
     )
+    parser.add_argument(
+        "-u", "--upload", action="store_true", help="Upload the generated RDF file to ShowVoc"
+    )
+
     args = parser.parse_args()
 
     source_dir = args.source_dir
-    main_file = args.filename
-    filename = str(Path(source_dir, f"{main_file}.txt"))
-    
     output_dir = args.output_dir
-    scheme_id = main_file.replace("/", "_")
-    external_filenames = [str(Path(source_dir, f"{external_file}.txt")) for external_file in args.external_files]
+    main_file = args.filename
+    if not main_file:
+        # Iterate over all taxonomies
+        for taxonomy_file in Path(source_dir).glob("**/*.txt"):
+            relative_filename = str(taxonomy_file.relative_to(source_dir))
+            if (
+                # TODO: Cater for properties which should be merged into the main file
+                relative_filename.endswith(".properties.txt")
+                # Skip this one as it takes a long time to parse
+                or relative_filename == "product/unspsc.txt"
+                or relative_filename == "beauty/ingredients-cosing-obf.txt"
+                or relative_filename.endswith("result.txt")
+                or relative_filename.startswith("unused/")
+                or "-2024" in relative_filename
+            ):
+                continue
+            print(relative_filename)
+            scheme_id = relative_filename.replace("/", "_").replace(".txt", "")
+            external_filenames = []
+            if scheme_id == "origins":
+                external_filenames = [str(Path(source_dir, "countries.txt"))]
+            elif scheme_id == "food_ingredients":
+                external_filenames = [
+                    str(Path(source_dir, f"{external}.txt"))
+                    for external in [
+                        "additives_classes",
+                        "additives",
+                        "minerals",
+                        "vitamins",
+                        "nucleotides",
+                        "other_nutritional_substances",
+                    ]
+                ]
+            graph = parse_to_rdf(
+                str(taxonomy_file), external_filenames=external_filenames, scheme_id=scheme_id
+            )
+            output_filename = f"{output_dir}/{scheme_id}.ttl"
+            graph.serialize(destination=output_filename, format="turtle")
+            if args.upload:
+                upload_file(output_filename)
+    else:
+        relative_filename = str(Path(source_dir, f"{main_file}.txt"))
 
-    graph = parse_to_rdf(filename, external_filenames=external_filenames, scheme_id=scheme_id)
-    graph.serialize(destination=f"{output_dir}/{scheme_id}.ttl")
+        scheme_id = main_file.replace("/", "_")
+        external_filenames = [
+            str(Path(source_dir, f"{external_file}.txt")) for external_file in args.external_files
+        ]
+
+        graph = parse_to_rdf(relative_filename, external_filenames=external_filenames, scheme_id=scheme_id)
+        relative_filename = f"{output_dir}/{scheme_id}.ttl"
+        graph.serialize(destination=relative_filename, format="turtle")
+        if args.upload:
+            upload_file(relative_filename)

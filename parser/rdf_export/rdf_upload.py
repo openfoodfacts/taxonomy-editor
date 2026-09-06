@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 
+from pathlib import Path
 import requests
 
 from rdf_export.rdf_config import OFF, addTaxonomyNamespace
@@ -49,15 +50,8 @@ def is_response_ok(operation, response_obj):
         return '"status":"ok"' in response_obj.text or 'status="ok"' in response_obj.text
 
 
-if __name__ == "__main__":
-    # Dataset Settings
-    parser = argparse.ArgumentParser(description="Upload a taxonomy RDF Turtle file to ShowVoc")
-    parser.add_argument(
-        "taxonomy_name",
-        help="The turtle file without extension. Assumed to be in current directory",
-    )
-    args = parser.parse_args()
-    taxonomy_name = args.taxonomy_name
+def upload_file(taxonomy_file):
+    taxonomy_name = Path(taxonomy_file).stem
     BASE_URI = str(addTaxonomyNamespace(taxonomy_name))
 
     session = get_authenticated_session()
@@ -122,7 +116,7 @@ if __name__ == "__main__":
                 f"{CORE_SERVICES_BASE}/InputOutput/clearData?ctx_project={taxonomy_name}"
             ))
             if is_response_ok("Clear Data", res):
-                with open(f"{taxonomy_name}.ttl", "rb") as f:
+                with open(taxonomy_file, "rb") as f:
                     res = session.post(
                         f"{CORE_SERVICES_BASE}/InputOutput/loadRDF?ctx_project={taxonomy_name}",
                         # /st-core-services/InputOutput/loadRDF?ctx_project=countries&ctx_forceEditable=true&ctx_shard=main
@@ -155,3 +149,14 @@ if __name__ == "__main__":
                     },
                 )
                 is_response_ok("Set active scheme", res)
+    
+
+if __name__ == "__main__":
+    # Dataset Settings
+    parser = argparse.ArgumentParser(description="Upload a taxonomy RDF Turtle file to ShowVoc")
+    parser.add_argument(
+        "taxonomy_file",
+        help="The turtle file",
+    )
+    args = parser.parse_args()
+    upload_file(args.taxonomy_file)
