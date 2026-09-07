@@ -63,10 +63,11 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
     logger = logger or ParserConsoleLogger()
     taxonomy_parser = TaxonomyParser()
 
-    # Cater for .porperties files. Only do for the root taxonomy as they can be quite big
-    properties_filename = filename.replace(".txt", ".properties.txt")
-    if Path(properties_filename).exists():
-        external_filenames.append(properties_filename)
+    # Cater for .properties files.
+    for taxonomy_file in external_filenames + [filename]:
+        properties_filename = taxonomy_file.replace(".txt", ".properties.txt")
+        if Path(properties_filename).exists():
+            external_filenames.append(properties_filename)
 
     taxonomy = taxonomy_parser.parse_file(
         filename, external_filenames=external_filenames, logger=logger
@@ -125,10 +126,7 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
         if ".properties" not in node.original_taxonomy:
             if (concept, RDF.type, my_class) not in graph:
                 graph.add((concept, RDF.type, my_class))
-                graph.add((concept, SKOS.inScheme, scheme))
-                # External entries are part of both concept schemes
-                if my_scheme != scheme:
-                    graph.add((concept, SKOS.inScheme, my_scheme))
+                graph.add((concept, SKOS.inScheme, my_scheme))
             else:
                 logger.warning(
                     f"Duplicate canonical identifier: {node.id} in {node.original_taxonomy}"
