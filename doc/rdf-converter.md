@@ -19,3 +19,5 @@ Add a range to ObjectProperties that reference own taxonomy
 Decision document on external taxonomies
 
 Comments on why we encode URLs
+
+Stopwords and synonyms aren't being populated for external taxonomies
