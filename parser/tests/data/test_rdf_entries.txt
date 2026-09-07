@@ -28,6 +28,7 @@ vegan:en: maybe
 en: apricot filling
 fr: fourrage à l'abricot
 wikidata:en: Q3733836 # Some extra text
+wikipedia:es: https://es.wikipedia.org/wiki/Vitamina B2
 
 < en:invalid parent
 en: has invalid parent
