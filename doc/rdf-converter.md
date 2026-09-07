@@ -16,5 +16,6 @@ Figure out a way to get links working for things like CIQUAL, Agribalyse and Wik
 
 Add a range to ObjectProperties that reference own taxonomy
 
-Import stopwords and synonyms
+Decision document on external taxonomies
 
+Comments on why we encode URLs

@@ -1,5 +1,8 @@
 # Taxonomy to fully test RDF capabilities
 
+synonyms:en: cake, gateaux
+synonyms:fr: bleu, blue
+
 en: simple top level item
 
 # Items with the same id (once the country is ignored). Should flag a warning

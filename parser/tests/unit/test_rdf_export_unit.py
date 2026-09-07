@@ -175,8 +175,14 @@ def test_rdf_full():
     ) in graph
 
     # Sanitize URLs
-    assert (NS["apricot-filling"], OFF.wikipedia, Literal("https://es.wikipedia.org/wiki/Vitamina%20B2", "es")) in graph
+    assert (
+        NS["apricot-filling"],
+        OFF.wikipedia,
+        Literal("https://es.wikipedia.org/wiki/Vitamina%20B2", "es"),
+    ) in graph
 
+    # Synonyms
+    assert (OFF.test_scheme, OFF.synonyms, Literal("cake, gateaux", "en")) in graph
 
 
 def test_rdf_with_externals():

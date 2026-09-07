@@ -18,10 +18,12 @@ import re
 from pathlib import Path
 
 import inflect
-from rdflib import RDF, RDFS, SKOS, Graph, Literal
+from rdflib import RDF, RDFS, SKOS
+from rdflib import XSD as RDF_XSD
+from rdflib import Graph, Literal
 
 from openfoodfacts_taxonomy_parser.parser.logger import ParserConsoleLogger
-from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import TaxonomyParser
+from openfoodfacts_taxonomy_parser.parser.taxonomy_parser import NodeType, TaxonomyParser
 from rdf_export.rdf_config import OFF, addTaxonomyNamespace, bindNamespace
 from rdf_export.rdf_context import RdfContext
 from rdf_export.rdf_upload import upload_file
@@ -193,6 +195,30 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
                 property_definition.add(context, value, lang)
             else:
                 add_default_property(context, property_name, value, lang)
+
+    for node in taxonomy.other_nodes:
+        my_scheme = scheme
+        my_taxonomy = taxonomy_name(node.original_taxonomy or filename)
+        if my_taxonomy != root_taxonomy:
+            my_scheme = OFF[my_taxonomy]
+
+        node_type = node.get_node_type()
+        if node_type == NodeType.SYNONYMS:
+            for key, values in node.tags.items():
+                if match := re.search("tags_([^_]*)$", key):
+                    lang = match.group(1)
+                    graph.add((my_scheme, OFF.synonyms, Literal(", ".join(values), lang)))
+                    graph.add((OFF.synonyms, RDF.type, RDF.Property))
+                    graph.add((OFF.synonyms, RDFS.domain, SKOS.ConceptScheme))
+                    graph.add((OFF.synonyms, RDFS.range, RDF_XSD.string))
+        elif node_type == NodeType.STOPWORDS:
+            for key, values in node.tags.items():
+                if match := re.search("tags_([^_]*)$", key):
+                    lang = match.group(1)
+                    graph.add((my_scheme, OFF.stopwords, Literal(", ".join(values), lang)))
+                    graph.add((OFF.stopwords, RDF.type, RDF.Property))
+                    graph.add((OFF.stopwords, RDFS.domain, SKOS.ConceptScheme))
+                    graph.add((OFF.stopwords, RDFS.range, RDF_XSD.string))
 
     graph.serialize(destination="debug.ttl")
     return graph

@@ -1,9 +1,9 @@
 from typing import Callable
+from urllib.parse import quote
 
 from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Literal, Namespace, URIRef
-from urllib.parse import quote
 
 from openfoodfacts_taxonomy_parser.utils import normalize_text
 from rdf_export.rdf_config import (
@@ -163,13 +163,14 @@ LANGUAGE_LESS_PROPERTIES = [
 
 URL_PROPERTIES = ["wikipedia", "wikipedia_url"]
 
+
 def add_default_property(context: RdfContext, property_name: str, value: str, lang: str):
     # Unknown property name
     # Convert property names to lowerCamelCase for RDF representation as this follows industry norms
     property = OFF[toLowerCamelCase(property_name)]
     if property_name in URL_PROPERTIES:
         # Sanitize URLs
-        value =  quote(value, safe=":/?=")
+        value = quote(value, safe=":/?=")
     graph_value = (
         Literal(value) if property_name in LANGUAGE_LESS_PROPERTIES else Literal(value, lang)
     )
