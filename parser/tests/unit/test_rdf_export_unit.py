@@ -174,6 +174,10 @@ def test_rdf_full():
         Literal("https://en.wikipedia.org/wiki/Pumpkin", "en"),
     ) in graph
 
+    # Sanitize URLs
+    assert (NS["apricot-filling"], OFF.wikipedia, Literal("https://es.wikipedia.org/wiki/Vitamina%20B2", "es")) in graph
+
+
 
 def test_rdf_with_externals():
     graph = parse_to_rdf(TEST_TAXONOMY_TXT, external_filenames=[TEST_EXTERNAL_1_TXT])
