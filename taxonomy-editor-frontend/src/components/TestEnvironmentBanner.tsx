@@ -19,7 +19,11 @@ export const TestEnvironmentBanner: React.FC = () => {
           href="https://ui.taxonomy.openfoodfacts.org"
           target="_blank"
           rel="noopener noreferrer"
-          sx={{ fontWeight: "bold", color: "inherit", textDecoration: "underline" }}
+          sx={{
+            fontWeight: "bold",
+            color: "inherit",
+            textDecoration: "underline",
+          }}
         >
           taxonomy.openfoodfacts.org
         </Link>{" "}
