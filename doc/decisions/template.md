@@ -50,7 +50,9 @@ Although we classify this element as optional, it is included in most ADRs.}
 
 - Good: {argument a}
 - Good: {argument b}
+
 <!-- use "neutral" if the given argument weights neither for good nor bad -->
+
 - Neutral: {argument c}
 - Bad: {argument d}
 - … <!-- numbers of pros and cons can vary -->
