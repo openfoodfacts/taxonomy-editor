@@ -1,5 +1,6 @@
 import { Alert, AlertTitle, Box, Link } from "@mui/material";
 
+// Test environment warning banner
 export const TestEnvironmentBanner: React.FC = () => {
   // Check if we're on the .net (test) environment
   // For local testing, temporarily add: || window.location.hostname.includes("localhost")
