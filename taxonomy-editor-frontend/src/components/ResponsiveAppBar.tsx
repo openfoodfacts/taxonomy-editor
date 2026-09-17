@@ -14,8 +14,11 @@ import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
 import SettingsIcon from "@mui/icons-material/Settings";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useTranslation } from "react-i18next";
 import logoUrl from "@/assets/logosmall.jpg";
+
+const WIKI_URL = "https://wiki.openfoodfacts.org/Taxonomies_introduction";
 
 const getDisplayedPages = (
   params: Params<string>,
@@ -120,6 +123,19 @@ export const ResponsiveAppBar = () => {
             Taxonomy Editor
           </Typography>
 
+          {/* Mobile help button */}
+          <IconButton
+            component="a"
+            href={WIKI_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Help"
+            color="inherit"
+            sx={{ display: { xs: "flex", md: "none" } }}
+          >
+            <HelpOutlineIcon />
+          </IconButton>
+
           {/* Desktop content */}
           <Box
             sx={{
@@ -191,6 +207,19 @@ export const ResponsiveAppBar = () => {
                 </Button>
               ))}
             </Box>
+
+            {/* Desktop help button */}
+            <IconButton
+              component="a"
+              href={WIKI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              color="inherit"
+              aria-label="Help"
+              sx={{ display: { xs: "none", md: "flex" } }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
           </Box>
         </Toolbar>
       </Container>
