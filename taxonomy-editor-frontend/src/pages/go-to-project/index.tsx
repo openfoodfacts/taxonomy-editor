@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Typography, Box, Grid, Link as MuiLink, Alert } from "@mui/material";
@@ -8,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toSnakeCase, toTitleCase } from "@/utils";
 import { DefaultService, Project, ProjectStatus } from "@/client";
 
+import { ProjectsFilterBar, usePersistentState } from "./ProjectsFilterBar";
 const ProjectsTable = ({ projects }: { projects: Project[] }) => {
   const navigate = useNavigate();
 
@@ -87,6 +89,57 @@ export const GoToProject = () => {
       return await DefaultService.getAllProjectsProjectsGet();
     },
   });
+  const [ownerFilter, setOwnerFilter] = usePersistentState<string>(
+    "projects_ownerFilter",
+    "All",
+  );
+  const [taxonomyFilter, setTaxonomyFilter] = usePersistentState<string>(
+    "projects_taxonomyFilter",
+    "All",
+  );
+  const [statusFilter, setStatusFilter] = usePersistentState<string>(
+    "projects_statusFilter",
+    "All",
+  );
+  const [errorsFilter, setErrorsFilter] = usePersistentState<string>(
+    "projects_errorsFilter",
+    "All",
+  );
+
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    return data.filter((project) => {
+      if (ownerFilter !== "All" && project.ownerName !== ownerFilter)
+        return false;
+      if (taxonomyFilter !== "All" && project.taxonomyName !== taxonomyFilter)
+        return false;
+      if (statusFilter === "Not Exported") {
+        if (project.status === ProjectStatus.EXPORTED) return false;
+      } else if (statusFilter !== "All" && project.status !== statusFilter) {
+        return false;
+      }
+      if (errorsFilter === "Has Errors" && project.errorsCount === 0)
+        return false;
+      if (errorsFilter === "No Errors" && project.errorsCount > 0) return false;
+      return true;
+    });
+  }, [data, ownerFilter, taxonomyFilter, statusFilter, errorsFilter]);
+
+  const uniqueOwners = useMemo(() => {
+    if (!data) return [];
+    return Array.from(
+      new Set(
+        data
+          .map((p) => p.ownerName)
+          .filter((name): name is string => name !== null),
+      ),
+    ).sort();
+  }, [data]);
+
+  const uniqueTaxonomies = useMemo(() => {
+    if (!data) return [];
+    return Array.from(new Set(data.map((p) => p.taxonomyName))).sort();
+  }, [data]);
 
   if (isError) {
     return (
@@ -121,7 +174,19 @@ export const GoToProject = () => {
             List of current projects
           </Typography>
           <Box sx={{ width: "90%", mb: 6 }}>
-            <ProjectsTable projects={data} />
+            <ProjectsFilterBar
+              owners={uniqueOwners}
+              taxonomies={uniqueTaxonomies}
+              ownerFilter={ownerFilter}
+              setOwnerFilter={setOwnerFilter}
+              taxonomyFilter={taxonomyFilter}
+              setTaxonomyFilter={setTaxonomyFilter}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              errorsFilter={errorsFilter}
+              setErrorsFilter={setErrorsFilter}
+            />
+            <ProjectsTable projects={filteredData} />
           </Box>
         </Grid>
       </Box>
