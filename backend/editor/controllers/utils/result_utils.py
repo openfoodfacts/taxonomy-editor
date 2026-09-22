@@ -11,7 +11,7 @@ async def get_unique_record(result: AsyncResult, record_id: str | None = None) -
         500 HTTPException: If multiple records are found
     """
     record = await result.fetch(1)
-    if record is None:
+    if not record:
         exception_message = f"Record {record_id} not found" if record_id else "Record not found"
         raise HTTPException(status_code=404, detail=exception_message)
 
