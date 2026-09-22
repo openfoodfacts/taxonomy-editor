@@ -8,6 +8,10 @@ import {
   Checkbox,
   IconButton,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import PushPinOutlinedIcon from "@/assets/icons/pushpin-line-grey.svg?react";
@@ -156,6 +160,25 @@ export const ListTranslations = ({
     };
   };
 
+  // Languages that have at least one translation (for the main language dropdown)
+  const availableMainLanguages = useMemo(() => {
+    return Object.keys(nodeObject)
+      .filter(
+        (key) =>
+          key.startsWith("tags_") &&
+          !key.startsWith("tags_ids_") &&
+          nodeObject[key]?.length > 0,
+      )
+      .map((key) => key.slice(5))
+      .sort(sortByLanguageName);
+  }, [nodeObject]);
+
+  const handleMainLanguageChange = (newLanguageCode: string) => {
+    setNodeObject((prevState) => {
+      return { ...prevState, mainLanguage: newLanguageCode };
+    });
+  };
+
   let languagesToShow: string[];
   languagesToShow = shownLanguageCodes.filter(
     (languageCode) => languageCode !== nodeObject.mainLanguage,
@@ -234,11 +257,31 @@ export const ListTranslations = ({
         <Typography variant="h6">Show all existing translations</Typography>
       </Stack>
 
+      {/* Main language selector */}
+      {!isReadOnly && (
+        <Stack direction="row" alignItems="center" sx={{ mt: 1, mb: 1 }}>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Main Language</InputLabel>
+            <Select
+              value={nodeObject.mainLanguage}
+              label="Main Language"
+              onChange={(e) => handleMainLanguageChange(e.target.value)}
+            >
+              {availableMainLanguages.map((lc) => (
+                <MenuItem key={lc} value={lc}>
+                  {getLanguageName(lc)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      )}
+
       {!["en", "xx"].includes(nodeObject.mainLanguage) && (
-        <Alert severity="info" sx={{ width: "fit-content" }}>
-          English or Fallback translations is not the main language for this
-          entry. Please consider changing it to adhere to the prevailing
-          convention.
+        <Alert severity="warning" sx={{ width: "fit-content", mb: 1 }}>
+          Warning: The main language is not English or Fallback. Changing the
+          main language will also change the ID of this node. Please ensure this
+          is intended.
         </Alert>
       )}
 

@@ -574,8 +574,20 @@ class TaxonomyGraph:
         # Recompute normalized tags ids corresponding to entry tags
         new_node.recompute_tags_ids()
 
+        # Update id if first translation of the main language has changed
+        new_node.recompute_id()
+        id_changed = new_node.id != curr_node.id
+
+        if id_changed:
+            # check it does not already exists
+            if len(await self.get_nodes(label, new_node.id)) != 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(f"Can't change node id, entry {new_node.id} already exists"),
+                )
+
         # Build query
-        query = [f"""MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $id """]
+        query = [f"""MATCH (n:{self.project_name}:{label.value}) WHERE n.id = $old_id """]
 
         modified = datetime.datetime.now().timestamp()
         query.append(f"""\nSET n.modified = {modified}""")
@@ -595,20 +607,9 @@ class TaxonomyGraph:
         for key in data.keys():
             query.append(f"""\nSET n.{key} = ${key}\n""")
 
-        # Update id if first translation of the main language has changed
-        new_node.recompute_id()
-        id_changed = new_node.id != curr_node.id
-        if id_changed:
-            # check it does not already exists
-            if len(await self.get_nodes(label, new_node.id)) != 0:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(f"Can't change node id, entry {new_node.id} already exists"),
-                )
-            query.append("""\nSET n.id = $id\n""")
-
         query.append("""RETURN n""")
         params = dict(data)
+        params["old_id"] = curr_node.id
         log.debug("update_node query: %s \nParam:%s", " ".join(query), params)
         result = await get_current_transaction().run(" ".join(query), params)
         updated_node = (await async_list(result))[0]["n"]
