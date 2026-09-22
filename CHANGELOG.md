@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.4.0...v1.5.0) (2026-09-22)
+
+
+### Features
+
+* Add basic filters to the projects list ([#736](https://github.com/openfoodfacts/taxonomy-editor/issues/736)) ([#739](https://github.com/openfoodfacts/taxonomy-editor/issues/739)) ([3d98ea6](https://github.com/openfoodfacts/taxonomy-editor/commit/3d98ea6ad828bb46c814114d2ec9c08e76f05898))
+* add help button to navigation bar ([#738](https://github.com/openfoodfacts/taxonomy-editor/issues/738)) ([6fcc5fd](https://github.com/openfoodfacts/taxonomy-editor/commit/6fcc5fd2b2374079d5f3680ae59b66c14c94b142)), closes [#737](https://github.com/openfoodfacts/taxonomy-editor/issues/737)
+* add test environment disclaimer banner ([#735](https://github.com/openfoodfacts/taxonomy-editor/issues/735)) ([37a768f](https://github.com/openfoodfacts/taxonomy-editor/commit/37a768ff72dda4c31f7e31f82d9c79dbaa3ba97e)), closes [#592](https://github.com/openfoodfacts/taxonomy-editor/issues/592)
+* Tool to Export OFF Taxonomies to RDF ([#722](https://github.com/openfoodfacts/taxonomy-editor/issues/722)) ([c1e86ef](https://github.com/openfoodfacts/taxonomy-editor/commit/c1e86ef3fdf5ab825adb08f2365b9aa333a8547b))
+
+
+### Bug Fixes
+
+* fix hishel version + avoid passing along uploadfile (just pass its content) ([#725](https://github.com/openfoodfacts/taxonomy-editor/issues/725)) ([86640b5](https://github.com/openfoodfacts/taxonomy-editor/commit/86640b5a2e26008cfd34f8010a992ef10715eb19))
+
 ## [1.4.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.3.0...v1.4.0) (2026-07-21)
 
 
