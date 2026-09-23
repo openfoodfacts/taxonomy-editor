@@ -124,7 +124,7 @@ GROUP BY ?concept
 ORDER BY ?directChildCount ?concept
 ```
 
-### Where properties are redefined on children
+## Where properties are redefined on children
 
 ```SPARQL
 SELECT ?concept ?propertyValue ?child ?childValue
@@ -138,3 +138,19 @@ WHERE {
 ### How it works
 
 The `+` after `skos:broader` follows the graph to all parents (parents of parents, etc.)
+
+## Checking for duplicate synonyms
+
+This query looks for concepts that have the same synonym (altLabel) or main label (prefLabel). A less than operator is used so that only one side of the duplication is reported.
+
+```SPARQL
+SELECT ?concept ?synonym ?otherConcept
+WHERE {
+	?concept a off:FoodIngredient .
+	?otherConcept a off:FoodIngredient .
+	?concept (skos:altLabel | skos:prefLabel) ?synonym . 
+	?otherConcept (skos:altLabel | skos:prefLabel) ?synonym .
+	FILTER(Lang(?synonym)="en" && str(?concept) < str(?otherConcept))
+}
+ORDER BY ?synonym
+```
