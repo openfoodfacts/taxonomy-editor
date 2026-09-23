@@ -38,6 +38,10 @@ SELECT * WHERE {
 } LIMIT 10
 ```
 
+## Running SPARQL Queries
+
+The Sparql tab can be used to run queries on the taxonomy. Some example queries are included in [SPARQL Recipes](./how-to-guides/sparql-recipes.md).
+
 ## Global Synonyms and Stopwords
 
 These are stored as properties on the [Concept Scheme](https://taxonomies.openfoodfacts.net/showvoc/#/datasets/food_ingredients/1.0.0/data?resId=https:%2F%2Fopenfoodfacts.org%2Fdata%2Ftaxonomies%2Fcore%23food_ingredients).
