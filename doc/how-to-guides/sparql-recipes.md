@@ -76,3 +76,65 @@ WHERE {
 }
 ORDER BY ?concept
 ```
+
+## Get Translation Coverage
+
+This query gets the entry count by language to allow the coverage to be assessed:
+
+```SPARQL
+SELECT 
+  ?lang 
+  (COUNT(DISTINCT ?concept) AS ?conceptsInLang) 
+  ?totalConcepts
+  (ROUND(((COUNT(DISTINCT ?concept) * 100.0) / ?totalConcepts) * 100) / 100.0 AS ?coveragePercentage)
+WHERE {
+  # 1. Subquery: Global count of distinct concepts
+  {
+    SELECT (COUNT(DISTINCT ?allConcepts) AS ?totalConcepts)
+    WHERE {
+      ?allConcepts a off:FoodIngredient .
+    }
+  }
+
+  # 2. Main graph pattern: Concept languages
+  ?concept a off:FoodIngredient .
+  ?concept skos:prefLabel ?label .
+  BIND(LANG(?label) AS ?lang)
+}
+GROUP BY ?lang ?totalConcepts
+ORDER BY DESC(?conceptsInLang)
+```
+
+## Get Child Counts
+
+This query gets the child count for each top concept (concepts with no parent). It is useful to help identify concepts that should probably sit under another parent.
+
+```SPARQL
+SELECT ?concept (COUNT(DISTINCT ?child) AS ?directChildCount)
+WHERE {
+  # 1. Match all top Concepts
+  ?concept skos:topConceptOf ?scheme .
+
+  # 2. Optionally match children that point to this concept
+  OPTIONAL {
+    ?child skos:broader ?concept .
+  }
+}
+GROUP BY ?concept
+ORDER BY ?directChildCount ?concept
+```
+
+### Where properties are redefined on children
+
+```SPARQL
+SELECT ?concept ?propertyValue ?child ?childValue
+WHERE {
+	?concept off:vegan ?propertyValue . 
+	?child skos:broader+ ?concept .
+	?child off:vegan ?childValue . 
+	FILTER (?childValue != ?propertyValue)
+}
+```
+### How it works
+
+The `+` after `skos:broader` follows the graph to all parents (parents of parents, etc.)
