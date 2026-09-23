@@ -1,6 +1,7 @@
 import math
 from dataclasses import dataclass
 
+import neo4j
 from openfoodfacts_taxonomy_parser import utils as parser_utils
 from pydantic import ValidationError
 
@@ -140,6 +141,14 @@ def _get_token_query(token: str) -> str:
     Returns the lucene query for a token.
     The tokens are additive and the fuzziness of the search depends on the length of the token.
     """
+    if not token:
+        return ""
+
+    # For very short tokens (1-2 letters), do not enforce the '+' (MUST) operator
+    # as this causes syntax errors in some Lucene configurations when combined with
+    # stop words or short terms.
+    if len(token) <= 2:
+        return token
 
     token = "+" + token
     if len(token) > 10:
@@ -287,8 +296,12 @@ async def search_entry_nodes(project_id: str, raw_query: str, page: int) -> Entr
 
     page_query, count_query, query_params = cypher_query
 
-    result = await get_current_transaction().run(page_query, query_params)
-    search_result = await result.single()
+    # Catch Neo4j syntax errors (e.g. invalid Lucene query strings) and return empty results
+    try:
+        result = await get_current_transaction().run(page_query, query_params)
+        search_result = await result.single()
+    except neo4j.exceptions.ClientError:
+        return EntryNodeSearchResult(entries=[], count=0)
 
     if search_result is None:
         count_result = await get_current_transaction().run(count_query, query_params)
