@@ -4,6 +4,7 @@ from urllib.parse import quote
 from rdflib import OWL, RDF, RDFS, SKOS
 from rdflib import XSD as RDF_XSD
 from rdflib import Literal, Namespace, URIRef
+from rdflib.xsd_datetime import parse_xsd_date
 
 from openfoodfacts_taxonomy_parser.utils import normalize_text
 from rdf_export.rdf_config import (
@@ -21,6 +22,7 @@ CIQUAL = addNamespace("ciqual", "https://ico.iate.inra.fr/meatylab/origin_databa
 AGRIBALYSE = addNamespace("agribalyse", "https://agribalyse.ademe.fr/app/aliments/")
 WIKIDATA = addNamespace("wd", "http://www.wikidata.org/entity/")
 FOOD_GROUPS = addTaxonomyNamespace("food_groups")
+ADDITIVES_CLASSES = addTaxonomyNamespace("additives_classes")
 LANGUAGES = addTaxonomyNamespace("languages")
 
 languages_taxonomy = None
@@ -154,12 +156,24 @@ def get_language(context, value):
     return normalized_id(matches[0])[0]
 
 
-LANGUAGE_LESS_PROPERTIES = [
-    "country_code_2",
-    "country_code_3",
-    "langauge_code_2",
-    "langauge_code_3",
-]
+TYPED_PROPERTIES = {
+    "country_code_2": RDF_XSD.string,
+    "country_code_3": RDF_XSD.string,
+    "language_code_2": RDF_XSD.string,
+    "language_code_3": RDF_XSD.string,
+    "e_number": RDF_XSD.string,
+    "efsa_evaluation_date": RDF_XSD.date,
+    "efsa_evaluation_adi_established": RDF_XSD.boolean,
+    "anses_additives_of_interest": RDF_XSD.boolean,
+    "sweetener": RDF_XSD.boolean,
+    "colour_index": RDF_XSD.string,
+}
+TYPE_CONVERTERS = {
+    RDF_XSD.string: lambda value: value,
+    RDF_XSD.integer: lambda value: value,
+    RDF_XSD.date: lambda value: parse_xsd_date(value.replace('/','-')),
+    RDF_XSD.boolean: lambda value: value in ["yes", "en:yes"],
+}
 
 URL_PROPERTIES = ["wikipedia", "wikipedia_url"]
 
@@ -171,9 +185,18 @@ def add_default_property(context: RdfContext, property_name: str, value: str, la
     if property_name in URL_PROPERTIES:
         # Sanitize URLs
         value = quote(value, safe=":/?=")
-    graph_value = (
-        Literal(value) if property_name in LANGUAGE_LESS_PROPERTIES else Literal(value, lang)
-    )
+    property_type = TYPED_PROPERTIES.get(property_name, None)
+    try:
+        graph_value = (
+            Literal(TYPE_CONVERTERS[property_type](value), datatype=property_type)
+            if property_type
+            else Literal(value, lang)
+        )
+    except Exception as e:
+        context.logger.warning(
+            f"Failed to convert value '{value}' for property {property_name} on {context.concept.fragment}: {e}"
+        )
+        graph_value = Literal(value, lang)
     context.graph.add((context.concept, property, graph_value))
 
     # Add the property to the class definition if it hasn't been added yet
@@ -208,6 +231,13 @@ PROPERTY_MAP = {
         lambda context, tags: [normalized_id(tag)[0] for tag in tags.split(",")],
         OWL.ObjectProperty,
         [(RDFS.subPropertyOf, SKOS.broader), (RDFS.range, OFF.FoodGroup)],
+    ),
+    "additives_classes": PropertyDefinition(
+        OFF.additivesClass,
+        ADDITIVES_CLASSES,
+        lambda context, tags: [normalized_id(tag)[0] for tag in tags.split(",")],
+        OWL.ObjectProperty,
+        [(RDFS.subPropertyOf, SKOS.broader), (RDFS.range, OFF.AdditiveClass)],
     ),
     "language_codes": PropertyDefinition(
         OFF.language,

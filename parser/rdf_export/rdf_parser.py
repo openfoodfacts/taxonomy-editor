@@ -124,7 +124,7 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
         # As per decision document the language part is not used in the id
         concept = my_ns[canonical_id(node)]
 
-        # Don't add the concept for nodes from properties files to avoid duplicates
+        # Don't add the concept and parents for nodes from properties files to avoid duplicates and incorrect classification as a topConcept
         if ".properties" not in node.original_taxonomy:
             if (concept, RDF.type, my_class) not in graph:
                 graph.add((concept, RDF.type, my_class))
@@ -134,6 +134,47 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
                     f"Duplicate canonical identifier: {node.id} in {node.original_taxonomy}"
                 )
 
+            # Parents and top concepts
+            has_parent = False
+            for parent_id, _ in node.parent_tags:
+                parent_id_parts = parent_id.split(":", 1)
+                parent_id_tag = parent_id_parts[1]
+                parent_id_lang = parent_id_parts[0]
+                parent_nodes = [
+                    parent_node for parent_node in taxonomy.entry_nodes if parent_node.id == parent_id
+                ]
+                if not parent_nodes:
+                    # Try finding by alias
+                    tag_key = f"tags_ids_{parent_id_lang}"
+                    parent_nodes = [
+                        parent_node
+                        for parent_node in taxonomy.entry_nodes
+                        if parent_id_tag in parent_node.tags.get(tag_key, [])
+                    ]
+
+                parent_ns = ns
+                # If we find the parent node and it is from a different taxonomy,
+                # we need to use the namespace of that taxonomy
+                if parent_nodes:
+                    # Only set has_parent to True if we find a parent node in one of the taxonomies
+                    # otherwise it will remain False and the concept will be added as a top concept
+                    # which highlights the anomaly
+                    has_parent = True
+                    parent_node = parent_nodes[0]
+                    parent_taxonomy = Path(parent_node.original_taxonomy).stem
+                    parent_id_tag = canonical_id(parent_node)
+                    if parent_taxonomy != root_taxonomy:
+                        parent_ns = addTaxonomyNamespace(parent_taxonomy)
+                parent_concept = parent_ns[parent_id_tag]
+                graph.add((concept, SKOS.broader, parent_concept))
+
+            if not has_parent:
+                # Add top concepts for all schemes
+                graph.add((concept, SKOS.topConceptOf, scheme))
+                if my_scheme != scheme:
+                    graph.add((concept, SKOS.topConceptOf, my_scheme))
+
+
         # Add labels
         for tag, values in node.tags.items():
             if match := re.search("tags_([^_]*)$", tag):
@@ -142,46 +183,6 @@ def parse_to_rdf(filename, external_filenames=[], scheme_id=None, logger=None) -
 
                 for synonym in values[1:]:
                     graph.add((concept, SKOS.altLabel, Literal(synonym, lang)))
-
-        # Parents and top concepts
-        has_parent = False
-        for parent_id, _ in node.parent_tags:
-            parent_id_parts = parent_id.split(":", 1)
-            parent_id_tag = parent_id_parts[1]
-            parent_id_lang = parent_id_parts[0]
-            parent_nodes = [
-                parent_node for parent_node in taxonomy.entry_nodes if parent_node.id == parent_id
-            ]
-            if not parent_nodes:
-                # Try finding by alias
-                tag_key = f"tags_ids_{parent_id_lang}"
-                parent_nodes = [
-                    parent_node
-                    for parent_node in taxonomy.entry_nodes
-                    if parent_id_tag in parent_node.tags.get(tag_key, [])
-                ]
-
-            parent_ns = ns
-            # If we find the parent node and it is from a different taxonomy,
-            # we need to use the namespace of that taxonomy
-            if parent_nodes:
-                # Only set has_parent to True if we find a parent node in one of the taxonomies
-                # otherwise it will remain False and the concept will be added as a top concept
-                # which highlights the anomaly
-                has_parent = True
-                parent_node = parent_nodes[0]
-                parent_taxonomy = Path(parent_node.original_taxonomy).stem
-                parent_id_tag = canonical_id(parent_node)
-                if parent_taxonomy != root_taxonomy:
-                    parent_ns = addTaxonomyNamespace(parent_taxonomy)
-            parent_concept = parent_ns[parent_id_tag]
-            graph.add((concept, SKOS.broader, parent_concept))
-
-        if not has_parent:
-            # Add top concepts for all schemes
-            graph.add((concept, SKOS.topConceptOf, scheme))
-            if my_scheme != scheme:
-                graph.add((concept, SKOS.topConceptOf, my_scheme))
 
         # Properties
         for property_tag, value in node.properties.items():
