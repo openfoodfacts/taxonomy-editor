@@ -50,9 +50,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^9.1.5",
     "lint-staged": "^15.2.0",
-    "openapi-typescript-codegen": "^0.27.0",
-    "prettier": "3.3.2",
-    "vite": "^8.2.2",
+    "openapi-typescript-codegen": "^0.31.0",
+    "prettier": "3.9.6",
+    "vite": "^8.3.0",
     "vite-plugin-svgr": "^5.2.0",
     "vite-tsconfig-paths": "^4.3.1"
   },
