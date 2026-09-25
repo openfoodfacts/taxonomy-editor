@@ -42,6 +42,17 @@ def test_normalizing(text: str, normalized_text: str, lang: str):
     assert utils.normalize_text(text, lang) == normalized_text
 
 
+@pytest.mark.parametrize(
+    "entry_id, normalized_entry_id",
+    [
+        ("fr:cédrat", "fr:cedrat"),
+        ("fr: yaourts allégés", "fr:yaourts-alleges"),
+    ],
+)
+def test_normalize_entry_id(entry_id: str, normalized_entry_id: str):
+    assert utils.normalize_entry_id(entry_id) == normalized_entry_id
+
+
 def test_nodes():
     taxonomy_parser = parser.TaxonomyParser()
     taxonomy = taxonomy_parser.parse_file(TEST_TAXONOMY_TXT)

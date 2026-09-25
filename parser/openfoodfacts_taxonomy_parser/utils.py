@@ -62,6 +62,13 @@ def normalize_text(
     return line
 
 
+def normalize_entry_id(raw_id: str) -> str:
+    """Normalize an entry ID while preserving its language-code prefix."""
+    raw_id = raw_id.strip()
+    language_code, tag = raw_id.split(":", 1)
+    return f"{language_code}:{normalize_text(tag, language_code)}"
+
+
 def normalize_filename(filename: str) -> str:
     """add the .txt extension if it is missing in the filename"""
     return filename + (".txt" if (len(filename) < 4 or filename[-4:] != ".txt") else "")
