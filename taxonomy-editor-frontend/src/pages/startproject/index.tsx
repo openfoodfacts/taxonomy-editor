@@ -34,11 +34,11 @@ function dateComponents(date) {
 
 export const StartProject = () => {
   const { urlTaxonomyName, nodeId } = useParams();
-  
+
   const initialTaxonomyName = urlTaxonomyName
-    ? TAXONOMY_URL_SLUG_MAP[urlTaxonomyName]
-      || TAXONOMY_NAMES.find(t => toSnakeCase(t) === urlTaxonomyName)
-      || ""
+    ? TAXONOMY_URL_SLUG_MAP[urlTaxonomyName] ||
+      TAXONOMY_NAMES.find((t) => toSnakeCase(t) === urlTaxonomyName) ||
+      ""
     : "";
 
   const [ownerName, setOwnerName] = useState("");
@@ -82,7 +82,9 @@ export const StartProject = () => {
           throw new Error(errorMessage);
         }
         if (nodeId) {
-          navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry/${nodeId}`);
+          navigate(
+            `/${toSnakeCase(taxonomyName)}/${branchName}/entry/${nodeId}`,
+          );
         } else {
           navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry`);
         }

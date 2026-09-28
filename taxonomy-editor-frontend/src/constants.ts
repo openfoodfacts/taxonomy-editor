@@ -100,4 +100,3 @@ export const TAXONOMY_URL_SLUG_MAP: Record<string, string> = {
   test: "Test",
   vitamins: "Vitamins",
 };
-
