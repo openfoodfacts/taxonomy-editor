@@ -47,6 +47,8 @@ def test_normalizing(text: str, normalized_text: str, lang: str):
     [
         ("fr:cédrat", "fr:cedrat"),
         ("fr: yaourts allégés", "fr:yaourts-alleges"),
+        ("foo", "foo"),
+        ("  foo  ", "foo"),
     ],
 )
 def test_normalize_entry_id(entry_id: str, normalized_entry_id: str):
