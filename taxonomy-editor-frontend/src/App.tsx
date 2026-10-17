@@ -40,6 +40,10 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "startproject", element: <StartProject /> },
+      {
+        path: "clone/:urlTaxonomyName/jump/:nodeId",
+        element: <StartProject />,
+      },
       { path: "gotoproject", element: <GoToProject /> },
       {
         path: ":taxonomyName/:branchName",

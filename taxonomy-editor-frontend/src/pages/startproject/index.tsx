@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   Typography,
@@ -17,7 +17,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 
-import { TAXONOMY_NAMES } from "@/constants";
+import { TAXONOMY_NAMES, TAXONOMY_URL_SLUG_MAP } from "@/constants";
 import { createBaseURL, toSnakeCase } from "@/utils";
 
 const branchNameRegEx = /[^a-z0-9_]+/;
@@ -33,8 +33,16 @@ function dateComponents(date) {
 }
 
 export const StartProject = () => {
+  const { urlTaxonomyName, nodeId } = useParams();
+
+  const initialTaxonomyName = urlTaxonomyName
+    ? TAXONOMY_URL_SLUG_MAP[urlTaxonomyName] ||
+      TAXONOMY_NAMES.find((t) => toSnakeCase(t) === urlTaxonomyName) ||
+      ""
+    : "";
+
   const [ownerName, setOwnerName] = useState("");
-  const [taxonomyName, setTaxonomyName] = useState("");
+  const [taxonomyName, setTaxonomyName] = useState(initialTaxonomyName);
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -73,7 +81,13 @@ export const StartProject = () => {
           errorMessage = responseBody?.detail ?? "Unable to import";
           throw new Error(errorMessage);
         }
-        navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry`);
+        if (nodeId) {
+          navigate(
+            `/${toSnakeCase(taxonomyName)}/${branchName}/entry/${nodeId}`,
+          );
+        } else {
+          navigate(`/${toSnakeCase(taxonomyName)}/${branchName}/entry`);
+        }
       })
       .catch(() => {
         setErrorMessage(errorMessage);
