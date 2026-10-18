@@ -6,6 +6,7 @@ import ListEntryParents from "./ListEntryParents";
 import ListEntryChildren from "./ListEntryChildren";
 import { ListTranslations } from "./ListTranslations";
 import ListAllEntryProperties from "./ListAllEntryProperties";
+import { EntryContext } from "./EntryContext";
 import ListAllNonEntryInfo from "./ListAllNonEntryInfo";
 import equal from "fast-deep-equal";
 import { createURL, getNodeType, toSnakeCase } from "@/utils";
@@ -207,6 +208,7 @@ const AccumulateAllComponents = ({
                 setPreviousUpdateChildren={setPreviousUpdateChildren}
                 hasChanges={hasChanges}
               />
+              <EntryContext node={nodeObject} isReadOnly={isReadOnly} />
               <ListTranslations
                 originalNodeObject={originalNodeObject}
                 nodeObject={nodeObject}
