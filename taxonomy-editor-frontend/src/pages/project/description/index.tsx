@@ -14,7 +14,10 @@ export const ProjectDescription = () => {
   const { taxonomyName, branchName } =
     useParams() as unknown as ProjectDescriptionParams;
   // already fetched by the project loader, so this is served from the cache
-  const { data: project } = useQuery(getProjectQuery(taxonomyName, branchName));
+  const { data: project } = useQuery({
+    ...getProjectQuery(taxonomyName, branchName),
+    refetchOnMount: false,
+  });
 
   if (!project) {
     return null;
