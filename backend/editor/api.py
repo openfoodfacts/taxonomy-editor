@@ -27,6 +27,7 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from openfoodfacts_taxonomy_parser import utils as parser_utils
 
 # DB helper imports
 from . import graph_db
@@ -204,7 +205,9 @@ async def find_one_entry(branch: str, taxonomy_name: str, entry: str) -> EntryNo
     Get entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    return await node_controller.get_entry_node(taxonomy.project_name, entry)
+    return await node_controller.get_entry_node(
+        taxonomy.project_name, parser_utils.normalize_entry_id(entry)
+    )
 
 
 @app.get("/{taxonomy_name}/{branch}/entry/{entry}/parents")
@@ -213,7 +216,7 @@ async def find_one_entry_parents(response: Response, branch: str, taxonomy_name:
     Get parents for a entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    one_entry_parents = await taxonomy.get_parents(entry)
+    one_entry_parents = await taxonomy.get_parents(parser_utils.normalize_entry_id(entry))
 
     return one_entry_parents
 
@@ -224,7 +227,7 @@ async def find_one_entry_children(response: Response, branch: str, taxonomy_name
     Get children for a entry corresponding to id within taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    one_entry_children = await taxonomy.get_children(entry)
+    one_entry_children = await taxonomy.get_children(parser_utils.normalize_entry_id(entry))
 
     return one_entry_children
 
@@ -429,7 +432,7 @@ async def edit_entry(request: Request, branch: str, taxonomy_name: str, entry: s
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    incoming_data["id"] = entry
+    incoming_data["id"] = parser_utils.normalize_entry_id(entry)
     new_entry = EntryNode(**incoming_data)
     updated_entry = await taxonomy.update_node(NodeType.ENTRY, new_entry)
     return updated_entry
@@ -444,7 +447,9 @@ async def edit_entry_children(request: Request, branch: str, taxonomy_name: str,
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
     incoming_data = await request.json()
-    updated_children = await taxonomy.update_node_children(entry, incoming_data)
+    updated_children = await taxonomy.update_node_children(
+        parser_utils.normalize_entry_id(entry), incoming_data
+    )
     return updated_children
 
 
@@ -458,7 +463,9 @@ async def delete_node(request: Request, branch: str, taxonomy_name: str, id: str
     Deleting given node from a taxonomy
     """
     taxonomy = TaxonomyGraph(branch, taxonomy_name)
-    await taxonomy.delete_node(taxonomy.get_label(id), id)
+    label = taxonomy.get_label(id)
+    node_id = parser_utils.normalize_entry_id(id) if label == NodeType.ENTRY else id
+    await taxonomy.delete_node(label, node_id)
 
 
 @app.delete("/{taxonomy_name}/{branch}", status_code=status.HTTP_204_NO_CONTENT)
