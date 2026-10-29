@@ -14,7 +14,7 @@ interface ProjectParams {
   branchName: string;
 }
 
-const getProjectQuery = (taxonomyName: string, branchName: string) => ({
+export const getProjectQuery = (taxonomyName: string, branchName: string) => ({
   queryKey: [
     "getProjectInfoTaxonomyNameBranchProjectGet",
     taxonomyName,
