@@ -117,3 +117,41 @@ def test_add_and_delete_node_and_export(client):
     response = client.get("/test_taxonomy/test_branch/downloadexport")
     content = response.content.decode("utf-8")
     match_taxonomy(content, "tests/data/test.txt")
+
+
+def test_change_main_language(client):
+    """
+    Changing the main language of an entry should update its id
+
+    Related to https://github.com/openfoodfacts/taxonomy-editor/issues/432
+    """
+    _upload_taxonomy(client)
+
+    # Get the entry first to retrieve its full data
+    response = client.get("/test_taxonomy/test_branch/entry/en:banana-yogurts")
+    assert response.status_code == 200
+    entry = response.json()
+    assert entry["mainLanguage"] == "en"
+
+    # Change main language from "en" to "fr"
+    entry["mainLanguage"] = "fr"
+    # Remove the id field — the POST endpoint rebuilds it
+    del entry["id"]
+    response = client.post(
+        "/test_taxonomy/test_branch/entry/en:banana-yogurts",
+        json=entry,
+    )
+    assert response.status_code == 200
+    updated_entry = response.json()
+    assert updated_entry["main_language"] == "fr"
+    assert updated_entry["id"].startswith("fr:")
+
+    # Verify old id no longer exists
+    response = client.get("/test_taxonomy/test_branch/entry/en:banana-yogurts")
+    assert response.status_code == 404
+
+    # Verify new id works
+    new_id = updated_entry["id"]
+    response = client.get(f"/test_taxonomy/test_branch/entry/{new_id}")
+    assert response.status_code == 200
+    assert response.json()["mainLanguage"] == "fr"

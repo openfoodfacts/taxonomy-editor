@@ -1,4 +1,5 @@
-import Tags from "@yaireo/tagify/dist/react.tagify"; // React-wrapper file
+import TagsModule from "@yaireo/tagify/dist/react.tagify"; // React-wrapper file
+const Tags = (TagsModule as any).default || TagsModule;
 import DragSort from "@yaireo/dragsort";
 import "@yaireo/tagify/dist/tagify.css"; // Tagify CSS
 import "@yaireo/dragsort/dist/dragsort.css";

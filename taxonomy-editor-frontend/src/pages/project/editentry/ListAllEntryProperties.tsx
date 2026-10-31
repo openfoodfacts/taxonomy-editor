@@ -4,6 +4,10 @@ import { useState } from "react";
 import ISO6391, { LanguageCode } from "iso-639-1";
 import { DestructuredEntryNode } from "@/backend-types/types";
 
+// Vite ESM/CJS interop fallback
+const MT = (MaterialTable as any).default || MaterialTable;
+const MTToolbar = (MTableToolbar as any).default || MTableToolbar;
+
 type RowType = {
   propertyName: string;
   propertyValue: string;
@@ -119,7 +123,7 @@ const ListAllEntryProperties = ({
     <Box>
       {/* Properties */}
       <Box sx={{ width: "90%", ml: 4, maxWidth: "1000px", m: "auto", mb: 3 }}>
-        <MaterialTable
+        <MT
           data={data}
           columns={[
             {
@@ -236,7 +240,7 @@ const ListAllEntryProperties = ({
                     </Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    <MTableToolbar {...propsCopy} />
+                    <MTToolbar {...propsCopy} />
                   </Grid>
                 </Grid>
               );
