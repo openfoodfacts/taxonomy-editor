@@ -67,3 +67,36 @@ export const TAXONOMY_NAMES = [
   "Pet Food Categories",
   "Pet Food Ingredients",
 ];
+
+// Mapping from URL-friendly taxonomy slugs (used in deep links)
+// to the display names used in TAXONOMY_NAMES above.
+// Deep links from external tools (e.g. Hunger Games) use short slugs like
+// "ingredients" which need to map to "Food Ingredients" in the dropdown.
+export const TAXONOMY_URL_SLUG_MAP: Record<string, string> = {
+  additives: "Additives",
+  allergens: "Allergens",
+  amino_acids: "Amino Acids",
+  brands: "Brands",
+  categories: "Food Categories",
+  data_quality: "Data Quality",
+  food_groups: "Food Groups",
+  improvements: "Improvements",
+  ingredients: "Food Ingredients",
+  ingredients_analysis: "Ingredients Analysis",
+  ingredients_processing: "Ingredients Processing",
+  labels: "Labels",
+  minerals: "Minerals",
+  misc: "Misc",
+  nova_groups: "Nova Groups",
+  nucleotides: "Nucleotides",
+  nutrients: "Nutrients",
+  other_nutritional_substances: "Other Nutritional Substances",
+  packaging_materials: "Packaging Materials",
+  packaging_recycling: "Packaging Recycling",
+  packaging_shapes: "Packaging Shapes",
+  periods_after_opening: "Periods After Opening",
+  preservation: "Preservation",
+  states: "States",
+  test: "Test",
+  vitamins: "Vitamins",
+};
