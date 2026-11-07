@@ -7,14 +7,12 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
-import SettingsIcon from "@mui/icons-material/Settings";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { Menu as MenuIcon, Settings as SettingsIcon, HelpOutline as HelpOutlineIcon } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import logoUrl from "@/assets/logosmall.jpg";
 
