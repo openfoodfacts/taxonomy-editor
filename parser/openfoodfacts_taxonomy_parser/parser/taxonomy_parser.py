@@ -109,6 +109,11 @@ class TaxonomyParser:
         Get a normalized string but keeping the language code "lc:",
         used for id and parent tag
         """
+        raw_id = raw_id.strip()
+        if ":" not in raw_id:
+            # a colon-less entry id is a parse error, not a valid id: let the
+            # per-line error handling report it instead of leaking it downstream
+            raise ValueError(f"invalid entry id '{raw_id}', missing language code")
         return normalize_entry_id(raw_id)
 
     def prepare_line(self, line: str) -> str:
