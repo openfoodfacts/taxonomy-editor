@@ -311,10 +311,8 @@ async def search_entry_nodes(
     taxonomy_name: str,
     q: Annotated[
         str,
-        Query(
-            description="The search query string to filter down the returned entry nodes.\
-            Example: is:root language:en not(language):fr"
-        ),
+        Query(description="The search query string to filter down the returned entry nodes.\
+            Example: is:root language:en not(language):fr"),
     ] = "",
     page: int = 1,
 ) -> EntryNodeSearchResult:

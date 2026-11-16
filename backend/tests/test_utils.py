@@ -1,5 +1,4 @@
-"""Some utils related to testing
-"""
+"""Some utils related to testing"""
 
 # IMPORTANT: this file is named test_utils to have "magic" assert from pytest works
 # and it also have a test inside

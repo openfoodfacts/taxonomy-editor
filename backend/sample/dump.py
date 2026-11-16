@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """A script to dump a Neo4J database to a JSON file."""
+
 import argparse
 import json
 import os

@@ -129,8 +129,7 @@ class GithubOperations:
         Create a pull request to "openfoodfacts-server" repo
         """
         title = f"taxonomy: Update {self.taxonomy_name} taxonomy"
-        body = dedent(
-            f"""
+        body = dedent(f"""
         ### What
         This is a pull request automatically created using the Taxonomy Editor.
 
@@ -139,8 +138,7 @@ class GithubOperations:
 
         ### Link to the project in Taxonomy Editor
         {settings.frontend_url}/{self.taxonomy_name}/{self.branch_name}
-        """
-        )
+        """)
         return (
             await self.connection.rest.pulls.async_create(
                 *self.repo_info, title=title, body=body, head=self.branch_name, base="main"
