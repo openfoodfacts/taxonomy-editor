@@ -29,9 +29,10 @@ const getDisplayedPages = (
 
   const navUrlPrefix = `${params.taxonomyName}/${params.branchName}/`;
   return [
+    { url: navUrlPrefix + "description", translationKey: "Description" },
     { url: navUrlPrefix + "search", translationKey: "Search" },
-    { url: navUrlPrefix + "export", translationKey: "Export" },
     { url: navUrlPrefix + "errors", translationKey: "Errors" },
+    { url: navUrlPrefix + "export", translationKey: "Export" },
   ];
 };
 
