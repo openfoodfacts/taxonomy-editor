@@ -56,7 +56,7 @@ inflect = "^7.5.0"
 hishel = ">=0.0.26"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.3.0"
+black = ">=24.3,<27.0"
 flake8 = "^6.1.0"
 isort = "^5.12.0"
 
