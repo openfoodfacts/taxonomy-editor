@@ -12,7 +12,11 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import MuiLink from "@mui/material/Link";
-import { Menu as MenuIcon, Settings as SettingsIcon, HelpOutline as HelpOutlineIcon } from "@mui/icons-material";
+import {
+  Menu as MenuIcon,
+  Settings as SettingsIcon,
+  HelpOutline as HelpOutlineIcon,
+} from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import logoUrl from "@/assets/logosmall.jpg";
 
