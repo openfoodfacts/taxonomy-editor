@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Iterator, TypedDict
 
-from ..utils import normalize_filename, normalize_text
+from ..utils import normalize_entry_id, normalize_filename, normalize_text
 from .exception import DuplicateIDError
 from .logger import ParserConsoleLogger
 
@@ -110,10 +110,11 @@ class TaxonomyParser:
         used for id and parent tag
         """
         raw_id = raw_id.strip()
-        lc, main_tag = raw_id.split(":", 1)
-        normalized_main_tag = normalize_text(main_tag, lc)
-        normalized_id = f"{lc}:{normalized_main_tag}"
-        return normalized_id
+        if ":" not in raw_id:
+            # a colon-less entry id is a parse error, not a valid id: let the
+            # per-line error handling report it instead of leaking it downstream
+            raise ValueError(f"invalid entry id '{raw_id}', missing language code")
+        return normalize_entry_id(raw_id)
 
     def prepare_line(self, line: str) -> str:
         """prepare line for parsing
