@@ -46,6 +46,19 @@ def test_upload_taxonomy(client, update_test_results):
     compare_db_with_dump("test_upload_taxonomy.json", update_test_results)
 
 
+@pytest.mark.parametrize(
+    "entry_id",
+    ["fr:yaourts-alleges", "fr:yaourts%20all%C3%A9g%C3%A9s"],
+)
+def test_get_entry_with_normalized_and_non_normalized_url_id(client, entry_id):
+    _upload_taxonomy(client)
+
+    response = client.get(f"/test_taxonomy/test_branch/entry/{entry_id}")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == "fr:yaourts-alleges"
+
+
 def test_add_taxonomy_invalid_branch_name(client):
     with open("tests/data/test.txt", "rb") as f:
         response = client.post(

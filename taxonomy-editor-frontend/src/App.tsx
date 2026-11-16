@@ -14,6 +14,7 @@ import { Home } from "./pages/home";
 import { AdvancedSearchForm } from "./pages/project/search";
 import { StartProject } from "./pages/startproject";
 import { Errors } from "./pages/project/errors";
+import { ProjectDescription } from "./pages/project/description";
 import { ProjectPage, projectLoader } from "./pages/project";
 import { ProjectNotFound } from "./pages/project/ProjectNotFound";
 import { PageNotFound } from "./pages/PageNotFound";
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
           {
             path: "",
             element: <Navigate to="search" />,
+          },
+          {
+            path: "description",
+            element: <ProjectDescription />,
           },
           {
             path: "export",
