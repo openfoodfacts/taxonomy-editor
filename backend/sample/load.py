@@ -37,11 +37,9 @@ def add_node(node, session):
 
 def add_link(rel, session):
     if len(rel) != 1 and len(next(iter(rel.values()))) != 2:
-        raise ValueError(
-            f"""
+        raise ValueError(f"""
             Expecting relations to by dict like {{"rel_name": ["node1", "node2"]}}, got {rel}
-        """.trim()
-        )
+        """.trim())
     for rel_name, (from_id, to_id) in rel.items():
         query = f"""
         MATCH(source) WHERE source.id = $from_id

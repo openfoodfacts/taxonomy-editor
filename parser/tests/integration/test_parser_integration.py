@@ -354,8 +354,7 @@ def test_error_log(neo4j, tmp_path, caplog):
     with neo4j.session() as session:
         test_parser = parser.Parser(session)
 
-        taxonomy_txt = textwrap.dedent(
-            """
+        taxonomy_txt = textwrap.dedent("""
         # a fake taxonomy
         stopwords:fr: aux,au,de,le,du,la,a,et
 
@@ -367,8 +366,7 @@ def test_error_log(neo4j, tmp_path, caplog):
 
         # duplicate
         en:fake-meat
-        """
-        )
+        """)
         taxonomy_path = tmp_path / "test.txt"
         taxonomy_path.open("w").write(taxonomy_txt)
 
