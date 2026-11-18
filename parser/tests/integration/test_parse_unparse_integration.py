@@ -190,42 +190,35 @@ def test_patcher_with_modifications(neo4j):
         # make some modifications
         modified = datetime.datetime.now().timestamp()
         # modify entry yogourts
-        result = session.run(
-            f"""
+        result = session.run(f"""
             MATCH (n:p_test_branch)
             WHERE n.id = "en:yogurts"
             SET n.tags_en = ["yogurts", "yogurt", "yooghurt"],
                 n.tags_ids_en = ["yogurts", "yogurt", "yooghurt"],
                 n.modified = {modified}
             RETURN n.id
-        """
-        )
+        """)
         assert result.values() == [["en:yogurts"]]
         # remove a node parent
-        result = session.run(
-            """
+        result = session.run("""
             MATCH (n:p_test_branch) - [r:is_child_of] -> (m:p_test_branch)
             WHERE m.id = "en:yogurts" AND n.id = "en:banana-yogurts"
             DELETE r
             RETURN n.id, m.id
-        """
-        )
+        """)
         assert result.values() == [["en:banana-yogurts", "en:yogurts"]]
-        result = session.run(
-            f"""
+        result = session.run(f"""
             MATCH (n:p_test_branch)
             WHERE n.id = "en:banana-yogurts"
             SET n.modified = {modified}
             RETURN n.id
-        """
-        )
+        """)
         assert result.values() == [["en:banana-yogurts"]]
         # delete an entry
         # we first attach its children to it's parent and mark it as modified
         # QUIRK: which should also modify the previous/next relation,
         # but we don't because there is no need in for this test
-        result = session.run(
-            f"""
+        result = session.run(f"""
             MATCH (n:p_test_branch)
             WHERE n.id = "fr:yaourts-au-fruit-de-la-passion-alleges"
             SET n.modified = {modified}
@@ -234,12 +227,10 @@ def test_patcher_with_modifications(neo4j):
             WHERE m.id = "en:yogurts"
             CREATE (n) - [:is_child_of] -> (m)
             RETURN n.id, m.id
-            """
-        )
+            """)
         assert result.values() == [["fr:yaourts-au-fruit-de-la-passion-alleges", "en:yogurts"]]
         # detach the node and set the node as REMOVED
-        result = session.run(
-            f"""
+        result = session.run(f"""
             MATCH (n:p_test_branch) - [r] - (m:p_test_branch)
             WHERE m.id = "en:passion-fruit-yogurts"
             DELETE r
@@ -247,8 +238,7 @@ def test_patcher_with_modifications(neo4j):
             SET m:REMOVED_ENTRY
             SET m.modified = {modified}
             RETURN m.id
-        """
-        )
+        """)
         assert result.values() == [["en:passion-fruit-yogurts"]] * 4
         assert result._metadata["stats"] == {
             "contains-updates": True,
@@ -258,8 +248,7 @@ def test_patcher_with_modifications(neo4j):
             "properties-set": 4,
         }
         # add new entry with a parent inside the file
-        result = session.run(
-            f"""
+        result = session.run(f"""
             CREATE (n:p_test_branch:ENTRY {{
             id: "en:smashed-banana-yogurts",
             // preceding_lines: null,
@@ -278,12 +267,10 @@ def test_patcher_with_modifications(neo4j):
             WHERE m.id = "en:banana-yogurts"
             CREATE (n) - [:is_child_of {{position: 1}}] -> (m)
             RETURN n.id, m.id
-        """
-        )
+        """)
         assert result.values() == [["en:smashed-banana-yogurts", "en:banana-yogurts"]]
         # add new entry child of this one --> end of file
-        result = session.run(
-            f"""
+        result = session.run(f"""
             CREATE (n:p_test_branch:ENTRY {{
             id: "en:smashed-green-banana-yogurts",
             // preceding_lines: null,
@@ -300,12 +287,10 @@ def test_patcher_with_modifications(neo4j):
             WHERE m.id = "en:smashed-banana-yogurts"
             CREATE (n) - [:is_child_of {{position: 1}}] -> (m)
             RETURN n.id, m.id
-        """
-        )
+        """)
         assert result.values() == [["en:smashed-green-banana-yogurts", "en:smashed-banana-yogurts"]]
         # add new entry without parents --> end of file
-        result = session.run(
-            f"""
+        result = session.run(f"""
             CREATE (n:p_test_branch:ENTRY {{
             id: "en:cookies",
             // preceding_lines: null,
@@ -321,8 +306,7 @@ def test_patcher_with_modifications(neo4j):
             modified: {modified}
             }})
             RETURN n.id
-        """
-        )
+        """)
         assert result.values() == [["en:cookies"]]
 
         # just quick check it runs ok with total number of nodes
