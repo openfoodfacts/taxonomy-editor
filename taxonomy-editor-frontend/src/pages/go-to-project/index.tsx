@@ -118,9 +118,10 @@ export const GoToProject = () => {
       } else if (statusFilter !== "All" && project.status !== statusFilter) {
         return false;
       }
-      if (errorsFilter === "Has Errors" &&  (project.errorsCount ?? 0) === 0)
+      if (errorsFilter === "Has Errors" && (project.errorsCount ?? 0) === 0)
         return false;
-      if (errorsFilter === "No Errors" && (project.errorsCount ?? 0) > 0) return false;
+      if (errorsFilter === "No Errors" && (project.errorsCount ?? 0) > 0)
+        return false;
       return true;
     });
   }, [data, ownerFilter, taxonomyFilter, statusFilter, errorsFilter]);
