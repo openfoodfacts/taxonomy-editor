@@ -18,6 +18,9 @@ from githubkit.versions.latest.models import (
 
 from . import settings, utils
 
+# Github accepts longer titles, but they are hard to read in lists of pull requests
+MAX_PR_TITLE_LENGTH = 100
+
 
 class GithubOperations:
     """Class for Github operations"""
@@ -124,11 +127,24 @@ class GithubOperations:
             # Handle any other unexpected exceptions
             raise Exception(f"An error occurred: {e}") from e
 
-    async def create_pr(self, description) -> PullRequest:
+    def get_pr_title(self, summary: str | None = None) -> str:
+        """
+        Get the title of the pull request, with a summary of the changes if we have one
+        """
+        if not summary:
+            return f"taxonomy: Update {self.taxonomy_name} taxonomy"
+        title = f"taxonomy: {self.taxonomy_name} - {summary}"
+        if len(title) > MAX_PR_TITLE_LENGTH:
+            title = title[: MAX_PR_TITLE_LENGTH - 3] + "..."
+        return title
+
+    async def create_pr(self, description, summary: str | None = None) -> PullRequest:
         """
         Create a pull request to "openfoodfacts-server" repo
+
+        :param summary: a short summary of the changes, to add to the title
         """
-        title = f"taxonomy: Update {self.taxonomy_name} taxonomy"
+        title = self.get_pr_title(summary)
         body = dedent(f"""
         ### What
         This is a pull request automatically created using the Taxonomy Editor.

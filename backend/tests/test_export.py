@@ -5,12 +5,15 @@ are then correctly reflected in the exported file.
 We use plain text export to avoid dealing with github
 """
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 from fastapi import UploadFile
 
 from editor import graph_db
 from editor.controllers import project_controller
 from editor.entries import TaxonomyGraph
+from editor.github_functions import GithubOperations
 from editor.models.node_models import EntryNode, NodeType
 
 from .test_utils import FakeBackgroundTask
@@ -359,3 +362,65 @@ async def test_remove_entry(taxonomy_test):
     assert result == expected
     # clean files
     await background_tasks.run()
+
+
+@pytest.fixture()
+def github_mock(mocker):
+    """Replace the connection to github by a mock, to avoid calling github"""
+    connection = MagicMock()
+    connection.rest.git.async_create_ref = AsyncMock()
+    connection.rest.repos.async_create_or_update_file_contents = AsyncMock()
+    new_file = connection.rest.repos.async_create_or_update_file_contents.return_value
+    new_file.parsed_data.content.sha = "new_file_sha"
+    connection.rest.pulls.async_create = AsyncMock()
+    pull_request = connection.rest.pulls.async_create.return_value
+    pull_request.parsed_data.html_url = "https://github.com/openfoodfacts/fake/pull/1"
+    mocker.patch.object(GithubOperations, "connection", connection)
+    return connection
+
+
+async def export_to_github(taxonomy):
+    """Export taxonomy to github, as if the project was imported from github"""
+    async with graph_db.TransactionCtx():
+        await graph_db.get_current_transaction().run(
+            "MATCH (p:PROJECT {id: $project_id}) SET p.is_from_github = true",
+            {"project_id": taxonomy.project_name},
+        )
+        background_tasks = FakeBackgroundTask()
+        pr_url = await taxonomy.github_export(background_tasks)
+    # clean files
+    await background_tasks.run()
+    return pr_url
+
+
+@pytest.mark.anyio
+async def test_github_export_pr_title(taxonomy_test, github_mock):
+    async with graph_db.TransactionCtx():
+        # add synonym to yaourts au fruit de la passion allégés
+        (node_data,) = await taxonomy_test.get_nodes(
+            NodeType.ENTRY, "fr:yaourts-au-fruit-de-la-passion-alleges"
+        )
+        node = EntryNode(**dict(node_data["n"]))
+        node.tags["tags_fr"].append("yaourts allégé aux grenadilles")
+        await taxonomy_test.update_node(NodeType.ENTRY, node)
+        assert await taxonomy_test.get_modified_entries() == {
+            "fr:yaourts-au-fruit-de-la-passion-alleges": [
+                "en:passion-fruit-yogurts",
+                "fr:yaourts-alleges",
+            ]
+        }
+    pr_url = await export_to_github(taxonomy_test)
+    assert pr_url == "https://github.com/openfoodfacts/fake/pull/1"
+    # the title tells where the changes are
+    github_mock.rest.pulls.async_create.assert_awaited_once()
+    title = github_mock.rest.pulls.async_create.await_args.kwargs["title"]
+    assert title == "taxonomy: test - edits around en:passion-fruit-yogurts"
+
+
+@pytest.mark.anyio
+async def test_github_export_pr_title_no_modification(taxonomy_test, github_mock):
+    await export_to_github(taxonomy_test)
+    # nothing to summarize, we keep the generic title
+    github_mock.rest.pulls.async_create.assert_awaited_once()
+    title = github_mock.rest.pulls.async_create.await_args.kwargs["title"]
+    assert title == "taxonomy: Update test taxonomy"

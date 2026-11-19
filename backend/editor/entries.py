@@ -277,7 +277,8 @@ class TaxonomyGraph:
             new_file = await github_object.update_file(filename, file_sha, owner_name)
 
             if status != ProjectStatus.EXPORTED:
-                pull_request = await github_object.create_pr(description)
+                summary = utils.summarize_modified_entries(await self.get_modified_entries())
+                pull_request = await github_object.create_pr(description, summary)
                 pr_url = pull_request.html_url
 
             await edit_project(
@@ -292,6 +293,19 @@ class TaxonomyGraph:
 
         except Exception as e:
             raise GithubUploadError() from e
+
+    async def get_modified_entries(self) -> dict[str, list[str]]:
+        """
+        Helper function to get the parents ids of each modified, added or removed entry
+        """
+        query = f"""
+            MATCH (n:{self.project_name})
+            WHERE (n:ENTRY OR n:REMOVED_ENTRY) AND n.modified IS NOT NULL
+            OPTIONAL MATCH (n)-[:is_child_of]->(parent)
+            RETURN n.id AS id, collect(parent.id) AS parents
+        """
+        result = await get_current_transaction().run(query)
+        return {record["id"]: record["parents"] async for record in result}
 
     async def does_project_exist(self):
         """
