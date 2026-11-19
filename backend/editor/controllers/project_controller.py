@@ -39,7 +39,9 @@ async def get_project(project_id: str, exclude_props=["original_text"]) -> Proje
     return Project(**project_record["p"])
 
 
-async def get_projects_by_status(status: ProjectStatus, exclude_props=["original_text"]) -> list[Project]:
+async def get_projects_by_status(
+    status: ProjectStatus, exclude_props=["original_text"]
+) -> list[Project]:
     """
     Get projects by status
     """
