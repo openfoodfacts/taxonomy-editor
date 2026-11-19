@@ -1,8 +1,10 @@
 import { Alert, Box, Grid, Paper, Snackbar, Typography } from "@mui/material";
-import MaterialTable, { MTableToolbar } from "@material-table/core";
+import MaterialTablePkg, { MTableToolbar } from "@material-table/core";
 import { useState } from "react";
 import ISO6391, { LanguageCode } from "iso-639-1";
 import { DestructuredEntryNode } from "@/backend-types/types";
+
+const MaterialTable = MaterialTablePkg.default ?? MaterialTablePkg;
 
 type RowType = {
   propertyName: string;

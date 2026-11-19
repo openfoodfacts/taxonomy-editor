@@ -1,5 +1,5 @@
 import { FormControl, OutlinedInput, IconButton } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import SearchIcon from "@mui/icons-material/esm/Search";
 import { Dispatch, SetStateAction } from "react";
 
 type SearchExpressionInputType = {

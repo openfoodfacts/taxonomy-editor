@@ -21,7 +21,7 @@ import {
   Container,
 } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
-import AddBoxIcon from "@mui/icons-material/AddBox";
+import AddBoxIcon from "@mui/icons-material/esm/AddBox";
 import { useParams } from "react-router-dom";
 import { EntryNode } from "@/client";
 

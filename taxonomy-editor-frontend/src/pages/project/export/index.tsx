@@ -16,8 +16,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import DownloadIcon from "@mui/icons-material/Download";
-import GitHubIcon from "@mui/icons-material/GitHub";
+import DownloadIcon from "@mui/icons-material/esm/Download";
+import GitHubIcon from "@mui/icons-material/esm/GitHub";
 
 import { createBaseURL } from "@/utils";
 

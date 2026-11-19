@@ -6,10 +6,13 @@ import svgr from "vite-plugin-svgr";
 export default defineConfig({
   build: {
     outDir: "build",
+    commonjsOptions: {transformMixedEsModules:true}
   },
   optimizeDeps: {
-    include: ["@material-table/core", "@mui/material", "@yaireo/tagify", "@mui/icons-material"],
+    include: ["@material-table/core", "@mui/material", "@yaireo/tagify/dist/react.tagify", "@mui/icons-material"]
+
   },
+  alias: {"@mui/icons-material": "@mui/icons-material/esm"},
   plugins: [react(), viteTsconfigPaths(), svgr()],
   server: {
     port: parseInt(process.env.VITE_SERVER_PORT || "3000"),
