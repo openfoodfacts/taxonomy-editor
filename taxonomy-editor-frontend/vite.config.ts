@@ -7,6 +7,9 @@ export default defineConfig({
   build: {
     outDir: "build",
   },
+  optimizeDeps: {
+    include: ["@material-table/core", "@mui/material", "@yaireo/tagify", "@mui/icons-material"],
+  },
   plugins: [react(), viteTsconfigPaths(), svgr()],
   server: {
     port: parseInt(process.env.VITE_SERVER_PORT || "3000"),
