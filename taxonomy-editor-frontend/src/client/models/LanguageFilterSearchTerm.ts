@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type LanguageFilterSearchTerm = {
-  filterType: string;
+  filterType: "language";
   filterValue: string;
   readonly negated: boolean;
   readonly language: string;

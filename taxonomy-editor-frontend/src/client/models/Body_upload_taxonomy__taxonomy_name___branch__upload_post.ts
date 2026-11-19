@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Body_upload_taxonomy__taxonomy_name___branch__upload_post = {
-  file: string;
+  file: Blob;
   description: string;
 };

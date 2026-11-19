@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type IsFilterSearchTerm = {
-  filterType: string;
-  filterValue: string;
+  filterType: "is";
+  filterValue: "root" | "external" | "not:external";
 };

@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type ParentFilterSearchTerm = {
-  filterType: string;
+  filterType: "parent";
   filterValue: string;
 };
