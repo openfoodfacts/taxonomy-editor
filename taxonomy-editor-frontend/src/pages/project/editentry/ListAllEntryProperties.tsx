@@ -6,9 +6,9 @@ import { DestructuredEntryNode } from "@/backend-types/types";
 
 // Cast to "component OR namespace-with-default", then unwrap.
 // Runtime is correct; only the type needs help.
-const MaterialTable = (
-  MaterialTablePkg as unknown as { default?: typeof MaterialTablePkg }
-).default ?? MaterialTablePkg;
+const MaterialTable =
+  (MaterialTablePkg as unknown as { default?: typeof MaterialTablePkg })
+    .default ?? MaterialTablePkg;
 
 type RowType = {
   propertyName: string;
