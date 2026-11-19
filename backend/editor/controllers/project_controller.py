@@ -8,40 +8,62 @@ def get_project_id(branch_name: str, taxonomy_name: str) -> str:
     return "p_" + taxonomy_name + "_" + branch_name
 
 
-async def get_project(project_id: str) -> Project:
+def eventually_remove_keys(query, params, exclude_props, source_name="_p", target_name="p"):
+    """Eventually remove keys from a node
+
+    the query must contains a '_p as p' clause (or with source / target name)
+    """
+    if exclude_props:
+        names = (source_name, target_name)
+        original = "%s as %s" % names
+        new = "apoc.map.removeKeys(%s {.*}, $exclude_props) as %s" % names
+        query = query.replace(original, new)
+        params = dict(params, exclude_props=exclude_props)
+    return query, params
+
+
+async def get_project(project_id: str, exclude_props=["original_text"]) -> Project:
     """
     Get project by id
+
+    By default we exclude original_text property which is heavy
     """
     query = """
-    MATCH (p:PROJECT {id: $project_id})
-    RETURN p
+    MATCH (_p:PROJECT {id: $project_id})
+    RETURN _p as p
     """
     params = {"project_id": project_id}
+    query, params = eventually_remove_keys(query, params, exclude_props)
     result = await get_current_transaction().run(query, params)
     project_record = await get_unique_record(result, project_id)
     return Project(**project_record["p"])
 
 
-async def get_projects_by_status(status: ProjectStatus) -> list[Project]:
+async def get_projects_by_status(
+    status: ProjectStatus, exclude_props=["original_text"]
+) -> list[Project]:
     """
     Get projects by status
     """
     query = """
-    MATCH (p:PROJECT {status: $status})
-    RETURN p
+    MATCH (_p:PROJECT {status: $status})
+    RETURN _p as p
     """
     params = {"status": status}
+    query, params = eventually_remove_keys(query, params, exclude_props)
     result = await get_current_transaction().run(query, params)
     return [Project(**record["p"]) async for record in result]
 
 
-async def get_all_projects() -> list[Project]:
+async def get_all_projects(exclude_props=["original_text"]) -> list[Project]:
     query = """
-    MATCH (p:PROJECT)
-    RETURN p
+    MATCH (_p:PROJECT)
+    RETURN _p as p
     ORDER BY p.created_at DESC
     """
-    result = await get_current_transaction().run(query)
+    params = {}
+    query, params = eventually_remove_keys(query, params, exclude_props)
+    result = await get_current_transaction().run(query, params)
     return [Project(**record["p"]) async for record in result]
 
 
