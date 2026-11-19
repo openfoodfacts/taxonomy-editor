@@ -12,7 +12,9 @@ export default defineConfig({
     include: ["@material-table/core", "@mui/material", "@yaireo/tagify/dist/react.tagify", "@mui/icons-material"]
 
   },
-  alias: {"@mui/icons-material": "@mui/icons-material/esm"},
+  resolve: {
+    alias: {"^@mui/icons-material$": "@mui/icons-material/esm"}
+  },
   plugins: [react(), viteTsconfigPaths(), svgr()],
   server: {
     port: parseInt(process.env.VITE_SERVER_PORT || "3000"),
