@@ -15,8 +15,6 @@ export type { EntryNode } from "./models/EntryNode";
 export type { EntryNodeCreate } from "./models/EntryNodeCreate";
 export type { EntryNodeSearchResult } from "./models/EntryNodeSearchResult";
 export type { ErrorNode } from "./models/ErrorNode";
-export type { Footer } from "./models/Footer";
-export type { Header } from "./models/Header";
 export type { HTTPValidationError } from "./models/HTTPValidationError";
 export type { IsFilterSearchTerm } from "./models/IsFilterSearchTerm";
 export type { LanguageFilterSearchTerm } from "./models/LanguageFilterSearchTerm";

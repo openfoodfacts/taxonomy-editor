@@ -7,8 +7,6 @@ import type { EntryNode } from "../models/EntryNode";
 import type { EntryNodeCreate } from "../models/EntryNodeCreate";
 import type { EntryNodeSearchResult } from "../models/EntryNodeSearchResult";
 import type { ErrorNode } from "../models/ErrorNode";
-import type { Footer } from "../models/Footer";
-import type { Header } from "../models/Header";
 import type { Project } from "../models/Project";
 import type { ProjectStatus } from "../models/ProjectStatus";
 import type { CancelablePromise } from "../core/CancelablePromise";
@@ -127,34 +125,6 @@ export class DefaultService {
       },
     });
   }
-  /**
-   * Delete Node
-   * Deleting given node from a taxonomy
-   * @param branch
-   * @param taxonomyName
-   * @param id
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static deleteNodeTaxonomyNameBranchNodesIdDelete(
-    branch: string,
-    taxonomyName: string,
-    id: string,
-  ): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "DELETE",
-      url: "/{taxonomy_name}/{branch}/nodes/{id}",
-      path: {
-        branch: branch,
-        taxonomy_name: taxonomyName,
-        id: id,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-
   /**
    * Find All Root Nodes
    * Get all root nodes within taxonomy
@@ -644,6 +614,33 @@ export class DefaultService {
       },
       body: requestBody,
       mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+  /**
+   * Delete Node
+   * Deleting given node from a taxonomy
+   * @param branch
+   * @param taxonomyName
+   * @param id
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public static deleteNodeTaxonomyNameBranchNodesIdDelete(
+    branch: string,
+    taxonomyName: string,
+    id: string,
+  ): CancelablePromise<any> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/{taxonomy_name}/{branch}/nodes/{id}",
+      path: {
+        branch: branch,
+        taxonomy_name: taxonomyName,
+        id: id,
+      },
       errors: {
         422: `Validation Error`,
       },

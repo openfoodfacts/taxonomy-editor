@@ -3,11 +3,10 @@
  */
 export type DestructuredEntryNode = {
   id: string;
-  precedingLines: Array<string>;
-  srcPosition: number;
+  precedingLines?: Array<string>;
   mainLanguage: string;
-  isExternal: boolean;
-  originalTaxonomy: string | null;
+  isExternal?: boolean;
+  originalTaxonomy?: string | null;
   // TODO: Use updated types from the API
   [key: string]: any;
   // tags: Record<string, Array<string>>;
