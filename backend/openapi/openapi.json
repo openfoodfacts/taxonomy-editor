@@ -1000,7 +1000,11 @@
     "schemas": {
       "AncestorFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "ancestor", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "ancestor",
+            "title": "Filtertype"
+          },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
@@ -1009,7 +1013,11 @@
       },
       "Body_upload_taxonomy__taxonomy_name___branch__upload_post": {
         "properties": {
-          "file": { "type": "string", "format": "binary", "title": "File" },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
           "description": { "type": "string", "title": "Description" }
         },
         "type": "object",
@@ -1018,7 +1026,11 @@
       },
       "ChildFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "child", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "child",
+            "title": "Filtertype"
+          },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
@@ -1027,7 +1039,11 @@
       },
       "DescendantFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "descendant", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "descendant",
+            "title": "Filtertype"
+          },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
@@ -1197,14 +1213,18 @@
       },
       "IsFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "is", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "is",
+            "title": "Filtertype"
+          },
           "filterValue": {
             "anyOf": [
-              { "const": "root" },
-              { "const": "external" },
-              { "const": "not:external" },
-              { "const": "modified" },
-              { "const": "not:modified" }
+              { "type": "string", "const": "root" },
+              { "type": "string", "const": "external" },
+              { "type": "string", "const": "not:external" },
+              { "type": "string", "const": "modified" },
+              { "type": "string", "const": "not:modified" }
             ],
             "title": "Filtervalue"
           }
@@ -1215,7 +1235,11 @@
       },
       "LanguageFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "language", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "language",
+            "title": "Filtertype"
+          },
           "filterValue": {
             "type": "string",
             "pattern": "^(not:)?[a-z]{2}$",
@@ -1238,7 +1262,11 @@
       },
       "ParentFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "parent", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "parent",
+            "title": "Filtertype"
+          },
           "filterValue": { "type": "string", "title": "Filtervalue" }
         },
         "type": "object",
@@ -1249,7 +1277,7 @@
         "properties": {
           "id": { "type": "string", "title": "Id" },
           "status": {
-            "allOf": [{ "$ref": "#/components/schemas/ProjectStatus" }],
+            "$ref": "#/components/schemas/ProjectStatus",
             "default": "LOADING"
           },
           "taxonomyName": { "type": "string", "title": "Taxonomyname" },
@@ -1305,7 +1333,11 @@
       },
       "PropertyFilterSearchTerm": {
         "properties": {
-          "filterType": { "const": "property", "title": "Filtertype" },
+          "filterType": {
+            "type": "string",
+            "const": "property",
+            "title": "Filtertype"
+          },
           "filterValue": { "type": "string", "title": "Filtervalue" },
           "negated": {
             "type": "boolean",
@@ -1347,7 +1379,9 @@
             "title": "Location"
           },
           "msg": { "type": "string", "title": "Message" },
-          "type": { "type": "string", "title": "Error Type" }
+          "type": { "type": "string", "title": "Error Type" },
+          "input": { "title": "Input" },
+          "ctx": { "type": "object", "title": "Context" }
         },
         "type": "object",
         "required": ["loc", "msg", "type"],

@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type PropertyFilterSearchTerm = {
-  filterType: "property";
+  filterType: string;
   filterValue: string;
   readonly negated: boolean;
   readonly inherited: boolean;

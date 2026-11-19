@@ -11,10 +11,10 @@ import type { LanguageFilterSearchTerm } from "./LanguageFilterSearchTerm";
 import type { ParentFilterSearchTerm } from "./ParentFilterSearchTerm";
 import type { PropertyFilterSearchTerm } from "./PropertyFilterSearchTerm";
 export type EntryNodeSearchResult = {
-  q: string;
-  nodeCount: number;
-  pageCount: number;
-  filters: Array<
+  q?: string;
+  nodeCount?: number;
+  pageCount?: number;
+  filters?: Array<
     | IsFilterSearchTerm
     | LanguageFilterSearchTerm
     | ParentFilterSearchTerm
@@ -23,5 +23,5 @@ export type EntryNodeSearchResult = {
     | DescendantFilterSearchTerm
     | PropertyFilterSearchTerm
   >;
-  nodes: Array<EntryNode>;
+  nodes?: Array<EntryNode>;
 };

@@ -5,15 +5,16 @@
 import type { ProjectStatus } from "./ProjectStatus";
 export type Project = {
   id: string;
-  status: ProjectStatus;
+  status?: ProjectStatus;
   taxonomyName: string;
   branchName: string;
   description: string;
-  ownerName: string | null;
+  ownerName?: string | null;
   isFromGithub: boolean;
   createdAt: string;
-  errorsCount: number;
-  githubCheckoutCommitSha: string | null;
-  githubFileLatestSha: string | null;
-  githubPrUrl: string | null;
+  errorsCount?: number;
+  githubCheckoutCommitSha?: string | null;
+  githubFileLatestSha?: string | null;
+  githubPrUrl?: string | null;
+  originalText?: string | null;
 };
