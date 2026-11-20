@@ -302,6 +302,7 @@ class TaxonomyGraph:
             MATCH (n:{self.project_name})
             WHERE (n:ENTRY OR n:REMOVED_ENTRY) AND n.modified IS NOT NULL
             OPTIONAL MATCH (n)-[:is_child_of]->(parent)
+            WITH n, parent ORDER BY parent.id
             RETURN n.id AS id, collect(parent.id) AS parents
         """
         result = await get_current_transaction().run(query)
