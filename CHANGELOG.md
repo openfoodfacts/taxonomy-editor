@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.5.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.4.0...v1.5.0) (2026-11-20)
+
+
+### Features
+
+* add a Description tab to projects ([#762](https://github.com/openfoodfacts/taxonomy-editor/issues/762)) ([a6f8e12](https://github.com/openfoodfacts/taxonomy-editor/commit/a6f8e12af464feb71507e0c7986cb6609e0e95c0)), closes [#761](https://github.com/openfoodfacts/taxonomy-editor/issues/761)
+* Add basic filters to the projects list ([#736](https://github.com/openfoodfacts/taxonomy-editor/issues/736)) ([#739](https://github.com/openfoodfacts/taxonomy-editor/issues/739)) ([3d98ea6](https://github.com/openfoodfacts/taxonomy-editor/commit/3d98ea6ad828bb46c814114d2ec9c08e76f05898))
+* add help button to navigation bar ([#738](https://github.com/openfoodfacts/taxonomy-editor/issues/738)) ([6fcc5fd](https://github.com/openfoodfacts/taxonomy-editor/commit/6fcc5fd2b2374079d5f3680ae59b66c14c94b142)), closes [#737](https://github.com/openfoodfacts/taxonomy-editor/issues/737)
+* add test environment disclaimer banner ([#735](https://github.com/openfoodfacts/taxonomy-editor/issues/735)) ([37a768f](https://github.com/openfoodfacts/taxonomy-editor/commit/37a768ff72dda4c31f7e31f82d9c79dbaa3ba97e)), closes [#592](https://github.com/openfoodfacts/taxonomy-editor/issues/592)
+* show entry descriptions before synonyms ([#757](https://github.com/openfoodfacts/taxonomy-editor/issues/757)) ([af94458](https://github.com/openfoodfacts/taxonomy-editor/commit/af94458bc9df4ddf55dabc73ede71aca2179abf9))
+* Tool to Export OFF Taxonomies to RDF ([#722](https://github.com/openfoodfacts/taxonomy-editor/issues/722)) ([c1e86ef](https://github.com/openfoodfacts/taxonomy-editor/commit/c1e86ef3fdf5ab825adb08f2365b9aa333a8547b))
+
+
+### Bug Fixes
+
+* fix hishel version + avoid passing along uploadfile (just pass its content) ([#725](https://github.com/openfoodfacts/taxonomy-editor/issues/725)) ([86640b5](https://github.com/openfoodfacts/taxonomy-editor/commit/86640b5a2e26008cfd34f8010a992ef10715eb19))
+* **frontend:** resolve invalid icon imports in ResponsiveAppBar (clos… ([#775](https://github.com/openfoodfacts/taxonomy-editor/issues/775)) ([d383948](https://github.com/openfoodfacts/taxonomy-editor/commit/d383948d89feb523d10f49c32ea95347d6bf0ee4))
+* normalize entry IDs from URLs ([#745](https://github.com/openfoodfacts/taxonomy-editor/issues/745)) ([9ae6a32](https://github.com/openfoodfacts/taxonomy-editor/commit/9ae6a32a865e555328e54949ff2cc5dcfaa9f50e)), closes [#743](https://github.com/openfoodfacts/taxonomy-editor/issues/743)
+
+
+### Performance Improvements
+
+* avoid big properties in project list / fetching ([#785](https://github.com/openfoodfacts/taxonomy-editor/issues/785)) ([41d5dec](https://github.com/openfoodfacts/taxonomy-editor/commit/41d5dec9e1ee7f59e34d53f6829d72d7afcdff97))
+
 ## [1.4.0](https://github.com/openfoodfacts/taxonomy-editor/compare/v1.3.0...v1.4.0) (2026-07-21)
 
 
