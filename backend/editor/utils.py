@@ -43,3 +43,26 @@ def taxonomy_path_in_repository(taxonomy_name):
     if path in SPLIT_WITH_SLASH:
         path = path.replace("_", "/")
     return f"taxonomies/{path}.txt"
+
+
+def summarize_modified_entries(modified_entries: dict[str, list[str]]) -> str | None:
+    """Helper function to summarize modified entries, to name a pull request
+
+    :param modified_entries: parents ids of each modified entry, by entry id
+    :return: None if there is nothing to summarize
+    """
+    if not modified_entries:
+        return None
+    # an entry is common to all changes if each modified entry is this entry or one of its children
+    common = set.intersection(
+        *({entry_id, *parents} for entry_id, parents in modified_entries.items())
+    )
+    if common:
+        all_parents = {parent for parents in modified_entries.values() for parent in parents}
+        # prefer a parent, as a single modified entry is also common to all changes
+        return f"edits around {min(common & all_parents or common)}"
+    entries_ids = sorted(modified_entries)
+    summary = ", ".join(entries_ids[:3])
+    if len(entries_ids) > 3:
+        summary += f" and {len(entries_ids) - 3} more"
+    return summary
