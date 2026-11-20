@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { getNodeType } from "@/utils";
-import AddBoxIcon from "@mui/icons-material/AddBox";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AddBoxIcon from "@mui/icons-material/esm/AddBox";
+import DeleteOutlineIcon from "@mui/icons-material/esm/DeleteOutline";
 import ISO6391 from "iso-639-1";
 import { greyHexCode } from "@/constants";
 

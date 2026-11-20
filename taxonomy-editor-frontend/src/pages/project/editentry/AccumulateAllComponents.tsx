@@ -1,5 +1,5 @@
 import { Alert, Box, Snackbar, Typography, Button } from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
+import SaveIcon from "@mui/icons-material/esm/Save";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useMemo, useState } from "react";
 import ListEntryParents from "./ListEntryParents";

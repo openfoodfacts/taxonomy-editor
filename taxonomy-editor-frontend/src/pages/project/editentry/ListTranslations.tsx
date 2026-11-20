@@ -9,7 +9,7 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/esm/VisibilityOffOutlined";
 import PushPinOutlinedIcon from "@/assets/icons/pushpin-line-grey.svg?react";
 import LanguageSelectionDialog from "./LanguageSelectionDialog";
 import { useMemo, useEffect, useState } from "react";

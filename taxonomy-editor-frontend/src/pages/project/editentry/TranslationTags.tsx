@@ -1,9 +1,11 @@
-import Tags from "@yaireo/tagify/dist/react.tagify"; // React-wrapper file
+import TagsPkg from "@yaireo/tagify/dist/react.tagify"; // React-wrapper file
 import DragSort from "@yaireo/dragsort";
 import "@yaireo/tagify/dist/tagify.css"; // Tagify CSS
 import "@yaireo/dragsort/dist/dragsort.css";
 import "./TranslationTags.css";
 import { useMemo, useRef } from "react";
+
+const Tags = TagsPkg.default ?? TagsPkg;
 
 type TranslationTagsProps = {
   translations: string[];

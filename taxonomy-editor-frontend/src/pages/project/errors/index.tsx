@@ -13,9 +13,15 @@ import {
   TableRow,
   Stack,
 } from "@mui/material";
-import MaterialTable from "@material-table/core";
+import MaterialTablePkg from "@material-table/core";
 import { Alert, CircularProgress } from "@mui/material";
 import { useState, useEffect } from "react";
+
+// Cast to "component OR namespace-with-default", then unwrap.
+// Runtime is correct; only the type needs help.
+const MaterialTable =
+  (MaterialTablePkg as unknown as { default?: typeof MaterialTablePkg })
+    .default ?? MaterialTablePkg;
 
 interface ErrorParams {
   taxonomyName: string;

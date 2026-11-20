@@ -14,7 +14,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/esm/DeleteOutline";
 import AccumulateAllComponents from "./AccumulateAllComponents";
 
 import { createBaseURL, removeTxtExtension, toTitleCase } from "@/utils";
