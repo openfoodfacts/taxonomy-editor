@@ -7,6 +7,18 @@ import { useMemo, useRef } from "react";
 
 const Tags = TagsPkg.default ?? TagsPkg;
 
+// A synonym can contain a comma: "2,5" (between digits) or "\," (escaped),
+// as in the taxonomy files. Only split on the other commas.
+// A comma after a digit waits for the next character to decide.
+// The pattern must start with "," because Tagify uses its first character
+// to join pasted lines.
+const SYNONYM_DELIMITERS = String.raw`,(?<![\\\d],)|(?<=\d),(?=\D)`;
+
+// Tagify splits every string of its initial value on the delimiters,
+// objects are taken as whole tags.
+const toTagifyValue = (translations: string[]) =>
+  translations.map((value) => ({ value }));
+
 type TranslationTagsProps = {
   translations: string[];
   saveTranslations: (translations: string[]) => void;
@@ -43,15 +55,18 @@ export const TranslationTags = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagifyRefDragSort.current]);
 
+  const value = useMemo(() => toTagifyValue(translations), [translations]);
+
   if (isReadOnly) {
-    return <Tags value={translations} readOnly />;
+    return <Tags value={value} readOnly />;
   }
 
   return (
     <Tags
       tagifyRef={tagifyRefDragSort}
       onChange={handleChange}
-      value={translations}
+      value={value}
+      settings={{ delimiters: SYNONYM_DELIMITERS }}
     />
   );
 };
