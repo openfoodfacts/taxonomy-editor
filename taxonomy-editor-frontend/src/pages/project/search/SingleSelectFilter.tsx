@@ -14,7 +14,6 @@ type SingleSelectFilterType = {
   mapValueToCode: (value: string) => string;
   setQ: Dispatch<SetStateAction<string>>;
   keySearchTerm: string;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
 export const SingleSelectFilter = ({
@@ -24,13 +23,11 @@ export const SingleSelectFilter = ({
   mapValueToCode = () => "",
   setQ,
   keySearchTerm,
-  setCurrentPage,
 }: SingleSelectFilterType) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const codeItem = event.target.value;
-    setCurrentPage(1);
     if (filterValue !== codeItem) {
       setQ((prevQ) => {
         let newQ = prevQ;

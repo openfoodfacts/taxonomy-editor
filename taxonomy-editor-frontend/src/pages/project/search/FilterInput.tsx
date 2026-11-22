@@ -5,14 +5,12 @@ type FilterInputProps = {
   label: string;
   setQ: Dispatch<SetStateAction<string>>;
   keySearchTerm: string;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
 export const FilterInput = ({
   label,
   setQ,
   keySearchTerm,
-  setCurrentPage,
 }: FilterInputProps) => {
   const [filterValue, setFilterValue] = useState("");
   const addFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -21,7 +19,6 @@ export const FilterInput = ({
       const value = filterValue.includes(" ")
         ? `"${filterValue}"`
         : filterValue;
-      setCurrentPage(1);
       setQ((prevQ) => `${prevQ} ${keySearchTerm}:${value}`);
       event.preventDefault();
       setFilterValue("");

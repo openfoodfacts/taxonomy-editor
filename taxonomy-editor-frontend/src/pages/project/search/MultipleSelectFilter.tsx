@@ -17,7 +17,6 @@ type MultipleSelectFilterProps = {
   mapValueToCode: (value: string) => string;
   setQ: Dispatch<SetStateAction<string>>;
   keySearchTerm: string;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
 export const MultipleSelectFilter = ({
@@ -28,7 +27,6 @@ export const MultipleSelectFilter = ({
   mapValueToCode = () => "",
   setQ,
   keySearchTerm,
-  setCurrentPage,
 }: MultipleSelectFilterProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -36,7 +34,6 @@ export const MultipleSelectFilter = ({
     event: ChangeEvent<HTMLInputElement>,
     languageCodeItem: string,
   ) => {
-    setCurrentPage(1);
     if (!filterValue.includes(languageCodeItem)) {
       setQ((prevQ) => prevQ + ` ${keySearchTerm}:${languageCodeItem}`);
     } else {

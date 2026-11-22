@@ -20,7 +20,7 @@ import {
   CircularProgress,
   Container,
 } from "@mui/material";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import AddBoxIcon from "@mui/icons-material/esm/AddBox";
 import { useParams } from "react-router-dom";
 import { EntryNode } from "@/client";
@@ -29,7 +29,7 @@ type SearchResultsType = {
   entryNodes: EntryNode[];
   nodeCount: number | undefined;
   currentPage: number;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
+  setCurrentPage: (page: number) => void;
   isError: boolean;
   errorMessage: string;
   isPending: boolean;

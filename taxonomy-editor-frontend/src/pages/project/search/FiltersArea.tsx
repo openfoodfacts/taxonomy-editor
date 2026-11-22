@@ -13,16 +13,11 @@ import { EntryNodeSearchResult } from "@/client";
 import { SingleSelectFilter } from "./SingleSelectFilter";
 
 type FiltersAreaProps = {
-  setCurrentPage: Dispatch<SetStateAction<number>>;
   setQ: Dispatch<SetStateAction<string>>;
   filters: EntryNodeSearchResult["filters"];
 };
 
-export const FiltersArea = ({
-  setCurrentPage,
-  setQ,
-  filters,
-}: FiltersAreaProps) => {
+export const FiltersArea = ({ setQ, filters }: FiltersAreaProps) => {
   const [isModified, setIsModified] = useState<string>("modified");
   const [nodesLevel, setNodesLevel] = useState<string>("both");
   const [taxonomyScope, setTaxonomyScope] = useState<string>("both");
@@ -147,7 +142,6 @@ export const FiltersArea = ({
         mapValueToCode={(value: string) => modifiedOptions[value]}
         setQ={setQ}
         keySearchTerm="is"
-        setCurrentPage={setCurrentPage}
       />
       <SingleSelectFilter
         label="Hierarchy Level"
@@ -156,7 +150,6 @@ export const FiltersArea = ({
         mapValueToCode={(value: string) => levelOptions[value]}
         setQ={setQ}
         keySearchTerm="is"
-        setCurrentPage={setCurrentPage}
       />
       <SingleSelectFilter
         label="Scope"
@@ -165,7 +158,6 @@ export const FiltersArea = ({
         mapValueToCode={(value: string) => scopeOptions[value]}
         setQ={setQ}
         keySearchTerm="is"
-        setCurrentPage={setCurrentPage}
       />
       <MultipleSelectFilter
         label="Translated into"
@@ -175,7 +167,6 @@ export const FiltersArea = ({
         mapValueToCode={ISO6391.getCode}
         setQ={setQ}
         keySearchTerm="language"
-        setCurrentPage={setCurrentPage}
       />
       <MultipleSelectFilter
         label="Not translated into"
@@ -185,31 +176,22 @@ export const FiltersArea = ({
         mapValueToCode={ISO6391.getCode}
         setQ={setQ}
         keySearchTerm="language:not"
-        setCurrentPage={setCurrentPage}
       />
       <FilterInput
         label="Is parent of (id)"
         setQ={setQ}
         keySearchTerm="parent"
-        setCurrentPage={setCurrentPage}
       />
-      <FilterInput
-        label="Is child of (id)"
-        setQ={setQ}
-        keySearchTerm="child"
-        setCurrentPage={setCurrentPage}
-      />
+      <FilterInput label="Is child of (id)" setQ={setQ} keySearchTerm="child" />
       <FilterInput
         label="Is ancestor of (id)"
         setQ={setQ}
         keySearchTerm="ancestor"
-        setCurrentPage={setCurrentPage}
       />
       <FilterInput
         label="Is descendant of (id)"
         setQ={setQ}
         keySearchTerm="descendant"
-        setCurrentPage={setCurrentPage}
       />
     </Box>
   );

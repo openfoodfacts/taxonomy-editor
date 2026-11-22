@@ -5,20 +5,17 @@ import { Dispatch, SetStateAction } from "react";
 type SearchExpressionInputType = {
   searchExpression: string;
   setSearchExpression: Dispatch<SetStateAction<string>>;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
   setQ: Dispatch<SetStateAction<string>>;
 };
 
 export const SearchExpressionInput = ({
   searchExpression,
   setSearchExpression,
-  setCurrentPage,
   setQ,
 }: SearchExpressionInputType) => {
   const handleEnterKeyPress = (
     event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    setCurrentPage(1);
     if (event.key === "Enter") {
       handleSearch();
       event.preventDefault();
