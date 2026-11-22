@@ -156,17 +156,15 @@ export const ListTranslations = ({
     };
   };
 
-  let languagesToShow: string[];
-  languagesToShow = shownLanguageCodes.filter(
-    (languageCode) => languageCode !== nodeObject.mainLanguage,
-  );
-  if (shownLanguageCodes.includes("xx")) {
-    languagesToShow = languagesToShow.filter(
-      (languageCode) => languageCode !== "xx",
-    );
-    languagesToShow.unshift("xx");
-  }
-  languagesToShow.unshift(nodeObject.mainLanguage);
+  // main language first, then "xx" if shown, then the other shown languages,
+  // each language once (the main language can be "xx")
+  const languagesToShow: string[] = [
+    ...new Set([
+      nodeObject.mainLanguage,
+      ...(shownLanguageCodes.includes("xx") ? ["xx"] : []),
+      ...shownLanguageCodes,
+    ]),
+  ];
 
   if (showExistingTranslations) {
     languagesToShow.push(
