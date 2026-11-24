@@ -267,7 +267,10 @@ class TaxonomyGraph:
 
         github_object = GithubOperations(self.taxonomy_name, self.branch_name)
 
+        summary = None
         if status != ProjectStatus.EXPORTED:
+            # read the summary first so a query failure cannot leave a committed branch behind
+            summary = utils.summarize_modified_entries(await self.get_modified_entries())
             try:
                 await github_object.checkout_branch(commit_sha)
             except Exception as e:
@@ -277,7 +280,6 @@ class TaxonomyGraph:
             new_file = await github_object.update_file(filename, file_sha, owner_name)
 
             if status != ProjectStatus.EXPORTED:
-                summary = utils.summarize_modified_entries(await self.get_modified_entries())
                 pull_request = await github_object.create_pr(description, summary)
                 pr_url = pull_request.html_url
 
