@@ -554,7 +554,8 @@ class TaxonomyParser:
                         )
                         # we have to re-normalize the tags_ids and can't just do a union,
                         # because two tags can have the same normalized value
-                        language_code = key.split("_")[1]
+                        # keep the whole language code: regional ones contain "_" (zh_CN)
+                        language_code = key.split("_", 1)[1]
                         first_node.tags[f"tags_ids_{language_code}"] = [
                             normalize_text(tag, language_code) for tag in first_node.tags[key]
                         ]

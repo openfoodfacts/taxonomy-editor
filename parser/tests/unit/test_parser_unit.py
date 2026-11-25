@@ -60,3 +60,38 @@ def test_nodes():
     taxonomy = taxonomy_parser.parse_file(TEST_TAXONOMY_TXT)
     nodes = taxonomy.entry_nodes
     assert len(nodes) == 8
+
+
+def test_merge_duplicate_entries_with_regional_language_code():
+    # "zh-CN" is stored as "zh_CN": merging two entries with the same id
+    # must keep the full regional language code (see #787)
+    taxonomy_parser = parser.TaxonomyParser()
+    first = parser.taxonomy_parser.NodeData(
+        id="en:without-soap",
+        main_language="en",
+        src_lines=["1,2"],
+        tags={
+            "tags_en": ["Without soap"],
+            "tags_ids_en": ["without-soap"],
+            "tags_zh_CN": ["无皂"],
+            "tags_ids_zh_CN": ["无皂"],
+        },
+    )
+    second = parser.taxonomy_parser.NodeData(
+        id="en:without-soap",
+        main_language="en",
+        src_lines=["5,6"],
+        tags={
+            "tags_en": ["Without soap", "Soap free"],
+            "tags_ids_en": ["without-soap", "soap-free"],
+            "tags_zh_CN": ["不含皂"],
+            "tags_ids_zh_CN": ["不含皂"],
+        },
+    )
+    (merged,) = taxonomy_parser._merge_duplicate_entry_nodes([first, second])
+    assert merged.tags == {
+        "tags_en": ["Without soap", "Soap free"],
+        "tags_ids_en": ["without-soap", "soap-free"],
+        "tags_zh_CN": ["无皂", "不含皂"],
+        "tags_ids_zh_CN": ["无皂", "不含皂"],
+    }
