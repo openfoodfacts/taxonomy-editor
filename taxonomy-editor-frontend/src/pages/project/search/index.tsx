@@ -1,5 +1,5 @@
 import { useParams, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { DefaultService } from "@/client";
 
@@ -16,18 +16,36 @@ export const AdvancedSearchForm = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [q, setQ] = useState(searchParams.get("q") ?? "");
-  const pageParam = searchParams.get("page");
+  const q = searchParams.get("q") ?? "";
+  const page = Number(searchParams.get("page"));
+  const currentPage = Number.isSafeInteger(page) && page > 0 ? page : 1;
+  const [searchExpression, setSearchExpression] = useState(q);
 
-  const [searchExpression, setSearchExpression] = useState<string>(q);
-  const [currentPage, setCurrentPage] = useState<number>(
-    parseInt(pageParam ?? "1"),
-  );
+  const setQ = (update: SetStateAction<string>) => {
+    const nextQuery = typeof update === "function" ? update(q) : update;
+    if (nextQuery === q && currentPage === 1) return;
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("q", nextQuery);
+    nextParams.delete("page");
+    setSearchParams(nextParams);
+  };
+
+  const setCurrentPage = (nextPage: number) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextPage === 1) {
+      nextParams.delete("page");
+    } else {
+      nextParams.set("page", String(nextPage));
+    }
+    setSearchParams(nextParams);
+  };
 
   const {
     data: entryNodeSearchResult,
     isError,
     isPending,
+    isPlaceholderData,
     error,
   } = useQuery({
     queryKey: [
@@ -51,28 +69,32 @@ export const AdvancedSearchForm = () => {
   });
 
   useEffect(() => {
-    if (entryNodeSearchResult?.q !== undefined) {
-      setSearchExpression(entryNodeSearchResult.q);
-      setSearchParams((prevSearchParams) => ({
-        ...prevSearchParams,
-        q: entryNodeSearchResult.q,
-      }));
+    setSearchExpression(q);
+  }, [q]);
+
+  const normalizedQuery = entryNodeSearchResult?.q;
+  useEffect(() => {
+    if (
+      isPlaceholderData ||
+      normalizedQuery === undefined ||
+      normalizedQuery === q
+    ) {
+      return;
     }
-  }, [entryNodeSearchResult?.q, setSearchParams]);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("q", normalizedQuery);
+    setSearchParams(nextParams, { replace: true });
+  }, [isPlaceholderData, normalizedQuery, q, searchParams, setSearchParams]);
 
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap" }}>
       <SearchExpressionInput
         searchExpression={searchExpression}
         setSearchExpression={setSearchExpression}
-        setCurrentPage={setCurrentPage}
         setQ={setQ}
       />
-      <FiltersArea
-        setCurrentPage={setCurrentPage}
-        setQ={setQ}
-        filters={entryNodeSearchResult?.filters ?? []}
-      />
+      <FiltersArea setQ={setQ} filters={entryNodeSearchResult?.filters ?? []} />
       <SearchResults
         entryNodes={entryNodeSearchResult?.nodes ?? []}
         nodeCount={entryNodeSearchResult?.nodeCount}
