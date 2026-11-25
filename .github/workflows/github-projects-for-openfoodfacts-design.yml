@@ -7,6 +7,10 @@ on:
       - edited
       - transfered
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   add-to-project:
     name: Add issues to the 🎨 openfoodfacts-design or 📚 documentation project
