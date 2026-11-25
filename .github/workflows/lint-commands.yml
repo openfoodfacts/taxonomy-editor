@@ -26,18 +26,18 @@ jobs:
 
     steps:
       - name: Add reaction to comment
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
 
       - name: Get PR branch
-        uses: xt0rted/pull-request-comment-branch@v3
+        uses: xt0rted/pull-request-comment-branch@v3.0.0
         id: comment-branch
 
       - name: Verify PR belongs to this repository
         id: pr
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             const { data: pullRequest } = await github.rest.pulls.get({
@@ -57,12 +57,12 @@ jobs:
           exit 1
 
       - name: Check out PR branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: "lts/*"
           cache: npm
@@ -95,28 +95,28 @@ jobs:
 
       - name: Add success reaction
         if: success()
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: rocket
 
       - name: Comment on PR when changes were committed
         if: steps.commit.outputs.has_changes == 'true'
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: "✅ Repository has been automatically formatted."
 
       - name: Comment on PR when no changes were needed
         if: steps.commit.outputs.has_changes == 'false'
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: "ℹ️ No formatting changes needed—the repository is already properly formatted."
 
       - name: Add failure reaction
         if: failure()
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: confused
