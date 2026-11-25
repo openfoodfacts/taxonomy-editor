@@ -18,7 +18,9 @@ jobs:
           # This is also the name of the directory for the application
           - ${{ startsWith(github.ref, 'refs/tags/v') && 'taxonomy-editor-org' || 'taxonomy-editor-net' }}
     environment: ${{ matrix.env }}
-    concurrency: ${{ matrix.env }}
+    concurrency:
+      group: ${{ matrix.env }}
+      cancel-in-progress: false
     steps:
       - name: Set various variable for staging deployment
         if: matrix.env == 'taxonomy-editor-net'
@@ -111,11 +113,11 @@ jobs:
             # Go to repository directory
             cd ${{ matrix.env }}
 
-            # Fetch newest commits (in case it wasn't freshly cloned)
-            git fetch --depth 1
+            # Fetch the exact commit SHA (avoids shallow-clone race if newer commits were pushed)
+            git fetch --depth 1 origin ${{ github.sha }}
 
             # Checkout current commit SHA
-            git checkout -qf ${{ github.sha }}
+            git checkout -qf FETCH_HEAD
 
       - name: Set environment variables
         uses: appleboy/ssh-action@master

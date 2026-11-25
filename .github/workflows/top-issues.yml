@@ -6,6 +6,10 @@ on:
   issues:
     types: [opened, transferred]
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   ShowAndLabelTopIssues:
     name: Display and label top issues.
