@@ -20,7 +20,7 @@ def test_normalized_filename(filename: str, normalized_name: str):
     assert utils.normalize_filename(filename) == normalized_name
 
 
-def test_fileiter(neo4j):
+def test_fileiter():
     taxonomy_parser = parser.TaxonomyParser()
     file_iterator = taxonomy_parser._file_iter(TEST_TAXONOMY_TXT)
     for counter, (_, line) in enumerate(file_iterator):
