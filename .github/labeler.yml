@@ -1,92 +1,173 @@
-# Add labels to any any pull request with changes to the specified paths
+# Add labels to any pull request with changes to the specified paths
 # for reference, see https://github.com/actions/labeler
 
 GitHub:
   - changed-files:
       - any-glob-to-any-file: ".github/**/*"
 
-📚 Documentation:
+📚 documentation:
   - changed-files:
-      - any-glob-to-any-file: "CONTRIBUTING.md"
-      - any-glob-to-any-file: "LICENSE"
-      - any-glob-to-any-file: "README.md"
-      - any-glob-to-any-file: "backend/README.md"
-      - any-glob-to-any-file: "doc/how-to-guides/develop-with-neo4j.md"
-      - any-glob-to-any-file: "doc/how-to-guides/docker-compose-setup.md"
-      - any-glob-to-any-file: "doc/introduction/setup-dev.md"
-      - any-glob-to-any-file: "doc/references/taxonomy-parser.md"
-      - any-glob-to-any-file: "doc/assets/.empty"
-      - any-glob-to-any-file: "doc/**/*"
+      - any-glob-to-any-file:
+          - "**/*.md"
+          - "LICENSE"
+          - "doc/**/*"
 
 🐳 Docker:
   - changed-files:
-      - any-glob-to-any-file: "backend/Dockerfile"
-      - any-glob-to-any-file: "taxonomy-editor-frontend/Dockerfile"
-      - any-glob-to-any-file: "docker-compose.yml"
-      - any-glob-to-any-file: "docker/dev.yml"
+      - any-glob-to-any-file:
+          - "Dockerfile"
+          - "**/Dockerfile"
+          - "docker-compose.yml"
+          - "docker/**/*"
 
-Backend:
+backend:
   - changed-files:
-      - any-glob-to-any-file: "backend/editor/__init__.py"
-      - any-glob-to-any-file: "backend/editor/api.py"
-      - any-glob-to-any-file: "backend/editor/entries.py"
-      - any-glob-to-any-file: "backend/editor/exceptions.py"
-      - any-glob-to-any-file: "backend/editor/graph_db.py"
-      - any-glob-to-any-file: "backend/editor/models.py"
-      - any-glob-to-any-file: "backend/editor/normalizer.py"
-      - any-glob-to-any-file: "backend/editor/settings.py"
-      - any-glob-to-any-file: "backend/pyproject.toml"
-      - any-glob-to-any-file: "backend/poetry.lock"
-      - any-glob-to-any-file: "backend/sample/load.py"
-      - any-glob-to-any-file: "backend/sample/schema.json"
-      - any-glob-to-any-file: "backend/sample/test-neo4j.json"
-      - any-glob-to-any-file: "backend/sample/test.json"
-      - any-glob-to-any-file: "backend/sample/test.txt"
       - any-glob-to-any-file: "backend/**/*"
 
-Frontend:
+frontend:
   - changed-files:
       - any-glob-to-any-file: "taxonomy-editor-frontend/**/*"
 
-Dependencies:
+dependencies:
   - changed-files:
-      - any-glob-to-any-file: "backend/pyproject.toml"
-      - any-glob-to-any-file: "backend/poetry.lock"
-      - any-glob-to-any-file: "parser/pyproject.toml"
-      - any-glob-to-any-file: "parser/poetry.lock"
-      - any-glob-to-any-file: "taxonomy-editor-frontend/package.json"
+      - any-glob-to-any-file:
+          - "package.json"
+          - "package-lock.json"
+          - "**/package.json"
+          - "**/package-lock.json"
+          - "**/pyproject.toml"
+          - "**/poetry.lock"
+          - ".github/workflows/actions.lock"
 
-API:
+api:
   - changed-files:
-      - any-glob-to-any-file: "backend/editor/api.py"
+      - any-glob-to-any-file:
+          - "backend/editor/api.py"
+          - "backend/editor/controllers/**/*"
+          - "backend/openapi/**/*"
+          - "taxonomy-editor-frontend/src/client/**/*"
 
-NGINX:
+OpenAPI:
   - changed-files:
-      - any-glob-to-any-file: "conf/nginx.conf"
+      - any-glob-to-any-file:
+          - "backend/openapi/**/*"
+          - "taxonomy-editor-frontend/src/client/**/*"
 
-Neo4j:
+nginx:
   - changed-files:
-      - any-glob-to-any-file: "neo4j/**/*"
+      - any-glob-to-any-file: "conf/**/*"
 
-Parser:
+neo4j:
   - changed-files:
-      - any-glob-to-any-file: "parser/Makefile"
-      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/__init__.py"
-      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/exception.py"
-      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/parser.py"
-      - any-glob-to-any-file: "parser/openfoodfacts_taxonomy_parser/unparser.py"
-      - any-glob-to-any-file: "parser/pyproject.toml"
-      - any-glob-to-any-file: "parser/poetry.lock"
-      - any-glob-to-any-file: "parser/setup.cfg"
-      - any-glob-to-any-file: "parser/tests/__init__.py"
-      - any-glob-to-any-file: "parser/tests/conftest.py"
-      - any-glob-to-any-file: "parser/tests/data/test.txt"
-      - any-glob-to-any-file: "parser/tests/integration/__init__.py"
+      - any-glob-to-any-file:
+          - "neo4j/**/*"
+          - "backend/editor/graph_db.py"
+
+parser:
+  - changed-files:
       - any-glob-to-any-file: "parser/**/*"
 
-🧪 tests:
-  - any-glob-to-any-file: "parser/tests/__init__.py"
-  - any-glob-to-any-file: "parser/tests/conftest.py"
-  - any-glob-to-any-file: "parser/tests/data/test.txt"
-  - any-glob-to-any-file: "parser/tests/integration/__init__.py"
-  - any-glob-to-any-file: "parser/tests/**/*"
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/tests/**/*"
+          - "parser/tests/**/*"
+
+python:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.py"
+
+js:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.js"
+          - "**/*.ts"
+          - "**/*.tsx"
+          - "**/*.jsx"
+
+devops:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/**/*"
+          - "Dockerfile"
+          - "**/Dockerfile"
+          - "docker-compose.yml"
+          - "docker/**/*"
+          - "conf/**/*"
+          - "Makefile"
+          - "**/Makefile"
+
+fastapi:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/editor/api.py"
+          - "backend/editor/controllers/**/*"
+          - "backend/editor/models/**/*"
+          - "backend/editor/scheduler.py"
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "neo4j/**/*"
+          - "backend/editor/graph_db.py"
+
+checks:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/lint-commands.yml"
+          - ".github/workflows/pull_request.yml"
+          - ".github/workflows/codeql.yml"
+          - ".github/workflows/dependency-review.yml"
+          - ".github/workflows/semantic-pr.yml"
+          - ".prettierrc.json"
+          - ".prettierignore"
+          - "taxonomy-editor-frontend/.eslintrc.json"
+          - "taxonomy-editor-frontend/.prettierrc.json"
+          - "taxonomy-editor-frontend/.husky/**/*"
+          - "backend/setup.cfg"
+          - "parser/setup.cfg"
+
+translations:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "taxonomy-editor-frontend/src/pages/project/editentry/ListTranslations.tsx"
+          - "taxonomy-editor-frontend/src/pages/project/editentry/TranslationTags.*"
+
+search:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/editor/controllers/search_controller.py"
+          - "backend/editor/models/search_models.py"
+          - "taxonomy-editor-frontend/src/pages/project/search/**/*"
+          - "taxonomy-editor-frontend/src/client/models/*FilterSearchTerm.ts"
+          - "taxonomy-editor-frontend/src/client/models/EntryNodeSearchResult.ts"
+
+export:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "parser/rdf_export/**/*"
+          - "backend/tests/test_export.py"
+          - "taxonomy-editor-frontend/src/pages/project/export/**/*"
+
+Property edition:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/editor/controllers/node_controller.py"
+          - "taxonomy-editor-frontend/src/pages/project/editentry/**/*"
+
+PR generation:
+  - changed-files:
+      - any-glob-to-any-file: "backend/editor/github_functions.py"
+
+error handling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/editor/exceptions.py"
+          - "parser/openfoodfacts_taxonomy_parser/parser/exception.py"
+          - "taxonomy-editor-frontend/src/pages/project/errors/**/*"
+
+home page:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "taxonomy-editor-frontend/src/pages/home/**/*"
+          - "taxonomy-editor-frontend/src/components/ResponsiveAppBar.tsx"
